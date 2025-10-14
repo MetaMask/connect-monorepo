@@ -4,9 +4,9 @@
     "noEmit": true
   },
   "references": [
-    { "path": "./packages/greetings" },
-    { "path": "./packages/letter-crafter" },
-    { "path": "./packages/signatures" }
+    { "path": "./packages/analytics" },
+    { "path": "./packages/multichain" },
+    { "path": "./packages/multichain-ui" }
   ],
   "files": [],
   "include": ["./scripts", "./types"]

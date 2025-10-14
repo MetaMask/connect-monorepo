@@ -1,4 +1,4 @@
-# MetaMask Monorepo Template
+# MetaMask Connect Monorepo
 
 This is a template for creating new monorepos under the MetaMask GitHub organization. (Replace this description with your own.)
 

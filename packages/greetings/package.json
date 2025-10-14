@@ -6,13 +6,13 @@
     "MetaMask",
     "Ethereum"
   ],
-  "homepage": "https://github.com/MetaMask/metamask-monorepo-template/tree/main/packages/greetings#readme",
+  "homepage": "https://github.com/MetaMask/metamask-connect-monorepo/tree/main/packages/greetings#readme",
   "bugs": {
-    "url": "https://github.com/MetaMask/metamask-monorepo-template/issues"
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/metamask-monorepo-template.git"
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
