@@ -35,8 +35,11 @@ See the [Contributor Guide](./docs/contributing.md) for help on:
 
 <!-- start package list -->
 
+- [`@metamask/analytics`](packages/analytics)
 - [`@metamask/greetings`](packages/greetings)
 - [`@metamask/letter-crafter`](packages/letter-crafter)
+- [`@metamask/multichain`](packages/multichain)
+- [`@metamask/multichain-ui`](packages/multichain-ui)
 - [`@metamask/signatures`](packages/signatures)
 
 <!-- end package list -->
@@ -47,8 +50,11 @@ See the [Contributor Guide](./docs/contributing.md) for help on:
 %%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
 graph LR;
 linkStyle default opacity:0.5
+  analytics(["@metamask/analytics"]);
   greetings(["@metamask/greetings"]);
   letter_crafter(["@metamask/letter-crafter"]);
+  multichain(["@metamask/multichain"]);
+  multichain_ui(["@metamask/multichain-ui"]);
   signatures(["@metamask/signatures"]);
   letter_crafter --> greetings;
   letter_crafter --> signatures;
