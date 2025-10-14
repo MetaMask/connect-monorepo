@@ -1,0 +1,1 @@
+export { generateGreeting } from './greetings';

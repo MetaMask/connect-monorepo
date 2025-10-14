@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "references": [
+    { "path": "./packages/greetings" },
+    { "path": "./packages/letter-crafter" },
+    { "path": "./packages/signatures" }
+  ],
+  "files": [],
+  "include": ["./scripts", "./types"]
+}

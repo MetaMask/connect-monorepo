@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "references": [
+    { "path": "./packages/greetings/tsconfig.build.json" },
+    { "path": "./packages/letter-crafter/tsconfig.build.json" },
+    { "path": "./packages/signatures/tsconfig.build.json" }
+  ],
+  "files": [],
+  "include": []
+}

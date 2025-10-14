@@ -1,0 +1,34 @@
+# node
+npm-debug.log
+yarn-error.log
+node_modules
+package-lock.json
+
+# tarball from `yarn pack`
+*.tgz
+
+# eslint cache
+.eslintcache
+
+.DS_STORE
+
+# Build preview message
+preview-build-message.txt
+
+packages/*/coverage
+packages/*/dist
+packages/*/docs
+scripts/coverage
+
+# yarn v3 (w/o zero-install)
+# See: https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# typescript
+packages/*/*.tsbuildinfo
