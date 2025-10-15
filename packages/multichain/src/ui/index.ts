@@ -6,14 +6,14 @@ import { compressString } from '../multichain/utils';
 import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from 'src/config';
 
 // @ts-ignore
-let __instance: typeof import('@metamask/sdk-multichain-ui/dist/loader/index.cjs.js') | undefined;
+let __instance: typeof import('@metamask/multichain-ui/dist/loader/index.cjs.js') | undefined;
 
 /**
  * Preload install modal custom elements only once
  */
 export async function preload() {
 	// @ts-ignore
-	__instance ??= await import('@metamask/sdk-multichain-ui/dist/loader/index.cjs.js')
+    __instance ??= await import('@metamask/multichain-ui/dist/loader/index.cjs.js')
 		.then((loader) => {
 			loader.defineCustomElements();
 			return Promise.resolve(loader);
@@ -127,13 +127,13 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
 		const connectionRequest = await createConnectionRequest();
 		const qrCodeLink = this.createDeeplink(connectionRequest);
 
-		const modal = new this.options.InstallModal({
+        const modal = new this.options.InstallModal({
 			expiresIn: (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000,
 			connectionRequest,
 			parentElement,
 			preferDesktop,
 			link: qrCodeLink,
-			sdkVersion: getVersion(),
+            // sdkVersion is passed to SDKVersion component separately
 			generateQRCode: async (request) => this.createDeeplink(request),
 			onClose: this.onCloseModal.bind(this),
 			startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
@@ -153,12 +153,12 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
 		await preload();
 		this.successCallback = successCallback;
 
-		const container = this.getMountedContainer();
-		const otpCode = await createOTPCode();
+        const container = this.getMountedContainer();
+        const otpCode = await createOTPCode();
 
-		const modal = new this.options.OTPCodeModal({
+        const modal: AbstractOTPCodeModal = new this.options.OTPCodeModal({
 			parentElement: container,
-			sdkVersion: getVersion(),
+            // sdkVersion not part of OTPCodeWidgetProps
 			otpCode,
 			onClose: this.onCloseModal.bind(this),
 			createOTPCode,

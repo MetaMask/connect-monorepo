@@ -7,11 +7,15 @@ export class InstallModal extends AbstractInstallModal {
 
 	mount() {
 		const { options } = this;
-		const modal = document.createElement('mm-install-modal') as HTMLMmInstallModalElement;
+    const modal = document.createElement('mm-install-modal') as HTMLElement & {
+        preferDesktop: boolean;
+        sdkVersion?: string;
+        link: string;
+    };
 
 		modal.preferDesktop = options.preferDesktop;
 		modal.sdkVersion = options.sdkVersion;
-		modal.addEventListener('close', ({ detail: { shouldTerminate } }) => options.onClose(shouldTerminate));
+    modal.addEventListener('close', (({ detail }: any) => options.onClose(detail?.shouldTerminate)) as EventListener);
 		modal.addEventListener('startDesktopOnboarding', options.startDesktopOnboarding);
 		modal.link = options.link;
 

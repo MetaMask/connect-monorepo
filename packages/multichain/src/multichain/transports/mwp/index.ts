@@ -179,10 +179,10 @@ export class MWPTransport implements ExtendedTransport {
 					if (this.dappClient.state === 'CONNECTED') {
 						this.onResumeSuccess(resumeResolve, resumeReject, options);
 					} else {
-						this.dappClient.once('connected', async () => {
-							this.onResumeSuccess(resumeResolve, resumeReject, options);
+              this.dappClient.once('connected', async () => {
+							  this.onResumeSuccess(resumeResolve, resumeReject, options);
 						});
-						dappClient.resume(session.id);
+            dappClient.resume(session!.id);
 					}
 				});
 			} else {
@@ -246,11 +246,11 @@ export class MWPTransport implements ExtendedTransport {
 			if (walletGetSession) {
 				const walletSession = JSON.parse(walletGetSession);
 				return {
-					id: request.id,
+					id: Number(request.id),
 					jsonrpc: '2.0',
 					result: walletSession.params || walletSession.result,
 					method: request.method,
-				} as TransportResponse;
+				} as unknown as TransportResponse;
 			}
 		}
 	}

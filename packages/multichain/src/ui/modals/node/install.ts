@@ -1,4 +1,3 @@
-import encodeQR from '@paulmillr/qr';
 import { type ConnectionRequest, createLogger, type QRLink } from '../../../domain';
 import { AbstractInstallModal } from '../base/AbstractInstallModal';
 import { formatRemainingTime, shouldLogCountdown } from '../base/utils';
@@ -6,10 +5,18 @@ import { formatRemainingTime, shouldLogCountdown } from '../base/utils';
 const logger = createLogger('metamask-sdk:ui');
 
 export class InstallModal extends AbstractInstallModal {
-	private displayQRWithCountdown(qrCodeLink: QRLink, expiresInMs: number) {
+  private async displayQRWithCountdown(qrCodeLink: QRLink, expiresInMs: number) {
 		const isExpired = expiresInMs <= 0;
 		const formattedTime = formatRemainingTime(expiresInMs);
-		const qrCode = encodeQR(qrCodeLink, 'ascii');
+    let qrCode: string;
+    try {
+      // Dynamic import at runtime to avoid ESM/CJS type conflicts
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const mod = await import('@paulmillr/qr');
+      qrCode = (mod.default as any)(qrCodeLink, 'ascii');
+    } catch {
+      qrCode = '[QR code unavailable]';
+    }
 
 		// Clear console and display QR code with live countdown
 		console.clear();

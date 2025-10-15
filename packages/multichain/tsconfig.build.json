@@ -3,7 +3,10 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": ".",
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": false,
+    "paths": {}
   },
-  "include": ["./src"]
+  "include": ["./src", "./package.json"]
 }
