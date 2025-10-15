@@ -48,6 +48,7 @@ function isReactNative(): boolean {
 function isMetaMaskMobileWebView(): boolean {
   return (
     typeof window !== 'undefined' &&
+    // @ts-expect-error ReactNativeWebView should be defined
     Boolean(window.ReactNativeWebView) &&
     Boolean(window.navigator.userAgent.endsWith('MetaMaskMobile'))
   );
@@ -85,6 +86,7 @@ export function isMetamaskExtensionInstalled(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
+  // @ts-expect-error ethereum should be defined
   return Boolean(window.ethereum?.isMetaMask);
 }
 

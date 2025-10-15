@@ -39,9 +39,9 @@ export class EventEmitter<TEvents extends Record<string, unknown[]>> {
     eventName: TEventName,
     handler: (...eventArg: TEvents[TEventName]) => void,
   ) {
-    this.#emitter.on(eventName, handler);
+    this.#emitter.on(eventName, handler as (...args: any[]) => void);
     return () => {
-      this.off(eventName, handler);
+      this.off(eventName, handler as (...args: any[]) => void);
     };
   }
 
@@ -56,7 +56,7 @@ export class EventEmitter<TEvents extends Record<string, unknown[]>> {
     eventName: TEventName,
     handler: (...eventArg: TEvents[TEventName]) => void,
   ) {
-    this.#emitter.off(eventName, handler);
+    this.#emitter.off(eventName, handler as (...args: any[]) => void);
   }
 }
 
