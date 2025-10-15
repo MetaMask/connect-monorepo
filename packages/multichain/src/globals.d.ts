@@ -1,9 +1,8 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: required in here */
 declare module '@paulmillr/qr';
 
 export declare const mmsdk: any;
 declare global {
-  interface Window {
+  type Window = {
     /**
      * TODO: Add types for the window object to manage connection with inApp browser, etc
      */
@@ -18,5 +17,5 @@ declare global {
         handler: (...args: any[]) => void,
       ) => void;
     };
-  }
+  };
 }

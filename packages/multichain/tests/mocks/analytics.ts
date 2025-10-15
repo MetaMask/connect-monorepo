@@ -4,7 +4,7 @@
  */
 import * as t from 'vitest';
 
-t.vi.mock('@metamask/sdk-analytics', () => ({
+t.vi.mock('@metamask/analytics', () => ({
   analytics: {
     setGlobalProperty: t.vi.fn(),
     enable: t.vi.fn(),

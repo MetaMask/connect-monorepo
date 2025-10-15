@@ -1,6 +1,6 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: Tests require it */
+
 /** biome-ignore-all lint/suspicious/noAsyncPromiseExecutor: ok for tests */
-/** biome-ignore-all lint/style/noNonNullAssertion: Tests require it */
+
 import { vi } from 'vitest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { JSDOM as Page } from 'jsdom';

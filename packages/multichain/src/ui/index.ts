@@ -1,4 +1,17 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable no-restricted-globals */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/parameter-properties */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable promise/no-return-wrap */
+/* eslint-disable require-atomic-updates */
+/* eslint-disable import-x/extensions */
+/* eslint-disable @typescript-eslint/naming-convention */
 import MetaMaskOnboarding from '@metamask/onboarding';
+import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from 'src/config';
+
 import {
   type ConnectionRequest,
   getPlatformType,
@@ -7,42 +20,41 @@ import {
   type OTPCode,
   PlatformType,
 } from '../domain';
-import type { FactoryModals, ModalTypes } from './modals/types';
 import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
+import type { FactoryModals, ModalTypes } from './modals/types';
 import { compressString } from '../multichain/utils';
-import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from 'src/config';
+import { AbstractInstallModal } from './modals/base/AbstractInstallModal';
 
-// @ts-ignore
-let __instance:
-  | typeof import('@metamask/multichain-ui/dist/loader/index.cjs.js')
-  | undefined;
+let __instance;
 
 /**
  * Preload install modal custom elements only once
  */
 export async function preload() {
-  // @ts-ignore
   __instance ??= await import(
+    // @ts-expect-error FIXME
     '@metamask/multichain-ui/dist/loader/index.cjs.js'
   )
-    .then((loader) => {
+    .then(async (loader) => {
       loader.defineCustomElements();
       return Promise.resolve(loader);
     })
-    .catch((error) => {
+    .catch(async (error) => {
       console.error(`Gracefully Failed to load modal customElements:`, error);
       return Promise.resolve(undefined);
     });
 }
 
 export class ModalFactory<T extends FactoryModals = FactoryModals> {
-  // biome-ignore lint/suspicious/noExplicitAny: Expected here
   public modal!: Modal<any>;
+
   private readonly platform: PlatformType = getPlatformType();
+
   private successCallback!: (error?: Error) => Promise<void>;
 
   /**
    * Creates a new modal factory instance.
+   *
    * @param options - The modals configuration object
    */
   constructor(protected readonly options: T) {
@@ -152,7 +164,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     const connectionRequest = await createConnectionRequest();
     const qrCodeLink = this.createDeeplink(connectionRequest);
 
-    const modal = new this.options.InstallModal({
+    const modal: Modal<any> = new this.options.InstallModal({
       expiresIn:
         (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000,
       connectionRequest,
@@ -182,7 +194,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     const container = this.getMountedContainer();
     const otpCode = await createOTPCode();
 
-    const modal = new this.options.OTPCodeModal({
+    const modal: AbstractOTPCodeModal = new this.options.OTPCodeModal({
       parentElement: container,
       sdkVersion: getVersion(),
       otpCode,

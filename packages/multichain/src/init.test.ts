@@ -1,5 +1,5 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: Tests require it */
-/** biome-ignore-all lint/style/noNonNullAssertion: Tests require it */
+
+
 import * as t from 'vitest';
 import type { MultichainOptions, MultichainCore } from './domain';
 import {
@@ -10,7 +10,7 @@ import {
 } from '../tests/fixtures.test';
 
 // Carefull, order of import matters to keep mocks working
-import { analytics } from '@metamask/sdk-analytics';
+import { analytics } from '@metamask/analytics';
 import * as loggerModule from './domain/logger';
 import type { TestSuiteOptions, MockedData } from '../tests/types';
 import { mockSessionData, mockSessionRequestData } from '../tests/data';

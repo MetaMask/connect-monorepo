@@ -1,3 +1,17 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable consistent-return */
+/* eslint-disable no-plusplus */
+/* eslint-disable promise/param-names */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable id-denylist */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable no-restricted-globals */
+/* eslint-disable @typescript-eslint/parameter-properties */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/prefer-readonly */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type {
   Session,
   SessionRequest,
@@ -11,6 +25,7 @@ import {
   TransportTimeoutError,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId } from '@metamask/utils';
+
 import {
   createLogger,
   type ExtendedTransport,
@@ -42,7 +57,7 @@ const CACHED_RESET_METHOD_LIST = ['wallet_revokeSession'];
 type PendingRequests = {
   request: { jsonrpc: string; id: string } & TransportRequest;
   method: string;
-  resolve: (value: TransportResponse<unknown>) => void;
+  resolve: (value: TransportResponse) => void;
   reject: (error: Error) => void;
   timeout: NodeJS.Timeout;
 };
@@ -55,9 +70,13 @@ const logger = createLogger('metamask-sdk:transport');
  */
 export class MWPTransport implements ExtendedTransport {
   private __reqId = 0;
+
   private __pendingRequests = new Map<string, PendingRequests>();
+
   private notificationCallbacks = new Set<(data: unknown) => void>();
+
   private currentSessionRequest: SessionRequest | undefined;
+
   private windowFocusHandler: (() => void) | undefined;
 
   get pendingRequests() {
@@ -129,7 +148,7 @@ export class MWPTransport implements ExtendedTransport {
             } as unknown as {
               jsonrpc: string;
               id: string;
-            } & TransportResponse<unknown>;
+            } & TransportResponse;
 
             const notification = {
               ...messagePayload,
@@ -141,14 +160,10 @@ export class MWPTransport implements ExtendedTransport {
               params: requestWithName.result,
             };
 
-            // if (CACHED_METHOD_LIST.includes(notification.method)) {
-            // 	this.storeWalletSession(request.request, notification as unknown as TransportResponse);
-            // }
             clearTimeout(request.timeout);
             this.notifyCallbacks(notification);
             request.resolve(requestWithName);
             this.pendingRequests.delete(messagePayload.id);
-            return;
           }
         } else {
           this.notifyCallbacks(message.data);
@@ -197,9 +212,9 @@ export class MWPTransport implements ExtendedTransport {
           if (response.error) {
             return resumeReject(new Error(response.error.message));
           }
-          //TODO: Maybe find a better way to revoke sessions on wallet without triggering an empty notification
-          //Issue of this is it will send a session update event with an empty session and right after we may get the session recovered
-          //await this.request({ method: 'wallet_revokeSession', params: walletSession });
+          // TODO: Maybe find a better way to revoke sessions on wallet without triggering an empty notification
+          // Issue of this is it will send a session update event with an empty session and right after we may get the session recovered
+          // await this.request({ method: 'wallet_revokeSession', params: walletSession });
           walletSession = response.result as SessionData;
         }
       } else if (!walletSession) {
@@ -227,10 +242,6 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-  /**
-   * Establishes a connection using the Mobile Wallet Protocol
-   * Note: This is a simplified implementation that expects the DappClient to be provided externally
-   */
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
@@ -245,7 +256,9 @@ export class MWPTransport implements ExtendedTransport {
         logger('active session found', activeSession);
         session = activeSession;
       }
-    } catch {}
+    } catch {
+      /* empty */
+    }
 
     let timeout: NodeJS.Timeout;
     const connectionPromise = new Promise<void>((resolve, reject) => {
@@ -258,7 +271,7 @@ export class MWPTransport implements ExtendedTransport {
             this.dappClient.once('connected', async () => {
               this.onResumeSuccess(resumeResolve, resumeReject, options);
             });
-            dappClient.resume(session.id);
+            dappClient.resume(session?.id ?? '');
           }
         });
       } else {
@@ -326,6 +339,8 @@ export class MWPTransport implements ExtendedTransport {
 
   /**
    * Disconnects from the Mobile Wallet Protocol
+   *
+   * @returns Nothing
    */
   async disconnect(): Promise<void> {
     // Clean up window focus event listener
@@ -342,6 +357,8 @@ export class MWPTransport implements ExtendedTransport {
 
   /**
    * Checks if the transport is connected
+   *
+   * @returns True if transport is connected, false otherwise
    */
   isConnected(): boolean {
     // biome-ignore lint/suspicious/noExplicitAny:  required if state is not made public in dappClient
@@ -358,9 +375,9 @@ export class MWPTransport implements ExtendedTransport {
         return {
           id: request.id,
           jsonrpc: '2.0',
-          result: walletSession.params || walletSession.result,
+          result: walletSession.params ?? walletSession.result,
           method: request.method,
-        } as TransportResponse;
+        } as unknown as TransportResponse;
       }
     }
   }
@@ -376,9 +393,6 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-  /**
-   * Sends a request through the Mobile Wallet Protocol
-   */
   async request<
     TRequest extends TransportRequest,
     TResponse extends TransportResponse,
@@ -403,7 +417,7 @@ export class MWPTransport implements ExtendedTransport {
       this.pendingRequests.set(request.id, {
         request,
         method: request.method,
-        resolve: async (response: TransportResponse<unknown>) => {
+        resolve: async (response: TransportResponse) => {
           if (CACHED_METHOD_LIST.includes(request.method)) {
             await this.storeWalletSession(request, response);
           }
@@ -417,9 +431,6 @@ export class MWPTransport implements ExtendedTransport {
     });
   }
 
-  /**
-   * Registers a callback for notifications from the wallet
-   */
   onNotification(callback: (data: unknown) => void): () => void {
     this.notificationCallbacks.add(callback);
     return () => {

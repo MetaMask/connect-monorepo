@@ -1,6 +1,6 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: Tests require it */
+
 /** biome-ignore-all lint/suspicious/noAsyncPromiseExecutor: ok for tests */
-/** biome-ignore-all lint/style/noNonNullAssertion: Tests require it */
+
 
 /**
  * Fixtures files, allows us to create a standardized test configuration for each platform

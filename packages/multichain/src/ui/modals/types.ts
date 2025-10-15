@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { InstallWidgetProps, OTPCodeWidgetProps } from '../../domain';
 import type { AbstractInstallModal } from './base/AbstractInstallModal';
 import type { AbstractOTPCodeModal } from './base/AbstractOTPModal';

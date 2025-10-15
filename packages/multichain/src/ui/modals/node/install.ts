@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable no-restricted-syntax */
 import encodeQR from '@paulmillr/qr';
+
 import {
   type ConnectionRequest,
   createLogger,
