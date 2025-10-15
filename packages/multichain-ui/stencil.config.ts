@@ -1,4 +1,4 @@
-import { Config } from '@stencil/core';
+import type { Config } from '@stencil/core';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 export const config: Config = {
@@ -11,9 +11,9 @@ export const config: Config = {
       copy: [
         {
           src: 'assets',
-          dest: 'assets'
-        }
-      ]
+          dest: 'assets',
+        },
+      ],
     },
     {
       type: 'www',
@@ -22,10 +22,10 @@ export const config: Config = {
       copy: [
         {
           src: 'assets',
-          dest: 'assets'
-        }
-      ]
-    }
+          dest: 'assets',
+        },
+      ],
+    },
   ],
   enableCache: true,
   buildEs5: false,
@@ -33,11 +33,12 @@ export const config: Config = {
   hashFileNames: true,
   excludeUnusedDependencies: true,
   testing: {
-    browserHeadless: "new",
+    browserHeadless: 'new',
   },
   rollupPlugins: {
     after: [
-      process.env.NODE_ENV === 'development' ? visualizer() : null
+      // eslint-disable-next-line no-restricted-globals
+      process.env.NODE_ENV === 'development' ? visualizer() : null,
     ].filter(Boolean),
   },
   // Add treeshaking for better optimization
@@ -47,5 +48,5 @@ export const config: Config = {
     appendChildSlotFix: false,
     cloneNodeFix: false,
     slotChildNodesFix: false,
-  }
+  },
 };
