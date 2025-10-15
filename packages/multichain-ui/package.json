@@ -39,7 +39,7 @@
     "build:docs": "typedoc",
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly --outDir dist/types",
     "build:clean": "yarn clean && yarn build",
-    "build": "stencil build --prod",
+    "build": "ts-bridge --project tsconfig.build.json --verbose --clean --no-references",
     "build:dev": "NODE_ENV=development stencil build --debug --dev",
     "build:tsc": "tsc --build tsconfig.json --verbose",
     "build:watch": "stencil build --watchAll",
@@ -50,11 +50,13 @@
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
-    "test": "stencil test --spec --e2e",
-    "test:watch": "stencil test --spec --e2e --watchAll",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --reporters=jest-silent-reporter",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:ci": "jest --coverage --passWithNoTests --setupFilesAfterEnv ./jest-preload.js",
     "preversion": "yarn test",
-    "postversion": "git push --tags && yarn publish . --tag $npm_package_version && git push && echo \"Successfully released version $npm_package_version!\""
+    "postversion": "git push --tags && yarn publish . --tag $npm_package_version && git push && echo \"Successfully released version $npm_package_version!\"",
+    "test:clean": "NODE_OPTIONS=--experimental-vm-modules jest --clearCache",
+    "test:verbose": "NODE_OPTIONS=--experimental-vm-modules jest --verbose"
   },
   "dependencies": {
     "@paulmillr/qr": "^0.2.1",
