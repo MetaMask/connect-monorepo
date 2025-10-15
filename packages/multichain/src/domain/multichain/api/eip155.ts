@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { RpcMethod } from './types';
 
-//TODO: We probably want to avoid having to declare this and use the types from somewhere else
+// TODO: We probably want to avoid having to declare this and use the types from somewhere else
 type EIP155 = {
   methods: {
     personal_sign: RpcMethod<{ message: string; account: string }, string>;

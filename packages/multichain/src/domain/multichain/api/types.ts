@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type EIP155 from './eip155';
 
 /**
@@ -88,9 +89,9 @@ export type RPC_URLS_MAP = {
  * It includes the unique identifier for the request, the JSON-RPC version used,
  * and the result of the RPC call.
  *
- * @property id - The unique identifier for the request
- * @property jsonrpc - The JSON-RPC version used
- * @property result - The result of the RPC call JSON
+ * id - The unique identifier for the request
+ * jsonrpc - The JSON-RPC version used
+ * result - The result of the RPC call JSON
  */
 export type RPCResponse = {
   id: number;

@@ -1,11 +1,12 @@
-import type { StoreClient } from '../store';
-import type { MultichainCore } from '.';
-import type { RPC_URLS_MAP, Scope } from './api/types';
-import type { ModalFactory } from '../../ui';
 import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
-import type { PlatformType } from '../platform';
 import type { Transport } from '@metamask/multichain-api-client';
 import type { CaipAccountId } from '@metamask/utils';
+
+import type { MultichainCore } from '.';
+import type { ModalFactory } from '../../ui';
+import type { PlatformType } from '../platform';
+import type { StoreClient } from '../store';
+import type { RPC_URLS_MAP, Scope } from './api/types';
 
 export type { SessionData } from '@metamask/multichain-api-client';
 

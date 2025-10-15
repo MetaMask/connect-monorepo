@@ -1,5 +1,6 @@
 import type { Transport } from '@metamask/multichain-api-client';
 import type { CaipAccountId } from '@metamask/utils';
+
 import type { MultichainOptions, Scope, SessionData } from '../multichain';
 
 /**

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/parameter-properties */
+/* eslint-disable jsdoc/require-jsdoc */
 import type {
   MultichainApiClient,
-  SessionData,
   Transport,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
+
 import { EventEmitter, type SDKEvents } from '../events';
 import type { StoreClient } from '../store/client';
 import type { InvokeMethodOptions, RPCAPI, Scope } from './api/types';
@@ -30,8 +32,11 @@ export enum TransportType {
  */
 export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract storage: StoreClient;
+
   abstract state: SDKState;
+
   abstract provider: MultichainApiClient<RPCAPI>;
+
   abstract transport: Transport;
 
   /**
@@ -43,12 +48,14 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
   ): Promise<void>;
+
   /**
    * Disconnects from the multichain provider.
    *
    * @returns Promise that resolves when disconnection is complete
    */
   abstract disconnect(): Promise<void>;
+
   /**
    * Invokes an RPC method with the specified options.
    *

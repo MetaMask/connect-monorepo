@@ -1,4 +1,8 @@
-import Bowser from 'bowser';
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable no-restricted-globals */
+/* eslint-disable jsdoc/require-jsdoc */
+/* eslint-disable @typescript-eslint/naming-convention */
+import { parse } from 'bowser';
 
 export enum PlatformType {
   // React Native or Nodejs
@@ -13,7 +17,7 @@ export enum PlatformType {
   ReactNative = 'react-native',
 }
 
-function isNotBrowser() {
+function isNotBrowser(): boolean {
   if (typeof window === 'undefined') {
     return true;
   }
@@ -29,19 +33,19 @@ function isNotBrowser() {
   return navigator?.product === 'ReactNative';
 }
 
-function isReactNative() {
+function isReactNative(): boolean {
   const hasWindowNavigator =
     typeof window !== 'undefined' && window.navigator !== undefined;
-  const navigator = hasWindowNavigator ? window.navigator : undefined;
+  const nav = hasWindowNavigator ? window.navigator : undefined;
 
-  if (!navigator) {
+  if (!nav) {
     return false;
   }
 
   return hasWindowNavigator && window.navigator?.product === 'ReactNative';
 }
 
-function isMetaMaskMobileWebView() {
+function isMetaMaskMobileWebView(): boolean {
   return (
     typeof window !== 'undefined' &&
     Boolean(window.ReactNativeWebView) &&
@@ -49,17 +53,14 @@ function isMetaMaskMobileWebView() {
   );
 }
 
-function isMobile() {
-  const browser = Bowser.parse(window.navigator.userAgent);
+function isMobile(): boolean {
+  const browser = parse(window.navigator.userAgent);
   return (
     browser?.platform?.type === 'mobile' || browser?.platform?.type === 'tablet'
   );
 }
 
-/**
- *
- */
-export function getPlatformType() {
+export function getPlatformType(): PlatformType {
   if (isReactNative()) {
     return PlatformType.ReactNative;
   }
@@ -77,6 +78,8 @@ export function getPlatformType() {
 
 /**
  * Check if MetaMask extension is installed
+ *
+ * @returns True if extension is installed, false otherwise
  */
 export function isMetamaskExtensionInstalled(): boolean {
   if (typeof window === 'undefined') {
@@ -85,13 +88,13 @@ export function isMetamaskExtensionInstalled(): boolean {
   return Boolean(window.ethereum?.isMetaMask);
 }
 
-export function isSecure() {
+export function isSecure(): boolean {
   const platformType = getPlatformType();
   return isReactNative() || platformType === PlatformType.MobileWeb;
 }
 
 // Immediately start MetaMask detection when module loads
-const detectionPromise: Promise<boolean> = (() => {
+const detectionPromise: Promise<boolean> = (async () => {
   if (typeof window === 'undefined') {
     return Promise.resolve(false);
   }
@@ -112,7 +115,7 @@ const detectionPromise: Promise<boolean> = (() => {
       window.removeEventListener('eip6963:announceProvider', handler);
 
       const hasMetaMask = providers.some(
-        (p) => p?.info?.rdns === 'io.metamask',
+        (provider) => provider?.info?.rdns === 'io.metamask',
       );
 
       resolve(hasMetaMask);
@@ -120,6 +123,6 @@ const detectionPromise: Promise<boolean> = (() => {
   });
 })();
 
-export function hasExtension(): Promise<boolean> {
+export async function hasExtension(): Promise<boolean> {
   return detectionPromise;
 }

@@ -1,5 +1,6 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import packageJson from '../../../package.json';
 
-export function getVersion() {
+export function getVersion(): string {
   return packageJson.version;
 }
