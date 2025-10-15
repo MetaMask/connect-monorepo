@@ -1,25 +1,26 @@
 import type { Components } from '@metamask/multichain-ui';
+
 import type { ConnectionRequest } from '../multichain';
 
 export type OTPCode = string;
 export type QRLink = string;
 
-export interface InstallWidgetProps extends Components.MmInstallModal {
+export type InstallWidgetProps = Components.MmInstallModal & {
   parentElement?: Element;
   connectionRequest: ConnectionRequest;
   onClose: (shouldTerminate?: boolean) => void;
   startDesktopOnboarding: () => void;
   createConnectionRequest: () => Promise<ConnectionRequest>;
   generateQRCode: (connectionRequest: ConnectionRequest) => Promise<QRLink>;
-}
+};
 
-export interface OTPCodeWidgetProps extends Components.MmOtpModal {
+export type OTPCodeWidgetProps = Components.MmOtpModal & {
   parentElement?: Element;
   onClose: () => Promise<void>;
   onDisconnect?: () => void;
   createOTPCode: () => Promise<OTPCode>;
   updateOTPCode: (otpValue: string) => void;
-}
+};
 
 export type DataType = OTPCode | QRLink;
 /**
@@ -32,15 +33,17 @@ export abstract class Modal<Options, Data extends DataType = DataType> {
     | undefined;
 
   abstract mount(): void;
+
   abstract unmount(): void;
 
+  // eslint-disable-next-line @typescript-eslint/parameter-properties
   constructor(protected readonly options: Options) {}
 
-  get isMounted() {
+  get isMounted(): boolean {
     return this.instance !== undefined;
   }
 
-  get data() {
+  get data(): Data {
     if (
       typeof this.options === 'object' &&
       this.options &&

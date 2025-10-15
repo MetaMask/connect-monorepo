@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/parameter-properties */
 import type { ErrorCodes } from './types';
 
 export abstract class BaseErr<

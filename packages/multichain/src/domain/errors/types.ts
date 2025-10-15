@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 export type Enumerate<
   N extends number,
   Acc extends number[] = [],

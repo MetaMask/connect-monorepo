@@ -18,6 +18,10 @@
     "skipLibCheck": true,
     "types": ["node"],
   },
+  "references": [
+    { "path": "../multichain-ui" },
+    { "path": "../analytics" }
+  ],
   "include": ["./src", "./tests"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }

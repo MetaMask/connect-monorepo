@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { SessionData } from '@metamask/multichain-api-client';
 
 export type SDKEvents = {

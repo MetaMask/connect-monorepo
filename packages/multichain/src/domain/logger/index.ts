@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+// eslint-disable-next-line import-x/no-extraneous-dependencies
 import debug from 'debug';
 
 import type { StoreClient } from '../store/client';
@@ -26,7 +28,7 @@ export type LoggerNameSpaces =
 export const createLogger = (
   namespace: LoggerNameSpaces = 'metamask-sdk',
   color = '214',
-) => {
+): debug.Debugger => {
   const logger = debug(namespace);
   logger.color = color; // Yellow color (basic ANSI)
   return logger;
@@ -40,7 +42,9 @@ export const createLogger = (
  *
  * @param namespace - The debug namespace to enable
  */
-export const enableDebug = (namespace: LoggerNameSpaces = 'metamask-sdk') => {
+export const enableDebug = (
+  namespace: LoggerNameSpaces = 'metamask-sdk',
+): void => {
   debug.enable(namespace);
 };
 
@@ -55,7 +59,10 @@ export const enableDebug = (namespace: LoggerNameSpaces = 'metamask-sdk') => {
  * @param namespace - The namespace to check for enablement
  * @returns True if the namespace should have debug logging enabled, false otherwise
  */
-function isNamespaceEnabled(debugValue: string, namespace: LoggerNameSpaces) {
+function isNamespaceEnabled(
+  debugValue: string,
+  namespace: LoggerNameSpaces,
+): boolean {
   return (
     debugValue.includes(namespace) ||
     debugValue.includes('metamask-sdk:*') ||
@@ -78,7 +85,7 @@ function isNamespaceEnabled(debugValue: string, namespace: LoggerNameSpaces) {
 export const isEnabled = async (
   namespace: LoggerNameSpaces,
   storage: StoreClient,
-) => {
+): Promise<boolean> => {
   if ('process' in globalThis && process?.env?.DEBUG) {
     const { DEBUG } = process.env;
     return isNamespaceEnabled(DEBUG, namespace);

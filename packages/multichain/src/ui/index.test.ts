@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: Tests require it */
-/** biome-ignore-all lint/style/noNonNullAssertion: Tests require it */
 import { JSDOM as Page } from 'jsdom';
 import * as t from 'vitest';
 import {

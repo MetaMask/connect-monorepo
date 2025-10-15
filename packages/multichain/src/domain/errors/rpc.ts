@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/parameter-properties */
 import { BaseErr } from './base';
 import type { RPCErrorCodes } from './types';
 
 export class RPCHttpErr extends BaseErr<'RPC', RPCErrorCodes> {
   static readonly code = 50;
+
   constructor(
     readonly rpcEndpoint: string,
     readonly method: string,
@@ -17,6 +19,7 @@ export class RPCHttpErr extends BaseErr<'RPC', RPCErrorCodes> {
 
 export class RPCReadonlyResponseErr extends BaseErr<'RPC', RPCErrorCodes> {
   static readonly code = 51;
+
   constructor(public readonly reason: string) {
     super(
       `RPCErr${RPCReadonlyResponseErr.code}: RPC Client response reason ${reason}`,
@@ -27,6 +30,7 @@ export class RPCReadonlyResponseErr extends BaseErr<'RPC', RPCErrorCodes> {
 
 export class RPCReadonlyRequestErr extends BaseErr<'RPC', RPCErrorCodes> {
   static readonly code = 52;
+
   constructor(public readonly reason: string) {
     super(
       `RPCErr${RPCReadonlyRequestErr.code}: RPC Client fetch reason ${reason}`,
@@ -37,6 +41,7 @@ export class RPCReadonlyRequestErr extends BaseErr<'RPC', RPCErrorCodes> {
 
 export class RPCInvokeMethodErr extends BaseErr<'RPC', RPCErrorCodes> {
   static readonly code = 53;
+
   constructor(public readonly reason: string) {
     super(
       `RPCErr${RPCInvokeMethodErr.code}: RPC Client invoke method reason (${reason})`,

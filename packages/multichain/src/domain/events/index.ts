@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { EventEmitter as EventEmitter3 } from 'eventemitter3';
 
 /**
@@ -7,7 +8,7 @@ import { EventEmitter as EventEmitter3 } from 'eventemitter3';
  * making it easier to work with events in a type-safe manner.
  *
  * @template TEvents - A record type mapping event names to their argument types.
- *                    Each key represents an event name, and the value is a tuple of argument types.
+ * Each key represents an event name, and the value is a tuple of argument types.
  */
 export class EventEmitter<TEvents extends Record<string, unknown[]>> {
   readonly #emitter = new EventEmitter3();
@@ -32,6 +33,7 @@ export class EventEmitter<TEvents extends Record<string, unknown[]>> {
    * @template TEventName - The name of the event to listen for (must be a key of TEvents)
    * @param eventName - The name of the event to listen for
    * @param handler - The function to call when the event is emitted
+   * @returns Nothing
    */
   on<TEventName extends keyof TEvents & string>(
     eventName: TEventName,
