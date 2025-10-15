@@ -3,6 +3,7 @@
   "references": [
     { "path": "./packages/analytics/tsconfig.build.json" },
     { "path": "./packages/analytics/tsconfig.build.json" },
+    { "path": "./packages/connect/tsconfig.build.json" },
     { "path": "./packages/multichain-ui/tsconfig.build.json" },
     { "path": "./packages/multichain-ui/tsconfig.build.json" },
     { "path": "./packages/multichain/tsconfig.build.json" },

@@ -1,12 +1,12 @@
 {
-  "name": "@metamask/letter-crafter",
+  "name": "@metamask/connect",
   "version": "0.0.0",
-  "description": "Example package to craft a letter",
+  "description": "TODO",
   "keywords": [
     "MetaMask",
     "Ethereum"
   ],
-  "homepage": "https://github.com/MetaMask/metamask-connect-monorepo/tree/main/packages/letter-crafter#readme",
+  "homepage": "https://github.com/MetaMask/metamask-connect-monorepo/tree/main/packages/connect#readme",
   "bugs": {
     "url": "https://github.com/MetaMask/metamask-connect-monorepo/issues"
   },
@@ -36,8 +36,9 @@
   ],
   "scripts": {
     "build": "ts-bridge --project tsconfig.build.json --verbose --clean --no-references",
-    "changelog:update": "../../scripts/update-changelog.sh @metamask/letter-crafter",
-    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/letter-crafter",
+    "build:docs": "typedoc",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/connect",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
@@ -46,18 +47,13 @@
     "test:verbose": "NODE_OPTIONS=--experimental-vm-modules jest --verbose",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch"
   },
-  "dependencies": {
-    "@metamask/greetings": "^0.0.0",
-    "@metamask/signatures": "^0.0.0"
-  },
   "devDependencies": {
     "@metamask/auto-changelog": "^3.1.0",
-    "@ts-bridge/cli": "^0.5.1",
     "@types/jest": "^27.4.1",
     "deepmerge": "^4.2.2",
-    "jest": "^27.5.1",
-    "jest-silent-reporter": "^0.5.0",
     "ts-jest": "^27.1.4",
+    "typedoc": "^0.23.22",
+    "typedoc-plugin-missing-exports": "^1.0.0",
     "typescript": "~5.2.2"
   },
   "engines": {

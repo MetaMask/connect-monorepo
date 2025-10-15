@@ -1279,6 +1279,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@metamask/connect@workspace:packages/connect":
+  version: 0.0.0-use.local
+  resolution: "@metamask/connect@workspace:packages/connect"
+  dependencies:
+    "@metamask/auto-changelog": "npm:^3.1.0"
+    "@types/jest": "npm:^27.4.1"
+    deepmerge: "npm:^4.2.2"
+    ts-jest: "npm:^27.1.4"
+    typedoc: "npm:^0.23.22"
+    typedoc-plugin-missing-exports: "npm:^1.0.0"
+    typescript: "npm:~5.2.2"
+  languageName: unknown
+  linkType: soft
+
 "@metamask/create-release-branch@npm:^3.0.0":
   version: 3.0.1
   resolution: "@metamask/create-release-branch@npm:3.0.1"
@@ -1364,38 +1378,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/greetings@npm:^0.0.0, @metamask/greetings@workspace:packages/greetings":
-  version: 0.0.0-use.local
-  resolution: "@metamask/greetings@workspace:packages/greetings"
-  dependencies:
-    "@metamask/auto-changelog": "npm:^3.1.0"
-    "@ts-bridge/cli": "npm:^0.5.1"
-    "@types/jest": "npm:^27.4.1"
-    deepmerge: "npm:^4.2.2"
-    jest: "npm:^27.5.1"
-    jest-silent-reporter: "npm:^0.5.0"
-    ts-jest: "npm:^27.1.4"
-    typescript: "npm:~5.2.2"
-  languageName: unknown
-  linkType: soft
-
-"@metamask/letter-crafter@workspace:packages/letter-crafter":
-  version: 0.0.0-use.local
-  resolution: "@metamask/letter-crafter@workspace:packages/letter-crafter"
-  dependencies:
-    "@metamask/auto-changelog": "npm:^3.1.0"
-    "@metamask/greetings": "npm:^0.0.0"
-    "@metamask/signatures": "npm:^0.0.0"
-    "@ts-bridge/cli": "npm:^0.5.1"
-    "@types/jest": "npm:^27.4.1"
-    deepmerge: "npm:^4.2.2"
-    jest: "npm:^27.5.1"
-    jest-silent-reporter: "npm:^0.5.0"
-    ts-jest: "npm:^27.1.4"
-    typescript: "npm:~5.2.2"
-  languageName: unknown
-  linkType: soft
-
 "@metamask/metamask-connect-monorepo@workspace:.":
   version: 0.0.0-use.local
   resolution: "@metamask/metamask-connect-monorepo@workspace:."
@@ -1472,22 +1454,6 @@ __metadata:
     ts-jest: "npm:^27.1.4"
     typedoc: "npm:^0.23.22"
     typedoc-plugin-missing-exports: "npm:^1.0.0"
-    typescript: "npm:~5.2.2"
-  languageName: unknown
-  linkType: soft
-
-"@metamask/signatures@npm:^0.0.0, @metamask/signatures@workspace:packages/signatures":
-  version: 0.0.0-use.local
-  resolution: "@metamask/signatures@workspace:packages/signatures"
-  dependencies:
-    "@metamask/auto-changelog": "npm:^3.1.0"
-    "@metamask/greetings": "npm:^0.0.0"
-    "@ts-bridge/cli": "npm:^0.5.1"
-    "@types/jest": "npm:^27.4.1"
-    deepmerge: "npm:^4.2.2"
-    jest: "npm:^27.5.1"
-    jest-silent-reporter: "npm:^0.5.0"
-    ts-jest: "npm:^27.1.4"
     typescript: "npm:~5.2.2"
   languageName: unknown
   linkType: soft

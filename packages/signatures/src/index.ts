@@ -1,1 +1,0 @@
-export { generateSignature } from './signatures';
