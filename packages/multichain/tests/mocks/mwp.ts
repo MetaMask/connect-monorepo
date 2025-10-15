@@ -7,9 +7,10 @@ type PendingRequests = {
 };
 
 t.vi.mock('../../src/multichain/transports/mwp', async (importOriginal) => {
-  const {
-    MWPTransport
-  } = await importOriginal<typeof import('../../src/multichain/transports/mwp')>();
+  const { MWPTransport } =
+    await importOriginal<
+      typeof import('../../src/multichain/transports/mwp')
+    >();
 
   // Create a mock Map to store pending requests
   const mockPendingRequestsMap = new Map<string, PendingRequests>();
@@ -29,6 +30,6 @@ t.vi.mock('../../src/multichain/transports/mwp', async (importOriginal) => {
 
   return {
     MWPTransport: MockMWPTransport,
-    __mockPendingRequestsMap: mockPendingRequestsMap
+    __mockPendingRequestsMap: mockPendingRequestsMap,
   };
 });

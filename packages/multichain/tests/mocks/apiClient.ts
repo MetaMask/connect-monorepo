@@ -5,11 +5,12 @@
 import * as t from 'vitest';
 
 t.vi.mock('@metamask/multichain-api-client', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@metamask/multichain-api-client')>();
+  const actual =
+    await importOriginal<typeof import('@metamask/multichain-api-client')>();
   return {
     ...actual,
     getDefaultTransport: t.vi.fn(() => {
-      return actual.getDefaultTransport()
-    })
+      return actual.getDefaultTransport();
+    }),
   };
 });

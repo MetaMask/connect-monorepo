@@ -30,9 +30,11 @@ t.vi.mock('ws', () => {
   return {
     default: t.vi.fn().mockImplementation(() => createMockWebSocket()),
     WebSocket: t.vi.fn().mockImplementation(() => createMockWebSocket()),
-  }
+  };
 });
 
 // Mock native WebSocket for browser environments
-const mockWebSocketConstructor = t.vi.fn().mockImplementation(() => createMockWebSocket());
+const mockWebSocketConstructor = t.vi
+  .fn()
+  .mockImplementation(() => createMockWebSocket());
 t.vi.stubGlobal('WebSocket', mockWebSocketConstructor);

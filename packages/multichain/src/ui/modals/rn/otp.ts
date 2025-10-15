@@ -5,7 +5,7 @@ import { AbstractOTPCodeModal } from '../base/AbstractOTPModal';
  * It will be replaced with the actual OTP code modal once it is implemented.
  */
 export class OTPCodeModal extends AbstractOTPCodeModal {
-	mount() {}
+  mount() {}
 
-	unmount() {}
+  unmount() {}
 }

@@ -8,6 +8,6 @@ export type ModalTypes = 'InstallModal' | 'OTPCodeModal';
  * Used to store different types of modals that can be created by the factory.
  */
 export type FactoryModals = {
-	InstallModal: new (options: InstallWidgetProps) => AbstractInstallModal;
-	OTPCodeModal: new (options: OTPCodeWidgetProps) => AbstractOTPCodeModal;
+  InstallModal: new (options: InstallWidgetProps) => AbstractInstallModal;
+  OTPCodeModal: new (options: OTPCodeWidgetProps) => AbstractOTPCodeModal;
 };
