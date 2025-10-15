@@ -1,15 +1,25 @@
-# `@metamask/multichain-ui`
+# sdk-install-modal-web
 
-multichain-ui
+Install modal web package for multichain, renders and uses the new mobile wallet protocol ConnectionRequest QRCodes.
 
-## Installation
+This project includes fully functional InstallModal web used in the Multichain SDK for Trusted flows.
 
-`yarn add @metamask/multichain-ui`
+Untrusted flows use the OTPModal which exists but is not yet fully supported.
+
+## Development
+
+```bash
+yarn dev
+```
 
 or
 
-`npm install @metamask/multichain-ui`
+```bash
+yarn start
+```
 
-## Contributing
+## Building locally
 
-This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/metamask-connect-monorepo#readme).
+```bash
+yarn build
+```

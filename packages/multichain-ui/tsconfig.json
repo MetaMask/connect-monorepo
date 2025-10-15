@@ -1,7 +1,14 @@
 {
   "extends": "../../tsconfig.packages.json",
   "compilerOptions": {
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "types": ["@stencil/core"],
+    "strictPropertyInitialization": false
   },
   "include": ["./src"]
 }
