@@ -3,7 +3,7 @@
 import { ErrorCode, ProtocolError, type SessionRequest, SessionStore, WebSocketTransport } from '@metamask/mobile-wallet-protocol-core';
 import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import { getMultichainClient, type MultichainApiClient, type SessionData } from '@metamask/multichain-api-client';
-import { analytics } from '@metamask/analytics';
+import { analytics } from '@metamask/sdk-analytics';
 import type { CaipAccountId, Json } from '@metamask/utils';
 import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE, MWP_RELAY_URL } from 'src/config';
 import packageJson from '../../package.json';
@@ -137,10 +137,11 @@ export class MultichainSDK extends MultichainCore {
 		const { ui } = this.options;
 		const { preferExtension = true, headless: _headless = false } = ui;
 		const transportType = await this.storage.getTransport();
+		const hasExtensionInstalled = await hasExtension();
 		if (transportType) {
 			if (transportType === TransportType.Browser) {
 				//Check if the user still have the extension or not return the transport
-				if (hasExtension() && preferExtension) {
+				if (hasExtensionInstalled && preferExtension) {
 					const apiTransport = new DefaultTransport();
 					this.__transport = apiTransport;
 					this.listener = apiTransport.onNotification(this.onTransportNotification.bind(this));
@@ -396,6 +397,7 @@ export class MultichainSDK extends MultichainCore {
 		const isWeb = platformType === PlatformType.MetaMaskMobileWebview || platformType === PlatformType.DesktopWeb;
 		const { preferExtension = true, preferDesktop = false, headless: _headless = false } = ui;
 		const secure = isSecure();
+		const hasExtensionInstalled = await hasExtension();
 
 		if (this.__transport?.isConnected() && !secure) {
 			return this.handleConnection(
@@ -409,7 +411,7 @@ export class MultichainSDK extends MultichainCore {
 			);
 		}
 
-		if (isWeb && hasExtension() && preferExtension) {
+		if (isWeb && hasExtensionInstalled && preferExtension) {
 			//If metamask extension is available, connect to it
 			const defaultTransport = await this.setupDefaultTransport();
 			// Web transport has no initial payload
@@ -420,7 +422,7 @@ export class MultichainSDK extends MultichainCore {
 		await this.setupMWP();
 
 		// Determine preferred option for install modal
-		const isDesktopPreferred = hasExtension() ? preferDesktop : !preferExtension || preferDesktop;
+		const isDesktopPreferred = hasExtensionInstalled ? preferDesktop : !preferExtension || preferDesktop;
 
 		if (secure && !isDesktopPreferred) {
 			// Desktop is not preferred option, so we use deeplinks (mobile web)

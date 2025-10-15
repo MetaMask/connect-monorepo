@@ -1,30 +1,24 @@
+import type { Components } from '@metamask/sdk-multichain-ui';
 import type { ConnectionRequest } from '../multichain';
 
 export type OTPCode = string;
 export type QRLink = string;
 
-export interface InstallWidgetProps {
-    expiresIn: number;
-    link: string;
-    preferDesktop: boolean;
-    sdkVersion?: string;
-    parentElement?: Element;
-    connectionRequest: ConnectionRequest;
-    onClose: (shouldTerminate?: boolean) => void;
-    startDesktopOnboarding: () => void;
-    createConnectionRequest: () => Promise<ConnectionRequest>;
-    generateQRCode: (connectionRequest: ConnectionRequest) => Promise<QRLink>;
+export interface InstallWidgetProps extends Components.MmInstallModal {
+	parentElement?: Element;
+	connectionRequest: ConnectionRequest;
+	onClose: (shouldTerminate?: boolean) => void;
+	startDesktopOnboarding: () => void;
+	createConnectionRequest: () => Promise<ConnectionRequest>;
+	generateQRCode: (connectionRequest: ConnectionRequest) => Promise<QRLink>;
 }
 
-export interface OTPCodeWidgetProps {
-    displayOTP?: boolean;
-    otpCode: string;
-    sdkVersion?: string;
-    parentElement?: Element;
-    onClose: () => Promise<void>;
-    onDisconnect?: () => void;
-    createOTPCode: () => Promise<OTPCode>;
-    updateOTPCode: (otpValue: string) => void;
+export interface OTPCodeWidgetProps extends Components.MmOtpModal {
+	parentElement?: Element;
+	onClose: () => Promise<void>;
+	onDisconnect?: () => void;
+	createOTPCode: () => Promise<OTPCode>;
+	updateOTPCode: (otpValue: string) => void;
 }
 
 export type DataType = OTPCode | QRLink;
@@ -32,7 +26,7 @@ export type DataType = OTPCode | QRLink;
  * Abstract Modal class with shared functionality across all models
  */
 export abstract class Modal<Options, Data extends DataType = DataType> {
-    protected abstract instance?: HTMLElement | undefined;
+	protected abstract instance?: HTMLMmInstallModalElement | HTMLMmOtpModalElement | undefined;
 
 	abstract mount(): void;
 	abstract unmount(): void;

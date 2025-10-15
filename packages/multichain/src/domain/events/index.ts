@@ -30,8 +30,8 @@ export class EventEmitter<TEvents extends Record<string, unknown[]>> {
 	 * @param eventName - The name of the event to listen for
 	 * @param handler - The function to call when the event is emitted
 	 */
-    on<TEventName extends keyof TEvents & string>(eventName: TEventName, handler: (...eventArg: TEvents[TEventName]) => void) {
-        this.#emitter.on(eventName, (...args: unknown[]) => handler(...(args as TEvents[TEventName])));
+	on<TEventName extends keyof TEvents & string>(eventName: TEventName, handler: (...eventArg: TEvents[TEventName]) => void) {
+		this.#emitter.on(eventName, handler);
 		return () => {
 			this.off(eventName, handler);
 		};
@@ -44,8 +44,8 @@ export class EventEmitter<TEvents extends Record<string, unknown[]>> {
 	 * @param eventName - The name of the event to remove the handler from
 	 * @param handler - The specific handler function to remove
 	 */
-    off<TEventName extends keyof TEvents & string>(eventName: TEventName, handler: (...eventArg: TEvents[TEventName]) => void) {
-        this.#emitter.off(eventName, (...args: unknown[]) => handler(...(args as TEvents[TEventName])));
+	off<TEventName extends keyof TEvents & string>(eventName: TEventName, handler: (...eventArg: TEvents[TEventName]) => void) {
+		this.#emitter.off(eventName, handler);
 	}
 }
 
