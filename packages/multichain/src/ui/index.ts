@@ -22,8 +22,8 @@ import {
 } from '../domain';
 import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
 import type { FactoryModals, ModalTypes } from './modals/types';
+import { preloadQR } from './qr';
 import { compressString } from '../multichain/utils';
-import { AbstractInstallModal } from './modals/base/AbstractInstallModal';
 
 let __instance;
 
@@ -157,7 +157,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     successCallback: (error?: Error) => Promise<void>,
   ) {
     this.modal?.unmount();
-    await preload();
+    await Promise.all([preload(), preloadQR()]);
     this.successCallback = successCallback;
 
     const parentElement = this.getMountedContainer();
@@ -188,7 +188,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     updateOTPCode: (otpCode: OTPCode, modal: AbstractOTPCodeModal) => void,
   ) {
     this.modal?.unmount();
-    await preload();
+    await Promise.all([preload(), preloadQR()]);
     this.successCallback = successCallback;
 
     const container = this.getMountedContainer();
