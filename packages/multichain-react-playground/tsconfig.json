@@ -14,11 +14,18 @@
     "useUnknownInCatchVariables": false,
     "strict": true,
     "target": "es2020",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@metamask/multichain": [
+        "../../packages/multichain/dist/index.browser.d.mts",
+        "../../packages/multichain"
+      ]
+    }
   },
   "references": [
     { "path": "../multichain" }
   ],
   "include": ["./src"],
-  "exclude": ["./build", "**/node_modules"]
+  "exclude": ["./build", "**/node_modules"],
+  "files": ["./src/types/multichain.d.ts"]
 }
