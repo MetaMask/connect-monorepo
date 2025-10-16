@@ -9,4 +9,9 @@
     "paths": {}
   },
   "include": ["./src", "./package.json"]
+  ,
+  "references": [
+    { "path": "../multichain-ui/tsconfig.build.json" },
+    { "path": "../analytics/tsconfig.build.json" }
+  ]
 }

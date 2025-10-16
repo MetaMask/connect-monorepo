@@ -1,5 +1,6 @@
-import { AbstractInstallModal } from '../base/AbstractInstallModal';
 import type { MmInstallModalCustomEvent } from '@metamask/multichain-ui';
+
+import { AbstractInstallModal } from '../base/AbstractInstallModal';
 
 export class InstallModal extends AbstractInstallModal {
   renderQRCode(): void {

@@ -4,10 +4,10 @@
   "references": [
     { "path": "./packages/analytics" },
     { "path": "./packages/connect" },
+    { "path": "./packages/multichain-ui" },
     { "path": "./packages/multichain" },
     { "path": "./packages/multichain-node-playground" },
-    { "path": "./packages/multichain-react-playground" },
-    { "path": "./packages/multichain-ui" }
+    { "path": "./packages/multichain-react-playground" }
   ],
   "files": [],
   "include": ["./scripts", "./types"]

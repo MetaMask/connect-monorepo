@@ -17,6 +17,7 @@ preview-build-message.txt
 
 packages/*/coverage
 packages/*/dist
+packages/*/build
 packages/*/docs
 scripts/coverage
 

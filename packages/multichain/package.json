@@ -19,10 +19,12 @@
   "exports": {
     ".": {
       "browser": {
+        "types": "./dist/index.browser.d.mts",
         "import": "./dist/index.browser.mjs",
         "require": "./dist/index.browser.cjs"
       },
       "react-native": {
+        "types": "./dist/index.native.d.mts",
         "import": "./dist/index.native.mjs",
         "require": "./dist/index.native.cjs"
       },

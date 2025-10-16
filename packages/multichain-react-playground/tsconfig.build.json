@@ -16,6 +16,9 @@
     },
     "resolveJsonModule": true
   },
+  "references": [
+    { "path": "../multichain/tsconfig.build.json" }
+  ],
   "include": ["./src/**/*.ts", "./src/**/*.tsx"],
   "exclude": [
     "./src/**/__fixtures__/**/*",

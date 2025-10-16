@@ -6,8 +6,8 @@
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["ES2020", "DOM"],
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "noEmit": true,
     "noErrorTruncation": true,
     "noUncheckedIndexedAccess": true,
@@ -16,6 +16,9 @@
     "target": "es2020",
     "jsx": "react-jsx"
   },
+  "references": [
+    { "path": "../multichain" }
+  ],
   "include": ["./src"],
   "exclude": ["./build", "**/node_modules"]
 }
