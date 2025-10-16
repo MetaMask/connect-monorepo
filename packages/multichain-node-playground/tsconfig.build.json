@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.packages.build.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "paths": {
+      "@metamask/multichain": ["../multichain/src/index.node.ts"],
+      "@metamask/*": ["../*/src"]
+    }
+  },
+  "include": ["./src"],
+  "references": [
+    { "path": "../multichain/tsconfig.build.json" }
+  ]
+}

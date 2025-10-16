@@ -38,6 +38,7 @@ See the [Contributor Guide](./docs/contributing.md) for help on:
 - [`@metamask/analytics`](packages/analytics)
 - [`@metamask/connect`](packages/connect)
 - [`@metamask/multichain`](packages/multichain)
+- [`@metamask/multichain-node-playground`](packages/multichain-node-playground)
 - [`@metamask/multichain-ui`](packages/multichain-ui)
 
 <!-- end package list -->
@@ -51,7 +52,10 @@ linkStyle default opacity:0.5
   analytics(["@metamask/analytics"]);
   connect(["@metamask/connect"]);
   multichain(["@metamask/multichain"]);
+  multichain_node_playground(["@metamask/multichain-node-playground"]);
   multichain_ui(["@metamask/multichain-ui"]);
+  multichain --> analytics;
+  multichain --> multichain_ui;
 ```
 
 <!-- end dependency graph -->

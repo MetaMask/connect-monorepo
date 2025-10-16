@@ -1,0 +1,57 @@
+{
+  "name": "@metamask/multichain-node-playground",
+  "version": "0.0.0",
+  "description": "multichain-node-playground",
+  "keywords": [
+    "MetaMask",
+    "Ethereum"
+  ],
+  "homepage": "https://github.com/MetaMask/metamask-connect-monorepo/tree/main/packages/multichain-node-playground#readme",
+  "bugs": {
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node -r ts-node/register -r tsconfig-paths/register src/index.ts",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "clean": "rm -rf dist .sdk-comm",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@metamask/multichain": "workspace:^",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.4",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@metamask/auto-changelog": "^3.1.0",
+    "@types/inquirer": "^8.2.1",
+    "@types/jest": "^27.4.1",
+    "@types/node": "^20.4.1",
+    "deepmerge": "^4.2.2",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.0.1",
+    "typedoc": "^0.23.22",
+    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typescript": "~5.2.2"
+  },
+  "resolutions": {
+    "elliptic": "6.6.1"
+  },
+  "engines": {
+    "node": "^18.18 || >=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
