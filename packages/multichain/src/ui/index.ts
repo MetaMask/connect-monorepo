@@ -32,11 +32,16 @@ let __instance;
  */
 export async function preload() {
   __instance ??= await import(
-    // @ts-expect-error FIXME
-    '@metamask/multichain-ui/dist/loader/index.cjs.js'
+    // Use a non-literal specifier to avoid Vite static analysis of deep imports
+    // and gracefully handle absence of the Stencil loader in this package build.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    '@metamask/multichain-ui'.concat('/dist/loader/index.cjs.js')
   )
-    .then(async (loader) => {
-      loader.defineCustomElements();
+    .then(async (loader: any) => {
+      if (typeof loader?.defineCustomElements === 'function') {
+        loader.defineCustomElements();
+      }
       return Promise.resolve(loader);
     })
     .catch(async (error) => {
