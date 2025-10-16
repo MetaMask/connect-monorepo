@@ -2,6 +2,7 @@ import { JSDOM as Page } from 'jsdom';
 import * as t from 'vitest';
 import {
   type ConnectionRequest,
+  getVersion,
   type InstallWidgetProps,
   type Modal,
   type OTPCode,
@@ -13,7 +14,6 @@ import { ModalFactory } from './index';
 import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type { FactoryModals } from './modals/types';
 import { v4 } from 'uuid';
-import packageJson from '../../package.json';
 // Mock external dependencies
 t.vi.mock('@metamask/onboarding', () => ({
   default: class MockMetaMaskOnboarding {
@@ -250,7 +250,7 @@ t.describe('ModalFactory', () => {
             url: 'https://test.com',
           },
           sdk: {
-            version: packageJson.version,
+            version: getVersion(),
             platform: PlatformType.NonBrowser,
           },
         },
@@ -280,7 +280,7 @@ t.describe('ModalFactory', () => {
             parentElement: mockContainer,
             connectionRequest,
             preferDesktop,
-            sdkVersion: packageJson.version,
+            sdkVersion: getVersion(),
           }),
         );
         t.expect(mockModal.mount).toHaveBeenCalled();
@@ -305,7 +305,7 @@ t.describe('ModalFactory', () => {
                 url: 'https://test.com',
               },
               sdk: {
-                version: packageJson.version,
+                version: getVersion(),
                 platform: PlatformType.NonBrowser,
               },
             },
@@ -360,7 +360,7 @@ t.describe('ModalFactory', () => {
               url: 'https://test.com',
             },
             sdk: {
-              version: packageJson.version,
+              version: getVersion(),
               platform: PlatformType.NonBrowser,
             },
           },
@@ -396,7 +396,7 @@ t.describe('ModalFactory', () => {
               url: 'https://test.com',
             },
             sdk: {
-              version: packageJson.version,
+              version: getVersion(),
               platform: PlatformType.NonBrowser,
             },
           },
@@ -461,7 +461,7 @@ t.describe('ModalFactory', () => {
             url: 'https://test.com',
           },
           sdk: {
-            version: packageJson.version,
+            version: getVersion(),
             platform: PlatformType.NonBrowser,
           },
         },
@@ -503,7 +503,7 @@ t.describe('ModalFactory', () => {
               url: 'https://test.com',
             },
             sdk: {
-              version: packageJson.version,
+              version: getVersion(),
               platform: PlatformType.NonBrowser,
             },
           },
@@ -658,7 +658,7 @@ t.describe('ModalFactory', () => {
             url: 'https://test.com',
           },
           sdk: {
-            version: packageJson.version,
+            version: getVersion(),
             platform: PlatformType.NonBrowser,
           },
         },

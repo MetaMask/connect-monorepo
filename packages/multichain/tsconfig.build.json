@@ -3,12 +3,12 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "resolveJsonModule": true,
     "useUnknownInCatchVariables": false,
     "paths": {}
   },
-  "include": ["./src", "./package.json"]
+  "include": ["./src"]
   ,
   "references": [
     { "path": "../multichain-ui/tsconfig.build.json" },

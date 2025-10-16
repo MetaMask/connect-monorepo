@@ -33,8 +33,8 @@ import {
 import type { CaipAccountId, Json } from '@metamask/utils';
 import { MWP_RELAY_URL } from 'src/config';
 
-import packageJson from '../../package.json';
 import {
+  getVersion,
   type InvokeMethodOptions,
   type MultichainOptions,
   type RPCAPI,
@@ -65,7 +65,6 @@ import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
 import {
   getDappId,
-  getVersion,
   openDeeplink,
   setupDappMetadata,
   setupInfuraProvider,
@@ -125,7 +124,7 @@ export class MultichainSDK extends MultichainCore {
   }
 
   private get sdkInfo(): string {
-    return `Sdk/Javascript SdkVersion/${packageJson.version} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
+    return `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
   }
 
   private constructor(options: MultichainOptions) {

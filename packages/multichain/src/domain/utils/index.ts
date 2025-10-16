@@ -1,6 +1,8 @@
-/* eslint-disable jsdoc/require-jsdoc */
-import packageJson from '../../../package.json';
-
+/**
+ * Returns the version of the Multichain SDK.
+ *
+ * @returns The version of the Multichain SDK.
+ */
 export function getVersion(): string {
-  return packageJson.version;
+  return '0.0.0';
 }

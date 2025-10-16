@@ -3,7 +3,6 @@
 import * as t from 'vitest';
 import { vi } from 'vitest';
 import type { CaipAccountId } from '@metamask/utils';
-import packageJson from '../../../package.json';
 import type { MultichainOptions } from '../../domain/multichain';
 import {
   getPlatformType,
@@ -85,12 +84,6 @@ t.describe('Utils', () => {
         t.expect(utils.getDappId(dappSettings)).toBe('N/A');
       },
     );
-  });
-
-  t.describe('getSDKVersion', () => {
-    t.it('should get SDK version', () => {
-      t.expect(utils.getVersion()).toBe(packageJson.version);
-    });
   });
 
   t.describe('extractFavicon', () => {

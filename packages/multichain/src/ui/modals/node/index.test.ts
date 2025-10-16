@@ -3,12 +3,11 @@ import { vi } from 'vitest';
 
 import {
   type ConnectionRequest,
+  getVersion,
   type Modal,
   PlatformType,
 } from '../../../domain';
 import * as NodeModals from './';
-import packageJson from '../../../../package.json';
-
 import { v4 } from 'uuid';
 import { encodeQRSync } from '../../qr';
 
@@ -44,7 +43,7 @@ t.describe('Node Modals', () => {
           url: 'https://test.com',
         },
         sdk: {
-          version: packageJson.version,
+          version: getVersion(),
           platform: PlatformType.NonBrowser,
         },
       },
@@ -65,7 +64,7 @@ t.describe('Node Modals', () => {
     const expiresIn =
       (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000;
     const installModal = new NodeModals.InstallModal({
-      sdkVersion: packageJson.version,
+      sdkVersion: getVersion(),
       preferDesktop: false,
       onClose: vi.fn(),
       startDesktopOnboarding: vi.fn(),
@@ -105,7 +104,7 @@ t.describe('Node Modals', () => {
             url: 'https://test.com',
           },
           sdk: {
-            version: packageJson.version,
+            version: getVersion(),
             platform: PlatformType.NonBrowser,
           },
         },
@@ -125,7 +124,7 @@ t.describe('Node Modals', () => {
             url: 'https://test.com',
           },
           sdk: {
-            version: packageJson.version,
+            version: getVersion(),
             platform: PlatformType.NonBrowser,
           },
         },
@@ -135,7 +134,7 @@ t.describe('Node Modals', () => {
         .fn()
         .mockResolvedValue(renewedConnectionRequest); // Only mock the renewal call
       const installModal = new NodeModals.InstallModal({
-        sdkVersion: packageJson.version,
+        sdkVersion: getVersion(),
         preferDesktop: false,
         onClose: vi.fn(),
         startDesktopOnboarding: vi.fn(),
@@ -187,7 +186,7 @@ t.describe('Node Modals', () => {
       createOTPCode: vi.fn().mockResolvedValue(otpCode),
       updateOTPCode: vi.fn() as any,
       onDisconnect: vi.fn() as any,
-      sdkVersion: packageJson.version,
+      sdkVersion: getVersion(),
     });
 
     t.expect(otpCodeModal).toBeDefined();

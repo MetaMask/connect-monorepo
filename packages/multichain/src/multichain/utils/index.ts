@@ -5,7 +5,6 @@ import {
   parseCaipAccountId,
   parseCaipChainId,
 } from '@metamask/utils';
-import packageJson from '../../../package.json';
 import {
   type DappSettings,
   getInfuraRpcUrls,
@@ -51,10 +50,6 @@ export function getDappId(dapp?: DappSettings) {
   }
 
   return window.location.hostname;
-}
-
-export function getVersion() {
-  return packageJson.version;
 }
 
 export function openDeeplink(
