@@ -60,11 +60,11 @@
     "test:ci": "vitest run --coverage --coverage.reporter=text --silent"
   },
   "dependencies": {
-    "@metamask/analytics": "workspace:*",
+    "@metamask/analytics": "workspace:^",
     "@metamask/mobile-wallet-protocol-core": "^0.3.0",
     "@metamask/mobile-wallet-protocol-dapp-client": "^0.2.1",
     "@metamask/multichain-api-client": "^0.8.0",
-    "@metamask/multichain-ui": "workspace:*",
+    "@metamask/multichain-ui": "workspace:^",
     "@metamask/onboarding": "^1.0.1",
     "@metamask/utils": "^11.4.0",
     "@paulmillr/qr": "^0.2.1",

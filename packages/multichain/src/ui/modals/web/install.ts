@@ -1,4 +1,5 @@
 import { AbstractInstallModal } from '../base/AbstractInstallModal';
+import type { MmInstallModalCustomEvent } from '@metamask/multichain-ui';
 
 export class InstallModal extends AbstractInstallModal {
   renderQRCode(): void {
@@ -13,8 +14,10 @@ export class InstallModal extends AbstractInstallModal {
 
     modal.preferDesktop = options.preferDesktop;
     modal.sdkVersion = options.sdkVersion;
-    modal.addEventListener('close', ({ detail: { shouldTerminate } }) =>
-      options.onClose(shouldTerminate),
+    modal.addEventListener(
+      'close',
+      ({ detail: { shouldTerminate } }: MmInstallModalCustomEvent<{ shouldTerminate?: boolean }>) =>
+        options.onClose(shouldTerminate),
     );
     modal.addEventListener(
       'startDesktopOnboarding',

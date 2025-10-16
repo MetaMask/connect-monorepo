@@ -172,7 +172,8 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
       preferDesktop,
       link: qrCodeLink,
       sdkVersion: getVersion(),
-      generateQRCode: async (request) => this.createDeeplink(request),
+      generateQRCode: async (request: ConnectionRequest) =>
+        this.createDeeplink(request),
       onClose: this.onCloseModal.bind(this),
       startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
       createConnectionRequest,

@@ -19,3 +19,23 @@ declare global {
     };
   };
 }
+
+declare global {
+  /**
+   * Minimal typings for Stencil custom elements used by this package.
+   * These are provided to ensure the multichain package compiles even when
+   * consuming projects do not load the full Stencil-generated global types.
+   */
+  type HTMLMmInstallModalElement = HTMLElement & {
+    preferDesktop: boolean;
+    sdkVersion?: string;
+    link: string;
+    expiresIn: number;
+  };
+
+  type HTMLMmOtpModalElement = HTMLElement & {
+    sdkVersion?: string;
+    otpCode: string;
+    displayOTP?: boolean;
+  };
+}

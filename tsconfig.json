@@ -6,8 +6,6 @@
     { "path": "./packages/connect" },
     { "path": "./packages/multichain" },
     { "path": "./packages/multichain-ui" },
-    { "path": "./playground/multichain-node" },
-    { "path": "./playground/multichain-react" }
   ],
   "files": [],
   "include": ["./scripts", "./types"]
