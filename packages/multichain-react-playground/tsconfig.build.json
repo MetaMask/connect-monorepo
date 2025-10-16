@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.packages.build.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "inlineSources": true,
+    "noEmit": false,
+    "outDir": "build",
+    "rootDir": "src",
+    "sourceMap": true,
+    "paths": {
+      "@metamask/multichain": ["../multichain/dist/src/index.browser.d.cts"]
+    },
+    "resolveJsonModule": true
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "exclude": [
+    "./src/**/__fixtures__/**/*",
+    "./src/**/__mocks__/**/*",
+    "./src/**/__test__/**/*",
+    "./src/**/__tests__/**/*",
+    "./src/**/__snapshots__/**/*",
+    "./src/**/*.test.ts",
+    "./src/**/*.test-d.ts",
+    "./src/**/*.test.*.ts"
+  ]
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"index.mjs","sourceRoot":"","sources":["../../src/sdk/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,0BAAsB","sourcesContent":["export { useSDK } from './SDKProvider';\n"]}

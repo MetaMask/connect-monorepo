@@ -1,0 +1,107 @@
+{
+  "name": "@metamask/multichain-react-playground",
+  "version": "0.0.0",
+  "description": "A test dapp for multichain api",
+  "keywords": [
+    "MetaMask",
+    "Ethereum"
+  ],
+  "homepage": "https://metamask.github.io/test-dapp-multichain",
+  "bugs": {
+    "url": "https://github.com/MetaMask/test-dapp-multichain/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/test-dapp-multichain.git"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
+  "files": [
+    "build/"
+  ],
+  "scripts": {
+    "build": "DISABLE_ESLINT_PLUGIN=true craco build",
+    "build:docs": "typedoc",
+    "eject": "react-scripts eject",
+    "prepack": "./scripts/prepack.sh",
+    "start": "DISABLE_ESLINT_PLUGIN=true craco start"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "@lavamoat/allow-scripts": "^3.0.4",
+    "@lavamoat/preinstall-always-fail": "^2.0.0",
+    "@metamask/api-specs": "^0.14.0",
+    "@metamask/auto-changelog": "^3.4.3",
+    "@open-rpc/meta-schema": "^1.14.9",
+    "@open-rpc/schema-utils-js": "^2.0.5",
+    "@solana/web3.js": "^1.98.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@types/chrome": "^0.0.279",
+    "@types/jest": "^28.1.6",
+    "@types/node": "^18.18",
+    "@types/react": "^19.1.8",
+    "@yarnpkg/types": "^4.0.0-rc.52",
+    "autoprefixer": "^10.4.21",
+    "buffer": "^6.0.3",
+    "deepmerge": "^4.2.2",
+    "depcheck": "^1.4.3",
+    "jest": "^28.1.3",
+    "postcss": "^8.5.6",
+    "prettier": "^2.7.1",
+    "prettier-plugin-packagejson": "^2.3.0",
+    "process": "^0.11.10",
+    "react-scripts": "5.0.1",
+    "tailwindcss": "^4.1.11",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.7.0",
+    "typedoc": "^0.23.22",
+    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typescript": "~5.2.2"
+  },
+  "dependencies": {
+    "@metamask/multichain": "workspace:^",
+    "@metamask/utils": "^11.8.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "packageManager": "yarn@4.1.1",
+  "engines": {
+    "node": "^18.18 || >=20"
+  },
+  "lavamoat": {
+    "allowScripts": {
+      "@lavamoat/preinstall-always-fail": false,
+      "react-scripts>@pmmmwh/react-refresh-webpack-plugin>core-js-pure": false,
+      "react-scripts>react-app-polyfill>core-js": false,
+      "@solana/web3.js>bigint-buffer": false,
+      "@solana/web3.js>rpc-websockets>bufferutil": false,
+      "@solana/web3.js>rpc-websockets>utf-8-validate": false,
+      "@metamask/multichain>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
+      "@metamask/multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
+    }
+  },
+  "resolutions": {
+    "@metamask/utils": "^11.8.1"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

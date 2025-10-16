@@ -1,0 +1,1 @@
+{"version":3,"file":"index.cjs","sourceRoot":"","sources":["../../src/constants/index.ts"],"names":[],"mappings":";;;AAAA,oBAAoB;AACP,QAAA,sBAAsB,GAAG,oBAAoB,CAAC;AAC9C,QAAA,uBAAuB,GAAG,kCAAkC,CAAC","sourcesContent":["/* eslint-disable */\nexport const WINDOW_POST_MESSAGE_ID = 'window.postMessage';\nexport const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';\n"]}
