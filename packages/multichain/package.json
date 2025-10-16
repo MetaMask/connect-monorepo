@@ -19,30 +19,30 @@
   "exports": {
     ".": {
       "browser": {
-        "import": "./dist/browser/es/multichain.mjs",
-        "require": "./dist/browser/umd/multichain.js"
+        "import": "./dist/index.browser.mjs",
+        "require": "./dist/index.browser.cjs"
       },
       "react-native": {
-        "import": "./dist/react-native/es/multichain.mjs"
+        "import": "./dist/index.native.mjs",
+        "require": "./dist/index.native.cjs"
       },
       "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
+        "types": "./dist/index.node.d.mts",
+        "default": "./dist/index.node.mjs"
       },
       "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
+        "types": "./dist/index.node.d.cts",
+        "default": "./dist/index.node.cjs"
       },
-      "default": "./dist/node/cjs/multichain.js"
+      "default": "./dist/index.node.cjs"
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
-  "module": "./dist/browser/es/multichain.mjs",
-  "browser": "./dist/browser/es/multichain.mjs",
-  "unpkg": "./dist/browser/umd/multichain.js",
-  "react-native": "./dist/react-native/es/multichain.mjs",
+  "main": "./dist/index.node.cjs",
+  "module": "./dist/index.browser.mjs",
+  "browser": "./dist/index.browser.mjs",
+  "react-native": "./dist/index.native.mjs",
+  "types": "./dist/index.node.d.cts",
   "files": [
     "dist/"
   ],
@@ -55,9 +55,9 @@
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",
+    "test:ci": "vitest run --coverage --coverage.reporter=text --silent",
     "test:unit": "vitest run",
-    "test:watch": "vitest watch",
-    "test:ci": "vitest run --coverage --coverage.reporter=text --silent"
+    "test:watch": "vitest watch"
   },
   "dependencies": {
     "@metamask/analytics": "workspace:^",
