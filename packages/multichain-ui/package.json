@@ -27,12 +27,6 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./loader": {
-      "import": "./dist/loader/index.js",
-      "require": "./dist/loader/index.cjs.js"
-    },
-    "./loader/*": "./dist/loader/*",
-    "./dist/loader/*": "./dist/loader/*",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs.js",
