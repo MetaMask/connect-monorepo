@@ -5,7 +5,8 @@
     { "path": "./packages/analytics" },
     { "path": "./packages/connect" },
     { "path": "./packages/multichain" },
-    { "path": "./packages/multichain-ui" },
+    { "path": "./packages/multichain-node-playground" },
+    { "path": "./packages/multichain-ui" }
   ],
   "files": [],
   "include": ["./scripts", "./types"]
