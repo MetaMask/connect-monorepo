@@ -5382,11 +5382,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=13.7.0":
-  version: 24.7.2
-  resolution: "@types/node@npm:24.7.2"
+  version: 24.8.0
+  resolution: "@types/node@npm:24.8.0"
   dependencies:
     undici-types: "npm:~7.14.0"
-  checksum: 10/62073022f7fc11363683e6ce82332193129c3053e7f973127a83b0daa5d755ecf5806d310f5a7c78375e6c3d309aa15b4ae87c4c1797a9eec091425d36098b60
+  checksum: 10/55045f74d743956325a6ec64b5d80e81f74b7217f77d0e4bf233ba7cd6ef553752b1e777bb796edf382e1a446c8c9fc1af1dc906b2c5100c9c08ab8be9317aa9
   languageName: node
   linkType: hard
 
@@ -7005,13 +7005,13 @@ __metadata:
   linkType: hard
 
 "ast-v8-to-istanbul@npm:^0.3.3":
-  version: 0.3.6
-  resolution: "ast-v8-to-istanbul@npm:0.3.6"
+  version: 0.3.7
+  resolution: "ast-v8-to-istanbul@npm:0.3.7"
   dependencies:
     "@jridgewell/trace-mapping": "npm:^0.3.31"
     estree-walker: "npm:^3.0.3"
     js-tokens: "npm:^9.0.1"
-  checksum: 10/9840d6bead701c692777a6c3591d8fcc47e00816083f63fc1d28e0bbaeaccaca62688ffb2e7118edb1505ba8189158550f59932f4ec7e4043967d2e3ea8f6d1c
+  checksum: 10/7610326daf73cb16e7409e841a5581c15f9ccdc742a32923d8437a56a7316aa40f6c8955deaeef064f85edff364469ea6a0fc96742b17df2a5e1ea3db489ad29
   languageName: node
   linkType: hard
 
@@ -7471,11 +7471,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.8.9":
-  version: 2.8.16
-  resolution: "baseline-browser-mapping@npm:2.8.16"
+  version: 2.8.17
+  resolution: "baseline-browser-mapping@npm:2.8.17"
   bin:
     baseline-browser-mapping: dist/cli.js
-  checksum: 10/52a5807591daeffc810b783b1afa20c4017dd94e5bb74934bcde4dd408758e492610e330cfe6e609a0f0bde5ce210dd934271540fb931389d6838db17ec8cfef
+  checksum: 10/241045decb543c589840e8d442f28c2e47b1111a051b446807ee9500c6dd2b0bb560df0bb3890154cb066d2d92f2a67d15eb2678765e7229af80cbe93c481221
   languageName: node
   linkType: hard
 
@@ -7988,12 +7988,12 @@ __metadata:
   linkType: hard
 
 "centrifuge@npm:^5.3.5":
-  version: 5.5.0
-  resolution: "centrifuge@npm:5.5.0"
+  version: 5.5.1
+  resolution: "centrifuge@npm:5.5.1"
   dependencies:
     events: "npm:^3.3.0"
     protobufjs: "npm:^7.2.5"
-  checksum: 10/92f2e7680ff5f052f384805228ea61039eda5e2ce8ed488b36b4413959727b39f7487770ea4748fc6f764f3584b6134584e653c287dd475a04707f20861e7884
+  checksum: 10/7e7f65f8878d1e7efa3140752b25d3038f341b648210b673f1acd6a22edb8324f5fb22031cce38a8faf70cbf3c71922db5972c9c66e2b76b2e3ac427ca98b3c6
   languageName: node
   linkType: hard
 

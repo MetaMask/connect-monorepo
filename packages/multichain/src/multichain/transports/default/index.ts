@@ -7,12 +7,13 @@ import {
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId } from '@metamask/utils';
 import type { ExtendedTransport, RPCAPI, Scope, SessionData } from 'src/domain';
+
 import {
   addValidAccounts,
   getOptionalScopes,
   getValidAccounts,
   isSameScopesAndAccounts,
-} from 'src/multichain/utils';
+} from '../../utils';
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 

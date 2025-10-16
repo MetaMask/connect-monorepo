@@ -7,11 +7,10 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable promise/no-return-wrap */
 /* eslint-disable require-atomic-updates */
-/* eslint-disable import-x/extensions */
 /* eslint-disable @typescript-eslint/naming-convention */
 import MetaMaskOnboarding from '@metamask/onboarding';
-import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from 'src/config';
 
+import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from '../config';
 import {
   type ConnectionRequest,
   getPlatformType,
@@ -36,7 +35,7 @@ export async function preload() {
     // and gracefully handle absence of the Stencil loader in this package build.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    '@metamask/multichain-ui'.concat('/dist/loader/index.cjs.js')
+    '@metamask/multichain-ui'.concat('/dist/loader/index.cjs.js') // FIXME: dist folder for multichain-ui aint lookin proper
   )
     .then(async (loader: any) => {
       if (typeof loader?.defineCustomElements === 'function') {

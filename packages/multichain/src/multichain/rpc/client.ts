@@ -1,7 +1,10 @@
-import type { InvokeMethodParams } from '@metamask/multichain-api-client';
 import type { Json } from '@metamask/utils';
 import fetch from 'cross-fetch';
 
+import {
+  METAMASK_CONNECT_BASE_URL,
+  METAMASK_DEEPLINK_BASE,
+} from '../../config';
 import {
   type ExtendedTransport,
   getInfuraRpcUrls,
@@ -10,15 +13,12 @@ import {
   METHODS_TO_REDIRECT,
   type MultichainOptions,
   type RPC_URLS_MAP,
-  type RPCAPI,
   RPCHttpErr,
   RPCInvokeMethodErr,
   RPCReadonlyRequestErr,
   RPCReadonlyResponseErr,
   type RPCResponse,
-  type Scope,
 } from '../../domain';
-import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from 'src/config';
 import { openDeeplink } from '../utils';
 
 let rpcId = 1;

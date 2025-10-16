@@ -31,8 +31,8 @@ import {
   type SessionData,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
-import { MWP_RELAY_URL } from 'src/config';
 
+import { MWP_RELAY_URL } from '../config';
 import {
   getVersion,
   type InvokeMethodOptions,
