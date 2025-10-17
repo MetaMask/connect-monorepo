@@ -586,11 +586,11 @@ export class MultichainSDK extends MultichainCore {
   }
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
-    const { sdkInfo, transport } = this;
+    const { transport } = this;
 
     this.__provider ??= getMultichainClient({ transport });
 
-    const client = new RPCClient(this.transport, this.options, sdkInfo);
+    const client = new RPCClient(this.transport, this.options);
     return client.invokeMethod(request) as Promise<Json>;
   }
 }
