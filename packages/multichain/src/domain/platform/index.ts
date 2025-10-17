@@ -97,7 +97,8 @@ export function isSecure(): boolean {
 
 // Immediately start MetaMask detection when module loads
 const detectionPromise: Promise<boolean> = (async () => {
-  if (typeof window === 'undefined') {
+  const pt = getPlatformType();
+  if (pt === PlatformType.NonBrowser || pt === PlatformType.ReactNative) {
     return Promise.resolve(false);
   }
 
