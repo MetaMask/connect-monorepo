@@ -4,10 +4,11 @@
   "references": [
     { "path": "./packages/analytics" },
     { "path": "./packages/connect" },
-    { "path": "./packages/multichain-ui" },
     { "path": "./packages/multichain" },
     { "path": "./packages/multichain-node-playground" },
-    { "path": "./packages/multichain-react-playground" }
+    { "path": "./packages/multichain-react-native-playground" },
+    { "path": "./packages/multichain-react-playground" },
+    { "path": "./packages/multichain-ui" }
   ],
   "files": [],
   "include": ["./scripts", "./types"]

@@ -38,7 +38,9 @@ See the [Contributor Guide](./docs/contributing.md) for help on:
 - [`@metamask/analytics`](packages/analytics)
 - [`@metamask/connect`](packages/connect)
 - [`@metamask/multichain`](packages/multichain)
-- [`@metamask/multichain-react-playground`](packages/multichain-react-playground)
+- [`@metamask/multichain-node-playground`](playground/multichain-node-playground)
+- [`@metamask/multichain-react-playground`](playground/multichain-react-playground)
+- [`@metamask/multichain-react-native-playground`](packages/multichain-react-native-playground)
 - [`@metamask/multichain-ui`](packages/multichain-ui)
 
 <!-- end package list -->
@@ -52,10 +54,13 @@ linkStyle default opacity:0.5
   analytics(["@metamask/analytics"]);
   connect(["@metamask/connect"]);
   multichain(["@metamask/multichain"]);
-  multichain_react_playground(["@metamask/multichain-react-playground"]);
+  multichain_react_native_playground(["@metamask/multichain-react-native-playground"]);
   multichain_ui(["@metamask/multichain-ui"]);
+  multichain_react_playground(["@metamask/multichain-react-playground"]);
+  multichain_node_playground(["@metamask/multichain-node-playground"]);
   multichain --> analytics;
   multichain --> multichain_ui;
+  multichain_react_playground --> multichain;
 ```
 
 <!-- end dependency graph -->
