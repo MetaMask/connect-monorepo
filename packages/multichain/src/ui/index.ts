@@ -35,7 +35,7 @@ export async function preload() {
     // and gracefully handle absence of the Stencil loader in this package build.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    '@metamask/multichain-ui'.concat('/dist/loader/index.cjs.js') // FIXME: dist folder for multichain-ui aint lookin proper
+    '@metamask/multichain-ui'.concat('/dist/loader/index.js') // Prefer ESM loader in browsers
   )
     .then(async (loader: any) => {
       if (typeof loader?.defineCustomElements === 'function') {

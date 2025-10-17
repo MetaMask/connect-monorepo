@@ -15,11 +15,12 @@ export class InstallModal extends AbstractInstallModal {
 
     modal.preferDesktop = options.preferDesktop;
     modal.sdkVersion = options.sdkVersion;
-    modal.addEventListener(
-      'close',
-      ({ detail: { shouldTerminate } }: MmInstallModalCustomEvent<{ shouldTerminate?: boolean }>) =>
-        options.onClose(shouldTerminate),
-    );
+    modal.addEventListener('close', (ev: Event) => {
+      const { detail } = ev as MmInstallModalCustomEvent<{
+        shouldTerminate?: boolean;
+      }>;
+      options.onClose(detail?.shouldTerminate);
+    });
     modal.addEventListener(
       'startDesktopOnboarding',
       options.startDesktopOnboarding,

@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-restricted-syntax */
 import createClient from 'openapi-fetch';
 
 import type * as schema from './schema';
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import Sender from './sender';
 
 type Event = schema.components['schemas']['Event'];
@@ -35,7 +35,6 @@ class Analytics {
     this.properties[key] = value;
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   public track<T extends Event>(name: T['name'], properties: Partial<T>): void {
     if (!this.enabled) {
       return;

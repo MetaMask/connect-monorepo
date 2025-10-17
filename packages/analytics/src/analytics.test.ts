@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import nock from 'nock';
 /* eslint-disable-next-line id-length */
 import * as t from 'vitest';

@@ -20,7 +20,6 @@
   },
   "references": [
     { "path": "../multichain" },
-    { "path": "../multichain/tsconfig.build.json" }
   ],
   "include": ["./src"]
 }

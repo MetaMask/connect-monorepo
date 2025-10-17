@@ -1,6 +1,11 @@
 const webpack = require('webpack');
 
 module.exports = {
+  style: {
+    postcss: {
+      plugins: [require('@tailwindcss/postcss'), require('autoprefixer')],
+    },
+  },
   webpack: {
     configure: (webpackConfig) => {
       // Control export conditions (for packages with conditional exports)

@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-restricted-globals */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import Analytics from './analytics';
 
 let endpoint: string | undefined;

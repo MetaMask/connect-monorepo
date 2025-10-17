@@ -4,13 +4,8 @@
     "baseUrl": "./",
     "outDir": "./dist",
     "rootDir": "./src",
-    "paths": {
-      "@metamask/multichain": ["../multichain/src/index.node.ts"],
-      "@metamask/*": ["../*/src"]
-    }
+    "paths": {}
   },
   "include": ["./src"],
-  "references": [
-    { "path": "../multichain/tsconfig.build.json" }
-  ]
+  "references": []
 }

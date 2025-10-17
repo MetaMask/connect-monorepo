@@ -11,14 +11,9 @@
     "outDir": "build",
     "rootDir": "src",
     "sourceMap": true,
-    "paths": {
-      "@metamask/multichain": ["../multichain/dist/src/index.browser.d.cts"]
-    },
     "resolveJsonModule": true
   },
-  "references": [
-    { "path": "../multichain/tsconfig.build.json" }
-  ],
+  "references": [],
   "include": ["./src/**/*.ts", "./src/**/*.tsx"],
   "exclude": [
     "./src/**/__fixtures__/**/*",

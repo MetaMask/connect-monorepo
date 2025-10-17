@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable-next-line id-length */
 import * as t from 'vitest';
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import Sender from './sender';
 
 t.describe('Sender', () => {
