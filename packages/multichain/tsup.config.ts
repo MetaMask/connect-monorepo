@@ -1,11 +1,11 @@
 import { defineConfig, type Options } from 'tsup';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
-
-const packageJson = require('./package.json');
+import packageJson from './package.json';
+const pkg: any = packageJson as any;
 
 // Dependencies categorization (same as rollup config)
-const peerDependencies = Object.keys(packageJson.peerDependencies || {});
-const optionalDependencies = Object.keys(packageJson.optionalDependencies || {});
+const peerDependencies = Object.keys(pkg.peerDependencies || {});
+const optionalDependencies = Object.keys(pkg.optionalDependencies || {});
 
 // Dependencies that should be bundled
 const bundledDeps = [ 'readable-stream'];
@@ -34,11 +34,11 @@ const nodeExternalDeps = [...baseExternalDeps].filter(excludeBundledDeps);
 // Base configuration shared across all builds
 const baseConfig: Partial<Options> = {
   bundle: true,
-  tsconfig: './tsconfig.json',
+  tsconfig: './tsconfig.types.json',
   sourcemap: true,
   metafile: true,
   clean: false, // We handle cleaning via scripts
-  dts: false, // Types are built separately via tsc
+  dts: true, // Emit .d.ts alongside each env build
   splitting: false, // Keep bundle as single file to match rollup,
 };
 
@@ -156,5 +156,11 @@ export default defineConfig([
     banner: {
       js: '/* React Native ES build */',
     },
+  },
+  {
+    ...baseConfig,
+    entry: { [entryName]: 'src/index.browser.ts' },
+    outDir: 'dist/types',
+    dts: { only: true },
   }
 ]);
