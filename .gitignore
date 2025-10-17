@@ -19,6 +19,10 @@ packages/*/coverage
 packages/*/dist
 packages/*/build
 packages/*/docs
+playground/*/coverage
+playground/*/dist
+playground/*/build
+playground/*/docs
 scripts/coverage
 
 # yarn v3 (w/o zero-install)

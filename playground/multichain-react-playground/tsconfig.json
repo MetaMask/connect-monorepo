@@ -17,7 +17,7 @@
     "jsx": "react-jsx",
   },
   "references": [
-    { "path": "../multichain" }
+    { "path": "../../packages/multichain" }
   ],
   "include": ["./src"],
   "exclude": ["./build", "**/node_modules"]

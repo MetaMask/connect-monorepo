@@ -3553,9 +3553,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/multichain-node-playground@workspace:packages/multichain-node-playground":
+"@metamask/multichain-node-playground@workspace:playground/multichain-node-playground":
   version: 0.0.0-use.local
-  resolution: "@metamask/multichain-node-playground@workspace:packages/multichain-node-playground"
+  resolution: "@metamask/multichain-node-playground@workspace:playground/multichain-node-playground"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.1.0"
     "@metamask/multichain": "workspace:^"
@@ -3576,9 +3576,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@metamask/multichain-react-playground@workspace:packages/multichain-react-playground":
+"@metamask/multichain-react-playground@workspace:playground/multichain-react-playground":
   version: 0.0.0-use.local
-  resolution: "@metamask/multichain-react-playground@workspace:packages/multichain-react-playground"
+  resolution: "@metamask/multichain-react-playground@workspace:playground/multichain-react-playground"
   dependencies:
     "@craco/craco": "npm:^7.1.0"
     "@lavamoat/allow-scripts": "npm:^3.0.4"
