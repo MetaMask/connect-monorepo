@@ -19,15 +19,19 @@
   "exports": {
     ".": {
       "browser": {
+        "types": "./dist/browser/es/multichain.d.ts",
         "import": "./dist/browser/es/multichain.mjs"
       },
       "react-native": {
+        "types": "./dist/react-native/es/multichain.d.ts",
         "import": "./dist/react-native/es/multichain.mjs"
       },
       "import": {
+        "types": "./dist/node/es/multichain.d.ts",
         "default": "./dist/node/es/multichain.mjs"
       },
       "require": {
+        "types": "./dist/node/cjs/multichain.d.cts",
         "default": "./dist/node/cjs/multichain.js"
       },
       "default": "./dist/node/cjs/multichain.js"
@@ -37,6 +41,7 @@
   "module": "./dist/browser/es/multichain.mjs",
   "browser": "./dist/browser/es/multichain.mjs",
   "react-native": "./dist/react-native/es/multichain.mjs",
+  "types": "./dist/node/es/multichain.d.ts",
   "files": [
     "dist/"
   ],
