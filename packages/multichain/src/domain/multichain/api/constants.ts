@@ -1,7 +1,7 @@
 /* c8 ignore start */
-import type { RPC_URLS_MAP } from './types';
+import type { RpcUrlsMap } from './types';
 
-export const infuraRpcUrls: RPC_URLS_MAP = {
+export const infuraRpcUrls: RpcUrlsMap = {
   // ###### Ethereum ######
   // Mainnet
   'eip155:1': 'https://mainnet.infura.io/v3/',
