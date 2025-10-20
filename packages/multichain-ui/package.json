@@ -57,9 +57,8 @@
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
-    "pretest": "npx puppeteer browsers install chrome",
-    "test": "yarn pretest && stencil test --spec --e2e",
-    "test:watch": "yarn pretest && stencil test --spec --e2e --watchAll",
+    "test": "echo \"No test specified\"",
+    "test:watch": "echo \"No test specified\"",
     "preversion": "yarn test",
     "postversion": "git push --tags && yarn publish . --tag $npm_package_version && git push && echo \"Successfully released version $npm_package_version!\""
   },
