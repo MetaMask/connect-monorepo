@@ -55,9 +55,9 @@
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "pretest": "yarn workspace @metamask/analytics run build && yarn workspace @metamask/multichain-ui run build",
-    "test": "vitest run",
+    "test": "yarn pretest && vitest run",
     "pretest:ci": "yarn pretest",
-    "test:ci": "vitest run --coverage --coverage.reporter=text --silent",
+    "test:ci": "yarn pretest:ci && vitest run --coverage --coverage.reporter=text --silent",
     "test:unit": "vitest run",
     "test:watch": "vitest watch"
   },
