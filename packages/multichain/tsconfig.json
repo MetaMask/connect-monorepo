@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.packages.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "outDir": "dist",
+    "target": "es6",
+    "esModuleInterop": true,
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": false,
+    "incremental": false,
+    "lib": ["DOM", "ES2020"],
+    "skipLibCheck": true,
+    "types": ["node"],
+  },
+  "references": [
+    { "path": "../multichain-ui" },
+    { "path": "../analytics" }
+  ],
+  "include": ["./src", "./tests"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+}

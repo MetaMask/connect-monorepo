@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "rootDir": "./",
+    "composite": true,
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "@metamask/multichain": ["../../packages/multichain/src/index.node.ts"],
+      "@metamask/*": ["../../*/src"],
+      "src/*": ["../../packages/multichain/src/*"]
+    }
+  },
+  "references": [
+    { "path": "../../packages/multichain" },
+  ],
+  "include": ["./src"]
+}

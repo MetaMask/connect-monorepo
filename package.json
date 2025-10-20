@@ -1,23 +1,26 @@
 {
-  "name": "@metamask/metamask-monorepo-template",
+  "name": "@metamask/metamask-connect-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "MetaMask Monorepo Template",
+  "description": "MetaMask Connect Monorepo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/metamask-monorepo-template.git"
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
   },
   "files": [],
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "playground/*"
   ],
   "scripts": {
-    "build": "yarn ts-bridge --project tsconfig.build.json --verbose",
+    "prebuild": "yarn workspace @metamask/multichain-ui run build",
+    "build": "yarn prebuild && yarn workspaces foreach --verbose --all run build",
     "build:clean": "yarn build:only-clean && yarn build",
     "build:docs": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run build:docs",
     "build:only-clean": "rimraf -g 'packages/*/dist' 'packages/*/*.tsbuildinfo'",
     "changelog:update": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:update",
     "changelog:validate": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:validate",
+    "clean": "rimraf -g 'packages/*/node_modules/.cache' 'playground/*/node_modules/.cache' 'packages/*/node_modules' 'packages/*/dist' 'packages/*/build' 'playground/*/node_modules' 'playground/*/dist' 'playground/*/build' node_modules",
     "create-package": "tsx scripts/create-package",
     "lint": "yarn lint:eslint && echo && yarn lint:misc --check && yarn constraints && yarn lint:dependencies",
     "lint:dependencies": "depcheck && yarn dedupe --check",
@@ -95,7 +98,9 @@
       "babel-runtime>core-js": false,
       "simple-git-hooks": false,
       "eslint-plugin-import-x>unrs-resolver": false,
-      "tsx>esbuild": false
+      "tsx>esbuild": false,
+      "jest>jest-cli>jest-config>jest-environment-jsdom>jsdom>ws>bufferutil": false,
+      "jest>jest-cli>jest-config>jest-environment-jsdom>jsdom>ws>utf-8-validate": false
     }
   }
 }
