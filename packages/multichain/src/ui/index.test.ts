@@ -551,9 +551,9 @@ t.describe('ModalFactory', () => {
         const testError = new Error('Failed to load modal customElements');
 
         // Temporarily unmock the module and re-mock it to throw an error
-        t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
+        t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.js');
         t.vi.doMock(
-          '@metamask/multichain-ui/dist/loader/index.cjs.js',
+          '@metamask/multichain-ui/dist/loader/index.js',
           async () => {
             throw testError;
           },

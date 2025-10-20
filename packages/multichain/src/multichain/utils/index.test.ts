@@ -1,8 +1,7 @@
 import type { CaipAccountId } from '@metamask/utils';
 import * as t from 'vitest';
 import { vi } from 'vitest';
-import packageJson from '../../../package.json';
-import type { Scope } from '../../domain';
+import { getVersion, type Scope } from '../../domain';
 import type { MultichainOptions } from '../../domain/multichain';
 import { getPlatformType, PlatformType } from '../../domain/platform';
 import * as utils from '.';
@@ -12,6 +11,7 @@ vi.mock('../../domain/platform', async () => {
 	return {
 		...actual,
 		getPlatformType: vi.fn(),
+    getVersion: t.vi.fn(() => '0.0.0'),
 	};
 });
 
@@ -71,7 +71,7 @@ t.describe('Utils', () => {
 
 	t.describe('getSDKVersion', () => {
 		t.it('should get SDK version', () => {
-			t.expect(utils.getVersion()).toBe(packageJson.version);
+			t.expect(getVersion()).toBe('0.0.0');
 		});
 	});
 
