@@ -59,7 +59,7 @@ import {
   isSecure,
   PlatformType,
 } from '../domain/platform';
-import { RPCClient } from './rpc/client';
+import { RequestRouter, RPCClient } from './rpc/requestRouter';
 import { DefaultTransport } from './transports/default';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
@@ -69,6 +69,7 @@ import {
   setupDappMetadata,
   setupInfuraProvider,
 } from './utils';
+import { RpcClient } from './rpc/handlers/rpcClient';
 
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
@@ -586,11 +587,12 @@ export class MultichainSDK extends MultichainCore {
   }
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
-    const { transport } = this;
+    const { sdkInfo, transport, options } = this;
 
     this.__provider ??= getMultichainClient({ transport });
 
-    const client = new RPCClient(this.transport, this.options);
-    return client.invokeMethod(request) as Promise<Json>;
+		const rpcClient = new RpcClient(options, sdkInfo);
+		const requestRouter = new RequestRouter(transport, rpcClient, options);
+		return requestRouter.invokeMethod(request) as Promise<Json>;
   }
 }
