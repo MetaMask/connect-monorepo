@@ -22,7 +22,9 @@
     "start": "node -r ts-node/register -r tsconfig-paths/register src/index.ts",
     "build": "tsup src/index.ts --format cjs,esm",
     "clean": "rm -rf dist .sdk-comm",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-node-playground",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-node-playground",
+    "test": "echo \"No test specified\""
   },
   "dependencies": {
     "@metamask/multichain": "workspace:^",

@@ -27,6 +27,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "test": "echo \"No test specified\"",
     "allow-scripts": ""
   },
   "dependencies": {
