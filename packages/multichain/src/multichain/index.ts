@@ -59,7 +59,7 @@ import {
   isSecure,
   PlatformType,
 } from '../domain/platform';
-import { RequestRouter, RPCClient } from './rpc/requestRouter';
+import { RequestRouter } from './rpc/requestRouter';
 import { DefaultTransport } from './transports/default';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
