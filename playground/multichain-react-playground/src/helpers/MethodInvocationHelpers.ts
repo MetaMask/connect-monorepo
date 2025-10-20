@@ -14,33 +14,51 @@ import type { Dispatch, SetStateAction } from 'react';
  * @param scope - The scope/chain ID to determine the chain type.
  * @returns Normalized parameters (array for EVM, object for Solana).
  */
-export const normalizeMethodParams = (method: string, params: Json, scope?: string): Json[] | Json => {
-	// Solana methods should keep params as objects, not arrays
-	const solanaMethodsThatUseObjects = ['signMessage', 'signTransaction', 'signAllTransactions', 'signAndSendTransaction', 'signIn'];
+export const normalizeMethodParams = (
+  method: string,
+  params: Json,
+  scope?: string,
+): Json[] | Json => {
+  // Solana methods should keep params as objects, not arrays
+  const solanaMethodsThatUseObjects = [
+    'signMessage',
+    'signTransaction',
+    'signAllTransactions',
+    'signAndSendTransaction',
+    'signIn',
+  ];
 
-	// Check if this is a Solana method that needs object params
-	if (solanaMethodsThatUseObjects.includes(method) || scope?.startsWith('solana:')) {
-		// For Solana, return params as-is (should be an object)
-		return params;
-	}
+  // Check if this is a Solana method that needs object params
+  if (
+    solanaMethodsThatUseObjects.includes(method) ||
+    scope?.startsWith('solana:')
+  ) {
+    // For Solana, return params as-is (should be an object)
+    return params;
+  }
 
-	// For EVM methods, ensure params is always an array
-	let paramsArray = Array.isArray(params) ? params : [params];
+  // For EVM methods, ensure params is always an array
+  let paramsArray = Array.isArray(params) ? params : [params];
 
-	// Special handling for eth_signTypedData_v3/v4: second parameter must be JSON string
-	if ((method === 'eth_signTypedData_v3' || method === 'eth_signTypedData_v4') && paramsArray.length >= 2) {
-		const firstParam = paramsArray[0];
-		const secondParam = paramsArray[1];
+  // Special handling for eth_signTypedData_v3/v4: second parameter must be JSON string
+  if (
+    (method === 'eth_signTypedData_v3' || method === 'eth_signTypedData_v4') &&
+    paramsArray.length >= 2
+  ) {
+    const firstParam = paramsArray[0];
+    const secondParam = paramsArray[1];
 
-		if (firstParam !== undefined && secondParam !== undefined) {
-			paramsArray = [
-				firstParam, // address (string)
-				typeof secondParam === 'string' ? secondParam : JSON.stringify(secondParam), // typed data (JSON string)
-			];
-		}
-	}
+    if (firstParam !== undefined && secondParam !== undefined) {
+      paramsArray = [
+        firstParam, // address (string)
+        typeof secondParam === 'string'
+          ? secondParam
+          : JSON.stringify(secondParam), // typed data (JSON string)
+      ];
+    }
+  }
 
-	return paramsArray;
+  return paramsArray;
 };
 
 /**
@@ -54,31 +72,38 @@ export const normalizeMethodParams = (method: string, params: Json, scope?: stri
  * @returns Updated results state.
  */
 export const updateInvokeMethodResults = (
-	previousResults: Record<string, Record<string, { result: Json | Error; request: Json }[]>>,
-	scope: CaipChainId,
-	method: string,
-	result: Json | Error,
-	request: Json,
+  previousResults: Record<
+    string,
+    Record<string, { result: Json | Error; request: Json }[]>
+  >,
+  scope: CaipChainId,
+  method: string,
+  result: Json | Error,
+  request: Json,
 ) => {
-	const scopeResults = previousResults[scope] ?? {};
-	const methodResults = scopeResults[method] ?? [];
-	const newResults = {
-		...previousResults,
-		[scope]: {
-			...scopeResults,
-			[method]: [...methodResults, { result, request }],
-		},
-	};
+  const scopeResults = previousResults[scope] ?? {};
+  const methodResults = scopeResults[method] ?? [];
+  const newResults = {
+    ...previousResults,
+    [scope]: {
+      ...scopeResults,
+      [method]: [...methodResults, { result, request }],
+    },
+  };
 
-	return newResults;
+  return newResults;
 };
 
-export const extractRequestParams = (finalRequestObject: { params: { request: { params: Json } } }): Json => {
-	return finalRequestObject.params.request.params;
+export const extractRequestParams = (finalRequestObject: {
+  params: { request: { params: Json } };
+}): Json => {
+  return finalRequestObject.params.request.params;
 };
 
-export const extractRequestForStorage = (finalRequestObject: { params: { request: Json } }): Json => {
-	return finalRequestObject.params.request;
+export const extractRequestForStorage = (finalRequestObject: {
+  params: { request: Json };
+}): Json => {
+  return finalRequestObject.params.request;
 };
 
 /**
@@ -92,31 +117,37 @@ export const extractRequestForStorage = (finalRequestObject: { params: { request
  * @returns The selected account or null if none available.
  */
 export const autoSelectAccountForScope = (
-	caipChainId: CaipChainId,
-	currentSelectedAccount: CaipAccountId | null,
-	currentSession: SessionData,
-	setSelectedAccounts: Dispatch<SetStateAction<Record<string, CaipAccountId | null>>>,
+  caipChainId: CaipChainId,
+  currentSelectedAccount: CaipAccountId | null,
+  currentSession: SessionData,
+  setSelectedAccounts: Dispatch<
+    SetStateAction<Record<string, CaipAccountId | null>>
+  >,
 ): CaipAccountId | null => {
-	if (currentSelectedAccount) {
-		return currentSelectedAccount;
-	}
+  if (currentSelectedAccount) {
+    return currentSelectedAccount;
+  }
 
-	const scopeDetails = currentSession?.sessionScopes?.[caipChainId];
-	const [firstAccount] = scopeDetails?.accounts ?? [];
+  const scopeDetails = currentSession?.sessionScopes?.[caipChainId];
+  const [firstAccount] = scopeDetails?.accounts ?? [];
 
-	if (firstAccount) {
-		console.log(`🔧 Auto-selecting first account for ${caipChainId}: ${String(firstAccount)}`);
+  if (firstAccount) {
+    console.log(
+      `🔧 Auto-selecting first account for ${caipChainId}: ${String(
+        firstAccount,
+      )}`,
+    );
 
-		setSelectedAccounts((prev) => ({
-			...prev,
-			[caipChainId]: firstAccount,
-		}));
+    setSelectedAccounts((prev) => ({
+      ...prev,
+      [caipChainId]: firstAccount,
+    }));
 
-		return firstAccount;
-	}
+    return firstAccount;
+  }
 
-	console.error(`❌ No accounts available for scope ${caipChainId}`);
-	return null;
+  console.error(`❌ No accounts available for scope ${caipChainId}`);
+  return null;
 };
 
 /**
@@ -132,33 +163,45 @@ export const autoSelectAccountForScope = (
  * @returns The prepared request object or null if method not found.
  */
 export const prepareMethodRequest = (
-	method: string,
-	caipChainId: CaipChainId,
-	selectedAccount: CaipAccountId | null,
-	// biome-ignore lint/suspicious/noExplicitAny: Needed
-	metamaskOpenrpcDocument: any,
-	injectParams: (method: string, params: Json, account: CaipAccountId, scope: CaipChainId) => Json,
-	openRPCExampleToJSON: (methodObj: MethodObject) => Json,
-	METHODS_REQUIRING_PARAM_INJECTION: Record<string, boolean>,
+  method: string,
+  caipChainId: CaipChainId,
+  selectedAccount: CaipAccountId | null,
+  // biome-ignore lint/suspicious/noExplicitAny: Needed
+  metamaskOpenrpcDocument: any,
+  injectParams: (
+    method: string,
+    params: Json,
+    account: CaipAccountId,
+    scope: CaipChainId,
+  ) => Json,
+  openRPCExampleToJSON: (methodObj: MethodObject) => Json,
+  METHODS_REQUIRING_PARAM_INJECTION: Record<string, boolean>,
 ): Json | null => {
-	const example = metamaskOpenrpcDocument?.methods.find((methodObj: MethodObject) => methodObj.name === method);
+  const example = metamaskOpenrpcDocument?.methods.find(
+    (methodObj: MethodObject) => methodObj.name === method,
+  );
 
-	if (!example) {
-		console.error(`❌ No example found for method: ${method}`);
-		return null;
-	}
+  if (!example) {
+    console.error(`❌ No example found for method: ${method}`);
+    return null;
+  }
 
-	let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
+  let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
 
-	if (method in METHODS_REQUIRING_PARAM_INJECTION && selectedAccount) {
-		exampleParams = injectParams(method, exampleParams, selectedAccount, caipChainId);
-	}
+  if (method in METHODS_REQUIRING_PARAM_INJECTION && selectedAccount) {
+    exampleParams = injectParams(
+      method,
+      exampleParams,
+      selectedAccount,
+      caipChainId,
+    );
+  }
 
-	return {
-		method: 'wallet_invokeMethod',
-		params: {
-			scope: caipChainId,
-			request: exampleParams,
-		},
-	};
+  return {
+    method: 'wallet_invokeMethod',
+    params: {
+      scope: caipChainId,
+      request: exampleParams,
+    },
+  };
 };

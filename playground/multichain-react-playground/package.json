@@ -42,6 +42,15 @@
       "last 1 safari version"
     ]
   },
+  "resolutions": {
+    "@metamask/utils": "^11.8.1"
+  },
+  "dependencies": {
+    "@metamask/multichain": "workspace:^",
+    "@metamask/utils": "^11.8.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
     "@lavamoat/allow-scripts": "^3.0.4",
@@ -76,15 +85,13 @@
     "typedoc-plugin-missing-exports": "^1.0.0",
     "typescript": "~5.2.2"
   },
-  "dependencies": {
-    "@metamask/multichain": "workspace:^",
-    "@metamask/utils": "^11.8.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
   "packageManager": "yarn@4.1.1",
   "engines": {
     "node": "^18.18 || >=20"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://registry.npmjs.org/"
   },
   "lavamoat": {
     "allowScripts": {
@@ -97,12 +104,5 @@
       "@metamask/multichain>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
       "@metamask/multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
     }
-  },
-  "resolutions": {
-    "@metamask/utils": "^11.8.1"
-  },
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://registry.npmjs.org/"
   }
 }
