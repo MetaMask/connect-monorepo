@@ -5,7 +5,7 @@ import { ModalFactory } from './ui';
 
 export * from './domain';
 
-export const createMetamaskSDK: CreateMultichainFN = async (options) => {
+export const createMetamaskConnect: CreateMultichainFN = async (options) => {
   const uiModules = await import('./ui/modals/rn');
   let storage: StoreClient;
   if (!options.storage) {

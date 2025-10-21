@@ -1,4 +1,4 @@
-import { createMetamaskSDK, type SessionData } from '@metamask/multichain';
+import { createMetamaskConnect, type SessionData } from '@metamask/multichain';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';
@@ -9,7 +9,7 @@ type AppState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SIGNING';
 // Store our application state in a simple object
 const state: {
   app: AppState;
-  sdk: Awaited<ReturnType<typeof createMetamaskSDK>> | null;
+  sdk: Awaited<ReturnType<typeof createMetamaskConnect>> | null;
   accounts: { [chainId: string]: string[] }; // Group accounts by chain
   spinner: Ora | null;
 } = {
@@ -199,7 +199,7 @@ const main = async () => {
   console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
   console.log('------------------------------------');
 
-  state.sdk = await createMetamaskSDK({
+  state.sdk = await createMetamaskConnect({
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',

@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import {
-  createMetamaskSDK,
+  createMetamaskConnect,
   type InvokeMethodOptions,
   type MultichainCore,
   type Scope,
@@ -45,7 +45,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!sdkRef.current) {
-      sdkRef.current = createMetamaskSDK({
+      sdkRef.current = createMetamaskConnect({
         dapp: {
           name: 'playground',
           url: 'https://playground.metamask.io',

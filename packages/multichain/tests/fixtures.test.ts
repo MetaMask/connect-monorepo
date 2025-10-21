@@ -22,9 +22,9 @@ import type { MultichainOptions } from '../src/domain';
 import { MultichainSDK } from '../src/multichain';
 
 // Import createSDK functions for convenience
-import { createMetamaskSDK as createMetamaskSDKWeb } from '../src/index.browser';
-import { createMetamaskSDK as createMetamaskSDKRN } from '../src/index.native';
-import { createMetamaskSDK as createMetamaskSDKNode } from '../src/index.node';
+import { createMetamaskConnect as createMetamaskSDKWeb } from '../src/index.browser';
+import { createMetamaskConnect as createMetamaskSDKRN } from '../src/index.native';
+import { createMetamaskConnect as createMetamaskSDKNode } from '../src/index.node';
 import type {
   NativeStorageStub,
   MockedData,
