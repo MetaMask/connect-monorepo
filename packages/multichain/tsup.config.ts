@@ -161,6 +161,7 @@ export default defineConfig([
     ...baseConfig,
     entry: { [entryName]: 'src/index.browser.ts' },
     outDir: 'dist/types',
+    format: 'esm',
     dts: { only: true },
   }
 ]);
