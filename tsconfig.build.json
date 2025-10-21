@@ -1,9 +1,15 @@
 {
   "extends": "./tsconfig.base.json",
   "references": [
-    { "path": "./packages/greetings/tsconfig.build.json" },
-    { "path": "./packages/letter-crafter/tsconfig.build.json" },
-    { "path": "./packages/signatures/tsconfig.build.json" }
+    { "path": "./packages/analytics/tsconfig.build.json" },
+    { "path": "./packages/connect/tsconfig.build.json" },
+    { "path": "./packages/multichain-node-playground/tsconfig.build.json" },
+    {
+      "path": "./packages/multichain-react-native-playground/tsconfig.build.json"
+    },
+    { "path": "./packages/multichain-react-playground/tsconfig.build.json" },
+    { "path": "./packages/multichain-ui/tsconfig.build.json" },
+    { "path": "./packages/multichain/tsconfig.build.json" }
   ],
   "files": [],
   "include": []

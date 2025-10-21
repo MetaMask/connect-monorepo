@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.packages.build.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "types": ["@stencil/core"],
+    "strictPropertyInitialization": false
+  },
+  "include": [
+    "./src/index.ts",
+    "./src/components.d.ts"
+  ],
+  "exclude": [
+    "**/*.tsx",
+    "**/*.jsx",
+    "**/*.css",
+    "**/*.scss",
+    "**/*.svg"
+  ]
+}

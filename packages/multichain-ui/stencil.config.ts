@@ -1,0 +1,52 @@
+import type { Config } from '@stencil/core';
+import { visualizer } from 'rollup-plugin-visualizer';
+
+export const config: Config = {
+  namespace: 'sdk-install-modal-web',
+  validatePrimaryPackageOutputTarget: true,
+  outputTargets: [
+    {
+      type: 'dist',
+      isPrimaryPackageOutputTarget: true,
+      copy: [
+        {
+          src: 'assets',
+          dest: 'assets',
+        },
+      ],
+    },
+    {
+      type: 'www',
+      serviceWorker: null,
+      baseUrl: 'http://localhost:4444/',
+      copy: [
+        {
+          src: 'assets',
+          dest: 'assets',
+        },
+      ],
+    },
+  ],
+  enableCache: true,
+  buildEs5: false,
+  // Add hash for file names for better caching
+  hashFileNames: true,
+  excludeUnusedDependencies: true,
+  testing: {
+    browserHeadless: 'new',
+  },
+  rollupPlugins: {
+    after: [
+      // eslint-disable-next-line no-restricted-globals
+      process.env.NODE_ENV === 'development' ? visualizer() : null,
+    ].filter(Boolean),
+  },
+  // Add treeshaking for better optimization
+  extras: {
+    enableImportInjection: true,
+    scriptDataOpts: false,
+    appendChildSlotFix: false,
+    cloneNodeFix: false,
+    slotChildNodesFix: false,
+  },
+};

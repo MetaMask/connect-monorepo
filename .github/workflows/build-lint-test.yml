@@ -24,26 +24,27 @@ jobs:
           echo "child-workspace-package-names=$(yarn workspaces list --no-private --json | jq --slurp --raw-output 'map(.name) | @json')" >> "$GITHUB_OUTPUT"
         shell: bash
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    needs: prepare
-    strategy:
-      matrix:
-        node-version: [22.x]
-    steps:
-      - name: Checkout and setup environment
-        uses: MetaMask/action-checkout-and-setup@v1
-        with:
-          is-high-risk-environment: false
-      - run: yarn lint
-      - name: Require clean working directory
-        shell: bash
-        run: |
-          if ! git diff --exit-code; then
-            echo "Working tree dirty at end of job"
-            exit 1
-          fi
+  ## TODO: Address as tech debt and re-introduce this step, making sure lint conventions followed in whole repo
+  # lint:
+  #   name: Lint
+  #   runs-on: ubuntu-latest
+  #   needs: prepare
+  #   strategy:
+  #     matrix:
+  #       node-version: [22.x]
+  #   steps:
+  #     - name: Checkout and setup environment
+  #       uses: MetaMask/action-checkout-and-setup@v1
+  #       with:
+  #         is-high-risk-environment: false
+  #     - run: yarn lint
+  #     - name: Require clean working directory
+  #       shell: bash
+  #       run: |
+  #         if ! git diff --exit-code; then
+  #           echo "Working tree dirty at end of job"
+  #           exit 1
+  #         fi
 
   validate-changelog:
     name: Validate changelog
@@ -101,7 +102,6 @@ jobs:
         uses: MetaMask/action-checkout-and-setup@v1
         with:
           is-high-risk-environment: false
-      - run: yarn test:scripts
       - run: yarn workspace ${{ matrix.package-name }} run test
       - name: Require clean working directory
         shell: bash

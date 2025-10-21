@@ -1,0 +1,70 @@
+{
+  "name": "@metamask/analytics",
+  "version": "0.0.0",
+  "description": "Analytics package for MetaMask Connect",
+  "keywords": [
+    "MetaMask",
+    "Ethereum"
+  ],
+  "homepage": "https://github.com/MetaMask/metamask-connect-monorepo/tree/main/packages/analytics#readme",
+  "bugs": {
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts --format esm,cjs",
+    "build:docs": "typedoc",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/analytics",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/analytics",
+    "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
+    "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
+    "publish:preview": "yarn npm publish --tag preview",
+    "since-latest-release": "../../scripts/since-latest-release.sh",
+    "test": "vitest",
+    "test:ci": "vitest --run"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.13.5"
+  },
+  "devDependencies": {
+    "@metamask/auto-changelog": "^3.4.3",
+    "deepmerge": "^4.2.2",
+    "nock": "^14.0.4",
+    "tsup": "^8.4.0",
+    "typedoc": "^0.23.22",
+    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typescript": "~5.2.2",
+    "vitest": "^3.1.2"
+  },
+  "engines": {
+    "node": "^18.18 || >=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

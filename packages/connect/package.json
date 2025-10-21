@@ -1,0 +1,78 @@
+{
+  "name": "@metamask/connect",
+  "version": "0.0.0",
+  "description": "TODO",
+  "keywords": [
+    "MetaMask",
+    "Ethereum"
+  ],
+  "homepage": "https://github.com/MetaMask/metamask-connect-monorepo/tree/main/packages/connect#readme",
+  "bugs": {
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./dist/multichain/index.d.ts",
+        "import": "./dist/multichain/index.mjs"
+      },
+      "react-native": {
+        "types": "./dist/multichain/index.d.ts",
+        "import": "./dist/multichain/index.mjs"
+      },
+      "import": {
+        "types": "./dist/multichain/index.d.ts",
+        "default": "./dist/multichain/index.mjs"
+      },
+      "require": {
+        "types": "./dist/multichain/index.d.ts",
+        "default": "./dist/multichain/index.js"
+      },
+      "default": "./dist/multichain/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts --format esm,cjs --external @metamask/multichain",
+    "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
+    "build:docs": "typedoc",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/connect",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect",
+    "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
+    "publish:preview": "yarn npm publish --tag preview",
+    "since-latest-release": "../../scripts/since-latest-release.sh",
+    "test": "echo \"No test specified\""
+  },
+  "devDependencies": {
+    "@metamask/auto-changelog": "^3.1.0",
+    "@types/jest": "^27.4.1",
+    "deepmerge": "^4.2.2",
+    "ts-jest": "^27.1.4",
+    "tsup": "^8.4.0",
+    "typedoc": "^0.23.22",
+    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typescript": "~5.2.2"
+  },
+  "dependencies": {
+    "@metamask/multichain": "workspace:^"
+  },
+  "engines": {
+    "node": "^18.18 || >=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

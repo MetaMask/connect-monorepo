@@ -71,7 +71,10 @@ const config = createConfig([
         tsconfigRootDir: configDirName,
         project: './tsconfig.json',
         projectService: {
-          allowDefaultProject: ['./scripts/*.ts'],
+          allowDefaultProject: [
+            './scripts/*.ts',
+            'packages/*/stencil.config.ts',
+          ],
         },
       },
     },
