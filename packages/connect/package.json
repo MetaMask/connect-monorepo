@@ -45,7 +45,8 @@
     "dist/"
   ],
   "scripts": {
-    "build": "yarn clean && npx tsup",
+    "build": "yarn clean && npx tsup && yarn build:types",
+    "build:types": "node scripts/inline-types.js",
     "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "build:docs": "typedoc",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect",
@@ -59,6 +60,7 @@
     "@metamask/auto-changelog": "^3.1.0",
     "@types/jest": "^27.4.1",
     "deepmerge": "^4.2.2",
+    "dts-bundle-generator": "^9.5.1",
     "ts-jest": "^27.1.4",
     "tsup": "^8.4.0",
     "typedoc": "^0.23.22",

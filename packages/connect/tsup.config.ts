@@ -24,7 +24,7 @@ export default defineConfig([
     entry: ['src/index.ts', 'src/multichain/index.ts'],
     outDir: 'dist',
     format: ['esm', 'cjs'],
-    dts: true,
+    dts: false, // Disable tsup DTS generation, we'll handle it separately
     sourcemap: true,
     clean: true,
     bundle: true,
