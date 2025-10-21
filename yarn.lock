@@ -3914,9 +3914,11 @@ __metadata:
   resolution: "@metamask/connect@workspace:packages/connect"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.1.0"
+    "@metamask/multichain": "workspace:^"
     "@types/jest": "npm:^27.4.1"
     deepmerge: "npm:^4.2.2"
     ts-jest: "npm:^27.1.4"
+    tsup: "npm:^8.4.0"
     typedoc: "npm:^0.23.22"
     typedoc-plugin-missing-exports: "npm:^1.0.0"
     typescript: "npm:~5.2.2"
