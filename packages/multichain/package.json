@@ -34,8 +34,7 @@
       "require": {
         "types": "./dist/types/multichain.d.ts",
         "default": "./dist/node/cjs/multichain.js"
-      },
-      "default": "./dist/node/cjs/multichain.js"
+      }
     }
   },
   "main": "./dist/node/cjs/multichain.js",
