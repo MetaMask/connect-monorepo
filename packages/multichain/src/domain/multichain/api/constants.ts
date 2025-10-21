@@ -98,7 +98,6 @@ export const RPC_HANDLED_METHODS = new Set([
 	'eth_sendRawTransaction',
 	'eth_syncing',
 	'eth_uninstallFilter',
-	'web3_clientVersion',
 ]);
 
 export const SDK_HANDLED_METHODS = new Set(['eth_accounts', 'eth_chainId']);
