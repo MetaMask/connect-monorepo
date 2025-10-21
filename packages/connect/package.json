@@ -45,7 +45,7 @@
     "dist/"
   ],
   "scripts": {
-    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts --format esm,cjs --external @metamask/multichain",
+    "build": "yarn clean && npx tsup",
     "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "build:docs": "typedoc",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect",
