@@ -86,10 +86,7 @@ module.exports = defineConfig({
         expectWorkspaceField(workspace, 'keywords', ['MetaMask', 'Ethereum']);
 
         // All non-root packages must have a homepage URL.
-        expectWorkspaceField(
-          workspace,
-          'homepage',
-        );
+        expectWorkspaceField(workspace, 'homepage');
 
         // All non-root packages must have a URL for reporting bugs that points
         // to an Issues page.
@@ -115,10 +112,7 @@ module.exports = defineConfig({
         expectCorrectWorkspaceExports(workspace);
 
         // All non-root packages must have a valid "build" script.
-        expectWorkspaceField(
-          workspace,
-          'scripts.build',
-        );
+        expectWorkspaceField(workspace, 'scripts.build');
 
         if (isPrivate) {
           // All private, non-root packages must not have a "publish:preview"
@@ -149,11 +143,7 @@ module.exports = defineConfig({
         );
 
         // All non-root packages must have a "test" script.
-        expectWorkspaceField(
-          workspace,
-          'scripts.test',
-        );
-
+        expectWorkspaceField(workspace, 'scripts.test');
       }
 
       if (isChildWorkspace) {
@@ -480,25 +470,13 @@ async function expectWorkspaceLicense(workspace) {
 function expectCorrectWorkspaceExports(workspace) {
   // All non-root packages must provide the location of the compatible
   // JavaScript entrypoint and its matching type declaration file.
-  expectWorkspaceField(
-    workspace,
-    'exports["."].import.types',
-  );
-  expectWorkspaceField(
-    workspace,
-    'exports["."].import.default',
-  );
+  expectWorkspaceField(workspace, 'exports["."].import.types');
+  expectWorkspaceField(workspace, 'exports["."].import.default');
 
   // All non-root package must provide the location of the compatible
   // JavaScript entrypoint and its matching type declaration file.
-  expectWorkspaceField(
-    workspace,
-    'exports["."].require.types',
-  );
-  expectWorkspaceField(
-    workspace,
-    'exports["."].require.default',
-  );
+  expectWorkspaceField(workspace, 'exports["."].require.types');
+  expectWorkspaceField(workspace, 'exports["."].require.default');
   expectWorkspaceField(workspace, 'main');
   expectWorkspaceField(workspace, 'types');
 
@@ -798,13 +776,19 @@ async function expectReadme(workspace, workspaceBasename) {
     );
   }
 
-  if (!readme.includes(`yarn add @metamask/${workspaceBasename}`)) {
+  if (
+    !ALLOWED_INCONSISTENT_DEPENDENCIES[workspace.ident] &&
+    !readme.includes(`yarn add @metamask/${workspaceBasename}`)
+  ) {
     workspace.error(
       `The README.md does not contain an example of how to install the package using Yarn (\`yarn add @metamask/${workspaceBasename}\`). Please add an example.`,
     );
   }
 
-  if (!readme.includes(`npm install @metamask/${workspaceBasename}`)) {
+  if (
+    !ALLOWED_INCONSISTENT_DEPENDENCIES[workspace.ident] &&
+    !readme.includes(`npm install @metamask/${workspaceBasename}`)
+  ) {
     workspace.error(
       `The README.md does not contain an example of how to install the package using npm (\`npm install @metamask/${workspaceBasename}\`). Please add an example.`,
     );

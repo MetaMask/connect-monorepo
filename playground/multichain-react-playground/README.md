@@ -2,17 +2,6 @@
 
 A test dapp for the MetaMask Multichain API.
 
-## Package Install
-
-```bash
-`yarn add @metamask/multichain-react-playground`
-```
-or
-
-```bash
-`npm install @metamask/multichain-react-playground`
-```
-
 ## Installation
 
 `yarn`
