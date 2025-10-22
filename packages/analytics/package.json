@@ -45,7 +45,8 @@
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest",
-    "test:ci": "vitest --run"
+    "test:ci": "vitest run",
+    "test:verbose": "vitest run --reporter=verbose"
   },
   "dependencies": {
     "openapi-fetch": "^0.13.5"
