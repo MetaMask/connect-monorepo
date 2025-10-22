@@ -1,6 +1,7 @@
 {
   "name": "@metamask/multichain-react-native-playground",
   "version": "0.0.0",
+  "description": "A native test dapp for multichain api",
   "keywords": [
     "MetaMask",
     "Ethereum"
@@ -32,7 +33,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
-    "@metamask/mobile-wallet-protocol-core": "0.2.0",
+    "@metamask/mobile-wallet-protocol-core": "^0.3.0",
     "@metamask/mobile-wallet-protocol-wallet-client": "0.2.1",
     "@metamask/multichain": "workspace:^",
     "@metamask/utils": "^11.8.1",
@@ -58,8 +59,8 @@
     "expo-symbols": "~1.0.7",
     "expo-system-ui": "~6.0.7",
     "expo-web-browser": "~15.0.7",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-native": "0.81.4",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-get-random-values": "^1.11.0",
@@ -70,9 +71,9 @@
     "react-native-worklets": "^0.5.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.28.4",
     "@metamask/api-specs": "^0.14.0",
-    "@metamask/auto-changelog": "^3.1.0",
+    "@metamask/auto-changelog": "^3.4.3",
     "@types/react": "~19.1.10",
     "@types/react-native-get-random-values": "^1.8.2",
     "cross-env": "^10.1.0",
