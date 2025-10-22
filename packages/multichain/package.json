@@ -60,7 +60,8 @@
     "pretest:ci": "yarn pretest",
     "test:ci": "yarn pretest:ci && vitest run --coverage --coverage.reporter=text --silent",
     "test:unit": "vitest run",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "test:verbose": "vitest run --reporter=verbose"
   },
   "dependencies": {
     "@metamask/analytics": "workspace:^",

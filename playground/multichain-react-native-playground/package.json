@@ -29,6 +29,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "echo \"No test specified\"",
+    "test:verbose": "yarn test",
     "allow-scripts": ""
   },
   "dependencies": {

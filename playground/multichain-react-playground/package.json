@@ -31,7 +31,8 @@
     "eject": "react-scripts eject",
     "prepack": "./scripts/prepack.sh",
     "start": "DISABLE_ESLINT_PLUGIN=true craco start",
-    "test": "echo \"No test specified\""
+    "test": "echo \"No test specified\"",
+    "test:verbose": "yarn test"
   },
   "browserslist": {
     "production": [
