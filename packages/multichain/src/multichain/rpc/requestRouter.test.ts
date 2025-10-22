@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: Tests require it */
-/** biome-ignore-all lint/style/noNonNullAssertion: Tests require it */
 import * as t from 'vitest';
 import { type InvokeMethodOptions, RPCInvokeMethodErr, type Scope } from '../../domain';
 import type { RequestRouter } from './requestRouter';
