@@ -19,30 +19,30 @@
   "exports": {
     ".": {
       "browser": {
-        "types": "./dist/types/multichain.d.ts",
-        "import": "./dist/browser/es/multichain.mjs"
+        "types": "./dist/types/connect-multichain.d.ts",
+        "import": "./dist/browser/es/connect-multichain.mjs"
       },
       "react-native": {
-        "types": "./dist/types/multichain.d.ts",
-        "import": "./dist/react-native/es/multichain.mjs"
+        "types": "./dist/types/connect-multichain.d.ts",
+        "import": "./dist/react-native/es/connect-multichain.mjs"
       },
       "import": {
-        "types": "./dist/types/multichain.d.ts",
-        "default": "./dist/node/es/multichain.mjs"
+        "types": "./dist/types/connect-multichain.d.ts",
+        "default": "./dist/node/es/connect-multichain.mjs"
       },
       "require": {
-        "types": "./dist/types/multichain.d.ts",
-        "default": "./dist/node/cjs/multichain.js"
+        "types": "./dist/types/connect-multichain.d.ts",
+        "default": "./dist/node/cjs/connect-multichain.js"
       },
-      "default": "./dist/node/cjs/multichain.js"
+      "default": "./dist/node/cjs/connect-multichain.js"
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/node/cjs/multichain.js",
-  "module": "./dist/browser/es/multichain.mjs",
-  "browser": "./dist/browser/es/multichain.mjs",
-  "react-native": "./dist/react-native/es/multichain.mjs",
-  "types": "./dist/types/multichain.d.ts",
+  "main": "./dist/node/cjs/connect-multichain.js",
+  "module": "./dist/browser/es/connect-multichain.mjs",
+  "browser": "./dist/browser/es/connect-multichain.mjs",
+  "react-native": "./dist/react-native/es/connect-multichain.mjs",
+  "types": "./dist/types/connect-multichain.d.ts",
   "files": [
     "dist/"
   ],
