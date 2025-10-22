@@ -3695,12 +3695,52 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@metamask/connect-multichain@workspace:^, @metamask/connect-multichain@workspace:packages/connect-multichain":
+  version: 0.0.0-use.local
+  resolution: "@metamask/connect-multichain@workspace:packages/connect-multichain"
+  dependencies:
+    "@metamask/analytics": "workspace:^"
+    "@metamask/auto-changelog": "npm:^3.4.3"
+    "@metamask/mobile-wallet-protocol-core": "npm:^0.3.0"
+    "@metamask/mobile-wallet-protocol-dapp-client": "npm:^0.2.1"
+    "@metamask/multichain-api-client": "npm:^0.8.0"
+    "@metamask/multichain-ui": "workspace:^"
+    "@metamask/onboarding": "npm:^1.0.1"
+    "@metamask/utils": "npm:^11.8.1"
+    "@paulmillr/qr": "npm:^0.2.1"
+    "@react-native-async-storage/async-storage": "npm:^2.2.0"
+    "@types/jsdom": "npm:^21.1.7"
+    "@types/pako": "npm:^2.0.4"
+    "@types/ws": "npm:^8.18.1"
+    "@vitest/coverage-v8": "npm:^3.2.4"
+    bowser: "npm:^2.11.0"
+    cross-fetch: "npm:^4.1.0"
+    deepmerge: "npm:^4.2.2"
+    eciesjs: "npm:^0.4.15"
+    esbuild-plugin-umd-wrapper: "npm:^3.0.0"
+    eventemitter3: "npm:^5.0.1"
+    fake-indexeddb: "npm:^6.0.1"
+    jsdom: "npm:^26.1.0"
+    nock: "npm:^14.0.4"
+    pako: "npm:^2.1.0"
+    prettier: "npm:^3.3.3"
+    typedoc: "npm:^0.23.22"
+    typedoc-plugin-missing-exports: "npm:^1.0.0"
+    typescript: "npm:~5.9.2"
+    uuid: "npm:^11.1.0"
+    vitest: "npm:^3.1.2"
+    ws: "npm:^8.18.3"
+  peerDependencies:
+    "@react-native-async-storage/async-storage": ^1.23
+  languageName: unknown
+  linkType: soft
+
 "@metamask/connect@workspace:packages/connect":
   version: 0.0.0-use.local
   resolution: "@metamask/connect@workspace:packages/connect"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.3"
-    "@metamask/multichain": "workspace:^"
+    "@metamask/connect-multichain": "workspace:^"
     "@types/jest": "npm:^29.5.14"
     deepmerge: "npm:^4.2.2"
     ts-jest: "npm:^27.1.4"
@@ -3907,7 +3947,7 @@ __metadata:
   resolution: "@metamask/multichain-node-playground@workspace:playground/multichain-node-playground"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.3"
-    "@metamask/multichain": "workspace:^"
+    "@metamask/connect-multichain": "workspace:^"
     "@types/inquirer": "npm:^8.2.1"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.9.0"
@@ -3933,9 +3973,9 @@ __metadata:
     "@expo/vector-icons": "npm:^15.0.2"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.3"
+    "@metamask/connect-multichain": "workspace:^"
     "@metamask/mobile-wallet-protocol-core": "npm:^0.3.0"
     "@metamask/mobile-wallet-protocol-wallet-client": "npm:0.2.1"
-    "@metamask/multichain": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
@@ -3987,7 +4027,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "npm:^2.0.0"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.3"
-    "@metamask/multichain": "workspace:^"
+    "@metamask/connect-multichain": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@open-rpc/schema-utils-js": "npm:^2.0.5"
@@ -4043,46 +4083,6 @@ __metadata:
     typedoc: "npm:^0.23.22"
     typedoc-plugin-missing-exports: "npm:^1.0.0"
     typescript: "npm:~5.9.2"
-  languageName: unknown
-  linkType: soft
-
-"@metamask/multichain@workspace:^, @metamask/multichain@workspace:packages/multichain":
-  version: 0.0.0-use.local
-  resolution: "@metamask/multichain@workspace:packages/multichain"
-  dependencies:
-    "@metamask/analytics": "workspace:^"
-    "@metamask/auto-changelog": "npm:^3.4.3"
-    "@metamask/mobile-wallet-protocol-core": "npm:^0.3.0"
-    "@metamask/mobile-wallet-protocol-dapp-client": "npm:^0.2.1"
-    "@metamask/multichain-api-client": "npm:^0.8.0"
-    "@metamask/multichain-ui": "workspace:^"
-    "@metamask/onboarding": "npm:^1.0.1"
-    "@metamask/utils": "npm:^11.8.1"
-    "@paulmillr/qr": "npm:^0.2.1"
-    "@react-native-async-storage/async-storage": "npm:^2.2.0"
-    "@types/jsdom": "npm:^21.1.7"
-    "@types/pako": "npm:^2.0.4"
-    "@types/ws": "npm:^8.18.1"
-    "@vitest/coverage-v8": "npm:^3.2.4"
-    bowser: "npm:^2.11.0"
-    cross-fetch: "npm:^4.1.0"
-    deepmerge: "npm:^4.2.2"
-    eciesjs: "npm:^0.4.15"
-    esbuild-plugin-umd-wrapper: "npm:^3.0.0"
-    eventemitter3: "npm:^5.0.1"
-    fake-indexeddb: "npm:^6.0.1"
-    jsdom: "npm:^26.1.0"
-    nock: "npm:^14.0.4"
-    pako: "npm:^2.1.0"
-    prettier: "npm:^3.3.3"
-    typedoc: "npm:^0.23.22"
-    typedoc-plugin-missing-exports: "npm:^1.0.0"
-    typescript: "npm:~5.9.2"
-    uuid: "npm:^11.1.0"
-    vitest: "npm:^3.1.2"
-    ws: "npm:^8.18.3"
-  peerDependencies:
-    "@react-native-async-storage/async-storage": ^1.23
   languageName: unknown
   linkType: soft
 

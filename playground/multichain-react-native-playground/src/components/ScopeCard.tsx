@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: ok */
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
-import type { Scope, SessionData } from '@metamask/multichain';
+import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { type CaipAccountId, type CaipChainId, type CaipAccountAddress, parseCaipAccountId, type Json } from '@metamask/utils';
 import type { OpenrpcDocument, MethodObject } from '@open-rpc/meta-schema';
 import { useState, useCallback, useEffect } from 'react';
@@ -364,4 +364,3 @@ const styles = StyleSheet.create({
 		color: colors.gray600,
 	},
 });
-

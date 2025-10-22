@@ -13,13 +13,13 @@
     "resolveJsonModule": true,
     "baseUrl": "./",
     "paths": {
-      "@metamask/multichain": ["../../packages/multichain/src/index.node.ts"],
+      "@metamask/connect-multichain": ["../../packages/connect-multichain/src/index.node.ts"],
       "@metamask/*": ["../../*/src"],
-      "src/*": ["../../packages/multichain/src/*"]
+      "src/*": ["../../packages/connect-multichain/src/*"]
     }
   },
   "references": [
-    { "path": "../../packages/multichain" },
+    { "path": "../../packages/connect-multichain" },
   ],
   "include": ["./src"]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@metamask/multichain",
+  "name": "@metamask/connect-multichain",
   "version": "0.0.0",
   "description": "Multichain package for MetaMask Connect",
   "keywords": [
@@ -49,8 +49,8 @@
   "scripts": {
     "build": "yarn clean && tsc -b tsconfig.build.json && npx tsup",
     "build:docs": "typedoc",
-    "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain",
-    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-multichain",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-multichain",
     "clean": "npx rimraf ./dist",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",

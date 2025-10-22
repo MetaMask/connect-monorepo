@@ -27,7 +27,7 @@
     "test": "echo \"No test specified\""
   },
   "dependencies": {
-    "@metamask/multichain": "workspace:^",
+    "@metamask/connect-multichain": "workspace:^",
     "chalk": "^4.1.2",
     "inquirer": "^8.2.4",
     "ora": "^5.4.1"

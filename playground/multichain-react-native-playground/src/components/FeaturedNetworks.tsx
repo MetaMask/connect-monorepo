@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { Scope } from '@metamask/multichain';
+import type { Scope } from '@metamask/connect-multichain';
 import type React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
@@ -101,4 +101,3 @@ const styles = StyleSheet.create({
 		color: colors.gray400,
 	},
 });
-
