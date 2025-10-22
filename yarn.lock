@@ -4027,7 +4027,7 @@ __metadata:
     "@metamask/eslint-config-jest": "npm:^14.0.0"
     "@metamask/eslint-config-nodejs": "npm:^14.0.0"
     "@metamask/eslint-config-typescript": "npm:^14.0.0"
-    "@metamask/utils": "npm:^9.1.0"
+    "@metamask/utils": "npm:^11.8.1"
     "@ts-bridge/cli": "npm:^0.5.1"
     "@types/jest": "npm:^27.4.1"
     "@types/lodash": "npm:^4.14.191"
@@ -4272,7 +4272,7 @@ __metadata:
     "@metamask/multichain-api-client": "npm:^0.8.0"
     "@metamask/multichain-ui": "workspace:^"
     "@metamask/onboarding": "npm:^1.0.1"
-    "@metamask/utils": "npm:^11.4.0"
+    "@metamask/utils": "npm:^11.8.1"
     "@paulmillr/qr": "npm:^0.2.1"
     "@react-native-async-storage/async-storage": "npm:^1.23.1"
     "@types/jsdom": "npm:^21.1.7"
@@ -4317,7 +4317,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/utils@npm:^11.4.0, @metamask/utils@npm:^11.8.1":
+"@metamask/utils@npm:^11.8.1":
   version: 11.8.1
   resolution: "@metamask/utils@npm:11.8.1"
   dependencies:
