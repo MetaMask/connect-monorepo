@@ -13,7 +13,6 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "useUnknownInCatchVariables": false,
-    "incremental": false,
     "lib": ["DOM", "ES2020"],
     "skipLibCheck": true,
     "types": ["node"],
