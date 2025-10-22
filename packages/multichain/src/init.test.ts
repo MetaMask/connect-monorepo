@@ -7,7 +7,7 @@ import {
   runTestsInWebMobileEnv,
 } from '../tests/fixtures.test';
 
-// Carefull, order of import matters to keep mocks working
+// Careful, order of import matters to keep mocks working
 import { analytics } from '@metamask/analytics';
 import * as loggerModule from './domain/logger';
 import type { TestSuiteOptions, MockedData } from '../tests/types';

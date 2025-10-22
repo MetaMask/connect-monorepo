@@ -3,7 +3,7 @@
 import * as t from 'vitest';
 import { vi } from 'vitest';
 import type { InvokeMethodOptions, MultichainOptions, MultichainCore, Scope } from './domain';
-// Carefull, order of import matters to keep mocks working
+// Careful, order of import matters to keep mocks working
 import { runTestsInNodeEnv, runTestsInRNEnv, runTestsInWebEnv, runTestsInWebMobileEnv } from '../tests/fixtures.test';
 import { Store } from './store';
 import { mockSessionData, mockSessionRequestData } from '../tests/data';
