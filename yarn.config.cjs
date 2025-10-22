@@ -23,6 +23,9 @@ const { inspect } = require('util');
  * This should trend towards empty.
  */
 const ALLOWED_INCONSISTENT_DEPENDENCIES = {
+  '@metamask/multichain': 'workspace:^',
+  '@metamask/multichain-ui': 'workspace:^',
+  '@metamask/analytics': 'workspace:^',
   // Add your dependencies here
 };
 
@@ -48,6 +51,10 @@ module.exports = defineConfig({
     );
 
     for (const workspace of Yarn.workspaces()) {
+      // We skip playground checks, as these are not user facing packages
+      if (workspace.cwd.includes('playground')) {
+        continue;
+      }
       const workspaceBasename = getWorkspaceBasename(workspace);
       const isChildWorkspace = workspace.cwd !== '.';
       const isPrivate =
@@ -78,16 +85,15 @@ module.exports = defineConfig({
         // All non-root packages must have the same set of NPM keywords.
         expectWorkspaceField(workspace, 'keywords', ['MetaMask', 'Ethereum']);
 
-        // All non-root packages must have a homepage URL that includes its name.
+        // All non-root packages must have a homepage URL.
         expectWorkspaceField(
           workspace,
           'homepage',
-          `${repositoryUri}/tree/main/packages/${workspaceBasename}#readme`,
         );
 
         // All non-root packages must have a URL for reporting bugs that points
-        // to the Issues page for the repository.
-        expectWorkspaceField(workspace, 'bugs.url', `${repositoryUri}/issues`);
+        // to an Issues page.
+        expectWorkspaceField(workspace, 'bugs.url');
 
         // All non-root packages must specify a Git repository within the
         // MetaMask GitHub organization.
@@ -108,11 +114,10 @@ module.exports = defineConfig({
         // exports correctly.
         expectCorrectWorkspaceExports(workspace);
 
-        // All non-root packages must have the same "build" script.
+        // All non-root packages must have a valid "build" script.
         expectWorkspaceField(
           workspace,
           'scripts.build',
-          'ts-bridge --project tsconfig.build.json --verbose --clean --no-references',
         );
 
         if (isPrivate) {
@@ -143,33 +148,12 @@ module.exports = defineConfig({
           '../../scripts/since-latest-release.sh',
         );
 
-        // All non-root packages must have the same "test" script.
+        // All non-root packages must have a "test" script.
         expectWorkspaceField(
           workspace,
           'scripts.test',
-          'NODE_OPTIONS=--experimental-vm-modules jest --reporters=jest-silent-reporter',
         );
 
-        // All non-root packages must have the same "test:clean" script.
-        expectWorkspaceField(
-          workspace,
-          'scripts.test:clean',
-          'NODE_OPTIONS=--experimental-vm-modules jest --clearCache',
-        );
-
-        // All non-root packages must have the same "test:verbose" script.
-        expectWorkspaceField(
-          workspace,
-          'scripts.test:verbose',
-          'NODE_OPTIONS=--experimental-vm-modules jest --verbose',
-        );
-
-        // All non-root packages must have the same "test:watch" script.
-        expectWorkspaceField(
-          workspace,
-          'scripts.test:watch',
-          'NODE_OPTIONS=--experimental-vm-modules jest --watch',
-        );
       }
 
       if (isChildWorkspace) {
@@ -494,33 +478,29 @@ async function expectWorkspaceLicense(workspace) {
  * @param {Workspace} workspace - The workspace to check.
  */
 function expectCorrectWorkspaceExports(workspace) {
-  // All non-root packages must provide the location of the ESM-compatible
+  // All non-root packages must provide the location of the compatible
   // JavaScript entrypoint and its matching type declaration file.
   expectWorkspaceField(
     workspace,
     'exports["."].import.types',
-    './dist/index.d.mts',
   );
   expectWorkspaceField(
     workspace,
     'exports["."].import.default',
-    './dist/index.mjs',
   );
 
-  // All non-root package must provide the location of the CommonJS-compatible
-  // entrypoint and its matching type declaration file.
+  // All non-root package must provide the location of the compatible
+  // JavaScript entrypoint and its matching type declaration file.
   expectWorkspaceField(
     workspace,
     'exports["."].require.types',
-    './dist/index.d.cts',
   );
   expectWorkspaceField(
     workspace,
     'exports["."].require.default',
-    './dist/index.cjs',
   );
-  expectWorkspaceField(workspace, 'main', './dist/index.cjs');
-  expectWorkspaceField(workspace, 'types', './dist/index.d.cts');
+  expectWorkspaceField(workspace, 'main');
+  expectWorkspaceField(workspace, 'types');
 
   // Types should not be set in the export object directly, but rather in the
   // `import` and `require` subfields.

@@ -35,7 +35,8 @@
         "default": "./dist/node/cjs/multichain.js"
       },
       "default": "./dist/node/cjs/multichain.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "main": "./dist/node/cjs/multichain.js",
   "module": "./dist/browser/es/multichain.mjs",

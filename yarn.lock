@@ -103,7 +103,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.1.0, @babel/core@npm:^7.11.1, @babel/core@npm:^7.11.6, @babel/core@npm:^7.12.3, @babel/core@npm:^7.16.0, @babel/core@npm:^7.20.0, @babel/core@npm:^7.23.5, @babel/core@npm:^7.23.9, @babel/core@npm:^7.25.2, @babel/core@npm:^7.7.2, @babel/core@npm:^7.8.0":
+"@babel/core@npm:^7.1.0, @babel/core@npm:^7.11.1, @babel/core@npm:^7.11.6, @babel/core@npm:^7.12.3, @babel/core@npm:^7.16.0, @babel/core@npm:^7.20.0, @babel/core@npm:^7.23.9, @babel/core@npm:^7.25.2, @babel/core@npm:^7.28.4, @babel/core@npm:^7.7.2, @babel/core@npm:^7.8.0":
   version: 7.28.4
   resolution: "@babel/core@npm:7.28.4"
   dependencies:
@@ -4018,7 +4018,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/metamask-connect-monorepo@workspace:."
   dependencies:
-    "@babel/core": "npm:^7.23.5"
+    "@babel/core": "npm:^7.28.4"
     "@babel/plugin-transform-modules-commonjs": "npm:^7.23.3"
     "@babel/preset-typescript": "npm:^7.23.3"
     "@lavamoat/allow-scripts": "npm:^3.0.4"
@@ -4144,7 +4144,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/multichain-react-native-playground@workspace:playground/multichain-react-native-playground"
   dependencies:
-    "@babel/core": "npm:^7.25.2"
+    "@babel/core": "npm:^7.28.4"
     "@expo/vector-icons": "npm:^15.0.2"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.1.0"

@@ -18,3 +18,14 @@ and
 ```bash
 yarn start connect
 ```
+
+## Installation
+
+```bash
+`yarn add @metamask/multichain-node-playground`
+```
+or
+
+```bash
+`npm install @metamask/multichain-node-playground`
+```

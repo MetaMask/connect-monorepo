@@ -41,7 +41,7 @@
     "pre-push": "yarn lint"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.5",
+    "@babel/core": "^7.28.4",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
     "@lavamoat/allow-scripts": "^3.0.4",

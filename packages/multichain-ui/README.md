@@ -6,6 +6,17 @@ This project includes fully functional InstallModal web used in the Multichain S
 
 Untrusted flows use the OTPModal which exists but is not yet fully supported.
 
+## Install
+
+```bash
+`yarn add @metamask/multichain-ui`
+```
+or
+
+```bash
+`npm install @metamask/multichain-ui`
+```
+
 ## Development
 
 ```bash

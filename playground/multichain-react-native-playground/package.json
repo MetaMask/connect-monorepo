@@ -1,6 +1,7 @@
 {
   "name": "@metamask/multichain-react-native-playground",
   "version": "0.0.0",
+  "description": "A native test dapp for multichain api",
   "keywords": [
     "MetaMask",
     "Ethereum"
@@ -70,7 +71,7 @@
     "react-native-worklets": "^0.5.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.28.4",
     "@metamask/api-specs": "^0.14.0",
     "@metamask/auto-changelog": "^3.1.0",
     "@types/react": "~19.1.10",
