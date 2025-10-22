@@ -67,7 +67,7 @@
     "qr-code-styling": "^1.9.2"
   },
   "devDependencies": {
-    "@lavamoat/allow-scripts": "^2.3.1",
+    "@lavamoat/allow-scripts": "^3.0.4",
     "@metamask/auto-changelog": "^3.4.3",
     "@size-limit/preset-big-lib": "^11.0.2",
     "@stencil/core": "4.22.2",
@@ -82,7 +82,7 @@
     "size-limit": "^11.1.6",
     "typedoc": "^0.23.22",
     "typedoc-plugin-missing-exports": "^1.0.0",
-    "typescript": "~5.2.2"
+    "typescript": "~5.9.2"
   },
   "engines": {
     "node": "^18.18 || >=20"
