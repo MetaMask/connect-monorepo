@@ -9,20 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0]
 
-### Uncategorized
+### Added
 
-- refactor: remove jest config ([#15](https://github.com/MetaMask/metamask-connect-monorepo/pull/15))
-- build: fix `test:packages` ([#12](https://github.com/MetaMask/metamask-connect-monorepo/pull/12))
-- chore: update CHANGELOG.md for workspaces
-- chore: update CHANGELOG.md for workspaces
-- chore: yarn constraints fix
-- resolve initial build issues
-- chore: metamask-monorepo-template dc8ccdc43a74e4ca3d10fde319f5e1060a557a3d
-- feat: bootstrap monorepo
-
-### Changed
-
-- Bump `typescript` from ~5.2.2 to ~5.9.2 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
+- Initial release
 
 [Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/analytics@0.1.0...HEAD
 [0.1.0]: https://github.com/MetaMask/metamask-connect-monorepo/releases/tag/@metamask/analytics@0.1.0
