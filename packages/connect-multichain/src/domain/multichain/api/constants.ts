@@ -64,6 +64,7 @@ export const infuraRpcUrls: RpcUrlsMap = {
   'eip155:44787': 'https://celo-alfajores.infura.io/v3/',
 };
 
+// Methods that are passed through to the RPC node
 export const RPC_HANDLED_METHODS = new Set([
 	'eth_blockNumber',
 	'eth_gasPrice',
@@ -100,4 +101,5 @@ export const RPC_HANDLED_METHODS = new Set([
 	'eth_uninstallFilter',
 ]);
 
+// Methods that are handled by the SDK directly
 export const SDK_HANDLED_METHODS = new Set(['eth_accounts', 'eth_chainId']);
