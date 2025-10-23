@@ -92,7 +92,7 @@ t.describe('RequestRouter', () => {
 		});
 	});
 
-	t.describe('when the request is a rpc node request', () => {
+	t.describe('when the request method is in `RPC_HANDLED_METHODS`', () => {
 		t.it('should route to the rpc node', async () => {
 			const options: InvokeMethodOptions = {
 				scope: 'eip155:1' as Scope,
