@@ -67,9 +67,10 @@ import {
   getDappId,
   openDeeplink,
   setupDappMetadata,
-  setupInfuraProvider,
 } from './utils';
 import { RpcClient } from './rpc/handlers/rpcClient';
+
+export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
@@ -129,8 +130,7 @@ export class MultichainSDK extends MultichainCore {
   }
 
   private constructor(options: MultichainOptions) {
-    const withInfuraRPCMethods = setupInfuraProvider(options);
-    const withDappMetadata = setupDappMetadata(withInfuraRPCMethods);
+    const withDappMetadata = setupDappMetadata(options);
     const allOptions = {
       ...withDappMetadata,
       ui: {

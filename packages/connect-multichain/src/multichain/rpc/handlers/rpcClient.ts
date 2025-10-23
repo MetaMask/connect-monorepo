@@ -45,20 +45,9 @@ export class RpcClient {
 	}
 
 	private getRpcEndpoint(scope: Scope) {
-		let infuraAPIKey = this.config?.api?.infuraAPIKey;
 
 		let readonlyRPCMap: RpcUrlsMap = this.config?.api?.readonlyRPCMap ?? {};
-		if (infuraAPIKey) {
-			const urlsWithToken = getInfuraRpcUrls(infuraAPIKey);
-			if (readonlyRPCMap) {
-				readonlyRPCMap = {
-					...urlsWithToken,
-					...readonlyRPCMap,
-				};
-			} else {
-				readonlyRPCMap = urlsWithToken;
-			}
-		}
+
 		const rpcEndpoint = readonlyRPCMap[scope];
 		if (!rpcEndpoint) {
 			throw new MissingRpcEndpointErr(`No RPC endpoint found for scope ${scope}`);

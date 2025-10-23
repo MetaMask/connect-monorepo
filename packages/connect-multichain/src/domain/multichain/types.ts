@@ -42,10 +42,8 @@ export type MultichainOptions = {
   dapp: DappSettings;
   /** Optional API configuration for external services */
   api?: {
-    /** The Infura API key to use for RPC requests */
-    infuraAPIKey?: string;
     /** A map of RPC URLs to use for read-only requests */
-    readonlyRPCMap?: RpcUrlsMap;
+    readonlyRPCMap?: RpcUrlsMap; // TODO: make this required. hoist to root
   };
   /** Analytics configuration */
   analytics?: { enabled: false } | { enabled: true; integrationType: string };
