@@ -5,12 +5,12 @@
 		"jsx": "react-native",
     "paths": {
 			"@/*": ["./*"],
-      "@metamask/multichain": ["../../packages/multichain/src/index.native.ts"],
+      "@metamask/connect-multichain": ["../../packages/connect-multichain/src/index.native.ts"],
       "@metamask/*": ["../../*/src"]
     }
 	},
   "references": [
-    { "path": "../../packages/multichain" }
+    { "path": "../../packages/connect-multichain" }
   ],
 	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

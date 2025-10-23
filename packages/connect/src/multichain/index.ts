@@ -1,1 +1,1 @@
-export * from '@metamask/multichain';
+export * from '@metamask/connect-multichain';

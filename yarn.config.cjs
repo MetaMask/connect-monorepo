@@ -23,7 +23,7 @@ const { inspect } = require('util');
  * This should trend towards empty.
  */
 const ALLOWED_INCONSISTENT_DEPENDENCIES = {
-  '@metamask/multichain': 'workspace:^',
+  '@metamask/connect-multichain': 'workspace:^',
   '@metamask/multichain-ui': 'workspace:^',
   '@metamask/analytics': 'workspace:^',
   // Add your dependencies here

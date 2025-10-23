@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import type { Scope, SessionData } from '@metamask/multichain';
+import type { Scope, SessionData } from '@metamask/connect-multichain';
 import type { CaipAccountId } from '@metamask/utils';
 import { Buffer } from 'buffer';
 

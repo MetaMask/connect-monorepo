@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { Scope } from '@metamask/multichain';
+import type { Scope } from '@metamask/connect-multichain';
 // biome-ignore lint/style/useImportType: ok
 import React from 'react';
 
