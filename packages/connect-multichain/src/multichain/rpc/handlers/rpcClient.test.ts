@@ -35,6 +35,7 @@ t.describe('RpcClient', () => {
 		mockConfig = {
 			api: {
 				readonlyRPCMap: {
+					'eip155:1': 'https://mainnet.infura.io/v3/01234567890',
 					'eip155:11155111': 'https://custom-sepolia.com',
 				},
 			},
