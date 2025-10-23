@@ -33,7 +33,7 @@
     "ora": "^5.4.1"
   },
   "devDependencies": {
-    "@metamask/auto-changelog": "^3.4.3",
+    "@metamask/auto-changelog": "^5.1.0",
     "@types/inquirer": "^8.2.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",

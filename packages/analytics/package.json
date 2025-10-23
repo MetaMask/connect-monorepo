@@ -52,7 +52,7 @@
     "openapi-fetch": "^0.13.5"
   },
   "devDependencies": {
-    "@metamask/auto-changelog": "^3.4.3",
+    "@metamask/auto-changelog": "^5.1.0",
     "deepmerge": "^4.2.2",
     "nock": "^14.0.4",
     "tsup": "^8.4.0",

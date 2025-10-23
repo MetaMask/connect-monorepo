@@ -60,7 +60,7 @@
     "@lavamoat/allow-scripts": "^3.0.4",
     "@lavamoat/preinstall-always-fail": "^2.0.0",
     "@metamask/api-specs": "^0.14.0",
-    "@metamask/auto-changelog": "^3.4.3",
+    "@metamask/auto-changelog": "^5.1.0",
     "@open-rpc/meta-schema": "^1.14.9",
     "@open-rpc/schema-utils-js": "^2.0.5",
     "@solana/web3.js": "^1.98.0",
