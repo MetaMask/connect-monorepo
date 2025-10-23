@@ -41,9 +41,9 @@ export type MultichainOptions = {
   /** Dapp identification and branding settings */
   dapp: DappSettings;
   /** Optional API configuration for external services */
-  api?: {
+  api: {
     /** A map of RPC URLs to use for read-only requests */
-    readonlyRPCMap?: RpcUrlsMap; // TODO: make this required. hoist to root
+    readonlyRPCMap: RpcUrlsMap;
   };
   /** Analytics configuration */
   analytics?: { enabled: false } | { enabled: true; integrationType: string };

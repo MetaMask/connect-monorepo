@@ -171,23 +171,5 @@ t.describe('RpcClient', () => {
         const options = { ...baseOptions, scope: 'eip155:999' as Scope };
         await t.expect(rpcClient.request(options)).rejects.toBeInstanceOf(MissingRpcEndpointErr);
       });
-
-			// t.it('should redirect to provider when no RPC endpoint is available', async () => {
-			// 	const noRpcOptions: requestOptions = {
-			// 		scope: 'eip155:999' as Scope, // Unknown chain
-			// 		request: {
-			// 			method: 'eth_getBalance',
-			// 			params: { address: '0x123', blockNumber: 'latest' },
-			// 		},
-			// 	};
-			// 	mockTransport.request.mockResolvedValue({ result: '0xbalance' });
-			// 	const result = await rpcClient.request(noRpcOptions);
-			// 	t.expect(result).toBe('0xbalance');
-			// 	t.expect(mockTransport.request).toHaveBeenCalledWith({
-			// 		method: 'wallet_request',
-			// 		params: noRpcOptions,
-			// 	});
-			// 	t.expect(mockFetch).not.toHaveBeenCalled();
-			// });
 	});
 });
