@@ -37,7 +37,7 @@ t.describe('RequestRouter', () => {
 	});
 
 	t.describe('invokeMethod', () => {
-		t.describe('when the request is a wallet request', () => {
+		t.describe('when the requested method is neither in the `RPC_HANDLED_METHODS` nor the `SDK_HANDLED_METHODS`', () => {
 			t.it('should route to the wallet', async () => {
 				const signOptions: InvokeMethodOptions = {
 					scope: 'eip155:1' as Scope,
