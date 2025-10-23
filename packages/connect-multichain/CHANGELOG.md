@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- refactor: rename `@metamask/multichain` to `@metamask/connect-multichain` ([#14](https://github.com/MetaMask/metamask-connect-monorepo/pull/14))
+
 ### Changed
 
 - Bump `@metamask/utils` from ^11.4.0 to ^11.8.1 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
