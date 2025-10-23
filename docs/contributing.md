@@ -36,7 +36,7 @@ All code in this repo should not only follow the [MetaMask contributor guideline
 
 Please follow the [MetaMask unit testing guidelines](https://github.com/MetaMask/contributor-docs/blob/main/docs/testing/unit-testing.md) when writing tests.
 
-If you need to customize the behavior of Jest for a package, see `vitest.config.ts` within that package.
+If you need to customize the behavior of Vitest for a package, see `vitest.config.ts` within that package.
 
 - Run `yarn workspace <workspaceName> run test` to run all tests for a package.
 - Run `yarn workspace <workspaceName> run vitest <file>` to run a test file within the context of a package.
