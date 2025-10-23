@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { CaipChainId } from '@metamask/utils';
 import type EIP155 from './eip155';
 
 /**
@@ -77,9 +78,9 @@ export type InvokeMethodOptions = {
  * This type defines the structure for providing custom RPC endpoints
  * for different blockchain networks using CAIP-2 format identifiers.
  */
-export type RPC_URLS_MAP = {
+export type RpcUrlsMap = {
   /** CAIP-2 format chain ID mapped to its RPC URL (e.g., "eip155:1" -> "https://...") */
-  [chainId: `${string}:${string}`]: string;
+  [chainId: CaipChainId]: string;
 };
 
 /**
