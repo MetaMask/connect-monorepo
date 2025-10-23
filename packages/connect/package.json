@@ -1,7 +1,7 @@
 {
   "name": "@metamask/connect",
   "version": "0.0.0",
-  "description": "TODO",
+  "description": "MetaMask connect delivers a connection experience with focus on multichain functionality, persistent sessions, and abstracted transactions while preserving backwards compatibility with MetaMask SDK",
   "keywords": [
     "MetaMask",
     "Ethereum"
