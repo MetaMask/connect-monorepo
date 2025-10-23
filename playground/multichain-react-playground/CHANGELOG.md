@@ -7,24 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- refactor: remove jest config ([#15](https://github.com/MetaMask/metamask-connect-monorepo/pull/15))
-- refactor: rename `@metamask/multichain` to `@metamask/connect-multichain` ([#14](https://github.com/MetaMask/metamask-connect-monorepo/pull/14))
-- build: fix `test:packages` ([#12](https://github.com/MetaMask/metamask-connect-monorepo/pull/12))
-- chore: minor fix to not expect install instruction for non user facing packages
-- chore: update CHANGELOG.md for workspaces
-- Revert "chore: remove devDependency bumps from CHANGELOG"
-- chore: remove devDependency bumps from CHANGELOG
-- chore: update CHANGELOG.md for workspaces
-- chore: yarn constraints fix
-- chore: update constraints (wip)
-- build: update package export for connect (. instead of ./multichain) + createMetamaskSdk -> createMetamaskConnect refactor
-- chore: metamask-monorepo-template dc8ccdc43a74e4ca3d10fde319f5e1060a557a3d
-- chore: update playground scripts
-- lint: run prettier
-- feat: bootstrap monorepo
-
 ### Changed
 
 - Bump `@types/jest` from ^28.1.6 to ^29.5.14 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
