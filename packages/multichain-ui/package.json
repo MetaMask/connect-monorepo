@@ -59,6 +59,7 @@
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "echo \"No test specified\"",
     "test:watch": "echo \"No test specified\"",
+    "test:verbose": "yarn test",
     "preversion": "yarn test",
     "postversion": "git push --tags && yarn publish . --tag $npm_package_version && git push && echo \"Successfully released version $npm_package_version!\""
   },

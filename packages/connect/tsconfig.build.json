@@ -7,6 +7,6 @@
   },
   "include": ["./src"],
   "references": [
-    { "path": "../multichain/tsconfig.build.json" }
+    { "path": "../connect-multichain/tsconfig.build.json" }
   ]
 }

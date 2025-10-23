@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { createMetamaskConnect, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore } from '@metamask/multichain';
+import { createMetamaskConnect, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore } from '@metamask/connect-multichain';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';

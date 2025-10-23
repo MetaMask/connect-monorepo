@@ -1,14 +1,14 @@
-# `@metamask/multichain`
+# `@metamask/connect-multichain`
 
 multichain
 
 ## Installation
 
-`yarn add @metamask/multichain`
+`yarn add @metamask/connect-multichain`
 
 or
 
-`npm install @metamask/multichain`
+`npm install @metamask/connect-multichain`
 
 ## Contributing
 

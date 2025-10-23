@@ -13,8 +13,7 @@
     "playground/*"
   ],
   "scripts": {
-    "prebuild": "yarn workspace @metamask/multichain-ui run build && yarn workspace @metamask/analytics run build && yarn workspace @metamask/multichain run build",
-    "build": "yarn prebuild && yarn workspaces foreach --verbose --all run build",
+    "build": "yarn workspaces foreach --all --parallel --topological-dev --verbose run build",
     "build:clean": "yarn build:only-clean && yarn build",
     "build:docs": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run build:docs",
     "build:only-clean": "rimraf -g 'packages/*/dist' 'packages/*/*.tsbuildinfo'",
@@ -30,9 +29,9 @@
     "lint:misc": "prettier --no-error-on-unmatched-pattern '**/*.json' '**/*.md' '**/*.yml' '!.yarnrc.yml' '!merged-packages/**' --ignore-path .gitignore",
     "prepare-preview-builds": "./scripts/prepare-preview-builds.sh",
     "publish-previews": "yarn workspaces foreach --all --no-private --parallel --verbose run publish:preview",
-    "test": "yarn test:scripts --silent --collectCoverage=false --reporters=jest-silent-reporter && yarn test:packages",
+    "test": "yarn test:scripts --silent && yarn test:packages",
     "test:clean": "yarn workspaces foreach --all --parallel --verbose run test:clean && yarn test",
-    "test:packages": "yarn test:verbose --silent --collectCoverage=false --reporters=jest-silent-reporter",
+    "test:packages": "yarn test:verbose --silent",
     "test:verbose": "yarn workspaces foreach --all --parallel --verbose run test:verbose",
     "update-readme-content": "tsx scripts/update-readme-content.ts",
     "workspaces:list-versions": "./scripts/list-workspace-versions.sh"

@@ -31,7 +31,8 @@
     "eject": "react-scripts eject",
     "prepack": "./scripts/prepack.sh",
     "start": "DISABLE_ESLINT_PLUGIN=true craco start",
-    "test": "echo \"No test specified\""
+    "test": "echo \"No test specified\"",
+    "test:verbose": "yarn test"
   },
   "browserslist": {
     "production": [
@@ -49,7 +50,7 @@
     "@metamask/utils": "^11.8.1"
   },
   "dependencies": {
-    "@metamask/multichain": "workspace:^",
+    "@metamask/connect-multichain": "workspace:^",
     "@metamask/utils": "^11.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -104,8 +105,8 @@
       "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": false,
       "@solana/web3.js>rpc-websockets>utf-8-validate": false,
-      "@metamask/multichain>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
-      "@metamask/multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
+      "@metamask/connect-multichain>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
+      "@metamask/connect-multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
     }
   }
 }

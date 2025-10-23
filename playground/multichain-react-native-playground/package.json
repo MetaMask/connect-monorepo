@@ -29,13 +29,14 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "echo \"No test specified\"",
+    "test:verbose": "yarn test",
     "allow-scripts": ""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@metamask/connect-multichain": "workspace:^",
     "@metamask/mobile-wallet-protocol-core": "^0.3.0",
     "@metamask/mobile-wallet-protocol-wallet-client": "0.2.1",
-    "@metamask/multichain": "workspace:^",
     "@metamask/utils": "^11.8.1",
     "@open-rpc/meta-schema": "^1.14.9",
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -89,8 +90,8 @@
       "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": false,
       "@solana/web3.js>rpc-websockets>utf-8-validate": false,
-      "@metamask/multichain>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
-      "@metamask/multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
+      "@metamask/connect-multichain>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
+      "@metamask/connect-multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
     }
   },
   "private": true,

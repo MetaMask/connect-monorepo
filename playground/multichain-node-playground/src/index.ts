@@ -1,4 +1,4 @@
-import { createMetamaskConnect, type SessionData } from '@metamask/multichain';
+import { createMetamaskConnect, type SessionData } from '@metamask/connect-multichain';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';

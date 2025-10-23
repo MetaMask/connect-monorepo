@@ -1,4 +1,4 @@
-import type { SessionData } from '@metamask/multichain';
+import type { SessionData } from '@metamask/connect-multichain';
 import type { CaipChainId, Json, CaipAccountId } from '@metamask/utils';
 import type { MethodObject } from '@open-rpc/meta-schema';
 import type { Dispatch, SetStateAction } from 'react';
@@ -162,4 +162,3 @@ export const prepareMethodRequest = (
 		},
 	};
 };
-
