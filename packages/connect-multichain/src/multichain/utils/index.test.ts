@@ -126,30 +126,6 @@ t.describe('Utils', () => {
 		});
 	});
 
-	// t.describe('setupInfuraProvider', () => {
-	// 	t.it('should not set up infura provider if infuraAPIKey is not provided', async () => {
-	// 		options.api!.infuraAPIKey = undefined;
-	// 		await utils.setupInfuraProvider(options);
-	// 		t.expect(options.api?.readonlyRPCMap).toBeUndefined();
-	// 	});
-
-	// 	t.it('should set up infura provider with infuraAPIKey', async () => {
-	// 		await utils.setupInfuraProvider(options);
-	// 		t.expect(options.api?.readonlyRPCMap?.['eip155:1']).toBe(`https://mainnet.infura.io/v3/testKey`);
-	// 	});
-
-	// 	t.it('Should allow customizing the readonlyRPCMap + merge with defaults', async () => {
-	// 		const customChainId = 'eip155:12345';
-	// 		const customEndpoint = 'https://mainnet.infura.io/12345';
-	// 		options.api!.readonlyRPCMap = {
-	// 			[customChainId]: customEndpoint,
-	// 		};
-	// 		await utils.setupInfuraProvider(options);
-	// 		t.expect(options.api?.readonlyRPCMap?.['eip155:1']).toBe(`https://mainnet.infura.io/v3/testKey`);
-	// 		t.expect(options.api?.readonlyRPCMap?.[customChainId]).toBe(customEndpoint);
-	// 	});
-	// });
-
 	t.describe('setupDappMetadata', () => {
 		t.beforeEach(() => {
 			// Mock the document object to avoid undefined errors
