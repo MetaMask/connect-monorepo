@@ -8,5 +8,5 @@
     "sourceMap": true,
     "skipLibCheck": true
   },
-  "exclude": ["./jest.config.packages.ts", "**/*.test.ts", "**/jest.config.ts"]
+  "exclude": ["**/*.test.ts"]
 }
