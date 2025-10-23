@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { createMetamaskConnect, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore } from '@metamask/connect-multichain';
+import { createMetamaskConnect, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -32,6 +32,9 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 				dapp: {
 					name: 'playground',
 					url: 'https://playground.metamask.io',
+				},
+				api: {
+					readonlyRPCMap: getInfuraRpcUrls('FIX_THIS'),
 				},
 				mobile: {
 					preferredOpenLink: (deeplink: string) => {

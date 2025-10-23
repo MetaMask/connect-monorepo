@@ -1,4 +1,4 @@
-import { createMetamaskConnect, type SessionData } from '@metamask/connect-multichain';
+import { createMetamaskConnect, getInfuraRpcUrls, type SessionData } from '@metamask/connect-multichain';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';
@@ -203,6 +203,9 @@ const main = async () => {
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',
+    },
+    api: {
+      readonlyRPCMap: getInfuraRpcUrls('FIX_THIS'),
     },
   });
 

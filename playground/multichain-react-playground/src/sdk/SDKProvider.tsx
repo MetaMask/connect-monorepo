@@ -2,6 +2,7 @@
 
 import {
   createMetamaskConnect,
+  getInfuraRpcUrls,
   type InvokeMethodOptions,
   type MultichainCore,
   type Scope,
@@ -49,6 +50,9 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
         dapp: {
           name: 'playground',
           url: 'https://playground.metamask.io',
+        },
+        api: {
+          readonlyRPCMap: getInfuraRpcUrls('FIX_THIS'),
         },
         analytics: {
           enabled: false,
