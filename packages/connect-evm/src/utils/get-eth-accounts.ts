@@ -1,15 +1,18 @@
-import { SessionData } from '@metamask/multichain-sdk';
-import { Address } from '../types';
+import type { SessionData } from '@metamask/connect-multichain';
+
+import type { Address } from '../types';
 
 /**
- *  TODO: Replace with getEthAccounts from @metamask/chain-agnostic-permission once Buffer dependency is removed
- *  Get the Ethereum accounts from the session data
- * @param session - The session data
+ * TODO: Replace with getEthAccounts from @metamask/chain-agnostic-permission once Buffer dependency is removed
+ *
+ * Get the Ethereum accounts from the session data
+ *
+ * @param sessionScopes - The session scopes
  * @returns The Ethereum accounts
  */
 export const getEthAccounts = (
   sessionScopes: SessionData['sessionScopes'] | undefined,
-) => {
+): Address[] => {
   if (!sessionScopes) {
     return [];
   }

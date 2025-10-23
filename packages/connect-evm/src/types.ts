@@ -1,5 +1,6 @@
 // Basic types redefined to avoid importing @metamask/utils due to Buffer dependency
-import type { MultichainCore } from '@metamask/multichain-sdk';
+import type { MultichainCore } from '@metamask/connect-multichain';
+
 import type { EIP1193Provider } from './provider';
 
 export type Hex = `0x${string}`;
@@ -24,7 +25,6 @@ export type EventHandlers = {
 
 export type MetamaskConnectEVMOptions = {
   core: MultichainCore;
-  eventEmitter?: MinimalEventEmitter;
   eventHandlers?: EventHandlers;
 };
 
