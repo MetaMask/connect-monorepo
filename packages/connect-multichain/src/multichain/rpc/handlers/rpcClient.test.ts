@@ -34,8 +34,8 @@ t.describe('RpcClient', () => {
 
 		mockConfig = {
 			api: {
-				infuraAPIKey: 'test-infura-key',
 				readonlyRPCMap: {
+					'eip155:1': 'https://mainnet.infura.io/v3/01234567890',
 					'eip155:11155111': 'https://custom-sepolia.com',
 				},
 			},
@@ -79,7 +79,7 @@ t.describe('RpcClient', () => {
 	});
 
 	t.describe('request', () => {
-		t.it('should use readonlyRPCMap rpc endpoint when infuraAPIKey is provided and readonlyRPCMap contains a chainId that also exists in the infura RPC constants', async () => {
+		t.it('should use readonlyRPCMap rpc endpoint', async () => {
 			const mockJsonResponse = {
 				jsonrpc: '2.0',
 				result: '0x1234567890abcdef',
@@ -102,47 +102,6 @@ t.describe('RpcClient', () => {
 				body: t.expect.stringContaining('"method":"eth_getBalance"'),
 			});
 		});
-
-		t.it(
-			'should use readonlyRPCMap rpc endpoint when infuraAPIKey is provided and readonlyRPCMap does not contain a chainId that also exists in the infura RPC constants',
-			async () => {
-				const mockJsonResponse = {
-					jsonrpc: '2.0',
-					result: '0x1234567890abcdef',
-					id: 1,
-				};
-
-				const mockResponse = {
-					ok: true,
-					json: t.vi.fn().mockResolvedValue(mockJsonResponse),
-				};
-
-				mockFetch.mockResolvedValue(mockResponse);
-
-				const clientModule = await import('./rpcClient');
-				const rpcClient = new clientModule.RpcClient(
-					{
-						...mockConfig,
-						api: {
-							...mockConfig.api,
-							readonlyRPCMap: {
-								'eip155:10000': 'https://custom-rpc.com',
-							},
-						},
-					},
-					sdkInfo,
-				);
-
-				const result = await rpcClient.request({ ...baseOptions, scope: 'eip155:10000' });
-
-				t.expect(result).toBe('0x1234567890abcdef');
-				t.expect(mockFetch).toHaveBeenCalledWith('https://custom-rpc.com', {
-					method: 'POST',
-					headers: defaultHeaders,
-					body: t.expect.stringContaining('"method":"eth_getBalance"'),
-				});
-			},
-		);
 
 			t.it('should throw RPCReadonlyResponseErr when response cannot be parsed as JSON', async () => {
 				const mockResponse = {

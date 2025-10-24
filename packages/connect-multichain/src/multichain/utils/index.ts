@@ -7,7 +7,6 @@ import {
 } from '@metamask/utils';
 import {
   type DappSettings,
-  getInfuraRpcUrls,
   getPlatformType,
   type MultichainOptions,
   PlatformType,
@@ -117,25 +116,6 @@ export const extractFavicon = () => {
   }
   return favicon;
 };
-
-export function setupInfuraProvider(
-  options: MultichainOptions,
-): MultichainOptions {
-  const infuraAPIKey = options.api?.infuraAPIKey;
-  if (!infuraAPIKey) {
-    return options;
-  }
-  const urlsWithToken = getInfuraRpcUrls(infuraAPIKey);
-  if (options.api?.readonlyRPCMap) {
-    options.api.readonlyRPCMap = {
-      ...options.api.readonlyRPCMap,
-      ...urlsWithToken,
-    };
-  } else if (options.api) {
-    options.api.readonlyRPCMap = urlsWithToken;
-  }
-  return options;
-}
 
 export function setupDappMetadata(
   options: MultichainOptions,
