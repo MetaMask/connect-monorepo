@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+## [0.1.0]
 
-- Bump `typescript` from ~5.2.2 to ~5.9.2 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
+### Added
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/
+- Initial release
+
+[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/analytics@0.1.0...HEAD
+[0.1.0]: https://github.com/MetaMask/metamask-connect-monorepo/releases/tag/@metamask/analytics@0.1.0
