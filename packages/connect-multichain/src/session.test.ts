@@ -7,7 +7,7 @@ import type {
   Scope,
   SessionData,
 } from './domain';
-// Carefull, order of import matters to keep mocks working
+// Careful, order of import matters to keep mocks working
 import {
   runTestsInNodeEnv,
   runTestsInRNEnv,
