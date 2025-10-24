@@ -26,6 +26,7 @@ import {
 } from './utils/type-guards';
 
 /**
+ * Converts a number or string to a hex string
  *
  * @param value - The value to convert to hex
  * @returns The hex value
@@ -42,7 +43,7 @@ export class MetamaskConnectEVM {
   readonly #provider: EIP1193Provider;
 
   /** The currently selected chain ID on the wallet */
-  #currentChainId: number | undefined;
+  #currentChainId?: number | undefined;
 
   /** The currently selected account on the wallet */
   #currentAccount?: Address | undefined;

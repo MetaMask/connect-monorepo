@@ -1,18 +1,32 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "module": "ESNext",
-    "target": "ES2020",
-    "lib": ["ES2020", "DOM"],
-    "strict": true
+    "strict": true,
+    "outDir": "dist",
+    "target": "es6",
+    "esModuleInterop": true,
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": false,
+    "incremental": true,
+    "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo",
+    "lib": ["DOM", "ES2020"],
+    "skipLibCheck": true,
+    "types": ["node"],
+    "noEmit": false
   },
-  "references": [],
   "include": ["./src"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "./tests",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "references": []
 }
