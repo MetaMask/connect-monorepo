@@ -67,7 +67,7 @@
     "typescript": "~5.9.2"
   },
   "dependencies": {
-    "@metamask/connect-multichain": "0.1.0"
+    "@metamask/connect-multichain": "workspace:^"
   },
   "engines": {
     "node": "^18.18 || >=20"
