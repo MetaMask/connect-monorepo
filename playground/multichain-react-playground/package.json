@@ -6,13 +6,13 @@
     "MetaMask",
     "Ethereum"
   ],
-  "homepage": "https://metamask.github.io/test-dapp-multichain",
+  "homepage": ".",
   "bugs": {
-    "url": "https://github.com/MetaMask/test-dapp-multichain/issues"
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/test-dapp-multichain.git"
+    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
   },
   "license": "MIT",
   "exports": {
@@ -26,9 +26,9 @@
   "scripts": {
     "build": "DISABLE_ESLINT_PLUGIN=true craco build",
     "build:docs": "typedoc",
+    "deploy": "serve -s build",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-react-playground",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-react-playground",
-    "eject": "react-scripts eject",
     "prepack": "./scripts/prepack.sh",
     "start": "DISABLE_ESLINT_PLUGIN=true craco start",
     "test": "echo \"No test specified\"",
@@ -82,6 +82,7 @@
     "prettier-plugin-packagejson": "^2.4.5",
     "process": "^0.11.10",
     "react-scripts": "5.0.1",
+    "serve": "^14.2.5",
     "tailwindcss": "^4.1.11",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.9.1",
