@@ -2,6 +2,9 @@ import { createMetamaskConnect, getInfuraRpcUrls, type SessionData } from '@meta
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Define the states our application can be in
 type AppState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SIGNING';
@@ -205,7 +208,7 @@ const main = async () => {
       url: 'https://playground.metamask.io',
     },
     api: {
-      readonlyRPCMap: getInfuraRpcUrls('FIX_THIS'),
+      readonlyRPCMap: getInfuraRpcUrls(process.env.INFURA_API_KEY || ''),
     },
   });
 
