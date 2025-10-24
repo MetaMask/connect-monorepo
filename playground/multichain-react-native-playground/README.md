@@ -43,6 +43,12 @@ cd playground/multichain-react-native
 yarn start
 ```
 
+## Configuration
+
+`cp .env.example .env`
+
+Then fill out the resulting `.env` file.
+
 ## Running the App
 
 ### iOS
@@ -229,4 +235,3 @@ This is part of the MetaMask SDK monorepo. Please refer to the main repository f
 ## Support
 
 For issues and questions, please file an issue in the main MetaMask SDK repository.
-
