@@ -37,3 +37,6 @@ scripts/coverage
 
 # typescript
 packages/*/*.tsbuildinfo
+
+# env files
+**/.env
