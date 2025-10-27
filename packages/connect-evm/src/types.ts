@@ -45,25 +45,21 @@ export type AddEthereumChainParameter = {
 type ConnectRequest = {
   method: 'wallet_requestPermissions' | 'eth_requestAccounts';
   params: [chainId?: number, account?: string];
-  chainId?: string;
 };
 
 type RevokePermissionsRequest = {
   method: 'wallet_revokePermissions';
   params: unknown[];
-  chainId?: string;
 };
 
 type SwitchEthereumChainRequest = {
   method: 'wallet_switchEthereumChain';
   params: [{ chainId: string }];
-  chainId?: string;
 };
 
 type AddEthereumChainRequest = {
   method: 'wallet_addEthereumChain';
   params: [AddEthereumChainParameter];
-  chainId?: string;
 };
 
 type GenericProviderRequest = {
@@ -78,7 +74,6 @@ type GenericProviderRequest = {
     | 'wallet_addEthereumChain'
   >;
   params: unknown;
-  chainId?: string;
 };
 
 // Discriminated union for provider requests

@@ -40,10 +40,8 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
       return this.#requestInterceptor?.(request);
     }
 
-    const _chainId = request.chainId ?? this.currentChainId;
-
     return this.#core.invokeMethod({
-      scope: `eip155:${_chainId}`,
+      scope: `eip155:${this.currentChainId}`,
       request: {
         method: request.method,
         params: request.params,
