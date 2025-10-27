@@ -298,13 +298,15 @@ export class MetamaskConnectEVM {
    * @param chainConfiguration - The chain configuration to use in case the chain is not present by the wallet
    */
   #addEthereumChain(chainConfiguration?: AddEthereumChainParameter): void {
-    if (!chainConfiguration && !this.#latestChainConfiguration) {
+    const config = chainConfiguration ?? this.#latestChainConfiguration;
+
+    if (!config) {
       throw new Error('No chain configuration found.');
     }
 
     this.#request({
       method: 'wallet_addEthereumChain',
-      params: [this.#latestChainConfiguration],
+      params: [config],
     });
   }
 
