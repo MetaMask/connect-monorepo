@@ -14,15 +14,12 @@ export const CONNECT_METHODS = [
 
 export const ACCOUNTS_METHODS = ['eth_accounts', 'eth_coinbase'];
 
-export const DISTINCT_METHODS = [
-  'wallet_revokePermissions',
-  'wallet_switchEthereumChain',
-  'wallet_addEthereumChain',
-];
-
 export const INTERCEPTABLE_METHODS = [
   ...ACCOUNTS_METHODS,
   ...IGNORED_METHODS,
   ...CONNECT_METHODS,
-  ...DISTINCT_METHODS,
+  // These have bespoke handlers
+  'wallet_revokePermissions',
+  'wallet_switchEthereumChain',
+  'wallet_addEthereumChain',
 ];
