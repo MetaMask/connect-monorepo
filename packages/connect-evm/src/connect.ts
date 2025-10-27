@@ -252,7 +252,11 @@ export class MetamaskConnectEVM {
     request: ProviderRequest,
   ): ReturnType<ProviderRequestInterceptor> {
     if (IGNORED_METHODS.includes(request.method)) {
-      return Promise.resolve(undefined);
+      return Promise.reject(
+        new Error(
+          `Method: ${request.method} is not supported by Metamask Connect/EVM`,
+        ),
+      );
     }
 
     if (request.method === 'wallet_revokePermissions') {
