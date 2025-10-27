@@ -100,12 +100,7 @@ export class MetamaskConnectEVM {
 
         if (data?.method === 'metamask_chainChanged') {
           const chainId = Number(data?.params.chainId);
-          this.#currentChainId = chainId;
-
-          // TODO: (@wenfix): better setter?
-          this.#provider.currentChainId = chainId;
-          this.#provider.emit('chainChanged', { chainId });
-          this.#eventHandlers?.chainChanged?.(chainId.toString());
+          this.#onChainChanged(chainId);
         }
 
         // This error occurs when a chain switch failed because
@@ -334,6 +329,13 @@ export class MetamaskConnectEVM {
       // eslint-disable-next-line no-restricted-globals
       location.origin,
     );
+  }
+
+  #onChainChanged(chainId: number): void {
+    this.#currentChainId = chainId;
+    this.#provider.currentChainId = chainId;
+    this.#provider.emit('chainChanged', { chainId });
+    this.#eventHandlers?.chainChanged?.(chainId.toString());
   }
 }
 
