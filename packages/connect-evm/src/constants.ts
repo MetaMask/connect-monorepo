@@ -10,9 +10,9 @@ export const IGNORED_METHODS = [
 export const CONNECT_METHODS = [
   'wallet_requestPermissions',
   'eth_requestAccounts',
-  'eth_accounts',
-  'eth_coinbase',
 ];
+
+export const ACCOUNTS_METHODS = ['eth_accounts', 'eth_coinbase'];
 
 export const DISTINCT_METHODS = [
   'wallet_revokePermissions',
@@ -21,6 +21,7 @@ export const DISTINCT_METHODS = [
 ];
 
 export const INTERCEPTABLE_METHODS = [
+  ...ACCOUNTS_METHODS,
   ...IGNORED_METHODS,
   ...CONNECT_METHODS,
   ...DISTINCT_METHODS,

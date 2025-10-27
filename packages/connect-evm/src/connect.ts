@@ -20,6 +20,7 @@ import type {
 } from './types';
 import { getEthAccounts } from './utils/get-eth-accounts';
 import {
+  isAccountsRequest,
   isAddChainRequest,
   isConnectRequest,
   isSwitchChainRequest,
@@ -279,6 +280,10 @@ export class MetamaskConnectEVM {
 
     if (isAddChainRequest(request)) {
       return this.#addEthereumChain(request.params[0]);
+    }
+
+    if (isAccountsRequest(request)) {
+      return this.accounts;
     }
 
     return Promise.resolve();

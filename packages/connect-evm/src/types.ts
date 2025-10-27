@@ -43,11 +43,7 @@ export type AddEthereumChainParameter = {
 
 // Specific provider request types
 type ConnectRequest = {
-  method:
-    | 'wallet_requestPermissions'
-    | 'eth_requestAccounts'
-    | 'eth_accounts'
-    | 'eth_coinbase';
+  method: 'wallet_requestPermissions' | 'eth_requestAccounts';
   params: [chainId?: number, account?: string];
   chainId?: string;
 };

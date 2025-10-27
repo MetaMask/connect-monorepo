@@ -4,8 +4,6 @@ import type { ProviderRequest } from '../types';
  * Type guard for connect-like requests:
  * - wallet_requestPermissions
  * - eth_requestAccounts
- * - eth_accounts
- * - eth_coinbase
  *
  * @param req - The request object to check
  * @returns True if the request is a connect-like request, false otherwise
@@ -13,18 +11,12 @@ import type { ProviderRequest } from '../types';
 export function isConnectRequest(req: ProviderRequest): req is Extract<
   ProviderRequest,
   {
-    method:
-      | 'wallet_requestPermissions'
-      | 'eth_requestAccounts'
-      | 'eth_accounts'
-      | 'eth_coinbase';
+    method: 'wallet_requestPermissions' | 'eth_requestAccounts';
   }
 > {
   return (
     req.method === 'wallet_requestPermissions' ||
-    req.method === 'eth_requestAccounts' ||
-    req.method === 'eth_accounts' ||
-    req.method === 'eth_coinbase'
+    req.method === 'eth_requestAccounts'
   );
 }
 
@@ -50,4 +42,21 @@ export function isAddChainRequest(
   req: ProviderRequest,
 ): req is Extract<ProviderRequest, { method: 'wallet_addEthereumChain' }> {
   return req.method === 'wallet_addEthereumChain';
+}
+
+/**
+ * Type guard for generic accounts request:
+ * - eth_accounts
+ * - eth_coinbase
+ *
+ * @param req - The request object to check
+ * @returns True if the request is a generic accounts request, false otherwise
+ */
+export function isAccountsRequest(
+  req: ProviderRequest,
+): req is Extract<
+  ProviderRequest,
+  { method: 'eth_accounts' | 'eth_coinbase' }
+> {
+  return req.method === 'eth_accounts' || req.method === 'eth_coinbase';
 }
