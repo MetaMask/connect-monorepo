@@ -21,10 +21,11 @@ export const getEthAccounts = (
   Object.entries(sessionScopes).forEach(([scope, scopeData]) => {
     if (scope.startsWith('eip155:')) {
       scopeData.accounts?.forEach((account) => {
-        const address = account.split(':').slice(2).join(':') as Address;
-        accounts.push(address);
+        // TODO: (@wenfix): allow prefixing with _ to be ignored
+        const [_scope, _chain, address] = account.split(':');
+        accounts.push(address as Address);
       });
     }
   });
-  return accounts;
+  return Array.from(new Set(accounts));
 };
