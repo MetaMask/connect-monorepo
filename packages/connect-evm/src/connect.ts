@@ -46,11 +46,12 @@ export class MetamaskConnectEVM {
   /** The currently selected chain ID on the wallet */
   #currentChainId?: number | undefined;
 
-  /** The currently selected account on the wallet */
-  #currentAccount?: Address | undefined;
-
   /** The currently permitted accounts */
   accounts: Address[] = [];
+
+  get currentAccount(): Address | undefined {
+    return this.accounts[0];
+  }
 
   /** The session scopes currently permitted */
   #sessionScopes: SessionData['sessionScopes'] = {};
@@ -93,7 +94,6 @@ export class MetamaskConnectEVM {
 
         if (data?.method === 'metamask_accountsChanged') {
           const accounts = data?.params;
-          this.#currentAccount = accounts[0];
           this.accounts = accounts;
           this.#eventHandlers?.accountsChanged?.(accounts);
         }
@@ -126,7 +126,6 @@ export class MetamaskConnectEVM {
       this.#sessionScopes = session?.sessionScopes ?? {};
 
       const ethAccounts = getEthAccounts(this.#sessionScopes);
-      this.#currentAccount = ethAccounts[0];
       this.accounts = ethAccounts;
     };
 
@@ -156,7 +155,7 @@ export class MetamaskConnectEVM {
     this.#currentChainId = chainId ?? 1;
 
     const result = {
-      accounts: this.#currentAccount ? [this.#currentAccount] : [],
+      accounts: this.accounts,
       chainId: this.#currentChainId,
     };
 
@@ -244,7 +243,7 @@ export class MetamaskConnectEVM {
    * @returns The currently selected account or undefined if no account is selected
    */
   async getAccount(): Promise<Address | undefined> {
-    return this.#currentAccount;
+    return this.currentAccount;
   }
 
   /**
@@ -294,7 +293,6 @@ export class MetamaskConnectEVM {
    */
   #clearConnectionState(): void {
     this.accounts = [];
-    this.#currentAccount = undefined;
     this.#currentChainId = undefined;
   }
 
