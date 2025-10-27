@@ -8,8 +8,6 @@ import type {
   ProviderRequestInterceptor,
 } from './types';
 
-export const EIP155 = 'eip155';
-
 /**
  * EIP-1193 Provider wrapper around the Multichain SDK.
  */
@@ -45,7 +43,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     const _chainId = request.chainId ?? this.currentChainId;
 
     return this.#core.invokeMethod({
-      scope: `${EIP155}:${_chainId}`,
+      scope: `eip155:${_chainId}`,
       request: {
         method: request.method,
         params: request.params,

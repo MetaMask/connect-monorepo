@@ -7,7 +7,7 @@ import type {
 import { createMetamaskConnect } from '@metamask/connect-multichain';
 
 import { IGNORED_METHODS } from './constants';
-import { EIP1193Provider, EIP155 } from './provider';
+import { EIP1193Provider } from './provider';
 import type {
   AddEthereumChainParameter,
   Address,
@@ -140,10 +140,10 @@ export class MetamaskConnectEVM {
     chainId?: number | undefined;
     account?: string | undefined;
   }): Promise<{ accounts: Address[]; chainId?: number }> {
-    const caipChainId: Scope[] = chainId ? [`${EIP155}:${chainId}`] : [];
+    const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
 
     const caipAccountId: CaipAccountId[] =
-      chainId && account ? [`${EIP155}:${chainId}:${account}`] : [];
+      chainId && account ? [`eip155:${chainId}:${account}`] : [];
 
     await this.#core.connect(caipChainId, caipAccountId);
 
