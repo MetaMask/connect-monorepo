@@ -37,3 +37,4 @@ scripts/coverage
 
 # typescript
 packages/*/*.tsbuildinfo
+playground/*/*.tsbuildinfo
