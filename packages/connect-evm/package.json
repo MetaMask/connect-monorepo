@@ -18,7 +18,7 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/browser/es/index.d.ts",
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/browser/es/connect-evm.mjs",
       "default": "./dist/browser/es/connect-evm.mjs"
     },
@@ -27,17 +27,17 @@
   "main": "./dist/browser/es/connect-evm.mjs",
   "module": "./dist/browser/es/connect-evm.mjs",
   "browser": "./dist/browser/es/connect-evm.mjs",
-  "types": "./dist/browser/es/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "files": [
     "dist/"
   ],
   "scripts": {
-    "build": "yarn clean && tsc -b tsconfig.types.json --force && npx tsup",
+    "build": "yarn tsup ",
     "build:docs": "typedoc",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-evm",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-evm",
     "clean": "npx rimraf ./dist",
-    "dev": "tsup --watch",
+    "dev": "tsup --watch ",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",
@@ -47,6 +47,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
+    "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect-multichain": "workspace:^"
   },
   "devDependencies": {

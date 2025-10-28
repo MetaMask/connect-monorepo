@@ -13,7 +13,7 @@ export default defineConfig([
     format: 'esm',
     platform: 'browser',
     bundle: true,
-    clean: false,
+    clean: true,
     splitting: false,
     sourcemap: true,
     external,
@@ -24,5 +24,11 @@ export default defineConfig([
       o.conditions = ['browser'];
       o.outExtension = { '.js': '.mjs' };
     },
+  },
+  {
+    entry: { index: 'src/index.ts' },
+    outDir: 'dist/types',
+    tsconfig: './tsconfig.types.json',
+    dts: { only: true },
   },
 ]);

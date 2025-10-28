@@ -4,7 +4,7 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
-    "composite": true,
+    "composite": false,
     "incremental": true,
     "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo",
     "outDir": "dist/browser/es",
@@ -16,6 +16,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["./src"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts"]
 }
