@@ -1,10 +1,10 @@
-require('dotenv').config()
+require('dotenv').config();
 const webpack = require('webpack');
 
 module.exports = {
   style: {
     postcss: {
-      plugins: [require('@tailwindcss/postcss'), require('autoprefixer')],
+      mode: 'file',
     },
   },
   webpack: {
