@@ -4955,6 +4955,7 @@ __metadata:
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
     "@metamask/connect-multichain": "workspace:^"
+    "@metamask/utils": "npm:^11.8.1"
     "@types/jsdom": "npm:^21.1.7"
     "@vitest/coverage-v8": "npm:^3.2.4"
     jsdom: "npm:^26.1.0"

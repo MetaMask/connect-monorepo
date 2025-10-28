@@ -5,9 +5,13 @@ import type {
   SessionData,
 } from '@metamask/connect-multichain';
 import { createMetamaskConnect } from '@metamask/connect-multichain';
-// Use local helper to avoid pulling heavy controller packages into browser builds
+import {
+  numberToHex,
+  hexToNumber,
+  isHexString as isHex,
+} from '@metamask/utils';
 
-import { IGNORED_METHODS, MAINNET_CHAIN_ID } from './constants';
+import { IGNORED_METHODS } from './constants';
 import { EIP1193Provider } from './provider';
 import type {
   AddEthereumChainParameter,
@@ -21,7 +25,6 @@ import type {
   ProviderRequestInterceptor,
 } from './types';
 import { getPermittedEthChainIds } from './utils/caip';
-import { toHex, fromHex } from './utils/to-hex';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -117,9 +120,9 @@ export class MetamaskConnectEVM {
       chainId,
       account,
     }: {
-      chainId?: number | undefined;
+      chainId: number;
       account?: string | undefined;
-    } = {}, // Default to mainnet if no chain ID is provided
+    } = { chainId: 1 }, // Default to mainnet if no chain ID is provided
   ): Promise<{ accounts: Address[]; chainId?: number }> {
     const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
 
@@ -128,13 +131,13 @@ export class MetamaskConnectEVM {
 
     await this.#core.connect(caipChainId, caipAccountId);
 
-    this.#provider.selectedChainId = toHex(chainId ?? MAINNET_CHAIN_ID);
+    this.#provider.selectedChainId = numberToHex(chainId);
 
     this.#onConnect({ chainId: this.#provider.selectedChainId });
 
     return {
       accounts: this.accounts,
-      chainId: fromHex(this.#provider.selectedChainId),
+      chainId: hexToNumber(this.#provider.selectedChainId),
     };
   }
 
@@ -165,7 +168,7 @@ export class MetamaskConnectEVM {
     chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
   }): void {
-    const hexChainId = toHex(chainId);
+    const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
 
     if (this.selectedChainId === hexChainId) {
       return;
@@ -185,7 +188,7 @@ export class MetamaskConnectEVM {
 
     this.#request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: toHex(chainId) }],
+      params: [{ chainId: hexChainId }],
     });
   }
 
@@ -295,7 +298,7 @@ export class MetamaskConnectEVM {
   }
 
   #onChainChanged(chainId: Hex | number): void {
-    const hexChainId = toHex(chainId);
+    const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
     this.#provider.selectedChainId = chainId;
     this.#eventHandlers?.chainChanged?.(hexChainId);
     this.#provider.emit('chainChanged', hexChainId);
@@ -309,7 +312,7 @@ export class MetamaskConnectEVM {
 
   #onConnect({ chainId }: { chainId: Hex | number }): void {
     const data = {
-      chainId: toHex(chainId),
+      chainId: isHex(chainId) ? chainId : numberToHex(chainId),
     };
 
     this.#provider.emit('connect', data);

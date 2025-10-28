@@ -23,6 +23,3 @@ export const INTERCEPTABLE_METHODS = [
   'wallet_switchEthereumChain',
   'wallet_addEthereumChain',
 ];
-
-// Default chain ID for EIP-155
-export const MAINNET_CHAIN_ID = '0x1';
