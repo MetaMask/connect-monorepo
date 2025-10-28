@@ -37,6 +37,7 @@
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-evm",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-evm",
     "clean": "npx rimraf ./dist",
+    "dev": "tsup --watch",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",
@@ -46,7 +47,6 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@metamask/chain-agnostic-permission": "^1.2.0",
     "@metamask/connect-multichain": "workspace:^"
   },
   "devDependencies": {

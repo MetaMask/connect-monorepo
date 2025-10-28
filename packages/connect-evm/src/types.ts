@@ -10,17 +10,17 @@ export type CaipAccountId = `${string}:${string}:${string}`;
 export type MinimalEventEmitter = Pick<EIP1193Provider, 'on' | 'off' | 'emit'>;
 
 export type EIP1193ProviderEvents = {
-  connect: [{ chainId?: number }];
+  connect: [{ chainId?: Hex }];
   disconnect: [];
-  accountsChanged: [{ account: string }];
-  chainChanged: [{ chainId: number }];
+  accountsChanged: [Address[]];
+  chainChanged: [Hex];
 };
 
 export type EventHandlers = {
-  accountsChanged: (accounts: Address[]) => void;
-  chainChanged: (chainId: string) => void;
-  connect: (result: { accounts: Address[]; chainId?: number }) => void;
+  connect: (result: { chainId?: Hex }) => void;
   disconnect: () => void;
+  accountsChanged: (accounts: Address[]) => void;
+  chainChanged: (chainId: Hex) => void;
 };
 
 export type MetamaskConnectEVMOptions = {

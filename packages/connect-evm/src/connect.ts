@@ -5,20 +5,23 @@ import type {
   SessionData,
 } from '@metamask/connect-multichain';
 import { createMetamaskConnect } from '@metamask/connect-multichain';
+// Use local helper to avoid pulling heavy controller packages into browser builds
 
-import { IGNORED_METHODS } from './constants';
+import { IGNORED_METHODS, MAINNET_CHAIN_ID } from './constants';
 import { EIP1193Provider } from './provider';
 import type {
   AddEthereumChainParameter,
   Address,
   CaipAccountId,
   EventHandlers,
+  Hex,
   MetamaskConnectEVMOptions,
   MinimalEventEmitter,
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
 import { getEthAccounts } from './utils/get-eth-accounts';
+import { toHex, fromHex } from './utils/to-hex';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -26,32 +29,12 @@ import {
   isSwitchChainRequest,
 } from './utils/type-guards';
 
-/**
- * Converts a number or string to a hex string
- *
- * @param value - The value to convert to hex
- * @returns The hex value
- */
-function toHex(value: number | string): string {
-  return `0x${value.toString(16)}`;
-}
-
 export class MetamaskConnectEVM {
   /** The core instance of the Multichain SDK */
   readonly #core: MultichainCore;
 
   /** An instance of the EIP-1193 provider interface */
   readonly #provider: EIP1193Provider;
-
-  /** The currently selected chain ID on the wallet */
-  #currentChainId?: number | undefined;
-
-  /** The currently permitted accounts */
-  accounts: Address[] = [];
-
-  get currentAccount(): Address | undefined {
-    return this.accounts[0];
-  }
 
   /** The session scopes currently permitted */
   #sessionScopes: SessionData['sessionScopes'] = {};
@@ -94,8 +77,7 @@ export class MetamaskConnectEVM {
 
         if (data?.method === 'metamask_accountsChanged') {
           const accounts = data?.params;
-          this.accounts = accounts;
-          this.#eventHandlers?.accountsChanged?.(accounts);
+          this.#onAccountsChanged(accounts);
         }
 
         if (data?.method === 'metamask_chainChanged') {
@@ -121,7 +103,7 @@ export class MetamaskConnectEVM {
       this.#sessionScopes = session?.sessionScopes ?? {};
 
       const ethAccounts = getEthAccounts(this.#sessionScopes);
-      this.accounts = ethAccounts;
+      this.#provider.accounts = ethAccounts;
     };
 
     // eslint-disable-next-line no-restricted-globals
@@ -133,39 +115,38 @@ export class MetamaskConnectEVM {
     );
   }
 
-  async connect({
-    chainId,
-    account,
-  }: {
-    chainId?: number | undefined;
-    account?: string | undefined;
-  }): Promise<{ accounts: Address[]; chainId?: number }> {
-    const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
+  async connect(
+    {
+      chainId,
+      account,
+    }: {
+      chainId?: number | undefined;
+      account?: string | undefined;
+    } = { chainId: 1 },
+  ): Promise<{ accounts: Address[]; chainId?: number }> {
+    // Default to mainnet if no chain ID is provided
+    const chain = chainId ?? Number(MAINNET_CHAIN_ID);
+
+    const caipChainId: Scope[] = chain ? [`eip155:${chain}`] : [];
 
     const caipAccountId: CaipAccountId[] =
-      chainId && account ? [`eip155:${chainId}:${account}`] : [];
+      chain && account ? [`eip155:${chain}:${account}`] : [];
 
     await this.#core.connect(caipChainId, caipAccountId);
 
-    this.#currentChainId = chainId ?? 1;
+    this.#onConnect({ chainId: this.#provider.selectedChainId });
 
-    const result = {
+    return {
       accounts: this.accounts,
-      chainId: this.#currentChainId,
+      chainId: fromHex(this.#provider.selectedChainId),
     };
-
-    this.#provider.emit('connect', result);
-    this.#eventHandlers?.accountsChanged?.(result.accounts);
-
-    return result;
   }
 
   async disconnect(): Promise<void> {
     await this.#core.disconnect();
 
+    this.#onDisconnect();
     this.#provider.emit('disconnect');
-    this.#eventHandlers?.accountsChanged?.([]);
-    this.#eventHandlers?.disconnect?.();
 
     this.#clearConnectionState();
 
@@ -186,10 +167,10 @@ export class MetamaskConnectEVM {
     chainId,
     chainConfiguration,
   }: {
-    chainId: number;
+    chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
   }): void {
-    if (this.#currentChainId === chainId) {
+    if (this.selectedChainId === toHex(chainId)) {
       return;
     }
 
@@ -212,33 +193,6 @@ export class MetamaskConnectEVM {
    */
   async terminate(): Promise<void> {
     await this.disconnect();
-  }
-
-  /**
-   * Gets the EIP-1193 provider instance
-   *
-   * @returns The EIP-1193 provider instance
-   */
-  async getProvider(): Promise<EIP1193Provider> {
-    return this.#provider;
-  }
-
-  /**
-   * Gets the currently selected chain ID on the wallet
-   *
-   * @returns The currently selected chain ID or undefined if no chain is selected
-   */
-  async getChainId(): Promise<number | undefined> {
-    return this.#currentChainId;
-  }
-
-  /**
-   * Gets the currently selected account on the wallet
-   *
-   * @returns The currently selected account or undefined if no account is selected
-   */
-  async getAccount(): Promise<Address | undefined> {
-    return this.currentAccount;
   }
 
   /**
@@ -291,8 +245,8 @@ export class MetamaskConnectEVM {
    * Clears the internal connection state: accounts and chainId
    */
   #clearConnectionState(): void {
-    this.accounts = [];
-    this.#currentChainId = undefined;
+    this.#provider.accounts = [];
+    this.#provider.selectedChainId = undefined as unknown as number;
   }
 
   /**
@@ -338,10 +292,91 @@ export class MetamaskConnectEVM {
   }
 
   #onChainChanged(chainId: number): void {
-    this.#currentChainId = chainId;
-    this.#provider.currentChainId = chainId;
-    this.#provider.emit('chainChanged', { chainId });
-    this.#eventHandlers?.chainChanged?.(chainId.toString());
+    const hexChainId = toHex(chainId);
+    this.#provider.selectedChainId = chainId;
+    this.#provider.emit('chainChanged', hexChainId);
+    this.#eventHandlers?.chainChanged?.(hexChainId);
+  }
+
+  #onAccountsChanged(accounts: Address[]): void {
+    this.#provider.accounts = accounts;
+    this.#provider.emit('accountsChanged', accounts);
+    this.#eventHandlers?.accountsChanged?.(accounts);
+  }
+
+  #onConnect(result: { chainId?: Hex }): void {
+    const hexChainId = result.chainId ? toHex(result.chainId) : undefined;
+
+    this.#provider.emit('connect', { chainId: hexChainId });
+    this.#eventHandlers?.connect?.(result);
+  }
+
+  #onDisconnect(): void {
+    this.#provider.emit('disconnect');
+    this.#eventHandlers?.disconnect?.();
+
+    this.#onAccountsChanged([]);
+  }
+
+  /**
+   * Gets the EIP-1193 provider instance
+   *
+   * @returns The EIP-1193 provider instance
+   */
+  async getProvider(): Promise<EIP1193Provider> {
+    return this.#provider;
+  }
+
+  /**
+   * Gets the currently selected chain ID on the wallet
+   *
+   * @returns The currently selected chain ID or undefined if no chain is selected
+   */
+  async getChainId(): Promise<Hex | undefined> {
+    return this.selectedChainId;
+  }
+
+  async getChainIdDecimal(): Promise<number | undefined> {
+    return this.selectedChainId
+      ? parseInt(this.selectedChainId, 16)
+      : undefined;
+  }
+
+  /**
+   * Gets the currently selected account on the wallet
+   *
+   * @returns The currently selected account or undefined if no account is selected
+   */
+  async getAccount(): Promise<Address | undefined> {
+    return this.selectedAccount;
+  }
+
+  // Convenience getters for the EIP-1193 provider
+  /**
+   * Gets the currently permitted accounts
+   *
+   * @returns The currently permitted accounts
+   */
+  get accounts(): Address[] {
+    return this.#provider.accounts;
+  }
+
+  /**
+   * Gets the currently selected account on the wallet
+   *
+   * @returns The currently selected account or undefined if no account is selected
+   */
+  get selectedAccount(): Address | undefined {
+    return this.#provider.selectedAccount;
+  }
+
+  /**
+   * Gets the currently selected chain ID on the wallet
+   *
+   * @returns The currently selected chain ID or undefined if no chain is selected
+   */
+  get selectedChainId(): Hex | undefined {
+    return this.#provider.selectedChainId;
   }
 }
 
