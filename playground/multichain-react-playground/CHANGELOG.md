@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- Make sure TailwindCSS configs look at package's local config instead of a parent monorepo config ([#25](https://github.com/MetaMask/connect-monorepo/pull/25))
-
 ### Changed
 
 - Bump `@types/jest` from ^28.1.6 to ^29.5.14 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
@@ -23,5 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `prettier-plugin-packagejson` from ^2.3.0 to ^2.4.5 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 - Bump `ts-node` from ^10.7.0 to ^10.9.1 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 - Bump `typescript` from ~5.2.2 to ~5.9.2 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
+
+### Fixed
+
+- Make sure TailwindCSS configs look at package's local config instead of a parent monorepo config ([#25](https://github.com/MetaMask/connect-monorepo/pull/25))
 
 [Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/
