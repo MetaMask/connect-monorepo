@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Make sure TailwindCSS configs look at package's local config instead of a parent monorepo config ([#25](https://github.com/MetaMask/connect-monorepo/pull/25))
+
 ### Changed
 
 - Bump `@types/jest` from ^28.1.6 to ^29.5.14 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
