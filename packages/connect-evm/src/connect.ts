@@ -20,7 +20,7 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getEthAccounts } from './utils/get-eth-accounts';
+import { getPermittedEthChainIds } from './utils/caip';
 import { toHex, fromHex } from './utils/to-hex';
 import {
   isAccountsRequest,
@@ -101,9 +101,6 @@ export class MetamaskConnectEVM {
      */
     this.#sessionChangedHandler = (session): void => {
       this.#sessionScopes = session?.sessionScopes ?? {};
-
-      const ethAccounts = getEthAccounts(this.#sessionScopes);
-      this.#provider.accounts = ethAccounts;
     };
 
     // eslint-disable-next-line no-restricted-globals
@@ -122,19 +119,17 @@ export class MetamaskConnectEVM {
     }: {
       chainId?: number | undefined;
       account?: string | undefined;
-    } = { chainId: 1 },
+    } = {}, // Default to mainnet if no chain ID is provided
   ): Promise<{ accounts: Address[]; chainId?: number }> {
-    // Default to mainnet if no chain ID is provided
-    const chain = chainId ?? Number(MAINNET_CHAIN_ID);
-
-    const caipChainId: Scope[] = chain ? [`eip155:${chain}`] : [];
+    const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
 
     const caipAccountId: CaipAccountId[] =
-      chain && account ? [`eip155:${chain}:${account}`] : [];
+      chainId && account ? [`eip155:${chainId}:${account}`] : [];
 
     await this.#core.connect(caipChainId, caipAccountId);
 
-    this.#provider.selectedChainId = toHex(chain);
+    this.#provider.selectedChainId = toHex(chainId ?? MAINNET_CHAIN_ID);
+
     this.#onConnect({ chainId: this.#provider.selectedChainId });
 
     return {
@@ -170,11 +165,19 @@ export class MetamaskConnectEVM {
     chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
   }): void {
-    if (this.selectedChainId === toHex(chainId)) {
+    const hexChainId = toHex(chainId);
+
+    if (this.selectedChainId === hexChainId) {
       return;
     }
 
     // TODO: Check if approved scopes have the chain and early return
+    const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+
+    if (permittedChainIds.includes(hexChainId)) {
+      this.#onChainChanged(hexChainId);
+      return;
+    }
 
     // Save the chain configuration for adding in case
     // the chain is not configured in the wallet.
@@ -386,7 +389,7 @@ export class MetamaskConnectEVM {
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createMetamaskConnectEVM(
-  options: MultichainOptions & {
+  options: Pick<MultichainOptions, 'dapp'> & {
     eventEmitter?: MinimalEventEmitter;
     eventHandlers?: EventHandlers;
   },
