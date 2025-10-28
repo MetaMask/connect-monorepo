@@ -134,6 +134,7 @@ export class MetamaskConnectEVM {
 
     await this.#core.connect(caipChainId, caipAccountId);
 
+    this.#provider.selectedChainId = toHex(chain);
     this.#onConnect({ chainId: this.#provider.selectedChainId });
 
     return {
@@ -146,7 +147,6 @@ export class MetamaskConnectEVM {
     await this.#core.disconnect();
 
     this.#onDisconnect();
-    this.#provider.emit('disconnect');
 
     this.#clearConnectionState();
 
@@ -291,11 +291,11 @@ export class MetamaskConnectEVM {
     );
   }
 
-  #onChainChanged(chainId: number): void {
+  #onChainChanged(chainId: Hex | number): void {
     const hexChainId = toHex(chainId);
     this.#provider.selectedChainId = chainId;
-    this.#provider.emit('chainChanged', hexChainId);
     this.#eventHandlers?.chainChanged?.(hexChainId);
+    this.#provider.emit('chainChanged', hexChainId);
   }
 
   #onAccountsChanged(accounts: Address[]): void {
@@ -304,11 +304,15 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.accountsChanged?.(accounts);
   }
 
-  #onConnect(result: { chainId?: Hex }): void {
-    const hexChainId = result.chainId ? toHex(result.chainId) : undefined;
+  #onConnect({ chainId }: { chainId: Hex | number }): void {
+    const data = {
+      chainId: toHex(chainId),
+    };
 
-    this.#provider.emit('connect', { chainId: hexChainId });
-    this.#eventHandlers?.connect?.(result);
+    this.#provider.emit('connect', data);
+    this.#eventHandlers?.connect?.(data);
+
+    this.#onChainChanged(chainId);
   }
 
   #onDisconnect(): void {
@@ -332,14 +336,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The currently selected chain ID or undefined if no chain is selected
    */
-  async getChainId(): Promise<Hex | undefined> {
+  getChainId(): Hex | undefined {
     return this.selectedChainId;
-  }
-
-  async getChainIdDecimal(): Promise<number | undefined> {
-    return this.selectedChainId
-      ? parseInt(this.selectedChainId, 16)
-      : undefined;
   }
 
   /**
@@ -347,8 +345,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The currently selected account or undefined if no account is selected
    */
-  async getAccount(): Promise<Address | undefined> {
-    return this.selectedAccount;
+  getAccount(): Address | undefined {
+    return this.#provider.selectedAccount;
   }
 
   // Convenience getters for the EIP-1193 provider

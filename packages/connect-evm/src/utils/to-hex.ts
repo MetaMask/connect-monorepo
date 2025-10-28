@@ -22,7 +22,7 @@ export function toHex(value: number | string): Hex {
  */
 export function fromHex(value: Hex | undefined): number {
   if (!value || typeof value !== 'string' || !value.startsWith('0x')) {
-    throw new Error('Invalid hex value');
+    throw new Error(`Invalid hex value: ${value}`);
   }
 
   return Number(value);
