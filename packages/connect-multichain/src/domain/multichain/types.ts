@@ -6,7 +6,7 @@ import type { MultichainCore } from '.';
 import type { ModalFactory } from '../../ui';
 import type { PlatformType } from '../platform';
 import type { StoreClient } from '../store';
-import type { RPC_URLS_MAP, Scope } from './api/types';
+import type { RpcUrlsMap, Scope } from './api/types';
 
 export type { SessionData } from '@metamask/multichain-api-client';
 
@@ -41,11 +41,9 @@ export type MultichainOptions = {
   /** Dapp identification and branding settings */
   dapp: DappSettings;
   /** Optional API configuration for external services */
-  api?: {
-    /** The Infura API key to use for RPC requests */
-    infuraAPIKey?: string;
+  api: {
     /** A map of RPC URLs to use for read-only requests */
-    readonlyRPCMap?: RPC_URLS_MAP;
+    readonlyRPCMap: RpcUrlsMap;
   };
   /** Analytics configuration */
   analytics?: { enabled: false } | { enabled: true; integrationType: string };
