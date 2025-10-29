@@ -9,6 +9,7 @@ import {
   numberToHex,
   hexToNumber,
   isHexString as isHex,
+  isHexAddress,
 } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
@@ -55,9 +56,14 @@ export class MetamaskConnectEVM {
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
-  constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
-    logger('');
+  constructor({
+    core,
+    eventHandlers,
+    notificationQueue,
+  }: MetamaskConnectEVMOptions) {
+    logger('Constructor starts', { notificationQueue });
     this.#core = core;
+
     this.#provider = new EIP1193Provider(
       core,
       this.#requestInterceptor.bind(this),
@@ -72,12 +78,7 @@ export class MetamaskConnectEVM {
      * @param event - The event object
      */
     this.#metamaskProviderHandler = (event): void => {
-      if (
-        event?.data?.data?.name === 'metamask-provider' &&
-        // TODO: (@wenfix): remove no-restricted-globals once we have a better way to do this
-        // eslint-disable-next-line no-restricted-globals
-        event.origin === location.origin
-      ) {
+      if (this.#isMetamaskProviderEvent(event)) {
         const data = event?.data?.data?.data;
 
         if (data?.method === 'metamask_accountsChanged') {
@@ -122,6 +123,9 @@ export class MetamaskConnectEVM {
       'wallet_sessionChanged',
       this.#sessionChangedHandler.bind(this),
     );
+
+    // Attempt to set the permitted accounts if there's a valid previous session.
+    this.#attemptSessionRecovery(notificationQueue);
 
     logger('Connect/EVM constructor completed');
   }
@@ -229,8 +233,6 @@ export class MetamaskConnectEVM {
     logger(`Intercepting request for method: ${request.method}`);
 
     if (IGNORED_METHODS.includes(request.method)) {
-      logger(`Method ${request.method} is unsupported`);
-
       // TODO: replace with correct method unsupported provider error
       return Promise.reject(
         new Error(
@@ -356,6 +358,49 @@ export class MetamaskConnectEVM {
   }
 
   /**
+   * Will trigger an accountsChanged event if there's a valid previous session.
+   * This is needed because the accountsChanged event is not triggered when
+   * revising, reloading or opening the app in a new tab.
+   *
+   * This works by checking by checking events received during MultichainCore initialization,
+   * and if there's a wallet_sessionChanged event, it will add a 1-time listener for eth_accounts results
+   * and trigger an accountsChanged event if the results are valid accounts.
+   *
+   * @param events - The events to check
+   */
+  #attemptSessionRecovery(events?: unknown[]): void {
+    if (
+      events?.some(
+        (notification: MessageEvent['data']) =>
+          notification.method === 'wallet_sessionChanged',
+      )
+    ) {
+      const recoverSession = (event: MessageEvent): void => {
+        if (this.#isMetamaskProviderEvent(event)) {
+          const { result } = event?.data?.data?.data as { result?: string[] };
+
+          if (
+            Array.isArray(result) &&
+            result.every((account: string) => isHexAddress(account))
+          ) {
+            this.#onAccountsChanged(result);
+            // eslint-disable-next-line no-restricted-globals
+            window.removeEventListener('message', recoverSession);
+          }
+        }
+      };
+
+      // eslint-disable-next-line no-restricted-globals
+      window.addEventListener('message', recoverSession);
+
+      this.#request({
+        method: 'eth_accounts',
+        params: [],
+      });
+    }
+  }
+
+  /**
    * Gets the EIP-1193 provider instance
    *
    * @returns The EIP-1193 provider instance
@@ -409,9 +454,19 @@ export class MetamaskConnectEVM {
   get selectedChainId(): Hex | undefined {
     return this.#provider.selectedChainId;
   }
+
+  #isMetamaskProviderEvent(event: MessageEvent): boolean {
+    return (
+      event?.data?.data?.name === 'metamask-provider' &&
+      // TODO: (@wenfix): remove no-restricted-globals once we have a better way to do this
+      // eslint-disable-next-line no-restricted-globals
+      event.origin === location.origin
+    );
+  }
 }
 
 /**
+ * Creates a new Metamask Connect/EVM instance
  *
  * @param options - The options for the Metamask Connect/EVM layer
  * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
@@ -425,11 +480,22 @@ export async function createMetamaskConnectEVM(
   },
 ): Promise<MetamaskConnectEVM> {
   logger('Creating Metamask Connect/EVM with options:', options);
+
+  const notificationQueue: unknown[] = [];
+
   try {
-    const core = await createMetamaskConnect(options);
+    const core = await createMetamaskConnect({
+      ...options,
+      transport: {
+        onNotification: (notification: unknown) =>
+          notificationQueue.push(notification),
+      },
+    });
+
     return new MetamaskConnectEVM({
       core,
       eventHandlers: options.eventHandlers,
+      notificationQueue,
     });
   } catch (error) {
     console.error('Error creating Metamask Connect/EVM', error);

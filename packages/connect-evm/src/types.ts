@@ -26,6 +26,7 @@ export type EventHandlers = {
 export type MetamaskConnectEVMOptions = {
   core: MultichainCore;
   eventHandlers?: EventHandlers;
+  notificationQueue?: unknown[];
 };
 
 export type AddEthereumChainParameter = {
