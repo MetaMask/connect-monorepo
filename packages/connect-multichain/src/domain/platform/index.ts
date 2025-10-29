@@ -2,7 +2,7 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { parse } from 'bowser';
+import Bowser from 'bowser';
 
 export enum PlatformType {
   // React Native or Nodejs
@@ -55,7 +55,7 @@ function isMetaMaskMobileWebView(): boolean {
 }
 
 function isMobile(): boolean {
-  const browser = parse(window.navigator.userAgent);
+  const browser = Bowser.parse(window.navigator.userAgent);
   return (
     browser?.platform?.type === 'mobile' || browser?.platform?.type === 'tablet'
   );
