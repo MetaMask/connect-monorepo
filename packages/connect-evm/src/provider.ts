@@ -1,6 +1,6 @@
 import type { MultichainCore } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
-import { numberToHex } from '@metamask/utils';
+import { hexToNumber, numberToHex } from '@metamask/utils';
 
 import { INTERCEPTABLE_METHODS } from './constants';
 import { logger } from './logger';
@@ -41,15 +41,25 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
    * @returns The result of the request
    */
   async request(request: ProviderRequest): Promise<unknown> {
-    logger(`request: ${request.method}`, request.params);
+    logger(
+      `request: ${request.method} - chainId: ${this.selectedChainId}`,
+      request.params,
+    );
     /* Some methods require special handling, so we intercept them here
      * and handle them in MetamaskConnectEVM.requestInterceptor method.  */
     if (INTERCEPTABLE_METHODS.includes(request.method)) {
       return this.#requestInterceptor?.(request);
     }
 
+    if (!this.#selectedChainId) {
+      // TODO: replace with a better error
+      throw new Error('No chain ID selected');
+    }
+
+    const chainId = hexToNumber(this.#selectedChainId);
+
     return this.#core.invokeMethod({
-      scope: `eip155:${this.selectedChainId}`,
+      scope: `eip155:${chainId}`,
       request: {
         method: request.method,
         params: request.params,
