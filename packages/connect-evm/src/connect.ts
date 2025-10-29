@@ -12,6 +12,7 @@ import {
 } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
+import { logger } from './logger';
 import { EIP1193Provider } from './provider';
 import type {
   AddEthereumChainParameter,
@@ -55,6 +56,7 @@ export class MetamaskConnectEVM {
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
   constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
+    logger('');
     this.#core = core;
     this.#provider = new EIP1193Provider(
       core,
@@ -80,17 +82,23 @@ export class MetamaskConnectEVM {
 
         if (data?.method === 'metamask_accountsChanged') {
           const accounts = data?.params;
+          logger('event: accountsChanged', accounts);
           this.#onAccountsChanged(accounts);
         }
 
         if (data?.method === 'metamask_chainChanged') {
           const chainId = Number(data?.params.chainId);
+          logger('event: chainChanged', chainId);
           this.#onChainChanged(chainId);
         }
 
         // This error occurs when a chain switch failed because
         // the target chain is not configured on the wallet.
         if (data?.error?.code === 4902) {
+          logger(
+            'chain switch failed, adding chain',
+            this.#latestChainConfiguration,
+          );
           this.#addEthereumChain();
         }
       }
@@ -103,6 +111,7 @@ export class MetamaskConnectEVM {
      * @param session - The session data
      */
     this.#sessionChangedHandler = (session): void => {
+      logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
     };
 
@@ -113,6 +122,8 @@ export class MetamaskConnectEVM {
       'wallet_sessionChanged',
       this.#sessionChangedHandler.bind(this),
     );
+
+    logger('Connect/EVM constructor completed');
   }
 
   async connect(
@@ -124,6 +135,7 @@ export class MetamaskConnectEVM {
       account?: string | undefined;
     } = { chainId: 1 }, // Default to mainnet if no chain ID is provided
   ): Promise<{ accounts: Address[]; chainId?: number }> {
+    logger('request: connect', { chainId, account });
     const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
 
     const caipAccountId: CaipAccountId[] =
@@ -135,6 +147,7 @@ export class MetamaskConnectEVM {
 
     this.#onConnect({ chainId: this.#provider.selectedChainId });
 
+    logger('fulfilled-request: connect', { chainId, account });
     return {
       accounts: this.accounts,
       chainId: hexToNumber(this.#provider.selectedChainId),
@@ -142,6 +155,7 @@ export class MetamaskConnectEVM {
   }
 
   async disconnect(): Promise<void> {
+    logger('request: disconnect');
     await this.#core.disconnect();
 
     this.#onDisconnect();
@@ -152,6 +166,7 @@ export class MetamaskConnectEVM {
     window.removeEventListener('message', this.#metamaskProviderHandler);
 
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
+    logger('fulfilled-request: disconnect');
   }
 
   /**
@@ -211,7 +226,12 @@ export class MetamaskConnectEVM {
   async #requestInterceptor(
     request: ProviderRequest,
   ): ReturnType<ProviderRequestInterceptor> {
+    logger(`Intercepting request for method: ${request.method}`);
+
     if (IGNORED_METHODS.includes(request.method)) {
+      logger(`Method ${request.method} is unsupported`);
+
+      // TODO: replace with correct method unsupported provider error
       return Promise.reject(
         new Error(
           `Method: ${request.method} is not supported by Metamask Connect/EVM`,
@@ -244,6 +264,7 @@ export class MetamaskConnectEVM {
       return this.accounts;
     }
 
+    logger('Request not intercepted, forwarding to default handler', request);
     return Promise.resolve();
   }
 
@@ -262,6 +283,7 @@ export class MetamaskConnectEVM {
    * @param chainConfiguration - The chain configuration to use in case the chain is not present by the wallet
    */
   #addEthereumChain(chainConfiguration?: AddEthereumChainParameter): void {
+    logger('addEthereumChain called', { chainConfiguration });
     const config = chainConfiguration ?? this.#latestChainConfiguration;
 
     if (!config) {
@@ -282,6 +304,7 @@ export class MetamaskConnectEVM {
    * @param request.params - The parameters to pass to the method
    */
   #request(request: { method: string; params: unknown[] }): void {
+    logger('direct request to metamask-provider called', request);
     // TODO: (@wenfix): use dedicated transports?
     // eslint-disable-next-line no-restricted-globals
     window.postMessage(
@@ -298,6 +321,7 @@ export class MetamaskConnectEVM {
   }
 
   #onChainChanged(chainId: Hex | number): void {
+    logger('handler: chainChanged', { chainId });
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
     this.#provider.selectedChainId = chainId;
     this.#eventHandlers?.chainChanged?.(hexChainId);
@@ -305,12 +329,14 @@ export class MetamaskConnectEVM {
   }
 
   #onAccountsChanged(accounts: Address[]): void {
+    logger('handler: accountsChanged', accounts);
     this.#provider.accounts = accounts;
     this.#provider.emit('accountsChanged', accounts);
     this.#eventHandlers?.accountsChanged?.(accounts);
   }
 
   #onConnect({ chainId }: { chainId: Hex | number }): void {
+    logger('handler: connect', { chainId });
     const data = {
       chainId: isHex(chainId) ? chainId : numberToHex(chainId),
     };
@@ -322,6 +348,7 @@ export class MetamaskConnectEVM {
   }
 
   #onDisconnect(): void {
+    logger('handler: disconnect');
     this.#provider.emit('disconnect');
     this.#eventHandlers?.disconnect?.();
 
@@ -397,6 +424,7 @@ export async function createMetamaskConnectEVM(
     eventHandlers?: EventHandlers;
   },
 ): Promise<MetamaskConnectEVM> {
+  logger('Creating Metamask Connect/EVM with options:', options);
   try {
     const core = await createMetamaskConnect(options);
     return new MetamaskConnectEVM({

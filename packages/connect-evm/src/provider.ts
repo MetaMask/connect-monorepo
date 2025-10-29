@@ -3,6 +3,7 @@ import { EventEmitter } from '@metamask/connect-multichain';
 import { numberToHex } from '@metamask/utils';
 
 import { INTERCEPTABLE_METHODS } from './constants';
+import { logger } from './logger';
 import type {
   Address,
   EIP1193ProviderEvents,
@@ -40,6 +41,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
    * @returns The result of the request
    */
   async request(request: ProviderRequest): Promise<unknown> {
+    logger(`request: ${request.method}`, request.params);
     /* Some methods require special handling, so we intercept them here
      * and handle them in MetamaskConnectEVM.requestInterceptor method.  */
     if (INTERCEPTABLE_METHODS.includes(request.method)) {
