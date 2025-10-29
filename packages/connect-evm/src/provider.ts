@@ -1,5 +1,6 @@
 import type { MultichainCore } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
+import { numberToHex } from '@metamask/utils';
 
 import { INTERCEPTABLE_METHODS } from './constants';
 import type {
@@ -9,7 +10,6 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { toHex } from './utils/to-hex';
 
 /**
  * EIP-1193 Provider wrapper around the Multichain SDK.
@@ -74,7 +74,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
 
   public set selectedChainId(chainId: Hex | number | undefined) {
     const hexChainId =
-      chainId && typeof chainId === 'number' ? toHex(chainId) : chainId;
+      chainId && typeof chainId === 'number' ? numberToHex(chainId) : chainId;
 
     // Don't overwrite the selected chain ID with an undefined value
     if (!hexChainId) {
