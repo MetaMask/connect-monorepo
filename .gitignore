@@ -38,3 +38,6 @@ scripts/coverage
 # typescript
 packages/*/*.tsbuildinfo
 playground/*/*.tsbuildinfo
+
+# env files
+**/.env

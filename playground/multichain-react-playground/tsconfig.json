@@ -16,7 +16,7 @@
     "target": "es2020",
     "jsx": "react-jsx"
   },
-  "references": [{ "path": "../../packages/multichain" }],
+  "references": [{ "path": "../../packages/connect-multichain" }],
   "include": ["./src"],
   "exclude": ["./build", "**/node_modules"]
 }

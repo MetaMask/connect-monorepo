@@ -6,6 +6,12 @@ A test dapp for the MetaMask Multichain API.
 
 `yarn`
 
+## Configuration
+
+`cp .env.example .env`
+
+Then fill out the resulting `.env` file.
+
 ## Usage
 
 To start the development server:

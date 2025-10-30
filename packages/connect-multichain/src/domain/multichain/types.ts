@@ -41,11 +41,9 @@ export type MultichainOptions = {
   /** Dapp identification and branding settings */
   dapp: DappSettings;
   /** Optional API configuration for external services */
-  api?: {
-    /** The Infura API key to use for RPC requests */
-    infuraAPIKey?: string;
+  api: {
     /** A map of RPC URLs to use for read-only requests */
-    readonlyRPCMap?: RpcUrlsMap;
+    readonlyRPCMap: RpcUrlsMap;
   };
   /** Analytics configuration */
   analytics?: { enabled: false } | { enabled: true; integrationType: string };

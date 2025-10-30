@@ -1,9 +1,10 @@
+require('dotenv').config();
 const webpack = require('webpack');
 
 module.exports = {
   style: {
     postcss: {
-      plugins: [require('@tailwindcss/postcss'), require('autoprefixer')],
+      mode: 'file',
     },
   },
   webpack: {
@@ -28,6 +29,9 @@ module.exports = {
         new webpack.ProvidePlugin({
           Buffer: ['buffer', 'Buffer'],
           process: 'process/browser.js',
+        }),
+        new webpack.DefinePlugin({
+          'process.env.INFURA_API_KEY': JSON.stringify(process.env.INFURA_API_KEY),
         }),
       );
 

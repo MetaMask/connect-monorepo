@@ -1,6 +1,13 @@
 # Node.js SDK example
 
-Get started by running:
+## Configuration
+
+`cp .env.example .env`
+
+Then fill out the resulting `.env` file.
+
+
+## Usage
 
 ```bash
 # This repo expects you to use `nvm` (https://github.com/nvm-sh/nvm) for node version management.
