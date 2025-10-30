@@ -96,4 +96,6 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
   }) => Promise<void>;
+
+  sendEip1193Message: (request: unknown) => Promise<void>;
 };

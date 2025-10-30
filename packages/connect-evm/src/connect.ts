@@ -1,4 +1,5 @@
 import type {
+  ExtendedTransport,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -307,19 +308,8 @@ export class MetamaskConnectEVM {
    */
   #request(request: { method: string; params: unknown[] }): void {
     logger('direct request to metamask-provider called', request);
-    // TODO: (@wenfix): use dedicated transports?
-    // eslint-disable-next-line no-restricted-globals
-    window.postMessage(
-      {
-        target: 'metamask-contentscript',
-        data: {
-          name: 'metamask-provider',
-          data: request,
-        },
-      },
-      // eslint-disable-next-line no-restricted-globals
-      location.origin,
-    );
+    // TODO: [ffmcgee] casting O_O
+    (this.#core.transport as ExtendedTransport).sendEip1193Message(request);
   }
 
   #onChainChanged(chainId: Hex | number): void {
