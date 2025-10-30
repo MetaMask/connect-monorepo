@@ -150,6 +150,20 @@ export class MetamaskConnectEVM {
 
     this.#provider.selectedChainId = numberToHex(chainId);
 
+    this.#core.transport.onNotification((notification) => {
+      if (notification?.method === 'metamask_accountsChanged') {
+        const accounts = notification?.params;
+        logger('transport-event: accountsChanged', accounts);
+        this.#onAccountsChanged(accounts);
+      }
+
+      if (notification?.method === 'metamask_chainChanged') {
+        const chainId = Number(notification?.params?.chainId);
+        logger('transport-event: chainChanged', chainId);
+        this.#onChainChanged(chainId);
+      }
+    });
+
     this.#onConnect({ chainId: this.#provider.selectedChainId });
 
     logger('fulfilled-request: connect', { chainId, account });
