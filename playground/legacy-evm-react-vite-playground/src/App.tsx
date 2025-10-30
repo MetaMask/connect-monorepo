@@ -32,10 +32,6 @@ function useSDK() {
           setConnected(true);
         });
 
-        provider.on('connect', () => {
-          setConnected(true);
-        });
-
         provider.on('disconnect', () => {
           setConnected(false);
         });
@@ -156,7 +152,7 @@ export const App = () => {
     const to = '0x0000000000000000000000000000000000000000';
     const transactionParameters = {
       to, // Required except during contract publications.
-      from: sdk?.getAccount(), // must match user's active address.
+      from: sdk.selectedAccount, // must match user's active address.
       value: '0x5AF3107A4000', // Only required to send ether to the recipient from the initiating external account.
     };
     console.log('transactionParameters', transactionParameters);
