@@ -150,17 +150,25 @@ export class MetamaskConnectEVM {
 
     this.#provider.selectedChainId = numberToHex(chainId);
 
+    console.log('Setting up on notification:', {
+      transport: this.#core.transport,
+    });
+
     this.#core.transport.onNotification((notification) => {
+      // @ts-expect-error TODO: address this
       if (notification?.method === 'metamask_accountsChanged') {
+        // @ts-expect-error TODO: address this
         const accounts = notification?.params;
         logger('transport-event: accountsChanged', accounts);
         this.#onAccountsChanged(accounts);
       }
 
+      // @ts-expect-error TODO: address this
       if (notification?.method === 'metamask_chainChanged') {
-        const chainId = Number(notification?.params?.chainId);
-        logger('transport-event: chainChanged', chainId);
-        this.#onChainChanged(chainId);
+        // @ts-expect-error TODO: address this
+        const notificationChainId = Number(notification?.params?.chainId);
+        logger('transport-event: chainChanged', notificationChainId);
+        this.#onChainChanged(notificationChainId);
       }
     });
 
@@ -488,6 +496,7 @@ export async function createMetamaskConnectEVM(
   const notificationQueue: unknown[] = [];
 
   try {
+    // @ts-expect-error TODO: address this
     const core = await createMetamaskConnect({
       ...options,
       transport: {
