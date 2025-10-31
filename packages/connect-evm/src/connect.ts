@@ -119,7 +119,7 @@ export class MetamaskConnectEVM {
           );
           this.#addEthereumChain();
         }
-      } 
+      }
     };
 
     /**
@@ -141,7 +141,6 @@ export class MetamaskConnectEVM {
       this.#sessionChangedHandler.bind(this),
     );
 
-    console.log('notificationQueue in connect evm', notificationQueue);
     // Attempt to set the permitted accounts if there's a valid previous session.
     this.#attemptSessionRecovery(notificationQueue);
 
@@ -171,53 +170,76 @@ export class MetamaskConnectEVM {
       transport: this.#core.transport,
     });
 
-    (this.#core.transport as ExtendedTransport).onMessage?.(
-      (message: unknown) => {
-        // console log the message
-        console.log('message in connect evm', message);
-        // [Log] message in connect evm – {name: 'metamask-provider', data: {method: 'metamask_accountsChanged', params: ['0x8066...']}}
-        // Based on this we need to refactor the metamaskProviderHandler method to handle this different envelope which is different for the mwp transport
+    this.#core.transport.onNotification((notification) => {
+      // @ts-expect-error TODO: address this
+      if (notification?.method === 'metamask_accountsChanged') {
+        // @ts-expect-error TODO: address this
+        const accounts = notification?.params;
+        logger('transport-event: accountsChanged', accounts);
+        this.#onAccountsChanged(accounts);
+      }
 
-        if (
-          !isMetamaskProviderMessage(message) ||
-          message.name !== 'metamask-provider'
-        ) {
-          return;
-        }
+      // @ts-expect-error TODO: address this
+      if (notification?.method === 'metamask_chainChanged') {
+        // @ts-expect-error TODO: address this
+        const notificationChainId = Number(notification?.params?.chainId);
+        logger('transport-event: chainChanged', notificationChainId);
+        this.#onChainChanged(notificationChainId);
+      }
+    });
 
-        console.log('message in connect evm after early return', message);
+    // (this.#core.transport as ExtendedTransport).onMessage?.(
+    //   (message: unknown) => {
+    //     // console log the message
+    //     console.log('message in connect evm', message);
+    //     // [Log] message in connect evm – {name: 'metamask-provider', data: {method: 'metamask_accountsChanged', params: ['0x8066...']}}
+    //     // Based on this we need to refactor the metamaskProviderHandler method to handle this different envelope which is different for the mwp transport
 
-        const data = message.data as
-          | { method?: string; params?: unknown }
-          | undefined;
+    //     if (
+    //       !isMetamaskProviderMessage(message) ||
+    //       message.name !== 'metamask-provider'
+    //     ) {
+    //       return;
+    //     }
 
-        if (data?.method === 'metamask_accountsChanged') {
-          const accounts = data.params as Address[] | undefined;
-          if (Array.isArray(accounts)) {
-            this.#onAccountsChanged(accounts);
-          }
-          return;
-        }
+    //     console.log('message in connect evm after early return', message);
 
-        if (data?.method === 'metamask_chainChanged') {
-          const params = data.params as { chainId?: string } | undefined;
-          const chainId = params?.chainId;
-          if (typeof chainId === 'string') {
-            const parsedChainId = Number(chainId);
-            logger('event: chainChanged', parsedChainId);
-            this.#onChainChanged(parsedChainId);
-          }
-        }
-      },
-    );
+    //     const data = message.data as
+    //       | { method?: string; params?: unknown }
+    //       | undefined;
 
-    this.#onConnect({ chainId: this.#provider.selectedChainId });
+    //     if (data?.method === 'metamask_accountsChanged') {
+    //       const accounts = data.params as Address[] | undefined;
+    //       if (Array.isArray(accounts)) {
+    //         this.#onAccountsChanged(accounts);
+    //       }
+    //       return;
+    //     }
+
+    //     if (data?.method === 'metamask_chainChanged') {
+    //       const params = data.params as { chainId?: string } | undefined;
+    //       const chainId = params?.chainId;
+    //       if (typeof chainId === 'string') {
+    //         const parsedChainId = Number(chainId);
+    //         logger('event: chainChanged', parsedChainId);
+    //         this.#onChainChanged(parsedChainId);
+    //       }
+    //     }
+    //   },
+    // );
+
+    const selectedChainId = await this.getChainId();
+    if (selectedChainId) {
+      this.#onConnect({ chainId: selectedChainId });
+    } else {
+      throw new Error('No chain ID selected');
+    }
 
     logger('fulfilled-request: connect', { chainId, account });
     return {
-      accounts: this.accounts,
-      chainId: hexToNumber(this.#provider.selectedChainId),
-    };
+      accounts: await this.getAccounts(),
+      chainId: hexToNumber(selectedChainId as Hex),
+    } as { accounts: Address[]; chainId?: number };
   }
 
   async disconnect(): Promise<void> {
@@ -242,16 +264,17 @@ export class MetamaskConnectEVM {
    * @param options.chainId - The chain ID to switch to
    * @param options.chainConfiguration - The chain configuration to use in case the chain is not present by the wallet
    */
-  switchChain({
+  async switchChain({
     chainId,
     chainConfiguration,
   }: {
     chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
-  }): void {
+  }): Promise<void> {
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
 
-    if (this.selectedChainId === hexChainId) {
+    const selectedChainId = await this.getChainId();
+    if (selectedChainId === hexChainId) {
       return;
     }
 
@@ -325,7 +348,7 @@ export class MetamaskConnectEVM {
     }
 
     if (isAccountsRequest(request)) {
-      return this.accounts;
+      return await this.getAccounts();
     }
 
     logger('Request not intercepted, forwarding to default handler', request);
@@ -420,7 +443,7 @@ export class MetamaskConnectEVM {
    *
    * @param events - The events to check
    */
-  async #attemptSessionRecovery(events?: unknown[]): Promise<void> {
+  #attemptSessionRecovery(events?: unknown[]): void {
     if (
       events?.some(
         (notification: MessageEvent['data']) =>
@@ -442,34 +465,44 @@ export class MetamaskConnectEVM {
         }
       };
       window.addEventListener('message', recoverSession);
-      // console.log('prayer in attemptSessionRecovery', prayer);
     }
 
-     // eslint-disable-next-line no-restricted-globals
+    // We shouldn't be making requests to the wallet to rehydrate state on refresh/recovery, we should be
+    // using our last stored session data (optimistically)
 
-     (this.#core.transport as ExtendedTransport).onMessage?.(
-       (message: unknown) => {
-         // console log the message
-         console.log('message in onMessage in attemptSessionRecovery in connect evm', message);
-         // [Log] message in onMessage in attemptSessionRecovery in connect evm – {name: "metamask-provider", data: {result: ["0x806627172af48bd5b0765d3449a7def80d6576ff"]}} (connect-evm.mjs, line 514)
-         // recoverSession(message as MessageEvent);
-         if (typeof message === 'object' && message !== null) {
-           if ('data' in message) {
-             const messagePayload = message.data as Record<string, unknown>;
-             const result = (messagePayload as { data?: { result?: string[] } })?.data?.result;
-             if (Array.isArray(result) && result.every((account: string) => isHexAddress(account))) {
-               this.#onAccountsChanged(result as Address[]);
-             }
-           }
-         }
-       },
-     );
+    // selectedAccount and selectedChainId need to be stored (not just in memory) so that we can rehydrate the state on refresh/recovery
+    // we only need these values for the mwp transport
+    // when in the browser transport, you can actually call eth_accounts and eth_chainId to get the values
 
-     this.#request({
-       method: 'eth_accounts',
-       params: [],
-     });
+    // (this.#core.transport as ExtendedTransport).onMessage?.(
+    //   (message: unknown) => {
+    //     // console log the message
+    //     console.log(
+    //       'message in onMessage in attemptSessionRecovery in connect evm',
+    //       message,
+    //     );
+    //     // [Log] message in onMessage in attemptSessionRecovery in connect evm – {name: "metamask-provider", data: {result: ["0x806627172af48bd5b0765d3449a7def80d6576ff"]}} (connect-evm.mjs, line 514)
+    //     // recoverSession(message as MessageEvent);
+    //     if (typeof message === 'object' && message !== null) {
+    //       if ('data' in message) {
+    //         const messagePayload = message.data as Record<string, unknown>;
+    //         const result = (messagePayload as { data?: { result?: string[] } })
+    //           ?.data?.result;
+    //         if (
+    //           Array.isArray(result) &&
+    //           result.every((account: string) => isHexAddress(account))
+    //         ) {
+    //           this.#onAccountsChanged(result as Address[]);
+    //         }
+    //       }
+    //     }
+    //   },
+    // );
 
+    // this.#request({
+    //   method: 'eth_accounts',
+    //   params: [],
+    // });
   }
 
   /**
@@ -486,8 +519,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The currently selected chain ID or undefined if no chain is selected
    */
-  getChainId(): Hex | undefined {
-    return this.selectedChainId;
+  async getChainId(): Promise<Hex | undefined> {
+    return await this.#provider.selectedChainId;
   }
 
   /**
@@ -495,37 +528,47 @@ export class MetamaskConnectEVM {
    *
    * @returns The currently selected account or undefined if no account is selected
    */
-  getAccount(): Address | undefined {
-    return this.#provider.selectedAccount;
+  async getAccount(): Promise<Address | undefined> {
+    const account = await this.#provider.selectedAccount;
+    console.log('account in getAccount', account);
+    return account;
   }
 
-  // Convenience getters for the EIP-1193 provider
-  /**
-   * Gets the currently permitted accounts
-   *
-   * @returns The currently permitted accounts
-   */
-  get accounts(): Address[] {
-    return this.#provider.accounts;
-  }
 
-  /**
-   * Gets the currently selected account on the wallet
-   *
-   * @returns The currently selected account or undefined if no account is selected
-   */
-  get selectedAccount(): Address | undefined {
-    return this.#provider.selectedAccount;
+  async getAccounts(): Promise<Address[]> {
+    const accounts = await this.#provider.accounts;
+    if (!accounts) {
+      return [];
+    }
+    return accounts;
   }
+  // // Convenience getters for the EIP-1193 provider
+  // /**
+  //  * Gets the currently permitted accounts
+  //  *
+  //  * @returns The currently permitted accounts
+  //  */
+  // get accounts(): Address[] {
+  //   return this.#provider.accounts;
+  // }
 
-  /**
-   * Gets the currently selected chain ID on the wallet
-   *
-   * @returns The currently selected chain ID or undefined if no chain is selected
-   */
-  get selectedChainId(): Hex | undefined {
-    return this.#provider.selectedChainId;
-  }
+  // /**
+  //  * Gets the currently selected account on the wallet
+  //  *
+  //  * @returns The currently selected account or undefined if no account is selected
+  //  */
+  // get selectedAccount(): Address | undefined {
+  //   return this.#provider.selectedAccount;
+  // }
+
+  // /**
+  //  * Gets the currently selected chain ID on the wallet
+  //  *
+  //  * @returns The currently selected chain ID or undefined if no chain is selected
+  //  */
+  // get selectedChainId(): Hex | undefined {
+  //   return this.#provider.selectedChainId;
+  // }
 
   #isMetamaskProviderEvent(event: MessageEvent): boolean {
     return (
@@ -562,10 +605,13 @@ export async function createMetamaskConnectEVM(
       transport: {
         onNotification: (notification: unknown) =>
           notificationQueue.push(notification),
-        onMessage: (message: unknown) => {
-          console.log('message in onMessage in createMetamaskConnectEVM', message);
-          notificationQueue.push(message);
-        },
+        // onMessage: (message: unknown) => {
+        //   console.log(
+        //     'message in onMessage in createMetamaskConnectEVM',
+        //     message,
+        //   );
+        //   notificationQueue.push(message);
+        // },
       },
     });
 
