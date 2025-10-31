@@ -35,6 +35,22 @@ import {
   isSwitchChainRequest,
 } from './utils/type-guards';
 
+type MetamaskProviderMessage = {
+  name: string;
+  data?: {
+    method?: string;
+    params?: unknown;
+  };
+};
+
+const isMetamaskProviderMessage = (
+  value: unknown,
+): value is MetamaskProviderMessage =>
+  typeof value === 'object' &&
+  value !== null &&
+  'name' in value &&
+  typeof (value as { name: unknown }).name === 'string';
+
 export class MetamaskConnectEVM {
   /** The core instance of the Multichain SDK */
   readonly #core: MultichainCore;
@@ -103,7 +119,7 @@ export class MetamaskConnectEVM {
           );
           this.#addEthereumChain();
         }
-      }
+      } 
     };
 
     /**
@@ -125,6 +141,7 @@ export class MetamaskConnectEVM {
       this.#sessionChangedHandler.bind(this),
     );
 
+    console.log('notificationQueue in connect evm', notificationQueue);
     // Attempt to set the permitted accounts if there's a valid previous session.
     this.#attemptSessionRecovery(notificationQueue);
 
@@ -154,23 +171,45 @@ export class MetamaskConnectEVM {
       transport: this.#core.transport,
     });
 
-    this.#core.transport.onNotification((notification) => {
-      // @ts-expect-error TODO: address this
-      if (notification?.method === 'metamask_accountsChanged') {
-        // @ts-expect-error TODO: address this
-        const accounts = notification?.params;
-        logger('transport-event: accountsChanged', accounts);
-        this.#onAccountsChanged(accounts);
-      }
+    (this.#core.transport as ExtendedTransport).onMessage?.(
+      (message: unknown) => {
+        // console log the message
+        console.log('message in connect evm', message);
+        // [Log] message in connect evm – {name: 'metamask-provider', data: {method: 'metamask_accountsChanged', params: ['0x8066...']}}
+        // Based on this we need to refactor the metamaskProviderHandler method to handle this different envelope which is different for the mwp transport
 
-      // @ts-expect-error TODO: address this
-      if (notification?.method === 'metamask_chainChanged') {
-        // @ts-expect-error TODO: address this
-        const notificationChainId = Number(notification?.params?.chainId);
-        logger('transport-event: chainChanged', notificationChainId);
-        this.#onChainChanged(notificationChainId);
-      }
-    });
+        if (
+          !isMetamaskProviderMessage(message) ||
+          message.name !== 'metamask-provider'
+        ) {
+          return;
+        }
+
+        console.log('message in connect evm after early return', message);
+
+        const data = message.data as
+          | { method?: string; params?: unknown }
+          | undefined;
+
+        if (data?.method === 'metamask_accountsChanged') {
+          const accounts = data.params as Address[] | undefined;
+          if (Array.isArray(accounts)) {
+            this.#onAccountsChanged(accounts);
+          }
+          return;
+        }
+
+        if (data?.method === 'metamask_chainChanged') {
+          const params = data.params as { chainId?: string } | undefined;
+          const chainId = params?.chainId;
+          if (typeof chainId === 'string') {
+            const parsedChainId = Number(chainId);
+            logger('event: chainChanged', parsedChainId);
+            this.#onChainChanged(parsedChainId);
+          }
+        }
+      },
+    );
 
     this.#onConnect({ chainId: this.#provider.selectedChainId });
 
@@ -331,6 +370,7 @@ export class MetamaskConnectEVM {
   #request(request: { method: string; params: unknown[] }): void {
     logger('direct request to metamask-provider called', request);
     // TODO: [ffmcgee] casting O_O
+
     (this.#core.transport as ExtendedTransport).sendEip1193Message(request);
   }
 
@@ -380,7 +420,7 @@ export class MetamaskConnectEVM {
    *
    * @param events - The events to check
    */
-  #attemptSessionRecovery(events?: unknown[]): void {
+  async #attemptSessionRecovery(events?: unknown[]): Promise<void> {
     if (
       events?.some(
         (notification: MessageEvent['data']) =>
@@ -401,15 +441,35 @@ export class MetamaskConnectEVM {
           }
         }
       };
-
-      // eslint-disable-next-line no-restricted-globals
       window.addEventListener('message', recoverSession);
-
-      this.#request({
-        method: 'eth_accounts',
-        params: [],
-      });
+      // console.log('prayer in attemptSessionRecovery', prayer);
     }
+
+     // eslint-disable-next-line no-restricted-globals
+
+     (this.#core.transport as ExtendedTransport).onMessage?.(
+       (message: unknown) => {
+         // console log the message
+         console.log('message in onMessage in attemptSessionRecovery in connect evm', message);
+         // [Log] message in onMessage in attemptSessionRecovery in connect evm – {name: "metamask-provider", data: {result: ["0x806627172af48bd5b0765d3449a7def80d6576ff"]}} (connect-evm.mjs, line 514)
+         // recoverSession(message as MessageEvent);
+         if (typeof message === 'object' && message !== null) {
+           if ('data' in message) {
+             const messagePayload = message.data as Record<string, unknown>;
+             const result = (messagePayload as { data?: { result?: string[] } })?.data?.result;
+             if (Array.isArray(result) && result.every((account: string) => isHexAddress(account))) {
+               this.#onAccountsChanged(result as Address[]);
+             }
+           }
+         }
+       },
+     );
+
+     this.#request({
+       method: 'eth_accounts',
+       params: [],
+     });
+
   }
 
   /**
@@ -502,6 +562,10 @@ export async function createMetamaskConnectEVM(
       transport: {
         onNotification: (notification: unknown) =>
           notificationQueue.push(notification),
+        onMessage: (message: unknown) => {
+          console.log('message in onMessage in createMetamaskConnectEVM', message);
+          notificationQueue.push(message);
+        },
       },
     });
 

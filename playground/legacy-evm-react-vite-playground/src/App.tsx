@@ -17,7 +17,6 @@ function useSDK() {
   const [balance, setBalance] = useState<string>();
 
   useEffect(() => {
-    console.log('useEffect');
     const setupSDK = async () => {
       const clientSDK = await createMetamaskConnectEVM({
         dapp: {
@@ -209,6 +208,18 @@ export const App = () => {
     }
   };
 
+  const eth_accounts = async () => {
+    if (!provider) {
+      setResponse(`invalid ethereum provider`);
+      return;
+    }
+    const response = await provider?.request({
+      method: 'eth_accounts',
+      params: [],
+    });
+    console.log('eth_accounts response', response);
+  };
+
   return (
     <div className="App">
       <h1>Vite React MMSDK Example</h1>
@@ -245,9 +256,9 @@ export const App = () => {
           <button
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
-            onClick={connect}
+            onClick={eth_accounts}
           >
-            Request Accounts
+            eth_accounts
           </button>
 
           <button
