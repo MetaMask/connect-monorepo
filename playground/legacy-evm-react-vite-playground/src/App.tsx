@@ -86,9 +86,7 @@ export const App = () => {
 
   const connectAndSign = async () => {
     try {
-      const signResult = await sdk?.connectAndSign({
-        msg: 'Connect + Sign message',
-      });
+      const signResult = await sdk?.connectAndSign('Connect + Sign message');
       setResponse(signResult);
     } catch (err) {
       console.warn(`failed to connect..`, err);
