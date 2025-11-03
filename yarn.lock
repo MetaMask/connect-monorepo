@@ -4063,6 +4063,7 @@ __metadata:
     nock: "npm:^14.0.4"
     pako: "npm:^2.1.0"
     prettier: "npm:^3.3.3"
+    tsup: "npm:^8.4.0"
     typedoc: "npm:^0.23.22"
     typedoc-plugin-missing-exports: "npm:^1.0.0"
     typescript: "npm:~5.9.2"
