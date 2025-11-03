@@ -40,6 +40,7 @@ import {
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
+import { MULTICHAIN_PROVIDER_STREAM_NAME } from '../constants';
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 const CONNECTION_GRACE_PERIOD = 60 * 1000;
@@ -317,7 +318,13 @@ export class MWPTransport implements ExtendedTransport {
             });
 
             dappClient
-              .connect({ mode: 'trusted', initialPayload: request })
+              .connect({
+                mode: 'trusted',
+                initialPayload: {
+                  name: MULTICHAIN_PROVIDER_STREAM_NAME,
+                  data: request
+                }
+              })
               .catch(rejectConnection);
           },
         );
@@ -427,7 +434,10 @@ export class MWPTransport implements ExtendedTransport {
         timeout,
       });
 
-      this.dappClient.sendRequest(request).catch(reject);
+      this.dappClient.sendRequest({
+        name: MULTICHAIN_PROVIDER_STREAM_NAME,
+        data: request
+      }).catch(reject);
     });
   }
 
