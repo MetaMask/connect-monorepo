@@ -105,6 +105,7 @@ export class MWPTransport implements ExtendedTransport {
       connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
     },
   ) {
+    console.log('MWPTransport constructor');
     this.dappClient.on('message', this.handleMessage.bind(this));
     if (
       typeof window !== 'undefined' &&
@@ -138,6 +139,7 @@ export class MWPTransport implements ExtendedTransport {
   }
 
   private handleMessage(message: unknown): void {
+    console.log('handleMessage', message);
     if (typeof message === 'object' && message !== null) {
       if ('data' in message) {
         const messagePayload = message.data as Record<string, unknown>;
@@ -431,6 +433,9 @@ export class MWPTransport implements ExtendedTransport {
       window.removeEventListener('focus', this.windowFocusHandler);
       this.windowFocusHandler = undefined;
     }
+    this.kvstore.delete(SESSION_STORE_KEY);
+    this.kvstore.delete(ACCOUNTS_STORE_KEY);
+    this.kvstore.delete(CHAIN_STORE_KEY);
     return this.dappClient.disconnect();
   }
 
