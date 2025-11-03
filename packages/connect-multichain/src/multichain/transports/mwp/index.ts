@@ -193,8 +193,7 @@ export class MWPTransport implements ExtendedTransport {
             this.kvstore.set(
               ACCOUNTS_STORE_KEY,
               JSON.stringify(
-                (message.data as { params: { accounts: string[] } }).params
-                  .accounts,
+                (message.data as { params: { accounts: string[] } }).params,
               ),
             );
           }
