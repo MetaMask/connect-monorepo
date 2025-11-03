@@ -34,19 +34,25 @@ export class DefaultTransport implements ExtendedTransport {
     }
   }
 
-  async sendEip1193Message(request: unknown): Promise<void> {
+  async sendEip1193Message<
+    TRequest extends TransportRequest,
+    TResponse extends TransportResponse,
+  >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
+
     // eslint-disable-next-line no-restricted-globals
     window.postMessage(
       {
         target: 'metamask-contentscript',
         data: {
           name: 'metamask-provider',
-          data: request,
+          data: payload,
         },
       },
       // eslint-disable-next-line no-restricted-globals
       location.origin,
     );
+    // TODO: Return the actual response
+    return Promise.resolve({} as TResponse);
   }
 
   async connect(options?: {

@@ -164,6 +164,7 @@ export class MWPTransport implements ExtendedTransport {
             };
 
             clearTimeout(request.timeout);
+            // Might need to handle the evm case?
             this.notifyCallbacks(notification);
             request.resolve(requestWithName);
             this.pendingRequests.delete(messagePayload.id);
@@ -245,6 +246,7 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  // TODO: Rename this
   async sendEip1193Message<
     TRequest extends TransportRequest,
     TResponse extends TransportResponse,
