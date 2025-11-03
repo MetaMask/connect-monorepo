@@ -161,15 +161,21 @@ function testSuite<T extends MultichainOptions>({
           mockedData.mockDappClient.sendRequest,
         ).not.toHaveBeenCalledWith(
           t.expect.objectContaining({
-            method: 'wallet_getSession',
+            name: 'metamask-multichain-provider',
+            data: t.expect.objectContaining({
+              method: 'wallet_getSession',
+            }),
           }),
         );
         t.expect(mockedData.mockDappClient.sendRequest).toHaveBeenCalledWith(
           t.expect.objectContaining({
-            method: 'wallet_createSession',
-            params: {
-              optionalScopes: mockedSessionUpgradeData.sessionScopes,
-            },
+            name: 'metamask-multichain-provider',
+            data: t.expect.objectContaining({
+              method: 'wallet_createSession',
+              params: {
+                optionalScopes: mockedSessionUpgradeData.sessionScopes,
+              },
+            }),
           }),
         );
       }
@@ -232,10 +238,13 @@ function testSuite<T extends MultichainOptions>({
         } else {
           t.expect(mockedData.mockDappClient.sendRequest).toHaveBeenCalledWith(
             t.expect.objectContaining({
-              method: 'wallet_createSession',
-              params: {
-                optionalScopes: {},
-              },
+              name: 'metamask-multichain-provider',
+              data: t.expect.objectContaining({
+                method: 'wallet_createSession',
+                params: {
+                  optionalScopes: {},
+                },
+              }),
             }),
           );
         }

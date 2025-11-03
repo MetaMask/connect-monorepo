@@ -317,7 +317,13 @@ export class MWPTransport implements ExtendedTransport {
             });
 
             dappClient
-              .connect({ mode: 'trusted', initialPayload: request })
+              .connect({
+                mode: 'trusted',
+                initialPayload: {
+                  name: 'metamask-multichain-provider',
+                  data: request
+                }
+              })
               .catch(rejectConnection);
           },
         );
