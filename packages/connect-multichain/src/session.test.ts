@@ -20,6 +20,7 @@ import { Store } from './store';
 import type { TestSuiteOptions, MockedData } from '../tests/types';
 import { mockSessionData, mockSessionRequestData } from '../tests/data';
 import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
+import { MULTICHAIN_PROVIDER_STREAM_NAME } from './multichain/transports/constants';
 
 function testSuite<T extends MultichainOptions>({
   platform,
@@ -161,15 +162,21 @@ function testSuite<T extends MultichainOptions>({
           mockedData.mockDappClient.sendRequest,
         ).not.toHaveBeenCalledWith(
           t.expect.objectContaining({
-            method: 'wallet_getSession',
+            name: MULTICHAIN_PROVIDER_STREAM_NAME,
+            data: t.expect.objectContaining({
+              method: 'wallet_getSession',
+            }),
           }),
         );
         t.expect(mockedData.mockDappClient.sendRequest).toHaveBeenCalledWith(
           t.expect.objectContaining({
-            method: 'wallet_createSession',
-            params: {
-              optionalScopes: mockedSessionUpgradeData.sessionScopes,
-            },
+            name: MULTICHAIN_PROVIDER_STREAM_NAME,
+            data: t.expect.objectContaining({
+              method: 'wallet_createSession',
+              params: {
+                optionalScopes: mockedSessionUpgradeData.sessionScopes,
+              },
+            }),
           }),
         );
       }
@@ -232,10 +239,13 @@ function testSuite<T extends MultichainOptions>({
         } else {
           t.expect(mockedData.mockDappClient.sendRequest).toHaveBeenCalledWith(
             t.expect.objectContaining({
-              method: 'wallet_createSession',
-              params: {
-                optionalScopes: {},
-              },
+              name: MULTICHAIN_PROVIDER_STREAM_NAME,
+              data: t.expect.objectContaining({
+                method: 'wallet_createSession',
+                params: {
+                  optionalScopes: {},
+                },
+              }),
             }),
           );
         }
