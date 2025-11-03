@@ -54,7 +54,7 @@ const CACHED_METHOD_LIST = [
   'wallet_createSession',
   'wallet_sessionChanged',
 ];
-const CACHED_RESET_METHOD_LIST = ['wallet_revokeSession'];
+const CACHED_RESET_METHOD_LIST = ['wallet_revokeSession', 'wallet_revokePermissions'];
 
 type PendingRequests = {
   request: { jsonrpc: string; id: string } & TransportRequest;
@@ -144,7 +144,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                request.method === 'wallet_createSession'
+                  request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -156,7 +156,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                request.method === 'wallet_createSession'
+                  request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
@@ -245,9 +245,14 @@ export class MWPTransport implements ExtendedTransport {
   }
 
   async sendEip1193Message<
-    TRequest extends { method: string; params: unknown[] },
+    TRequest extends TransportRequest,
     TResponse extends TransportResponse,
-  >(request: TRequest, options?: { timeout?: number }): Promise<TResponse> {
+  >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
+    const request = {
+      jsonrpc: '2.0',
+      id: `${this.__reqId++}`,
+      ...payload,
+    };
 
     const cachedWalletSession = await this.getCachedResponse(request);
     if (cachedWalletSession) {
@@ -264,9 +269,7 @@ export class MWPTransport implements ExtendedTransport {
         request,
         method: request.method,
         resolve: async (response: TransportResponse) => {
-          if (['eth_accounts', 'eth_chainId', 'wallet_revokePermissions'].includes(request.method)) {
-            await this.storeWalletSession(request, response);
-          }
+          await this.storeWalletSession(request, response);
           return resolve(response as TResponse);
         },
         reject,
@@ -417,7 +420,7 @@ export class MWPTransport implements ExtendedTransport {
           method: request.method,
         } as unknown as TransportResponse;
       }
-    }  else if (request.method === 'eth_accounts') {
+    } else if (request.method === 'eth_accounts') {
       const ethAccounts = await this.kvstore.get(ACCOUNTS_STORE_KEY);
       if (ethAccounts) {
         return {
@@ -446,13 +449,14 @@ export class MWPTransport implements ExtendedTransport {
   ): Promise<void> {
     if (CACHED_METHOD_LIST.includes(request.method)) {
       await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
-    } else if (CACHED_RESET_METHOD_LIST.includes(request.method)) {
-      await this.kvstore.delete(SESSION_STORE_KEY);
     } else if (request.method === 'eth_accounts') {
       await this.kvstore.set(ACCOUNTS_STORE_KEY, JSON.stringify(response.result));
     } else if (request.method === 'eth_chainId') {
       await this.kvstore.set(CHAIN_STORE_KEY, JSON.stringify(response.result));
-    } else if (request.method === 'wallet_revokePermissions') {
+    } else if (
+      CACHED_RESET_METHOD_LIST.includes(request.method)
+    ) {
+      await this.kvstore.delete(SESSION_STORE_KEY);
       await this.kvstore.delete(ACCOUNTS_STORE_KEY);
       await this.kvstore.delete(CHAIN_STORE_KEY);
     }
@@ -483,9 +487,7 @@ export class MWPTransport implements ExtendedTransport {
         request,
         method: request.method,
         resolve: async (response: TransportResponse) => {
-          if (CACHED_METHOD_LIST.includes(request.method)) {
-            await this.storeWalletSession(request, response);
-          }
+          await this.storeWalletSession(request, response);
           return resolve(response as TResponse);
         },
         reject,
