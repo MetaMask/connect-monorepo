@@ -55,7 +55,10 @@ const CACHED_METHOD_LIST = [
   'wallet_createSession',
   'wallet_sessionChanged',
 ];
-const CACHED_RESET_METHOD_LIST = ['wallet_revokeSession', 'wallet_revokePermissions'];
+const CACHED_RESET_METHOD_LIST = [
+  'wallet_revokeSession',
+  'wallet_revokePermissions',
+];
 
 type PendingRequests = {
   request: { jsonrpc: string; id: string } & TransportRequest;
@@ -145,7 +148,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -157,7 +160,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
@@ -272,6 +275,7 @@ export class MWPTransport implements ExtendedTransport {
         request,
         method: request.method,
         resolve: async (response: TransportResponse) => {
+          console.log('response in resolve', response);
           await this.storeWalletSession(request, response);
           return resolve(response as TResponse);
         },
@@ -279,10 +283,12 @@ export class MWPTransport implements ExtendedTransport {
         timeout,
       });
 
-      this.dappClient.sendRequest({
-        name: 'metamask-provider',
-        data: request,
-      }).catch(reject);
+      this.dappClient
+        .sendRequest({
+          name: 'metamask-provider',
+          data: request,
+        })
+        .catch(reject);
     });
   }
 
@@ -336,6 +342,7 @@ export class MWPTransport implements ExtendedTransport {
             };
 
             this.dappClient.on('message', async (message: unknown) => {
+              console.log('message in onMessage in mwp transport', message);
               if (typeof message === 'object' && message !== null) {
                 if ('data' in message) {
                   const messagePayload = message.data as Record<
@@ -349,12 +356,18 @@ export class MWPTransport implements ExtendedTransport {
                     if (messagePayload.error) {
                       return rejectConnection(messagePayload.error);
                     }
-                    this.notifyCallbacks(message.data);
                     await this.storeWalletSession(
                       request,
                       messagePayload as TransportResponse,
                     );
+                    this.notifyCallbacks(messagePayload);
                     return resolveConnection();
+                  } else {
+                    await this.storeWalletSession(
+                      request,
+                      messagePayload as TransportResponse,
+                    );
+                    this.notifyCallbacks(messagePayload);
                   }
                 }
               }
@@ -365,8 +378,8 @@ export class MWPTransport implements ExtendedTransport {
                 mode: 'trusted',
                 initialPayload: {
                   name: MULTICHAIN_PROVIDER_STREAM_NAME,
-                  data: request
-                }
+                  data: request,
+                },
               })
               .catch(rejectConnection);
           },
@@ -418,7 +431,9 @@ export class MWPTransport implements ExtendedTransport {
   private async getCachedResponse(
     request: { jsonrpc: string; id: string } & TransportRequest,
   ): Promise<TransportResponse | undefined> {
+    console.log('request in getCachedResponse', request);
     if (request.method === 'wallet_getSession') {
+      console.log('walletGetSession in getCachedResponse', request);
       const walletGetSession = await this.kvstore.get(SESSION_STORE_KEY);
       if (walletGetSession) {
         const walletSession = JSON.parse(walletGetSession);
@@ -435,7 +450,7 @@ export class MWPTransport implements ExtendedTransport {
         return {
           id: request.id,
           jsonrpc: '2.0',
-          result: ethAccounts,
+          result: JSON.parse(ethAccounts),
           method: request.method,
         } as unknown as TransportResponse;
       }
@@ -445,7 +460,7 @@ export class MWPTransport implements ExtendedTransport {
         return {
           id: request.id,
           jsonrpc: '2.0',
-          result: ethChainId,
+          result: JSON.parse(ethChainId),
           method: request.method,
         } as unknown as TransportResponse;
       }
@@ -454,17 +469,29 @@ export class MWPTransport implements ExtendedTransport {
 
   private async storeWalletSession(
     request: TransportRequest,
-    response: TransportResponse,
+    response: TransportResponse<unknown, unknown>,
   ): Promise<void> {
     if (CACHED_METHOD_LIST.includes(request.method)) {
+      console.log('storing wallet session in storeWalletSession request Method:', request.method, 'response:',  response);
       await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
     } else if (request.method === 'eth_accounts') {
-      await this.kvstore.set(ACCOUNTS_STORE_KEY, JSON.stringify(response.result));
+      await this.kvstore.set(
+        ACCOUNTS_STORE_KEY,
+        JSON.stringify(response.result),
+      );
     } else if (request.method === 'eth_chainId') {
       await this.kvstore.set(CHAIN_STORE_KEY, JSON.stringify(response.result));
-    } else if (
-      CACHED_RESET_METHOD_LIST.includes(request.method)
-    ) {
+    } else if (request.method === 'metamask_chainChanged') {
+      await this.kvstore.set(
+        CHAIN_STORE_KEY,
+        JSON.stringify((response.params as { chainId: number }).chainId),
+      );
+    } else if (request.method === 'metamask_accountsChanged') {
+      await this.kvstore.set(
+        ACCOUNTS_STORE_KEY,
+        JSON.stringify(response.params),
+      );
+    } else if (CACHED_RESET_METHOD_LIST.includes(request.method)) {
       await this.kvstore.delete(SESSION_STORE_KEY);
       await this.kvstore.delete(ACCOUNTS_STORE_KEY);
       await this.kvstore.delete(CHAIN_STORE_KEY);
@@ -496,6 +523,7 @@ export class MWPTransport implements ExtendedTransport {
         request,
         method: request.method,
         resolve: async (response: TransportResponse) => {
+          console.log('response in resolve', response);
           await this.storeWalletSession(request, response);
           return resolve(response as TResponse);
         },
@@ -503,10 +531,12 @@ export class MWPTransport implements ExtendedTransport {
         timeout,
       });
 
-      this.dappClient.sendRequest({
-        name: MULTICHAIN_PROVIDER_STREAM_NAME,
-        data: request
-      }).catch(reject);
+      this.dappClient
+        .sendRequest({
+          name: MULTICHAIN_PROVIDER_STREAM_NAME,
+          data: request,
+        })
+        .catch(reject);
     });
   }
 

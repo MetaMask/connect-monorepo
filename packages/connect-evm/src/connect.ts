@@ -100,6 +100,7 @@ export class MetamaskConnectEVM {
     logger('Constructor starts', { notificationQueue });
     this.#core = core;
 
+    console.log('notificationQueue in constructor', notificationQueue);
     this.#provider = new EIP1193Provider(
       core,
       this.#requestInterceptor.bind(this),
@@ -191,7 +192,21 @@ export class MetamaskConnectEVM {
 
     await this.#core.connect(caipChainId, caipAccountId);
 
-    this.#provider.selectedChainId = numberToHex(chainId);
+    const initialChainId = await this.#core.transport
+        .sendEip1193Message<
+          { method: 'eth_chainId'; params: [] },
+          { result: string; id: number; jsonrpc: '2.0' }
+        >({ method: 'eth_chainId', params: [] })
+
+    this.#provider.selectedChainId = JSON.parse(initialChainId.result) as Hex;
+
+    const initialAccounts = await this.#core.transport
+      .sendEip1193Message<
+        { method: 'eth_accounts'; params: [] },
+        { result: string[]; id: number; jsonrpc: '2.0' }
+      >({ method: 'eth_accounts', params: [] })
+      
+    this.#provider.accounts = initialAccounts.result as Address[];
 
     console.log('Setting up on notification:', {
       transport: this.#core.transport,
@@ -218,8 +233,9 @@ export class MetamaskConnectEVM {
     this.#onConnect({ chainId: this.#provider.selectedChainId });
 
     logger('fulfilled-request: connect', { chainId, account });
+    // TODO: update required here since accounts and chainId are now promises
     return {
-      accounts: this.accounts,
+      accounts: this.#provider.accounts,
       chainId: hexToNumber(this.#provider.selectedChainId),
     };
   }
@@ -390,7 +406,7 @@ export class MetamaskConnectEVM {
     }
 
     if (isAccountsRequest(request)) {
-      return this.accounts;
+      return this.#provider.accounts;
     }
 
     logger('Request not intercepted, forwarding to default handler', request);
@@ -514,11 +530,12 @@ export class MetamaskConnectEVM {
       const recoverSession = (event: MessageEvent): void => {
         if (this.#isMetamaskProviderEvent(event)) {
           const { result } = event?.data?.data?.data as { result?: string[] };
-
+          console.log('result in recoverSession', result);
           if (
             Array.isArray(result) &&
             result.every((account: string) => isHexAddress(account))
           ) {
+            console.log('result in recoverSession if', result);
             this.#onAccountsChanged(result);
             // eslint-disable-next-line no-restricted-globals
             window.removeEventListener('message', recoverSession);
@@ -526,6 +543,7 @@ export class MetamaskConnectEVM {
         }
       };
 
+      console.log('recoverSession in attemptSessionRecovery', recoverSession);
       // eslint-disable-next-line no-restricted-globals
       window.addEventListener('message', recoverSession);
 
