@@ -37,6 +37,7 @@ import {
   TransportResponse,
 } from '@metamask/multichain-api-client';
 import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
+import { MULTICHAIN_PROVIDER_STREAM_NAME } from '../src/multichain/transports/constants';
 
 import {
   setupNodeMocks,
@@ -289,7 +290,7 @@ export const createTest: CreateTestFN = ({
           mockDappClient.emit('connected');
           mockDappClient.state = 'CONNECTED' as any;
           await mockDappClient.sendRequest({
-            name: 'metamask-multichain-provider',
+            name: MULTICHAIN_PROVIDER_STREAM_NAME,
             data: {
               id: `${this.__reqId++}`,
               jsonrpc: '2.0',
@@ -319,10 +320,10 @@ export const createTest: CreateTestFN = ({
         }),
         sendRequest: t.vi.fn(async (message: any) => {
           try {
-            // Handle new nested structure: { name: 'metamask-multichain-provider', data: request }
+            // Handle new nested structure: { name: MULTICHAIN_PROVIDER_STREAM_NAME, data: request }
             const { name, data: request } = message;
-            if (name !== 'metamask-multichain-provider') {
-              return Promise.reject('only metamask-multichain-provider is supported in the mock');
+            if (name !== MULTICHAIN_PROVIDER_STREAM_NAME) {
+              return Promise.reject('only MULTICHAIN_PROVIDER_STREAM_NAME is supported in the mock');
             }
             const id = `${request.id ?? requestId++}`;
             if (request.method === 'wallet_getSession') {
