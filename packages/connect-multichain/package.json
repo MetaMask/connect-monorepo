@@ -52,6 +52,7 @@
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-multichain",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-multichain",
     "clean": "npx rimraf ./dist",
+    "dev": "tsup --watch",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
@@ -60,8 +61,8 @@
     "pretest:ci": "yarn pretest",
     "test:ci": "yarn pretest:ci && vitest run --coverage --coverage.reporter=text --silent",
     "test:unit": "vitest run",
-    "test:watch": "vitest watch",
-    "test:verbose": "vitest run --reporter=verbose"
+    "test:verbose": "vitest run --reporter=verbose",
+    "test:watch": "vitest watch"
   },
   "dependencies": {
     "@metamask/analytics": "workspace:^",
@@ -93,6 +94,7 @@
     "jsdom": "^26.1.0",
     "nock": "^14.0.4",
     "prettier": "^3.3.3",
+    "tsup": "^8.4.0",
     "typedoc": "^0.23.22",
     "typedoc-plugin-missing-exports": "^1.0.0",
     "typescript": "~5.9.2",

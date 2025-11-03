@@ -35,6 +35,33 @@ import {
   isSwitchChainRequest,
 } from './utils/type-guards';
 
+/**
+ * The MetamaskConnectEVM class provides an EIP-1193 compatible interface for connecting
+ * to MetaMask and interacting with Ethereum Virtual Machine (EVM) networks.
+ *
+ * This class serves as a modern replacement for MetaMask SDK V1, offering enhanced
+ * functionality and cross-platform compatibility. It wraps the Multichain SDK to provide
+ * a simplified, EIP-1193 compliant API for dapp developers.
+ *
+ * Key features:
+ * - EIP-1193 provider interface for seamless integration with existing dapp code
+ * - Automatic session recovery when reloading or opening in new tabs
+ * - Chain switching with automatic chain addition if not configured
+ * - Event-driven architecture with support for connect, disconnect, accountsChanged, and chainChanged events
+ * - Cross-platform support for browser extensions and mobile applications
+ * - Built-in handling of common Ethereum methods (eth_accounts, wallet_switchEthereumChain, etc.)
+ *
+ * @example
+ * ```typescript
+ * const sdk = await createMetamaskConnectEVM({
+ *   dapp: { name: 'My DApp', url: 'https://mydapp.com' }
+ * });
+ *
+ * await sdk.connect({ chainId: 1 });
+ * const provider = await sdk.getProvider();
+ * const accounts = await provider.request({ method: 'eth_accounts' });
+ * ```
+ */
 export class MetamaskConnectEVM {
   /** The core instance of the Multichain SDK */
   readonly #core: MultichainCore;
@@ -57,6 +84,14 @@ export class MetamaskConnectEVM {
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
+  /**
+   * Creates a new MetamaskConnectEVM instance.
+   *
+   * @param options - The options for the MetamaskConnectEVM instance
+   * @param options.core - The core instance of the Multichain SDK
+   * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
+   * @param options.notificationQueue - Optional queue of notifications received during initialization
+   */
   constructor({
     core,
     eventHandlers,
@@ -131,6 +166,14 @@ export class MetamaskConnectEVM {
     logger('Connect/EVM constructor completed');
   }
 
+  /**
+   * Connects to the wallet with the specified chain ID and optional account.
+   *
+   * @param options - The connection options
+   * @param options.chainId - The chain ID to connect to (defaults to 1 for mainnet)
+   * @param options.account - Optional specific account to connect to
+   * @returns A promise that resolves with the connected accounts and chain ID
+   */
   async connect(
     {
       chainId,
@@ -181,18 +224,79 @@ export class MetamaskConnectEVM {
     };
   }
 
+  /**
+   * Connects to the wallet and signs a message using personal_sign.
+   *
+   * @param message - The message to sign
+   * @returns A promise that resolves with the signature
+   * @throws Error if the selected account is not available after timeout
+   */
+  async connectAndSign(message: string): Promise<string> {
+    await this.connect();
+
+    // If account is already available, proceed immediately
+    if (this.#provider.selectedAccount) {
+      return (await this.#provider.request({
+        method: 'personal_sign',
+        params: [this.#provider.selectedAccount, message],
+      })) as string;
+    }
+
+    // Otherwise, wait for the accountsChanged event to be triggered
+    const timeout = 5000;
+    const accountPromise = new Promise<Address>((resolve, reject) => {
+      // eslint-disable-next-line prefer-const
+      let timeoutId: ReturnType<typeof setTimeout>;
+
+      const handler = (accounts: Address[]): void => {
+        if (accounts.length > 0) {
+          clearTimeout(timeoutId);
+          this.#provider.off('accountsChanged', handler);
+          resolve(accounts[0]);
+        }
+      };
+
+      this.#provider.on('accountsChanged', handler);
+
+      timeoutId = setTimeout(() => {
+        this.#provider.off('accountsChanged', handler);
+        reject(new Error('Selected account not available after timeout'));
+      }, timeout);
+
+      if (this.#provider.selectedAccount) {
+        clearTimeout(timeoutId);
+        this.#provider.off('accountsChanged', handler);
+        resolve(this.#provider.selectedAccount);
+      }
+    });
+
+    const selectedAccount = await accountPromise;
+
+    return (await this.#provider.request({
+      method: 'personal_sign',
+      params: [selectedAccount, message],
+    })) as string;
+  }
+
+  /**
+   * Disconnects from the wallet by revoking the session and cleaning up event listeners.
+   *
+   * @returns A promise that resolves when disconnection is complete
+   */
   async disconnect(): Promise<void> {
     logger('request: disconnect');
+
+    await this.#core.provider.revokeSession({
+      scopes: Object.keys(this.#sessionScopes) as Scope[],
+    });
+
     await this.#core.disconnect();
-
     this.#onDisconnect();
-
     this.#clearConnectionState();
 
-    // eslint-disable-next-line no-restricted-globals
     window.removeEventListener('message', this.#metamaskProviderHandler);
-
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
+
     logger('fulfilled-request: disconnect');
   }
 
@@ -334,6 +438,11 @@ export class MetamaskConnectEVM {
     (this.#core.transport as ExtendedTransport).sendEip1193Message(request);
   }
 
+  /**
+   * Handles chain change events and updates the provider's selected chain ID.
+   *
+   * @param chainId - The new chain ID (can be hex string or number)
+   */
   #onChainChanged(chainId: Hex | number): void {
     logger('handler: chainChanged', { chainId });
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
@@ -342,6 +451,11 @@ export class MetamaskConnectEVM {
     this.#provider.emit('chainChanged', hexChainId);
   }
 
+  /**
+   * Handles accounts change events and updates the provider's accounts list.
+   *
+   * @param accounts - The new list of permitted accounts
+   */
   #onAccountsChanged(accounts: Address[]): void {
     logger('handler: accountsChanged', accounts);
     this.#provider.accounts = accounts;
@@ -349,6 +463,12 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.accountsChanged?.(accounts);
   }
 
+  /**
+   * Handles connection events and emits the connect event to listeners.
+   *
+   * @param options - The connection options
+   * @param options.chainId - The chain ID of the connection (can be hex string or number)
+   */
   #onConnect({ chainId }: { chainId: Hex | number }): void {
     logger('handler: connect', { chainId });
     const data = {
@@ -361,6 +481,10 @@ export class MetamaskConnectEVM {
     this.#onChainChanged(chainId);
   }
 
+  /**
+   * Handles disconnection events and emits the disconnect event to listeners.
+   * Also clears accounts by triggering an accountsChanged event with an empty array.
+   */
   #onDisconnect(): void {
     logger('handler: disconnect');
     this.#provider.emit('disconnect');
@@ -467,6 +591,12 @@ export class MetamaskConnectEVM {
     return this.#provider.selectedChainId;
   }
 
+  /**
+   * Checks if a message event is from the MetaMask provider.
+   *
+   * @param event - The message event to check
+   * @returns True if the event is from the MetaMask provider, false otherwise
+   */
   #isMetamaskProviderEvent(event: MessageEvent): boolean {
     return (
       event?.data?.data?.name === 'metamask-provider' &&
