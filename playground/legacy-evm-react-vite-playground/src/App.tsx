@@ -191,7 +191,7 @@ export const App = () => {
   };
 
   const terminate = () => {
-    sdk?.terminate();
+    sdk?.disconnect();
   };
 
   const changeNetwork = async (hexChainId: string) => {

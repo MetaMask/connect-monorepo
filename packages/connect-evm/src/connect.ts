@@ -194,16 +194,14 @@ export class MetamaskConnectEVM {
           { method: 'eth_chainId'; params: [] },
           { result: string; id: number; jsonrpc: '2.0' }
         >({ method: 'eth_chainId', params: [] })
-
-    this.#provider.selectedChainId = JSON.parse(initialChainId.result) as Hex;
+    this.#onConnect({chainId: initialChainId.result as Hex});
 
     const initialAccounts = await this.#core.transport
       .sendEip1193Message<
         { method: 'eth_accounts'; params: [] },
         { result: string[]; id: number; jsonrpc: '2.0' }
       >({ method: 'eth_accounts', params: [] })
-
-    this.#provider.accounts = initialAccounts.result as Address[];
+    this.#onAccountsChanged(initialAccounts.result as Address[]);
 
     console.log('Setting up on notification:', {
       transport: this.#core.transport,
@@ -227,13 +225,11 @@ export class MetamaskConnectEVM {
       }
     });
 
-    this.#onConnect({ chainId: this.#provider.selectedChainId });
-
     logger('fulfilled-request: connect', { chainId, account });
     // TODO: update required here since accounts and chainId are now promises
     return {
       accounts: this.#provider.accounts,
-      chainId: hexToNumber(this.#provider.selectedChainId),
+      chainId: hexToNumber(initialChainId.result as Hex),
     };
   }
 
@@ -309,6 +305,9 @@ export class MetamaskConnectEVM {
 
     window.removeEventListener('message', this.#metamaskProviderHandler);
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
+
+    // Need to disconnect chain as well?
+    this.#onDisconnect();
 
     logger('fulfilled-request: disconnect');
   }
