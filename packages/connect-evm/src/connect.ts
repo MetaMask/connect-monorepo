@@ -103,40 +103,6 @@ export class MetamaskConnectEVM {
     this.#eventHandlers = eventHandlers;
 
     /**
-     * Sets up the handler for the wallet's internal EIP-1193 provider events.
-     * Also handles switch chain failures.
-     *
-     * @param event - The event object
-     */
-    this.#metamaskProviderHandler = (event): void => {
-      if (this.#isMetamaskProviderEvent(event)) {
-        const data = event?.data?.data?.data;
-
-        if (data?.method === 'metamask_accountsChanged') {
-          const accounts = data?.params;
-          logger('event: accountsChanged', accounts);
-          this.#onAccountsChanged(accounts);
-        }
-
-        if (data?.method === 'metamask_chainChanged') {
-          const chainId = Number(data?.params.chainId);
-          logger('event: chainChanged', chainId);
-          this.#onChainChanged(chainId);
-        }
-
-        // This error occurs when a chain switch failed because
-        // the target chain is not configured on the wallet.
-        if (data?.error?.code === 4902) {
-          logger(
-            'chain switch failed, adding chain',
-            this.#latestChainConfiguration,
-          );
-          this.#addEthereumChain();
-        }
-      }
-    };
-
-    /**
      * Handles the wallet_sessionChanged event.
      * Updates the internal connection state with the new session data.
      *
@@ -148,7 +114,7 @@ export class MetamaskConnectEVM {
     };
 
     // eslint-disable-next-line no-restricted-globals
-    window.addEventListener('message', this.#metamaskProviderHandler);
+    // window.addEventListener('message', this.#metamaskProviderHandler);
 
     this.#core.on(
       'wallet_sessionChanged',
@@ -194,20 +160,20 @@ export class MetamaskConnectEVM {
       { result: string; id: number; jsonrpc: '2.0' }
     >({ method: 'eth_chainId', params: [] });
 
-    this.#onConnect({ chainId: initialChainId.result as Hex });
-
     const initialAccounts = await this.#core.transport.sendEip1193Message<
       { method: 'eth_accounts'; params: [] },
       { result: string[]; id: number; jsonrpc: '2.0' }
     >({ method: 'eth_accounts', params: [] });
 
-    this.#onAccountsChanged(initialAccounts.result as Address[]);
-
-    console.log('Setting up on notification:', {
-      transport: this.#core.transport,
+    this.#onConnect({
+      chainId: initialChainId.result as Hex,
+      accounts: initialAccounts.result as Address[],
     });
 
+    this.#onAccountsChanged(initialAccounts.result as Address[]);
+
     this.#core.transport.onNotification((notification) => {
+      console.log('notification in onNotification', notification);
       // @ts-expect-error TODO: address this
       if (notification?.method === 'metamask_accountsChanged') {
         // @ts-expect-error TODO: address this
@@ -223,6 +189,16 @@ export class MetamaskConnectEVM {
         logger('transport-event: chainChanged', notificationChainId);
         this.#onChainChanged(notificationChainId);
       }
+
+      // // This error occurs when a chain switch failed because
+      //   // the target chain is not configured on the wallet.
+      //   if (notification?.error?.code === 4902) {
+      //     logger(
+      //       'chain switch failed, adding chain',
+      //       this.#latestChainConfiguration,
+      //     );
+      //     this.#addEthereumChain();
+      //   }
     });
 
     logger('fulfilled-request: connect', { chainId, account });
@@ -490,7 +466,13 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.chainId - The chain ID of the connection (can be hex string or number)
    */
-  #onConnect({ chainId }: { chainId: Hex | number }): void {
+  #onConnect({
+    chainId,
+    accounts,
+  }: {
+    chainId: Hex | number;
+    accounts: Address[];
+  }): void {
     logger('handler: connect', { chainId });
     const data = {
       chainId: isHex(chainId) ? chainId : numberToHex(chainId),
@@ -500,6 +482,7 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connect?.(data);
 
     this.#onChainChanged(chainId);
+    this.#onAccountsChanged(accounts);
   }
 
   /**
@@ -568,8 +551,10 @@ export class MetamaskConnectEVM {
       });
 
       if (ethAccounts.result && ethChainId.result) {
-        this.#onAccountsChanged(ethAccounts.result as Address[]);
-        this.#onConnect({ chainId: ethChainId.result as Hex });
+        this.#onConnect({
+          chainId: ethChainId.result as Hex,
+          accounts: ethAccounts.result as Address[],
+        });
       }
     } catch (error) {
       console.error('Error attempting session recovery', error);
