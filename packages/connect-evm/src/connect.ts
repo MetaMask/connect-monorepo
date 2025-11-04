@@ -95,12 +95,9 @@ export class MetamaskConnectEVM {
   constructor({
     core,
     eventHandlers,
-    notificationQueue,
   }: MetamaskConnectEVMOptions) {
-    logger('Constructor starts', { notificationQueue });
     this.#core = core;
 
-    console.log('notificationQueue in constructor', notificationQueue);
     this.#provider = new EIP1193Provider(
       core,
       this.#requestInterceptor.bind(this),
@@ -162,7 +159,7 @@ export class MetamaskConnectEVM {
     );
 
     // Attempt to set the permitted accounts if there's a valid previous session.
-    this.#attemptSessionRecovery(notificationQueue);
+    this.#attemptSessionRecovery();
 
     logger('Connect/EVM constructor completed');
   }
@@ -205,7 +202,7 @@ export class MetamaskConnectEVM {
         { method: 'eth_accounts'; params: [] },
         { result: string[]; id: number; jsonrpc: '2.0' }
       >({ method: 'eth_accounts', params: [] })
-      
+
     this.#provider.accounts = initialAccounts.result as Address[];
 
     console.log('Setting up on notification:', {
@@ -520,37 +517,48 @@ export class MetamaskConnectEVM {
    *
    * @param events - The events to check
    */
-  #attemptSessionRecovery(events?: unknown[]): void {
-    if (
-      events?.some(
-        (notification: MessageEvent['data']) =>
-          notification.method === 'wallet_sessionChanged',
-      )
-    ) {
-      const recoverSession = (event: MessageEvent): void => {
-        if (this.#isMetamaskProviderEvent(event)) {
-          const { result } = event?.data?.data?.data as { result?: string[] };
-          console.log('result in recoverSession', result);
-          if (
-            Array.isArray(result) &&
-            result.every((account: string) => isHexAddress(account))
-          ) {
-            console.log('result in recoverSession if', result);
-            this.#onAccountsChanged(result);
-            // eslint-disable-next-line no-restricted-globals
-            window.removeEventListener('message', recoverSession);
-          }
-        }
-      };
+  async #attemptSessionRecovery(): Promise<void> {
+    // if (
+    //   events?.some(
+    //     (notification: MessageEvent['data']) =>
+    //       notification.method === 'wallet_sessionChanged',
+    //   )
+    // ) {
+    //   const recoverSession = (event: MessageEvent): void => {
+    //     if (this.#isMetamaskProviderEvent(event)) {
+    //       const { result } = event?.data?.data?.data as { result?: string[] };
+    //       console.log('result in recoverSession', result);
+    //       if (
+    //         Array.isArray(result) &&
+    //         result.every((account: string) => isHexAddress(account))
+    //       ) {
+    //         console.log('result in recoverSession if', result);
+    //         this.#onAccountsChanged(result);
+    //         // eslint-disable-next-line no-restricted-globals
+    //         window.removeEventListener('message', recoverSession);
+    //       }
+    //     }
+    //   };
 
-      console.log('recoverSession in attemptSessionRecovery', recoverSession);
-      // eslint-disable-next-line no-restricted-globals
-      window.addEventListener('message', recoverSession);
+    //   console.log('recoverSession in attemptSessionRecovery', recoverSession);
+    //   // eslint-disable-next-line no-restricted-globals
+    //   window.addEventListener('message', recoverSession);
 
-      this.#request({
-        method: 'eth_accounts',
-        params: [],
-      });
+    //   this.#request({
+    //     method: 'eth_accounts',
+    //     params: [],
+    //   });
+    // }
+
+    try {
+      const ethAccounts = await this.#core.transport.sendEip1193Message({ method: 'eth_accounts', params: [] });
+      const ethChainId = await this.#core.transport.sendEip1193Message({ method: 'eth_chainId', params: [] });
+      if (ethAccounts.result && ethChainId.result) {
+        this.#onAccountsChanged(ethAccounts.result as Address[]);
+        this.#onConnect({chainId: ethChainId.result as Hex});
+      }
+    } catch (error) {
+      console.error('Error attempting session recovery', error);
     }
   }
 
@@ -641,22 +649,15 @@ export async function createMetamaskConnectEVM(
 ): Promise<MetamaskConnectEVM> {
   logger('Creating Metamask Connect/EVM with options:', options);
 
-  const notificationQueue: unknown[] = [];
-
   try {
     // @ts-expect-error TODO: address this
     const core = await createMetamaskConnect({
       ...options,
-      transport: {
-        onNotification: (notification: unknown) =>
-          notificationQueue.push(notification),
-      },
     });
 
     return new MetamaskConnectEVM({
       core,
       eventHandlers: options.eventHandlers,
-      notificationQueue,
     });
   } catch (error) {
     console.error('Error creating Metamask Connect/EVM', error);
