@@ -92,10 +92,7 @@ export class MetamaskConnectEVM {
    * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
    * @param options.notificationQueue - Optional queue of notifications received during initialization
    */
-  constructor({
-    core,
-    eventHandlers,
-  }: MetamaskConnectEVMOptions) {
+  constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
     this.#core = core;
 
     this.#provider = new EIP1193Provider(
@@ -159,7 +156,10 @@ export class MetamaskConnectEVM {
     );
 
     // Attempt to set the permitted accounts if there's a valid previous session.
-    this.#attemptSessionRecovery();
+    // TODO (wenfix): does it make sense to catch here?
+    this.#attemptSessionRecovery().catch((error) => {
+      console.error('Error attempting session recovery', error);
+    });
 
     logger('Connect/EVM constructor completed');
   }
@@ -189,18 +189,18 @@ export class MetamaskConnectEVM {
 
     await this.#core.connect(caipChainId, caipAccountId);
 
-    const initialChainId = await this.#core.transport
-        .sendEip1193Message<
-          { method: 'eth_chainId'; params: [] },
-          { result: string; id: number; jsonrpc: '2.0' }
-        >({ method: 'eth_chainId', params: [] })
-    this.#onConnect({chainId: initialChainId.result as Hex});
+    const initialChainId = await this.#core.transport.sendEip1193Message<
+      { method: 'eth_chainId'; params: [] },
+      { result: string; id: number; jsonrpc: '2.0' }
+    >({ method: 'eth_chainId', params: [] });
 
-    const initialAccounts = await this.#core.transport
-      .sendEip1193Message<
-        { method: 'eth_accounts'; params: [] },
-        { result: string[]; id: number; jsonrpc: '2.0' }
-      >({ method: 'eth_accounts', params: [] })
+    this.#onConnect({ chainId: initialChainId.result as Hex });
+
+    const initialAccounts = await this.#core.transport.sendEip1193Message<
+      { method: 'eth_accounts'; params: [] },
+      { result: string[]; id: number; jsonrpc: '2.0' }
+    >({ method: 'eth_accounts', params: [] });
+
     this.#onAccountsChanged(initialAccounts.result as Address[]);
 
     console.log('Setting up on notification:', {
@@ -318,18 +318,20 @@ export class MetamaskConnectEVM {
    * @param options - The options for the switch chain request
    * @param options.chainId - The chain ID to switch to
    * @param options.chainConfiguration - The chain configuration to use in case the chain is not present by the wallet
+   * @returns The result of the switch chain request
    */
-  switchChain({
+  async switchChain({
     chainId,
     chainConfiguration,
   }: {
     chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
-  }): void {
+  }): Promise<unknown> {
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
 
+    // TODO (wenfix): better way to return here other than resolving.
     if (this.selectedChainId === hexChainId) {
-      return;
+      return Promise.resolve();
     }
 
     // TODO: Check if approved scopes have the chain and early return
@@ -337,14 +339,14 @@ export class MetamaskConnectEVM {
 
     if (permittedChainIds.includes(hexChainId)) {
       this.#onChainChanged(hexChainId);
-      return;
+      return Promise.resolve();
     }
 
     // Save the chain configuration for adding in case
     // the chain is not configured in the wallet.
     this.#latestChainConfiguration = chainConfiguration;
 
-    this.#request({
+    return this.#request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: hexChainId }],
     });
@@ -434,6 +436,10 @@ export class MetamaskConnectEVM {
     this.#request({
       method: 'wallet_addEthereumChain',
       params: [config],
+    }).catch((error) => {
+      // TODO (wenfix): does it make sense to throw here?
+      console.error('Error adding Ethereum chain', error);
+      throw error;
     });
   }
 
@@ -443,11 +449,14 @@ export class MetamaskConnectEVM {
    * @param request - The request object containing the method and params
    * @param request.method - The method to request
    * @param request.params - The parameters to pass to the method
+   * @returns The result of the request
    */
-  #request(request: { method: string; params: unknown[] }): void {
+  async #request(request: {
+    method: string;
+    params: unknown[];
+  }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
-    // TODO: [ffmcgee] casting O_O
-    (this.#core.transport as ExtendedTransport).sendEip1193Message(request);
+    return this.#core.transport.sendEip1193Message(request);
   }
 
   /**
@@ -513,8 +522,6 @@ export class MetamaskConnectEVM {
    * This works by checking by checking events received during MultichainCore initialization,
    * and if there's a wallet_sessionChanged event, it will add a 1-time listener for eth_accounts results
    * and trigger an accountsChanged event if the results are valid accounts.
-   *
-   * @param events - The events to check
    */
   async #attemptSessionRecovery(): Promise<void> {
     // if (
@@ -550,11 +557,19 @@ export class MetamaskConnectEVM {
     // }
 
     try {
-      const ethAccounts = await this.#core.transport.sendEip1193Message({ method: 'eth_accounts', params: [] });
-      const ethChainId = await this.#core.transport.sendEip1193Message({ method: 'eth_chainId', params: [] });
+      const ethAccounts = await this.#core.transport.sendEip1193Message({
+        method: 'eth_accounts',
+        params: [],
+      });
+
+      const ethChainId = await this.#core.transport.sendEip1193Message({
+        method: 'eth_chainId',
+        params: [],
+      });
+
       if (ethAccounts.result && ethChainId.result) {
         this.#onAccountsChanged(ethAccounts.result as Address[]);
-        this.#onConnect({chainId: ethChainId.result as Hex});
+        this.#onConnect({ chainId: ethChainId.result as Hex });
       }
     } catch (error) {
       console.error('Error attempting session recovery', error);
