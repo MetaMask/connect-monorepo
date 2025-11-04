@@ -488,7 +488,7 @@ export class MWPTransport implements ExtendedTransport {
 
   private async storeWalletSession(
     request: TransportRequest,
-    response: TransportResponse<unknown, unknown>,
+    response: TransportResponse,
   ): Promise<void> {
     if (CACHED_METHOD_LIST.includes(request.method)) {
       await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
