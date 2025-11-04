@@ -207,6 +207,7 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  
   private async onResumeSuccess(
     resumeResolve: () => void,
     resumeReject: (err: Error) => void,

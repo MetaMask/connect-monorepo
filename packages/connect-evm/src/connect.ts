@@ -78,9 +78,6 @@ export class MetamaskConnectEVM {
   /** The latest chain configuration received from a switchEthereumChain request */
   #latestChainConfiguration: AddEthereumChainParameter | undefined;
 
-  /** The handler for the metamask-provider events */
-  readonly #metamaskProviderHandler: (event: MessageEvent) => void;
-
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
@@ -279,7 +276,6 @@ export class MetamaskConnectEVM {
     this.#onDisconnect();
     this.#clearConnectionState();
 
-    window.removeEventListener('message', this.#metamaskProviderHandler);
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
 
     // Need to disconnect chain as well?
