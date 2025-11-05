@@ -118,7 +118,7 @@ const detectionPromise: Promise<boolean> = (async () => {
       window.removeEventListener('eip6963:announceProvider', handler);
 
       const hasMetaMask = providers.some(
-        (provider) => provider?.info?.rdns === 'io.metamask',
+        (provider) =>  provider?.info?.rdns?.startsWith('io.metamask')
       );
 
       resolve(hasMetaMask);

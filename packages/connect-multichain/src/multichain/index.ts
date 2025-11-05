@@ -215,8 +215,7 @@ export class MultichainSDK extends MultichainCore {
     const hasExtensionInstalled = await hasExtension();
     if (transportType) {
       if (transportType === TransportType.Browser) {
-        // Check if the user still have the extension or not return the transport
-        if (hasExtensionInstalled && preferExtension) {
+        if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
           this.__transport = apiTransport;
           this.listener = apiTransport.onNotification(
