@@ -536,6 +536,14 @@ export class MultichainSDK extends MultichainCore {
       );
     }
 
+    // In MetaMask Mobile In App Browser, window.ethereum is available directly
+    if (platformType === PlatformType.MetaMaskMobileWebview) {
+      const defaultTransport = await this.setupDefaultTransport();
+      return this.handleConnection(
+        defaultTransport.connect({ scopes, caipAccountIds }),
+      );
+    }
+
     if (isWeb && hasExtensionInstalled && preferExtension) {
       // If metamask extension is available, connect to it
       const defaultTransport = await this.setupDefaultTransport();
