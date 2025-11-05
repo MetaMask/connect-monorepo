@@ -39,7 +39,7 @@ export class DefaultTransport implements ExtendedTransport {
 
   #handleResponseListener: ((event: MessageEvent) => void) | undefined;
   #handleNotificationListener: ((event: MessageEvent) => void) | undefined;
-  
+
   #notifyCallbacks(data: unknown): void {
     for (const callback of this.#notificationCallbacks) {
       try {
@@ -112,8 +112,7 @@ export class DefaultTransport implements ExtendedTransport {
 
     if (
       typeof responseData === 'object' &&
-      responseData.method === 'metamask_chainChanged'
-      || 
+      responseData.method === 'metamask_chainChanged' ||
       responseData.method === 'metamask_accountsChanged'
     ) {
       console.log('handleNotification in default transport', responseData);
@@ -135,7 +134,7 @@ export class DefaultTransport implements ExtendedTransport {
 
     // Add the listener
     // eslint-disable-next-line no-restricted-globals
-    
+
     window.addEventListener('message', this.#handleResponseListener);
     window.addEventListener('message', this.#handleNotificationListener);
   }
@@ -263,6 +262,8 @@ export class DefaultTransport implements ExtendedTransport {
 
   async disconnect(): Promise<void> {
     this.#notificationCallbacks.clear();
+
+    await this.request({ method: 'wallet_revokeSession' });
 
     // Remove the message listener when disconnecting
     if (this.#handleResponseListener) {

@@ -268,10 +268,6 @@ export class MetamaskConnectEVM {
   async disconnect(): Promise<void> {
     logger('request: disconnect');
 
-    await this.#core.provider.revokeSession({
-      scopes: Object.keys(this.#sessionScopes) as Scope[],
-    });
-
     await this.#core.disconnect();
     this.#onDisconnect();
     this.#clearConnectionState();
@@ -279,6 +275,7 @@ export class MetamaskConnectEVM {
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
 
     // Need to disconnect chain as well?
+    // onDisconnect is called twice in this method
     this.#onDisconnect();
 
     logger('fulfilled-request: disconnect');
