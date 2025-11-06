@@ -12,6 +12,7 @@ const config = createConfig([
   ...base,
   {
     ignores: [
+      '**/build/**',
       '**/dist/**',
       '**/docs/**',
       '**/coverage/**',
