@@ -10,7 +10,8 @@
   "files": [],
   "workspaces": [
     "packages/*",
-    "playground/*"
+    "playground/*",
+    "integrations/*"
   ],
   "scripts": {
     "build": "yarn workspaces foreach --all --parallel --topological-dev --verbose run build",
