@@ -422,7 +422,11 @@ export class MetamaskConnectEVM {
     params: unknown[];
   }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
-    return this.#core.transport.sendEip1193Message(request);
+    const result = this.#core.transport.sendEip1193Message(request);
+    if (request.method === 'wallet_addEthereumChain' || request.method === 'wallet_switchEthereumChain') {
+      this.#core.openDeeplinkIfNeeded();
+    }
+    return result;
   }
 
   /**
