@@ -215,8 +215,7 @@ export class MultichainSDK extends MultichainCore {
     const hasExtensionInstalled = await hasExtension();
     if (transportType) {
       if (transportType === TransportType.Browser) {
-        // Check if the user still have the extension or not return the transport
-        if (hasExtensionInstalled && preferExtension) {
+        if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
           this.__transport = apiTransport;
           this.listener = apiTransport.onNotification(
@@ -533,6 +532,14 @@ export class MultichainSDK extends MultichainCore {
             return this.storage.setTransport(TransportType.Browser);
           }
         }),
+      );
+    }
+
+    // In MetaMask Mobile In App Browser, window.ethereum is available directly
+    if (platformType === PlatformType.MetaMaskMobileWebview) {
+      const defaultTransport = await this.setupDefaultTransport();
+      return this.handleConnection(
+        defaultTransport.connect({ scopes, caipAccountIds }),
       );
     }
 

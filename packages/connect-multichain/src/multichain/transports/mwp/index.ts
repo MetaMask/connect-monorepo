@@ -179,6 +179,7 @@ export class MWPTransport implements ExtendedTransport {
             (message.data as { method: string }).method ===
             'metamask_chainChanged'
           ) {
+            console.log('metamask_chainChanged in handleMessage', message.data);
             this.kvstore.set(
               CHAIN_STORE_KEY,
               JSON.stringify(
@@ -192,6 +193,7 @@ export class MWPTransport implements ExtendedTransport {
             (message.data as { method: string }).method ===
             'metamask_accountsChanged'
           ) {
+            console.log('metamask_accountsChanged in handleMessage', message.data);
             this.kvstore.set(
               ACCOUNTS_STORE_KEY,
               JSON.stringify(
@@ -205,6 +207,7 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  
   private async onResumeSuccess(
     resumeResolve: () => void,
     resumeReject: (err: Error) => void,
@@ -366,6 +369,7 @@ export class MWPTransport implements ExtendedTransport {
               params: sessionRequest,
             };
 
+            // just used for initial connection
             this.dappClient.on('message', async (message: unknown) => {
               if (typeof message === 'object' && message !== null) {
                 if ('data' in message) {

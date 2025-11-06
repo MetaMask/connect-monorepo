@@ -37,7 +37,8 @@ export class DefaultTransport implements ExtendedTransport {
 
   readonly #pendingRequests = new Map<string, PendingRequest>();
 
-  #messageHandler: ((event: MessageEvent) => void) | undefined;
+  #handleResponseListener: ((event: MessageEvent) => void) | undefined;
+  #handleNotificationListener: ((event: MessageEvent) => void) | undefined;
 
   #notifyCallbacks(data: unknown): void {
     for (const callback of this.#notificationCallbacks) {
@@ -60,7 +61,7 @@ export class DefaultTransport implements ExtendedTransport {
     );
   }
 
-  #handleMessage(event: MessageEvent): void {
+  #handleResponse(event: MessageEvent): void {
     if (!this.#isMetamaskProviderEvent(event)) {
       return;
     }
@@ -101,18 +102,41 @@ export class DefaultTransport implements ExtendedTransport {
     }
   }
 
+
+  #handleNotification(event: MessageEvent): void {
+    if (!this.#isMetamaskProviderEvent(event)) {
+      return;
+    }
+
+    const responseData = event?.data?.data?.data;
+
+    if (
+      typeof responseData === 'object' &&
+      responseData.method === 'metamask_chainChanged' ||
+      responseData.method === 'metamask_accountsChanged'
+    ) {
+      console.log('handleNotification in default transport', responseData);
+      this.#notifyCallbacks(responseData);
+    }
+  }
+
   #setupMessageListener(): void {
     // Only set up listener if it's not already set up for this instance
-    if (this.#messageHandler) {
+    if (this.#handleResponseListener) {
       return;
     }
 
     // Create a new handler bound to this instance
-    this.#messageHandler = this.#handleMessage.bind(this);
+    // Rename this to handleResponse or something like this
+    this.#handleResponseListener = this.#handleResponse.bind(this);
+    this.#handleNotificationListener = this.#handleNotification.bind(this);
+
 
     // Add the listener
     // eslint-disable-next-line no-restricted-globals
-    window.addEventListener('message', this.#messageHandler);
+
+    window.addEventListener('message', this.#handleResponseListener);
+    window.addEventListener('message', this.#handleNotificationListener);
   }
 
   async sendEip1193Message<
@@ -239,11 +263,13 @@ export class DefaultTransport implements ExtendedTransport {
   async disconnect(): Promise<void> {
     this.#notificationCallbacks.clear();
 
+    await this.request({ method: 'wallet_revokeSession' });
+
     // Remove the message listener when disconnecting
-    if (this.#messageHandler) {
+    if (this.#handleResponseListener) {
       // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#messageHandler);
-      this.#messageHandler = undefined;
+      window.removeEventListener('message', this.#handleResponseListener);
+      this.#handleResponseListener = undefined;
     }
 
     // Reject all pending requests

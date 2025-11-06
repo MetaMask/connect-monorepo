@@ -1,5 +1,5 @@
+import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
-  ExtendedTransport,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -10,7 +10,6 @@ import {
   numberToHex,
   hexToNumber,
   isHexString as isHex,
-  isHexAddress,
 } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
@@ -78,9 +77,6 @@ export class MetamaskConnectEVM {
   /** The latest chain configuration received from a switchEthereumChain request */
   #latestChainConfiguration: AddEthereumChainParameter | undefined;
 
-  /** The handler for the metamask-provider events */
-  readonly #metamaskProviderHandler: (event: MessageEvent) => void;
-
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
@@ -103,40 +99,6 @@ export class MetamaskConnectEVM {
     this.#eventHandlers = eventHandlers;
 
     /**
-     * Sets up the handler for the wallet's internal EIP-1193 provider events.
-     * Also handles switch chain failures.
-     *
-     * @param event - The event object
-     */
-    this.#metamaskProviderHandler = (event): void => {
-      if (this.#isMetamaskProviderEvent(event)) {
-        const data = event?.data?.data?.data;
-
-        if (data?.method === 'metamask_accountsChanged') {
-          const accounts = data?.params;
-          logger('event: accountsChanged', accounts);
-          this.#onAccountsChanged(accounts);
-        }
-
-        if (data?.method === 'metamask_chainChanged') {
-          const chainId = Number(data?.params.chainId);
-          logger('event: chainChanged', chainId);
-          this.#onChainChanged(chainId);
-        }
-
-        // This error occurs when a chain switch failed because
-        // the target chain is not configured on the wallet.
-        if (data?.error?.code === 4902) {
-          logger(
-            'chain switch failed, adding chain',
-            this.#latestChainConfiguration,
-          );
-          this.#addEthereumChain();
-        }
-      }
-    };
-
-    /**
      * Handles the wallet_sessionChanged event.
      * Updates the internal connection state with the new session data.
      *
@@ -148,7 +110,7 @@ export class MetamaskConnectEVM {
     };
 
     // eslint-disable-next-line no-restricted-globals
-    window.addEventListener('message', this.#metamaskProviderHandler);
+    // window.addEventListener('message', this.#metamaskProviderHandler);
 
     this.#core.on(
       'wallet_sessionChanged',
@@ -189,25 +151,23 @@ export class MetamaskConnectEVM {
 
     await this.#core.connect(caipChainId, caipAccountId);
 
-    const initialChainId = await this.#core.transport.sendEip1193Message<
-      { method: 'eth_chainId'; params: [] },
-      { result: string; id: number; jsonrpc: '2.0' }
-    >({ method: 'eth_chainId', params: [] });
-
-    this.#onConnect({ chainId: initialChainId.result as Hex });
+    const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+    const initialChainId = hexPermittedChainIds[0];
 
     const initialAccounts = await this.#core.transport.sendEip1193Message<
       { method: 'eth_accounts'; params: [] },
       { result: string[]; id: number; jsonrpc: '2.0' }
     >({ method: 'eth_accounts', params: [] });
 
-    this.#onAccountsChanged(initialAccounts.result as Address[]);
-
-    console.log('Setting up on notification:', {
-      transport: this.#core.transport,
+    this.#onConnect({
+      chainId: initialChainId,
+      accounts: initialAccounts.result as Address[],
     });
 
+    this.#onAccountsChanged(initialAccounts.result as Address[]);
+
     this.#core.transport.onNotification((notification) => {
+      console.log('notification in onNotification', notification);
       // @ts-expect-error TODO: address this
       if (notification?.method === 'metamask_accountsChanged') {
         // @ts-expect-error TODO: address this
@@ -223,13 +183,23 @@ export class MetamaskConnectEVM {
         logger('transport-event: chainChanged', notificationChainId);
         this.#onChainChanged(notificationChainId);
       }
+
+      // // This error occurs when a chain switch failed because
+      //   // the target chain is not configured on the wallet.
+      //   if (notification?.error?.code === 4902) {
+      //     logger(
+      //       'chain switch failed, adding chain',
+      //       this.#latestChainConfiguration,
+      //     );
+      //     this.#addEthereumChain();
+      //   }
     });
 
     logger('fulfilled-request: connect', { chainId, account });
     // TODO: update required here since accounts and chainId are now promises
     return {
       accounts: this.#provider.accounts,
-      chainId: hexToNumber(initialChainId.result as Hex),
+      chainId: hexToNumber(initialChainId),
     };
   }
 
@@ -295,18 +265,14 @@ export class MetamaskConnectEVM {
   async disconnect(): Promise<void> {
     logger('request: disconnect');
 
-    await this.#core.provider.revokeSession({
-      scopes: Object.keys(this.#sessionScopes) as Scope[],
-    });
-
     await this.#core.disconnect();
     this.#onDisconnect();
     this.#clearConnectionState();
 
-    window.removeEventListener('message', this.#metamaskProviderHandler);
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
 
     // Need to disconnect chain as well?
+    // onDisconnect is called twice in this method
     this.#onDisconnect();
 
     logger('fulfilled-request: disconnect');
@@ -493,8 +459,15 @@ export class MetamaskConnectEVM {
    *
    * @param options - The connection options
    * @param options.chainId - The chain ID of the connection (can be hex string or number)
+   * @param options.accounts - The accounts of the connection
    */
-  #onConnect({ chainId }: { chainId: Hex | number }): void {
+  #onConnect({
+    chainId,
+    accounts,
+  }: {
+    chainId: Hex | number;
+    accounts: Address[];
+  }): void {
     logger('handler: connect', { chainId });
     const data = {
       chainId: isHex(chainId) ? chainId : numberToHex(chainId),
@@ -504,6 +477,7 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connect?.(data);
 
     this.#onChainChanged(chainId);
+    this.#onAccountsChanged(accounts);
   }
 
   /**
@@ -528,52 +502,36 @@ export class MetamaskConnectEVM {
    * and trigger an accountsChanged event if the results are valid accounts.
    */
   async #attemptSessionRecovery(): Promise<void> {
-    // if (
-    //   events?.some(
-    //     (notification: MessageEvent['data']) =>
-    //       notification.method === 'wallet_sessionChanged',
-    //   )
-    // ) {
-    //   const recoverSession = (event: MessageEvent): void => {
-    //     if (this.#isMetamaskProviderEvent(event)) {
-    //       const { result } = event?.data?.data?.data as { result?: string[] };
-    //       console.log('result in recoverSession', result);
-    //       if (
-    //         Array.isArray(result) &&
-    //         result.every((account: string) => isHexAddress(account))
-    //       ) {
-    //         console.log('result in recoverSession if', result);
-    //         this.#onAccountsChanged(result);
-    //         // eslint-disable-next-line no-restricted-globals
-    //         window.removeEventListener('message', recoverSession);
-    //       }
-    //     }
-    //   };
-
-    //   console.log('recoverSession in attemptSessionRecovery', recoverSession);
-    //   // eslint-disable-next-line no-restricted-globals
-    //   window.addEventListener('message', recoverSession);
-
-    //   this.#request({
-    //     method: 'eth_accounts',
-    //     params: [],
-    //   });
-    // }
-
     try {
-      const ethAccounts = await this.#core.transport.sendEip1193Message({
+      const response = await this.#core.transport.request<
+        { method: 'wallet_getSession' },
+        {
+          result: { sessionScopes: Caip25CaveatValue };
+          id: number;
+          jsonrpc: '2.0';
+        }
+      >({
+        method: 'wallet_getSession',
+      });
+
+      const { sessionScopes } = response.result;
+
+      this.#sessionScopes = sessionScopes;
+      const permittedChainIds = getPermittedEthChainIds(sessionScopes);
+
+      // Instead of using the accounts we get back from calling `wallet_getSession`
+      // we get permitted accounts from `eth_accounts` to make sure we have them ordered by last selected account
+      // and correctly set the currently selected account for the dapp
+      const permittedAccounts = await this.#core.transport.sendEip1193Message({
         method: 'eth_accounts',
         params: [],
       });
 
-      const ethChainId = await this.#core.transport.sendEip1193Message({
-        method: 'eth_chainId',
-        params: [],
-      });
-
-      if (ethAccounts.result && ethChainId.result) {
-        this.#onAccountsChanged(ethAccounts.result as Address[]);
-        this.#onConnect({ chainId: ethChainId.result as Hex });
+      if (permittedChainIds.length && permittedAccounts.result) {
+        this.#onConnect({
+          chainId: permittedChainIds[0],
+          accounts: permittedAccounts.result as Address[],
+        });
       }
     } catch (error) {
       console.error('Error attempting session recovery', error);
