@@ -1,5 +1,5 @@
+import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
-  ExtendedTransport,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -10,7 +10,6 @@ import {
   numberToHex,
   hexToNumber,
   isHexString as isHex,
-  isHexAddress,
 } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
@@ -27,7 +26,7 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
+import { getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -456,6 +455,7 @@ export class MetamaskConnectEVM {
    *
    * @param options - The connection options
    * @param options.chainId - The chain ID of the connection (can be hex string or number)
+   * @param options.accounts - The accounts of the connection
    */
   #onConnect({
     chainId,
@@ -499,15 +499,25 @@ export class MetamaskConnectEVM {
    */
   async #attemptSessionRecovery(): Promise<void> {
     try {
-      const response = await this.#core.transport.request({
+      const response = await this.#core.transport.request<
+        { method: 'wallet_getSession' },
+        {
+          result: { sessionScopes: Caip25CaveatValue };
+          id: number;
+          jsonrpc: '2.0';
+        }
+      >({
         method: 'wallet_getSession',
       });
 
-      this.#sessionScopes = (response as any).result.sessionScopes ?? {}; // TODO [ffmcgee]: composer-1 parametrizes this :)
+      const { sessionScopes } = response.result;
 
-      const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+      this.#sessionScopes = sessionScopes;
+      const permittedChainIds = getPermittedEthChainIds(sessionScopes);
 
-      // We get permitted accounts from eth_accounts to make sure we have the ordered by last selected account
+      // Instead of using the accounts we get back from calling `wallet_getSession`
+      // we get permitted accounts from `eth_accounts` to make sure we have them ordered by last selected account
+      // and correctly set the currently selected account for the dapp
       const permittedAccounts = await this.#core.transport.sendEip1193Message({
         method: 'eth_accounts',
         params: [],
