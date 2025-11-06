@@ -27,7 +27,7 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getPermittedEthChainIds } from './utils/caip';
+import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -152,10 +152,8 @@ export class MetamaskConnectEVM {
 
     await this.#core.connect(caipChainId, caipAccountId);
 
-    const initialChainId = await this.#core.transport.sendEip1193Message<
-      { method: 'eth_chainId'; params: [] },
-      { result: string; id: number; jsonrpc: '2.0' }
-    >({ method: 'eth_chainId', params: [] });
+    const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+    const initialChainId = hexPermittedChainIds[0];
 
     const initialAccounts = await this.#core.transport.sendEip1193Message<
       { method: 'eth_accounts'; params: [] },
@@ -163,7 +161,7 @@ export class MetamaskConnectEVM {
     >({ method: 'eth_accounts', params: [] });
 
     this.#onConnect({
-      chainId: initialChainId.result as Hex,
+      chainId: initialChainId,
       accounts: initialAccounts.result as Address[],
     });
 
@@ -202,7 +200,7 @@ export class MetamaskConnectEVM {
     // TODO: update required here since accounts and chainId are now promises
     return {
       accounts: this.#provider.accounts,
-      chainId: hexToNumber(initialChainId.result as Hex),
+      chainId: hexToNumber(initialChainId),
     };
   }
 
@@ -500,53 +498,25 @@ export class MetamaskConnectEVM {
    * and trigger an accountsChanged event if the results are valid accounts.
    */
   async #attemptSessionRecovery(): Promise<void> {
-    // if (
-    //   events?.some(
-    //     (notification: MessageEvent['data']) =>
-    //       notification.method === 'wallet_sessionChanged',
-    //   )
-    // ) {
-    //   const recoverSession = (event: MessageEvent): void => {
-    //     if (this.#isMetamaskProviderEvent(event)) {
-    //       const { result } = event?.data?.data?.data as { result?: string[] };
-    //       console.log('result in recoverSession', result);
-    //       if (
-    //         Array.isArray(result) &&
-    //         result.every((account: string) => isHexAddress(account))
-    //       ) {
-    //         console.log('result in recoverSession if', result);
-    //         this.#onAccountsChanged(result);
-    //         // eslint-disable-next-line no-restricted-globals
-    //         window.removeEventListener('message', recoverSession);
-    //       }
-    //     }
-    //   };
-
-    //   console.log('recoverSession in attemptSessionRecovery', recoverSession);
-    //   // eslint-disable-next-line no-restricted-globals
-    //   window.addEventListener('message', recoverSession);
-
-    //   this.#request({
-    //     method: 'eth_accounts',
-    //     params: [],
-    //   });
-    // }
-
     try {
-      const ethAccounts = await this.#core.transport.sendEip1193Message({
+      const response = await this.#core.transport.request({
+        method: 'wallet_getSession',
+      });
+
+      this.#sessionScopes = (response as any).result.sessionScopes ?? {}; // TODO [ffmcgee]: composer-1 parametrizes this :)
+
+      const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+
+      // We get permitted accounts from eth_accounts to make sure we have the ordered by last selected account
+      const permittedAccounts = await this.#core.transport.sendEip1193Message({
         method: 'eth_accounts',
         params: [],
       });
 
-      const ethChainId = await this.#core.transport.sendEip1193Message({
-        method: 'eth_chainId',
-        params: [],
-      });
-
-      if (ethAccounts.result && ethChainId.result) {
+      if (permittedChainIds.length && permittedAccounts.result) {
         this.#onConnect({
-          chainId: ethChainId.result as Hex,
-          accounts: ethAccounts.result as Address[],
+          chainId: permittedChainIds[0],
+          accounts: permittedAccounts.result as Address[],
         });
       }
     } catch (error) {
