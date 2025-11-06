@@ -26,7 +26,7 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
+import { getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
