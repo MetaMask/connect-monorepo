@@ -424,10 +424,14 @@ export class MetamaskConnectEVM {
   }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
     const result = this.#core.transport.sendEip1193Message(request);
+<<<<<<< HEAD
     if (
       request.method === 'wallet_addEthereumChain' ||
       request.method === 'wallet_switchEthereumChain'
     ) {
+=======
+    if (request.method === 'wallet_addEthereumChain' || request.method === 'wallet_switchEthereumChain') {
+>>>>>>> 1933b835 (Fix add/switchChain not prompting for deeplink (#30))
       this.#core.openDeeplinkIfNeeded();
     }
     return result;
