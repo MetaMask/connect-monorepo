@@ -80,24 +80,15 @@ export class MetamaskConnectEVM {
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
-  /** Map of configured RPC URLs for read-only calls */
-  readonly #readOnlyRpcMap: Record<string, string>;
-
   /**
    * Creates a new MetamaskConnectEVM instance.
    *
    * @param options - The options for the MetamaskConnectEVM instance
    * @param options.core - The core instance of the Multichain SDK
    * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
-   * @param options.readOnlyRpcMap - Map of configured RPC URLs for read-only calls
    */
-  constructor({
-    core,
-    eventHandlers,
-    readOnlyRpcMap,
-  }: MetamaskConnectEVMOptions) {
+  constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
     this.#core = core;
-    this.#readOnlyRpcMap = readOnlyRpcMap ?? {};
 
     this.#provider = new EIP1193Provider(
       core,

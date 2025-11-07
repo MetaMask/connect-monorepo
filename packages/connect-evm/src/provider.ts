@@ -81,7 +81,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     if (isReadOnlyMethod) {
       // Access the readOnlyRpcMap from the core options
       // Note: This is a best-effort check. The RpcClient will perform the final validation
-      const coreOptions = (this.#core as any).options;
+      const coreOptions = (this.#core as any).options; // TODO: options is `protected readonly` property, this needs to be refactored so `any` type assertion is not necessary
       const readonlyRPCMap = coreOptions?.api?.readonlyRPCMap ?? {};
       if (!readonlyRPCMap[scope]) {
         throw new Error(
