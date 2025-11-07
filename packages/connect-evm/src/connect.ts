@@ -353,6 +353,7 @@ export class MetamaskConnectEVM {
     }
 
     if (isConnectRequest(request)) {
+      console.log('request in requestInterceptor', request);
       return this.connect({
         chainId: request.params[0] ?? 1,
         account: request.params[1],
@@ -474,6 +475,7 @@ export class MetamaskConnectEVM {
     logger('handler: connect', { chainId });
     const data = {
       chainId: isHex(chainId) ? chainId : numberToHex(chainId),
+      accounts,
     };
 
     this.#provider.emit('connect', data);
