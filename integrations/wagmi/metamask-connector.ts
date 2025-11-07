@@ -1,53 +1,32 @@
 import {
   createMetamaskConnectEVM,
-  MetamaskConnectEVMOptions,
   type MetamaskConnectEVM,
 } from '@metamask/connect-evm';
-import { MultichainCore, SessionData } from '@metamask/connect-multichain';
 
-// import type {
-//   MultichainCore,
-//   SDKState,
-//   SessionData,
-// } from '@metamask/multichain-sdk';
-// import type { MetaMaskSDKOptions } from '@metamask/sdk';
+//import type { SDKState, SessionData } from '@metamask/multichain-sdk'
+import type { MetaMaskSDKOptions } from '@metamask/sdk';
 
 import {
   ChainNotConfiguredError,
-  type Connector,
+  //type Connector,
   createConnector,
-  extractRpcUrls,
   ProviderNotFoundError,
 } from '@wagmi/core';
 import type {
   Compute,
   ExactPartial,
   OneOf,
-  RemoveUndefined,
   UnionCompute,
 } from '@wagmi/core/internal';
 import {
-  type AddEthereumChainParameter,
-  type Address,
   type EIP1193Provider,
   getAddress,
-  type Hex,
-  hexToNumber,
-  numberToHex,
   type ProviderConnectInfo,
-  type ProviderRpcError,
-  ResourceUnavailableRpcError,
-  type RpcError,
   SwitchChainError,
-  UserRejectedRequestError,
-  withRetry,
-  withTimeout,
 } from 'viem';
 
-type MetaMaskSDK = MultichainCore;
-
 export type MetaMaskParameters = UnionCompute<
-  MetaMaskSDKOptions &
+  WagmiMetaMaskSDKOptions &
     OneOf<
       | {
           /* Shortcut to connect and sign a message */
@@ -61,30 +40,28 @@ export type MetaMaskParameters = UnionCompute<
     >
 >;
 
-// type WagmiMetaMaskSDKOptions = Compute<
-//   ExactPartial<
-//     Omit<
-//       MetaMaskSDKOptions,
-//       | '_source'
-//       | 'forceDeleteProvider'
-//       | 'forceInjectProvider'
-//       | 'injectProvider'
-//       | 'useDeeplink'
-//       | 'readonlyRPCMap'
-//     >
-//   > & {
-//     /** @deprecated */
-//     forceDeleteProvider?: MetaMaskSDKOptions['forceDeleteProvider'];
-//     /** @deprecated */
-//     forceInjectProvider?: MetaMaskSDKOptions['forceInjectProvider'];
-//     /** @deprecated */
-//     injectProvider?: MetaMaskSDKOptions['injectProvider'];
-//     /** @deprecated */
-//     useDeeplink?: MetaMaskSDKOptions['useDeeplink'];
-//   }
-// >;
-
-type MetaMaskSDKOptions = MetamaskConnectEVMOptions;
+type WagmiMetaMaskSDKOptions = Compute<
+  ExactPartial<
+    Omit<
+      MetaMaskSDKOptions,
+      | '_source'
+      | 'forceDeleteProvider'
+      | 'forceInjectProvider'
+      | 'injectProvider'
+      | 'useDeeplink'
+      | 'readonlyRPCMap'
+    >
+  > & {
+    /** @deprecated */
+    forceDeleteProvider?: MetaMaskSDKOptions['forceDeleteProvider'];
+    /** @deprecated */
+    forceInjectProvider?: MetaMaskSDKOptions['forceInjectProvider'];
+    /** @deprecated */
+    injectProvider?: MetaMaskSDKOptions['injectProvider'];
+    /** @deprecated */
+    useDeeplink?: MetaMaskSDKOptions['useDeeplink'];
+  }
+>;
 
 metaMask.type = 'metaMask' as const;
 export function metaMask(parameters: MetaMaskParameters = {}) {
@@ -93,18 +70,19 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
     onConnect(connectInfo: ProviderConnectInfo): void;
     onDisplayUri(uri: string): void;
   };
-  type Listener = Parameters<Provider['on']>[1];
+  //type Listener = Parameters<Provider['on']>[1]
 
   let metamask: MetamaskConnectEVM;
-  let provider: Provider | undefined;
-  let providerPromise: Promise<typeof provider>;
+  // let provider: Provider | undefined
+  // let providerPromise: Promise<typeof provider>
 
-  let accountsChanged: Connector['onAccountsChanged'] | undefined;
-  let chainChanged: Connector['onChainChanged'] | undefined;
-  let connect: Connector['onConnect'] | undefined;
-  let displayUri: ((uri: string) => void) | undefined;
-  let disconnect: Connector['onDisconnect'] | undefined;
-  let sessionData: SessionData | undefined;
+  // let accountsChanged: Connector['onAccountsChanged'] | undefined
+  // let chainChanged: Connector['onChainChanged'] | undefined
+  // let connect: Connector['onConnect'] | undefined
+  // let displayUri: ((uri: string) => void) | undefined
+  // let disconnect: Connector['onDisconnect'] | undefined
+  // let sessionData: SessionData | undefined
+  // let sdkState: SDKState | undefined
 
   return createConnector<Provider, Properties>((config) => ({
     id: 'metaMaskSDK',
@@ -121,13 +99,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         eventHandlers: {
           accountsChanged: this.onAccountsChanged.bind(this),
           chainChanged: this.onChainChanged.bind(this),
+          //@ts-expect-error cool
           connect: this.onConnect.bind(this),
           disconnect: this.onDisconnect.bind(this),
         },
       });
-
-      console.log('SDK created', metamask);
     },
+    //@ts-expect-error cool
     async connect({ chainId, isReconnecting, withCapabilities } = {}) {
       // TODO (@wenfix): handle case where no chainId is provided
       const _chainId = chainId ?? 1;
@@ -155,6 +133,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         chainId: result.chainId ?? _chainId,
       };
 
+      //@ts-expect-error cool
       config.emitter.emit('connect', response);
 
       return response;
@@ -177,6 +156,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       return 1;
     },
 
+    //@ts-expect-error cool
     async getProvider() {
       const provider = await metamask.getProvider();
       if (!provider) {
@@ -215,6 +195,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         addEthereumChainParameter,
       });
 
+      //@ts-expect-error cool
       metamask.switchChain({ chainId, chainConfiguration });
 
       return chain;
@@ -232,10 +213,11 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       config.emitter.emit('change', { chainId });
     },
     async onConnect(connectInfo) {
-      //handled internally
+      //@ts-expect-error cool
+      config.emitter.emit('connect', connectInfo);
     },
-    async onDisconnect(error) {
-      //handled internally
+    async onDisconnect() {
+      config.emitter.emit('disconnect');
     },
     async onDisplayUri(uri) {
       config.emitter.emit('message', { type: 'display_uri', data: uri });
