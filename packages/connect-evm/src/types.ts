@@ -27,6 +27,7 @@ export type MetamaskConnectEVMOptions = {
   core: MultichainCore;
   eventHandlers?: EventHandlers;
   notificationQueue?: unknown[];
+  readOnlyRpcMap?: Record<string, string>;
 };
 
 export type AddEthereumChainParameter = {

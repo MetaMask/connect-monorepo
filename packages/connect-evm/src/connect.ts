@@ -80,16 +80,24 @@ export class MetamaskConnectEVM {
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
+  /** Map of configured RPC URLs for read-only calls */
+  readonly #readOnlyRpcMap: Record<string, string>;
+
   /**
    * Creates a new MetamaskConnectEVM instance.
    *
    * @param options - The options for the MetamaskConnectEVM instance
    * @param options.core - The core instance of the Multichain SDK
    * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
-   * @param options.notificationQueue - Optional queue of notifications received during initialization
+   * @param options.readOnlyRpcMap - Map of configured RPC URLs for read-only calls
    */
-  constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
+  constructor({
+    core,
+    eventHandlers,
+    readOnlyRpcMap,
+  }: MetamaskConnectEVMOptions) {
     this.#core = core;
+    this.#readOnlyRpcMap = readOnlyRpcMap ?? {};
 
     this.#provider = new EIP1193Provider(
       core,
@@ -423,7 +431,10 @@ export class MetamaskConnectEVM {
   }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
     const result = this.#core.transport.sendEip1193Message(request);
-    if (request.method === 'wallet_addEthereumChain' || request.method === 'wallet_switchEthereumChain') {
+    if (
+      request.method === 'wallet_addEthereumChain' ||
+      request.method === 'wallet_switchEthereumChain'
+    ) {
       this.#core.openDeeplinkIfNeeded();
     }
     return result;
@@ -613,27 +624,43 @@ export class MetamaskConnectEVM {
  * Creates a new Metamask Connect/EVM instance
  *
  * @param options - The options for the Metamask Connect/EVM layer
+ * @param options.dapp - Dapp identification and branding settings
+ * @param options.api - API configuration including read-only RPC map
+ * @param options.api.readOnlyRpcMap - A map of CAIP chain IDs to RPC URLs for read-only requests
  * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
  * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createMetamaskConnectEVM(
-  options: Pick<MultichainOptions, 'dapp'> & {
+  options: Pick<MultichainOptions, 'dapp' | 'api'> & {
     eventEmitter?: MinimalEventEmitter;
     eventHandlers?: EventHandlers;
   },
 ): Promise<MetamaskConnectEVM> {
   logger('Creating Metamask Connect/EVM with options:', options);
 
+  // Validate that readOnlyRpcMap is provided and not empty
+  if (
+    !options.api?.readonlyRPCMap ||
+    Object.keys(options.api.readonlyRPCMap).length === 0
+  ) {
+    throw new Error(
+      'readOnlyRpcMap is required and must contain at least one chain configuration',
+    );
+  }
+
   try {
-    // @ts-expect-error TODO: address this
     const core = await createMetamaskConnect({
       ...options,
+      api: {
+        readonlyRPCMap: options.api.readonlyRPCMap,
+      },
     });
 
     return new MetamaskConnectEVM({
       core,
       eventHandlers: options.eventHandlers,
+      readOnlyRpcMap: options.api.readonlyRPCMap,
     });
   } catch (error) {
     console.error('Error creating Metamask Connect/EVM', error);

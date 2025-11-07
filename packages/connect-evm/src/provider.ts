@@ -1,4 +1,4 @@
-import type { MultichainCore } from '@metamask/connect-multichain';
+import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
 import { hexToNumber, numberToHex } from '@metamask/utils';
 
@@ -57,9 +57,41 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     }
 
     const chainId = hexToNumber(this.#selectedChainId);
+    const scope: Scope = `eip155:${chainId}`;
+
+    // Validate that the chain is configured for read-only RPC calls
+    // This check is performed here to provide better error messages
+    // The RpcClient will also validate, but this gives us a chance to provide
+    // a clearer error message before the request is routed
+    const isReadOnlyMethod = [
+      'eth_blockNumber',
+      'eth_gasPrice',
+      'eth_getBalance',
+      'eth_getCode',
+      'eth_call',
+      'eth_estimateGas',
+      'eth_getLogs',
+      'eth_getTransactionCount',
+      'eth_getBlockByNumber',
+      'eth_getBlockByHash',
+      'eth_getTransactionByHash',
+      'eth_getTransactionReceipt',
+    ].includes(request.method);
+
+    if (isReadOnlyMethod) {
+      // Access the readOnlyRpcMap from the core options
+      // Note: This is a best-effort check. The RpcClient will perform the final validation
+      const coreOptions = (this.#core as any).options;
+      const readonlyRPCMap = coreOptions?.api?.readonlyRPCMap ?? {};
+      if (!readonlyRPCMap[scope]) {
+        throw new Error(
+          `Chain ${scope} is not configured in readOnlyRpcMap. Please add an RPC URL for this chain.`,
+        );
+      }
+    }
 
     return this.#core.invokeMethod({
-      scope: `eip155:${chainId}`,
+      scope,
       request: {
         method: request.method,
         params: request.params,

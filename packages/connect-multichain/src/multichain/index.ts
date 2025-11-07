@@ -32,7 +32,11 @@ import {
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
 
-import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE, MWP_RELAY_URL } from '../config';
+import {
+  METAMASK_CONNECT_BASE_URL,
+  METAMASK_DEEPLINK_BASE,
+  MWP_RELAY_URL,
+} from '../config';
 import {
   getVersion,
   type InvokeMethodOptions,
@@ -595,14 +599,16 @@ export class MultichainSDK extends MultichainCore {
     this.__dappClient = undefined;
   }
 
-  async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
+  async invokeMethod(
+    request: InvokeMethodOptions & { timeout?: number },
+  ): Promise<Json> {
     const { sdkInfo, transport, options } = this;
 
     this.__provider ??= getMultichainClient({ transport });
 
     const rpcClient = new RpcClient(options, sdkInfo);
     const requestRouter = new RequestRouter(transport, rpcClient, options);
-    return requestRouter.invokeMethod(request) as Promise<Json>;
+    return requestRouter.invokeMethod(request);
   }
 
   // DRY THIS WITH REQUEST ROUTER
@@ -617,7 +623,11 @@ export class MultichainSDK extends MultichainCore {
         if (mobile?.preferredOpenLink) {
           mobile.preferredOpenLink(METAMASK_DEEPLINK_BASE, '_self');
         } else {
-          openDeeplink(this.options, METAMASK_DEEPLINK_BASE, METAMASK_CONNECT_BASE_URL);
+          openDeeplink(
+            this.options,
+            METAMASK_DEEPLINK_BASE,
+            METAMASK_CONNECT_BASE_URL,
+          );
         }
       }, 10); // small delay to ensure the message encryption and dispatch completes
     }
