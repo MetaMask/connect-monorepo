@@ -3,7 +3,6 @@ import {
   type MetamaskConnectEVM,
 } from '@metamask/connect-evm';
 
-//import type { SDKState, SessionData } from '@metamask/multichain-sdk'
 import type { MetaMaskSDKOptions } from '@metamask/sdk';
 
 import {
@@ -70,19 +69,8 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
     onConnect(connectInfo: ProviderConnectInfo): void;
     onDisplayUri(uri: string): void;
   };
-  //type Listener = Parameters<Provider['on']>[1]
 
   let metamask: MetamaskConnectEVM;
-  // let provider: Provider | undefined
-  // let providerPromise: Promise<typeof provider>
-
-  // let accountsChanged: Connector['onAccountsChanged'] | undefined
-  // let chainChanged: Connector['onChainChanged'] | undefined
-  // let connect: Connector['onConnect'] | undefined
-  // let displayUri: ((uri: string) => void) | undefined
-  // let disconnect: Connector['onDisconnect'] | undefined
-  // let sessionData: SessionData | undefined
-  // let sdkState: SDKState | undefined
 
   return createConnector<Provider, Properties>((config) => ({
     id: 'metaMaskSDK',
@@ -123,20 +111,17 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         account: undefined,
       } as { chainId: number; account: string });
 
+      // TODO: return this again after changing portfolio
+      // biome-ignore lint/correctness/noUnusedVariables: will be used in the future
       const accounts = result.accounts.map((account) => ({
         address: account,
         capabilities: {},
       }));
 
-      const response = {
-        accounts,
+      return {
+        accounts: result.accounts,
         chainId: result.chainId ?? _chainId,
       };
-
-      //@ts-expect-error cool
-      config.emitter.emit('connect', response);
-
-      return response;
     },
 
     async disconnect() {
@@ -187,14 +172,6 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         blockExplorerUrls: chain.blockExplorers?.default.url,
       };
 
-      console.log('Chain configuration', { chainConfiguration });
-
-      console.log('Switching chain', {
-        chain,
-        chainId,
-        addEthereumChainParameter,
-      });
-
       //@ts-expect-error cool
       metamask.switchChain({ chainId, chainConfiguration });
 
@@ -208,13 +185,16 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       });
     },
     async onChainChanged(chain) {
-      console.log('Chain changed method', { chain });
       const chainId = Number(chain);
       config.emitter.emit('change', { chainId });
     },
     async onConnect(connectInfo) {
-      //@ts-expect-error cool
-      config.emitter.emit('connect', connectInfo);
+      const data = {
+        //@ts-expect-error fix types here ?
+        accounts: connectInfo.accounts.map((account) => getAddress(account)),
+        chainId: Number(connectInfo.chainId),
+      };
+      config.emitter.emit('connect', data);
     },
     async onDisconnect() {
       config.emitter.emit('disconnect');
