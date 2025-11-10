@@ -47,6 +47,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    forceRequest?: boolean,
   ): Promise<void>;
 
   /**
