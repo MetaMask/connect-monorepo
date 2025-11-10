@@ -32,7 +32,11 @@ import {
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
 
-import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE, MWP_RELAY_URL } from '../config';
+import {
+  METAMASK_CONNECT_BASE_URL,
+  METAMASK_DEEPLINK_BASE,
+  MWP_RELAY_URL,
+} from '../config';
 import {
   getVersion,
   type InvokeMethodOptions,
@@ -513,6 +517,7 @@ export class MultichainSDK extends MultichainCore {
   async connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    forceRequest?: boolean,
   ): Promise<void> {
     const { ui } = this.options;
     const platformType = getPlatformType();
@@ -525,13 +530,15 @@ export class MultichainSDK extends MultichainCore {
 
     if (this.__transport?.isConnected() && !secure) {
       return this.handleConnection(
-        this.__transport.connect({ scopes, caipAccountIds }).then(() => {
-          if (this.__transport instanceof MWPTransport) {
-            return this.storage.setTransport(TransportType.MPW);
-          } else {
-            return this.storage.setTransport(TransportType.Browser);
-          }
-        }),
+        this.__transport
+          .connect({ scopes, caipAccountIds, forceRequest })
+          .then(() => {
+            if (this.__transport instanceof MWPTransport) {
+              return this.storage.setTransport(TransportType.MPW);
+            } else {
+              return this.storage.setTransport(TransportType.Browser);
+            }
+          }),
       );
     }
 
@@ -539,7 +546,7 @@ export class MultichainSDK extends MultichainCore {
     if (platformType === PlatformType.MetaMaskMobileWebview) {
       const defaultTransport = await this.setupDefaultTransport();
       return this.handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds }),
+        defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
       );
     }
 
@@ -548,7 +555,7 @@ export class MultichainSDK extends MultichainCore {
       const defaultTransport = await this.setupDefaultTransport();
       // Web transport has no initial payload
       return this.handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds }),
+        defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
       );
     }
 
@@ -617,7 +624,11 @@ export class MultichainSDK extends MultichainCore {
         if (mobile?.preferredOpenLink) {
           mobile.preferredOpenLink(METAMASK_DEEPLINK_BASE, '_self');
         } else {
-          openDeeplink(this.options, METAMASK_DEEPLINK_BASE, METAMASK_CONNECT_BASE_URL);
+          openDeeplink(
+            this.options,
+            METAMASK_DEEPLINK_BASE,
+            METAMASK_CONNECT_BASE_URL,
+          );
         }
       }, 10); // small delay to ensure the message encryption and dispatch completes
     }
