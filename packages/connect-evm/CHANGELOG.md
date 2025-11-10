@@ -7,4 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Initial release ([#21](https://github.com/MetaMask/connect-monorepo/pull/21))
+
 [Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/
