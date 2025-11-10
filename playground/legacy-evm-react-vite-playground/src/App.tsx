@@ -10,11 +10,9 @@ import type { EIP1193Provider } from '@metamask/connect-evm';
 function useSDK() {
   const [sdk, setSDK] = useState<MetamaskConnectEVM>();
   const [connected, setConnected] = useState(false);
-  const [connecting, setConnecting] = useState(false);
   const [provider, setProvider] = useState<EIP1193Provider>();
   const [chainId, setChainId] = useState<string>();
   const [account, setAccount] = useState<string>();
-  const [balance, setBalance] = useState<string>();
 
   useEffect(() => {
     console.log('useEffect');
@@ -54,12 +52,12 @@ function useSDK() {
     }
   }, [sdk]);
 
-  return { sdk, connected, connecting, provider, chainId, account, balance };
+  return { sdk, connected, provider, chainId, account };
 }
 
 export const App = () => {
   const [response, setResponse] = useState<unknown>('');
-  const { sdk, connected, connecting, provider, chainId, account, balance } =
+  const { sdk, connected, provider, chainId, account } =
     useSDK();
 
   // TODO: Do we need language support?
@@ -150,7 +148,7 @@ export const App = () => {
     const to = '0x0000000000000000000000000000000000000000';
     const transactionParameters = {
       to, // Required except during contract publications.
-      from: sdk.selectedAccount, // must match user's active address.
+      from: sdk?.selectedAccount, // must match user's active address.
       value: '0x5AF3107A4000', // Only required to send ether to the recipient from the initiating external account.
     };
     console.log('transactionParameters', transactionParameters);
@@ -213,16 +211,10 @@ export const App = () => {
       <div className={'Info-Status'}>
         <p>{`Connected chain: ${chainId}`}</p>
         <p>{`Connected account: ${account}`}</p>
-        <p>{`Account balance: ${balance}`}</p>
         <p>{`Last request response: ${response}`}</p>
         <p>{`Connected: ${connected}`}</p>
       </div>
 
-      <div className="sdkConfig">
-        {connecting && (
-          <div>Waiting for Metamask to link the connection...</div>
-        )}
-      </div>
       {/* <div className="language-dropdown">
         <label htmlFor="language-select">Language: </label>
         <select
