@@ -15,7 +15,6 @@ function useSDK() {
   const [account, setAccount] = useState<string>();
 
   useEffect(() => {
-    console.log('useEffect');
     const setupSDK = async () => {
       const clientSDK = await createMetamaskConnectEVM({
         dapp: {
@@ -87,7 +86,7 @@ export const App = () => {
       const signResult = await sdk?.connectAndSign('Connect + Sign message');
       setResponse(signResult);
     } catch (err) {
-      console.warn(`failed to connect..`, err);
+      console.warn(`failed to connect...`, err);
     }
   };
 
@@ -96,7 +95,7 @@ export const App = () => {
       const response = await sdk?.connect();
       console.log('connect response', response);
     } catch (err) {
-      console.warn(`failed to connect..`, err);
+      console.warn(`failed to connect...`, err);
     }
   };
 
@@ -140,8 +139,6 @@ export const App = () => {
           },
         ],
       })
-      .then((res) => console.log('add', res))
-      .catch((e) => console.log('ADD ERR', e));
   };
 
   const sendTransaction = async () => {
