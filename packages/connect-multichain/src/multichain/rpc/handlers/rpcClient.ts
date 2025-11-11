@@ -25,16 +25,14 @@ export class RpcClient {
 	constructor(
 		private readonly config: MultichainOptions,
 		private readonly sdkInfo: string,
-		private readonly defaultTimeout: number = 30000, // 30 seconds default timeout
 	) {}
 
 	/**
 	 * Routes the request to a configured RPC node.
 	 * @param options - The invoke method options
-	 * @param options.timeout - Optional timeout in milliseconds (defaults to 30000ms)
 	 */
-	async request(options: InvokeMethodOptions & { timeout?: number }): Promise<Json> {
-		const { request, timeout = this.defaultTimeout } = options;
+	async request(options: InvokeMethodOptions): Promise<Json> {
+		const { request } = options;
 		const body = JSON.stringify({
 			jsonrpc: '2.0',
 			method: request.method,
@@ -42,7 +40,7 @@ export class RpcClient {
 			id: getNextRpcId(),
 		});
 		const rpcEndpoint = this.getRpcEndpoint(options.scope);
-		const rpcRequest = await this.fetchWithTimeout(rpcEndpoint, body, 'POST', this.getHeaders(rpcEndpoint), timeout);
+		const rpcRequest = await this.fetchWithTimeout(rpcEndpoint, body, 'POST', this.getHeaders(rpcEndpoint), 30_000); // 30 seconds default timeout
 		const response = await this.parseResponse(rpcRequest);
 		return response;
 	}
