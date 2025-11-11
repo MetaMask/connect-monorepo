@@ -96,11 +96,12 @@ t.describe('RpcClient', () => {
 			const result = await rpcClient.request({ ...baseOptions, scope: 'eip155:11155111' });
 
 			t.expect(result).toBe('0x1234567890abcdef');
-			t.expect(mockFetch).toHaveBeenCalledWith('https://custom-sepolia.com', {
+			t.expect(mockFetch).toHaveBeenCalledWith('https://custom-sepolia.com', t.expect.objectContaining({
 				method: 'POST',
 				headers: defaultHeaders,
 				body: t.expect.stringContaining('"method":"eth_getBalance"'),
-			});
+				signal: t.expect.any(AbortSignal),
+			}));
 		});
 
 			t.it('should throw RPCReadonlyResponseErr when response cannot be parsed as JSON', async () => {
@@ -161,11 +162,12 @@ t.describe('RpcClient', () => {
 
 				const result = await clientWithCustomRPC.request(baseOptions);
 				t.expect(result).toBe('0x123456account12345');
-				t.expect(mockFetch).toHaveBeenCalledWith('https://custom-ethereum-node.com/rpc', {
+				t.expect(mockFetch).toHaveBeenCalledWith('https://custom-ethereum-node.com/rpc', t.expect.objectContaining({
 					method: 'POST',
 					headers: defaultHeaders,
 					body: t.expect.stringMatching(/^\{"jsonrpc":"2\.0","method":"eth_accounts","id":\d+\}$/),
-				});
+					signal: t.expect.any(AbortSignal),
+				}));
 			});
 
       t.it('should throw MissingRpcEndpointErr when no RPC endpoint is available', async () => {
