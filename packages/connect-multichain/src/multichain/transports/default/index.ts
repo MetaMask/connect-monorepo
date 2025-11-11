@@ -17,30 +17,184 @@ import {
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 
+type PendingRequest = {
+  resolve: (value: TransportResponse) => void;
+  reject: (error: Error) => void;
+  timeout: NodeJS.Timeout;
+};
+
 export class DefaultTransport implements ExtendedTransport {
-  #notificationCallbacks: Set<(data: unknown) => void> = new Set();
-  #transport: Transport = getDefaultTransport();
-  #defaultRequestOptions = {
+  readonly #notificationCallbacks: Set<(data: unknown) => void> = new Set();
+
+  readonly #transport: Transport = getDefaultTransport();
+
+  readonly #defaultRequestOptions = {
     timeout: DEFAULT_REQUEST_TIMEOUT,
   };
 
-  #notifyCallbacks(data: unknown) {
-    for (const cb of this.#notificationCallbacks) {
+  // Use timestamp-based ID to avoid conflicts across disconnect/reconnect cycles
+  #reqId = Date.now();
+
+  readonly #pendingRequests = new Map<string, PendingRequest>();
+
+  #handleResponseListener: ((event: MessageEvent) => void) | undefined;
+  #handleNotificationListener: ((event: MessageEvent) => void) | undefined;
+
+  #notifyCallbacks(data: unknown): void {
+    for (const callback of this.#notificationCallbacks) {
       try {
-        cb(data);
-      } catch (err) {
-        console.log('[WindowPostMessageTransport] notifyCallbacks error:', err);
+        callback(data);
+      } catch (error) {
+        console.log(
+          '[WindowPostMessageTransport] notifyCallbacks error:',
+          error,
+        );
       }
     }
+  }
+
+  #isMetamaskProviderEvent(event: MessageEvent): boolean {
+    return (
+      event?.data?.data?.name === 'metamask-provider' &&
+      // eslint-disable-next-line no-restricted-globals
+      event.origin === location.origin
+    );
+  }
+
+  #handleResponse(event: MessageEvent): void {
+    if (!this.#isMetamaskProviderEvent(event)) {
+      return;
+    }
+
+    const responseData = event?.data?.data?.data;
+
+    // Ignore requests (they have 'method' field) - only process responses
+    if (
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      'method' in responseData
+    ) {
+      return;
+    }
+
+    if (
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      'id' in responseData &&
+      ('result' in responseData || 'error' in responseData)
+    ) {
+      const responseId = String(responseData.id);
+
+      const pendingRequest = this.#pendingRequests.get(responseId);
+      if (pendingRequest) {
+        clearTimeout(pendingRequest.timeout);
+        this.#pendingRequests.delete(responseId);
+
+        const response = responseData as TransportResponse;
+        if ('error' in response && response.error) {
+          pendingRequest.reject(
+            new Error(response.error.message || 'Request failed'),
+          );
+        } else {
+          pendingRequest.resolve(response);
+        }
+      }
+    }
+  }
+
+
+  #handleNotification(event: MessageEvent): void {
+    if (!this.#isMetamaskProviderEvent(event)) {
+      return;
+    }
+
+    const responseData = event?.data?.data?.data;
+
+    if (
+      typeof responseData === 'object' &&
+      responseData.method === 'metamask_chainChanged' ||
+      responseData.method === 'metamask_accountsChanged'
+    ) {
+      this.#notifyCallbacks(responseData);
+    }
+  }
+
+  #setupMessageListener(): void {
+    // Only set up listener if it's not already set up for this instance
+    if (this.#handleResponseListener) {
+      return;
+    }
+
+    // Create a new handler bound to this instance
+    // Rename this to handleResponse or something like this
+    this.#handleResponseListener = this.#handleResponse.bind(this);
+    this.#handleNotificationListener = this.#handleNotification.bind(this);
+
+
+    // Add the listener
+    // eslint-disable-next-line no-restricted-globals
+
+    window.addEventListener('message', this.#handleResponseListener);
+    window.addEventListener('message', this.#handleNotificationListener);
+  }
+
+  async sendEip1193Message<
+    TRequest extends TransportRequest,
+    TResponse extends TransportResponse,
+  >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
+    // Setup message listener if not already set up
+    this.#setupMessageListener();
+
+    // Generate unique request ID - increment counter to ensure uniqueness
+    this.#reqId += 1;
+    const requestId = `${this.#reqId}`;
+
+    // Create request with ID - MetaMask expects JSON-RPC format
+    const request = {
+      jsonrpc: '2.0',
+      id: requestId,
+      ...payload,
+    };
+
+    return new Promise<TResponse>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.#pendingRequests.delete(requestId);
+        reject(new Error('Request timeout'));
+      }, options?.timeout ?? this.#defaultRequestOptions.timeout);
+
+      this.#pendingRequests.set(requestId, {
+        resolve: (response: TransportResponse) => {
+          resolve(response as TResponse);
+        },
+        reject,
+        timeout,
+      });
+
+      // eslint-disable-next-line no-restricted-globals
+      window.postMessage(
+        {
+          target: 'metamask-contentscript',
+          data: {
+            name: 'metamask-provider',
+            data: request,
+          },
+        },
+        // eslint-disable-next-line no-restricted-globals
+        location.origin,
+      );
+    });
   }
 
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
   }): Promise<void> {
+    // Ensure message listener is set up before connecting
+    this.#setupMessageListener();
+
     await this.#transport.connect();
 
-    //Get wallet session
+    // Get wallet session
     const sessionRequest = await this.request(
       { method: 'wallet_getSession' },
       this.#defaultRequestOptions,
@@ -70,9 +224,11 @@ export class DefaultTransport implements ExtendedTransport {
           getOptionalScopes(options?.scopes ?? []),
           getValidAccounts(options?.caipAccountIds ?? []),
         );
-        const sessionRequest: CreateSessionParams<RPCAPI> = { optionalScopes };
+        const createSessionParams: CreateSessionParams<RPCAPI> = {
+          optionalScopes,
+        };
         const response = await this.request(
-          { method: 'wallet_createSession', params: sessionRequest },
+          { method: 'wallet_createSession', params: createSessionParams },
           this.#defaultRequestOptions,
         );
         if (response.error) {
@@ -85,9 +241,11 @@ export class DefaultTransport implements ExtendedTransport {
         getOptionalScopes(options?.scopes ?? []),
         getValidAccounts(options?.caipAccountIds ?? []),
       );
-      const sessionRequest: CreateSessionParams<RPCAPI> = { optionalScopes };
+      const createSessionParams: CreateSessionParams<RPCAPI> = {
+        optionalScopes,
+      };
       const response = await this.request(
-        { method: 'wallet_createSession', params: sessionRequest },
+        { method: 'wallet_createSession', params: createSessionParams },
         this.#defaultRequestOptions,
       );
       if (response.error) {
@@ -103,10 +261,27 @@ export class DefaultTransport implements ExtendedTransport {
 
   async disconnect(): Promise<void> {
     this.#notificationCallbacks.clear();
+
+    await this.request({ method: 'wallet_revokeSession' });
+
+    // Remove the message listener when disconnecting
+    if (this.#handleResponseListener) {
+      // eslint-disable-next-line no-restricted-globals
+      window.removeEventListener('message', this.#handleResponseListener);
+      this.#handleResponseListener = undefined;
+    }
+
+    // Reject all pending requests
+    for (const [, request] of this.#pendingRequests) {
+      clearTimeout(request.timeout);
+      request.reject(new Error('Transport disconnected'));
+    }
+    this.#pendingRequests.clear();
+
     return this.#transport.disconnect();
   }
 
-  isConnected() {
+  isConnected(): boolean {
     return this.#transport.isConnected();
   }
 
@@ -116,11 +291,11 @@ export class DefaultTransport implements ExtendedTransport {
   >(
     request: TRequest,
     options: { timeout?: number } = this.#defaultRequestOptions,
-  ) {
-    return this.#transport.request(request, options) as Promise<TResponse>;
+  ): Promise<TResponse> {
+    return this.#transport.request(request, options);
   }
 
-  onNotification(callback: (data: unknown) => void) {
+  onNotification(callback: (data: unknown) => void): () => void {
     this.#transport.onNotification(callback);
     this.#notificationCallbacks.add(callback);
     return () => {

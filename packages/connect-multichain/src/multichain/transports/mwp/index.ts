@@ -47,13 +47,18 @@ const CONNECTION_GRACE_PERIOD = 60 * 1000;
 const DEFAULT_CONNECTION_TIMEOUT =
   DEFAULT_REQUEST_TIMEOUT + CONNECTION_GRACE_PERIOD;
 const SESSION_STORE_KEY = 'cache_wallet_getSession';
+const ACCOUNTS_STORE_KEY = 'cache_eth_accounts';
+const CHAIN_STORE_KEY = 'cache_eth_chainId';
 
 const CACHED_METHOD_LIST = [
   'wallet_getSession',
   'wallet_createSession',
   'wallet_sessionChanged',
 ];
-const CACHED_RESET_METHOD_LIST = ['wallet_revokeSession'];
+const CACHED_RESET_METHOD_LIST = [
+  'wallet_revokeSession',
+  'wallet_revokePermissions',
+];
 
 type PendingRequests = {
   request: { jsonrpc: string; id: string } & TransportRequest;
@@ -162,16 +167,42 @@ export class MWPTransport implements ExtendedTransport {
             };
 
             clearTimeout(request.timeout);
+            // Might need to handle the evm case?
             this.notifyCallbacks(notification);
             request.resolve(requestWithName);
             this.pendingRequests.delete(messagePayload.id);
           }
         } else {
+          if (
+            (message.data as { method: string }).method ===
+            'metamask_chainChanged'
+          ) {
+            this.kvstore.set(
+              CHAIN_STORE_KEY,
+              JSON.stringify(
+                (message.data as { params: { chainId: number } }).params
+                  .chainId,
+              ),
+            );
+          }
+
+          if (
+            (message.data as { method: string }).method ===
+            'metamask_accountsChanged'
+          ) {
+            this.kvstore.set(
+              ACCOUNTS_STORE_KEY,
+              JSON.stringify(
+                (message.data as { params: { accounts: string[] } }).params,
+              ),
+            );
+          }
           this.notifyCallbacks(message.data);
         }
       }
     }
   }
+
 
   private async onResumeSuccess(
     resumeResolve: () => void,
@@ -243,6 +274,48 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  // TODO: Rename this
+  async sendEip1193Message<
+    TRequest extends TransportRequest,
+    TResponse extends TransportResponse,
+  >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
+    const request = {
+      jsonrpc: '2.0',
+      id: `${this.__reqId++}`,
+      ...payload,
+    };
+
+    const cachedWalletSession = await this.getCachedResponse(request);
+    if (cachedWalletSession) {
+      this.notifyCallbacks(cachedWalletSession);
+      return cachedWalletSession as TResponse;
+    }
+
+    return new Promise<TResponse>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.rejectRequest(request.id, new TransportTimeoutError());
+      }, options?.timeout ?? this.options.requestTimeout);
+
+      this.pendingRequests.set(request.id, {
+        request,
+        method: request.method,
+        resolve: async (response: TransportResponse) => {
+          await this.storeWalletSession(request, response);
+          return resolve(response as TResponse);
+        },
+        reject,
+        timeout,
+      });
+
+      this.dappClient
+        .sendRequest({
+          name: 'metamask-provider',
+          data: request,
+        })
+        .catch(reject);
+    });
+  }
+
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
@@ -292,6 +365,7 @@ export class MWPTransport implements ExtendedTransport {
               params: sessionRequest,
             };
 
+            // just used for initial connection
             this.dappClient.on('message', async (message: unknown) => {
               if (typeof message === 'object' && message !== null) {
                 if ('data' in message) {
@@ -306,11 +380,11 @@ export class MWPTransport implements ExtendedTransport {
                     if (messagePayload.error) {
                       return rejectConnection(messagePayload.error);
                     }
-                    this.notifyCallbacks(message.data);
                     await this.storeWalletSession(
                       request,
                       messagePayload as TransportResponse,
                     );
+                    this.notifyCallbacks(messagePayload);
                     return resolveConnection();
                   }
                 }
@@ -322,8 +396,8 @@ export class MWPTransport implements ExtendedTransport {
                 mode: 'trusted',
                 initialPayload: {
                   name: MULTICHAIN_PROVIDER_STREAM_NAME,
-                  data: request
-                }
+                  data: request,
+                },
               })
               .catch(rejectConnection);
           },
@@ -359,6 +433,9 @@ export class MWPTransport implements ExtendedTransport {
       window.removeEventListener('focus', this.windowFocusHandler);
       this.windowFocusHandler = undefined;
     }
+    this.kvstore.delete(SESSION_STORE_KEY);
+    this.kvstore.delete(ACCOUNTS_STORE_KEY);
+    this.kvstore.delete(CHAIN_STORE_KEY);
     return this.dappClient.disconnect();
   }
 
@@ -372,7 +449,7 @@ export class MWPTransport implements ExtendedTransport {
     return (this.dappClient as any).state === 'CONNECTED';
   }
 
-  private async fetchCachedWalletSession(
+  private async getCachedResponse(
     request: { jsonrpc: string; id: string } & TransportRequest,
   ): Promise<TransportResponse | undefined> {
     if (request.method === 'wallet_getSession') {
@@ -382,7 +459,27 @@ export class MWPTransport implements ExtendedTransport {
         return {
           id: request.id,
           jsonrpc: '2.0',
-          result: walletSession.params ?? walletSession.result,
+          result: walletSession.params ?? walletSession.result, // "what?... why walletSession.params?.."
+          method: request.method,
+        } as unknown as TransportResponse;
+      }
+    } else if (request.method === 'eth_accounts') {
+      const ethAccounts = await this.kvstore.get(ACCOUNTS_STORE_KEY);
+      if (ethAccounts) {
+        return {
+          id: request.id,
+          jsonrpc: '2.0',
+          result: JSON.parse(ethAccounts),
+          method: request.method,
+        } as unknown as TransportResponse;
+      }
+    } else if (request.method === 'eth_chainId') {
+      const ethChainId = await this.kvstore.get(CHAIN_STORE_KEY);
+      if (ethChainId) {
+        return {
+          id: request.id,
+          jsonrpc: '2.0',
+          result: JSON.parse(ethChainId),
           method: request.method,
         } as unknown as TransportResponse;
       }
@@ -395,8 +492,17 @@ export class MWPTransport implements ExtendedTransport {
   ): Promise<void> {
     if (CACHED_METHOD_LIST.includes(request.method)) {
       await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
+    } else if (request.method === 'eth_accounts') {
+      await this.kvstore.set(
+        ACCOUNTS_STORE_KEY,
+        JSON.stringify(response.result),
+      );
+    } else if (request.method === 'eth_chainId') {
+      await this.kvstore.set(CHAIN_STORE_KEY, JSON.stringify(response.result));
     } else if (CACHED_RESET_METHOD_LIST.includes(request.method)) {
       await this.kvstore.delete(SESSION_STORE_KEY);
+      await this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      await this.kvstore.delete(CHAIN_STORE_KEY);
     }
   }
 
@@ -410,7 +516,7 @@ export class MWPTransport implements ExtendedTransport {
       ...payload,
     };
 
-    const cachedWalletSession = await this.fetchCachedWalletSession(request);
+    const cachedWalletSession = await this.getCachedResponse(request);
     if (cachedWalletSession) {
       this.notifyCallbacks(cachedWalletSession);
       return cachedWalletSession as TResponse;
@@ -425,19 +531,19 @@ export class MWPTransport implements ExtendedTransport {
         request,
         method: request.method,
         resolve: async (response: TransportResponse) => {
-          if (CACHED_METHOD_LIST.includes(request.method)) {
-            await this.storeWalletSession(request, response);
-          }
+          await this.storeWalletSession(request, response);
           return resolve(response as TResponse);
         },
         reject,
         timeout,
       });
 
-      this.dappClient.sendRequest({
-        name: MULTICHAIN_PROVIDER_STREAM_NAME,
-        data: request
-      }).catch(reject);
+      this.dappClient
+        .sendRequest({
+          name: MULTICHAIN_PROVIDER_STREAM_NAME,
+          data: request,
+        })
+        .catch(reject);
     });
   }
 

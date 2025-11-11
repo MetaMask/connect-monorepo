@@ -1,5 +1,5 @@
 import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
-import type { Transport } from '@metamask/multichain-api-client';
+import type { Transport, TransportRequest, TransportResponse } from '@metamask/multichain-api-client';
 import type { CaipAccountId } from '@metamask/utils';
 
 import type { MultichainCore } from '.';
@@ -94,4 +94,8 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
   }) => Promise<void>;
+
+  sendEip1193Message: <TRequest extends TransportRequest, TResponse extends TransportResponse>(request: TRequest, options?: {
+    timeout?: number;
+}) => Promise<TResponse>;
 };

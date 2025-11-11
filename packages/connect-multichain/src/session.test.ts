@@ -122,7 +122,7 @@ function testSuite<T extends MultichainOptions>({
 
       t.expect(sdk.state).toBe('connected');
       t.expect(sdk.transport).toBeDefined();
-      t.expect(() => sdk.provider).toThrow();
+      t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.storage).toBeDefined();
       await t.expect(sdk.storage.getTransport()).resolves.toBe(transportString);
 
