@@ -355,9 +355,11 @@ export class MetamaskConnectEVM {
     }
 
     if (isConnectRequest(request)) {
-      // When calling wallet_requestPermissions, we need to force a new session request to prompt the user for accounts,
-      // because internally the Multichain SDK will check if the user is already connected and skip the request if so,
-      // unless we explicitly request a specific account. This is needed to workaround wallet_requestPermissions
+      // When calling wallet_requestPermissions, we need to force a new session request to prompt
+      // the user for accounts, because internally the Multichain SDK will check if
+      // the user is already connected and skip the request if so, unless we
+      // explicitly request a specific account. This is needed to workaround
+      // wallet_requestPermissions not requesting specific accounts.
       const shouldForce = request.method === 'wallet_requestPermissions';
 
       return this.connect({

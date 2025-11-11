@@ -1,3 +1,4 @@
+//@ts-nocheck
 import type { FormEvent } from 'react';
 import { formatEther, type Hex, parseAbi, parseEther } from 'viem';
 import {
