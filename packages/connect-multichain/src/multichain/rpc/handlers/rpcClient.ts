@@ -29,6 +29,7 @@ export class RpcClient {
 
 	/**
 	 * Routes the request to a configured RPC node.
+	 * @param options - The invoke method options
 	 */
 	async request(options: InvokeMethodOptions): Promise<Json> {
 		const { request } = options;
@@ -39,7 +40,7 @@ export class RpcClient {
 			id: getNextRpcId(),
 		});
 		const rpcEndpoint = this.getRpcEndpoint(options.scope);
-		const rpcRequest = await this.fetch(rpcEndpoint, body, 'POST', this.getHeaders(rpcEndpoint));
+		const rpcRequest = await this.fetchWithTimeout(rpcEndpoint, body, 'POST', this.getHeaders(rpcEndpoint), 30_000); // 30 seconds default timeout
 		const response = await this.parseResponse(rpcRequest);
 		return response;
 	}
@@ -55,22 +56,37 @@ export class RpcClient {
 		return rpcEndpoint;
 	}
 
-	private async fetch(endpoint: string, body: string, method: string, headers: Record<string, string>) {
+	private async fetchWithTimeout(
+		endpoint: string,
+		body: string,
+		method: string,
+		headers: Record<string, string>,
+		timeout: number,
+	): Promise<Response> {
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), timeout);
+
 		try {
 			const response = await fetch(endpoint, {
 				method,
 				headers,
 				body,
+				signal: controller.signal,
 			});
+			clearTimeout(timeoutId);
 			if (!response.ok) {
 				throw new RPCHttpErr(endpoint, method, response.status);
 			}
 			return response;
 		} catch (error) {
+			clearTimeout(timeoutId);
 			if (error instanceof RPCHttpErr) {
 				throw error;
 			}
-			throw new RPCReadonlyRequestErr(error.message);
+			if (error instanceof Error && error.name === 'AbortError') {
+				throw new RPCReadonlyRequestErr(`Request timeout after ${timeout}ms`);
+			}
+			throw new RPCReadonlyRequestErr(error instanceof Error ? error.message : 'Unknown error');
 		}
 	}
 

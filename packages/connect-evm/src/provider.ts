@@ -1,4 +1,4 @@
-import type { MultichainCore } from '@metamask/connect-multichain';
+import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
 import { hexToNumber, numberToHex } from '@metamask/utils';
 
@@ -57,9 +57,22 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     }
 
     const chainId = hexToNumber(this.#selectedChainId);
+    const scope: Scope = `eip155:${chainId}`;
+
+    // Validate that the chain is configured in readOnlyRpcMap
+    // This check is performed here to provide better error messages
+    // The RpcClient will also validate, but this gives us a chance to provide
+    // a clearer error message before the request is routed
+    const coreOptions = (this.#core as any).options; // TODO: options is `protected readonly` property, this needs to be refactored so `any` type assertion is not necessary
+    const readonlyRPCMap = coreOptions?.api?.readonlyRPCMap ?? {};
+    if (!readonlyRPCMap[scope]) {
+      throw new Error(
+        `Chain ${scope} is not configured in readOnlyRpcMap. Please add an RPC URL for this chain.`,
+      );
+    }
 
     return this.#core.invokeMethod({
-      scope: `eip155:${chainId}`,
+      scope,
       request: {
         method: request.method,
         params: request.params,

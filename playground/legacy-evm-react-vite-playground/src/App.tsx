@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   MetamaskConnectEVM,
   createMetamaskConnectEVM,
+  getInfuraRpcUrls,
 } from '@metamask/connect-evm';
 import './App.css';
 import { send_eth_signTypedData_v4, send_personal_sign } from './SignHelpers';
@@ -16,10 +17,24 @@ function useSDK() {
 
   useEffect(() => {
     const setupSDK = async () => {
+      const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY || '';
+      const readOnlyRpcMap = infuraApiKey
+        ? getInfuraRpcUrls(infuraApiKey)
+        : {
+            // Fallback public RPC endpoints if no Infura key is provided
+            'eip155:1': 'https://eth.llamarpc.com',
+            'eip155:5': 'https://goerli.infura.io/v3/demo',
+            'eip155:11155111': 'https://sepolia.infura.io/v3/demo',
+            'eip155:137': 'https://polygon-rpc.com',
+          };
+
       const clientSDK = await createMetamaskConnectEVM({
         dapp: {
           name: 'NEXTJS demo',
           url: 'https://localhost:3000',
+        },
+        api: {
+          readonlyRPCMap: readOnlyRpcMap,
         },
       });
       const provider = await clientSDK.getProvider();
@@ -99,26 +114,55 @@ export const App = () => {
     }
   };
 
-  const readOnlyCalls = async () => {
-    // if (!sdk?.hasReadOnlyRPCCalls() && !provider) {
-    //   setResponse(
-    //     'readOnlyCalls are not set and provider is not set. Please set your infuraAPIKey in the SDK Options',
-    //   );
-    //   return;
-    // }
-    // try {
-    //   const result = await provider?.request({
-    //     method: 'eth_blockNumber',
-    //     params: [],
-    //   });
-    //   const gotFrom = sdk?.hasReadOnlyRPCCalls()
-    //     ? 'infura'
-    //     : 'MetaMask provider';
-    //   setResponse(`(${gotFrom}) ${result}`);
-    // } catch (e) {
-    //   console.log(`error getting the blockNumber`, e);
-    //   setResponse('error getting the blockNumber');
-    // }
+  const eth_getBalance = async () => {
+    if (!provider || !account) {
+      setResponse('Provider or account not available');
+      return;
+    }
+    try {
+      const result = await provider.request({
+        method: 'eth_getBalance',
+        params: [account, 'latest'],
+      });
+      setResponse(`Balance: ${result}`);
+    } catch (e) {
+      console.error('Error getting balance', e);
+      setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    }
+  };
+
+  const eth_blockNumber = async () => {
+    if (!provider) {
+      setResponse('Provider not available');
+      return;
+    }
+    try {
+      const result = await provider.request({
+        method: 'eth_blockNumber',
+        params: [],
+      });
+      setResponse(`Block Number: ${result}`);
+    } catch (e) {
+      console.error('Error getting block number', e);
+      setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    }
+  };
+
+  const eth_gasPrice = async () => {
+    if (!provider) {
+      setResponse('Provider not available');
+      return;
+    }
+    try {
+      const result = await provider.request({
+        method: 'eth_gasPrice',
+        params: [],
+      });
+      setResponse(`Gas Price: ${result}`);
+    } catch (e) {
+      console.error('Error getting gas price', e);
+      setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    }
   };
 
   const addEthereumChain = () => {
@@ -295,13 +339,30 @@ export const App = () => {
             Add Polygon Chain
           </button>
 
-          <button
-            className={'Button-Normal'}
-            style={{ padding: 10, margin: 10 }}
-            onClick={readOnlyCalls}
-          >
-            readOnlyCalls
-          </button>
+          <div style={{ marginTop: 20, borderTop: '1px solid #ccc', paddingTop: 10 }}>
+            <h3>Read-Only RPC Calls</h3>
+            <button
+              className={'Button-Normal'}
+              style={{ padding: 10, margin: 10 }}
+              onClick={eth_getBalance}
+            >
+              eth_getBalance
+            </button>
+            <button
+              className={'Button-Normal'}
+              style={{ padding: 10, margin: 10 }}
+              onClick={eth_blockNumber}
+            >
+              eth_blockNumber
+            </button>
+            <button
+              className={'Button-Normal'}
+              style={{ padding: 10, margin: 10 }}
+              onClick={eth_gasPrice}
+            >
+              eth_gasPrice
+            </button>
+          </div>
         </div>
       ) : (
         <div>
