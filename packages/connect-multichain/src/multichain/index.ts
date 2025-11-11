@@ -597,9 +597,7 @@ export class MultichainSDK extends MultichainCore {
     this.__dappClient = undefined;
   }
 
-  async invokeMethod(
-    request: InvokeMethodOptions & { timeout?: number },
-  ): Promise<Json> {
+  async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
     const { sdkInfo, transport, options } = this;
 
     this.__provider ??= getMultichainClient({ transport });
@@ -621,11 +619,7 @@ export class MultichainSDK extends MultichainCore {
         if (mobile?.preferredOpenLink) {
           mobile.preferredOpenLink(METAMASK_DEEPLINK_BASE, '_self');
         } else {
-          openDeeplink(
-            this.options,
-            METAMASK_DEEPLINK_BASE,
-            METAMASK_CONNECT_BASE_URL,
-          );
+          openDeeplink(this.options, METAMASK_DEEPLINK_BASE, METAMASK_CONNECT_BASE_URL);
         }
       }, 10); // small delay to ensure the message encryption and dispatch completes
     }
