@@ -58,6 +58,21 @@ export class EventEmitter<TEvents extends Record<string, unknown[]>> {
   ) {
     this.#emitter.off(eventName, handler as (...args: any[]) => void);
   }
+
+  /**
+   * Removes a specific event handler for the specified event.
+   * Added for compatibility as some libraries use this method name.
+   *
+   * @template TEventName - The name of the event to remove the handler from (must be a key of TEvents)
+   * @param eventName - The name of the event to remove the handler from
+   * @param handler - The specific handler function to remove
+   */
+  removeListener<TEventName extends keyof TEvents & string>(
+    eventName: TEventName,
+    handler: (...eventArg: TEvents[TEventName]) => void,
+  ) {
+    this.#emitter.off(eventName, handler as (...args: any[]) => void);
+  }
 }
 
 export type * from './types';
