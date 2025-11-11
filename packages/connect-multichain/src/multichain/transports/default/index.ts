@@ -115,7 +115,6 @@ export class DefaultTransport implements ExtendedTransport {
       responseData.method === 'metamask_chainChanged' ||
       responseData.method === 'metamask_accountsChanged'
     ) {
-      console.log('handleNotification in default transport', responseData);
       this.#notifyCallbacks(responseData);
     }
   }

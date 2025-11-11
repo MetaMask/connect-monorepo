@@ -91,7 +91,6 @@ export const send_eth_signTypedData_v4 = async (
 export const send_personal_sign = async (provider: EIP1193Provider) => {
   try {
     const from = provider.selectedAccount;
-    console.log('from', from);
     const message = 'Hello World from the Create React dapp!';
     const hexMessage = '0x' + Buffer.from(message, 'utf8').toString('hex');
 
@@ -99,7 +98,6 @@ export const send_personal_sign = async (provider: EIP1193Provider) => {
       method: 'personal_sign',
       params: [hexMessage, from, 'Example password'],
     });
-    console.log(`sign: ${sign}`);
     return sign;
   } catch (err: unknown) {
     console.log(`personal_sign error: ${err}`);

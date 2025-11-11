@@ -105,7 +105,6 @@ export class MWPTransport implements ExtendedTransport {
       connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
     },
   ) {
-    console.log('MWPTransport constructor');
     this.dappClient.on('message', this.handleMessage.bind(this));
     if (
       typeof window !== 'undefined' &&
@@ -139,7 +138,6 @@ export class MWPTransport implements ExtendedTransport {
   }
 
   private handleMessage(message: unknown): void {
-    console.log('handleMessage', message);
     if (typeof message === 'object' && message !== null) {
       if ('data' in message) {
         const messagePayload = message.data as Record<string, unknown>;
@@ -179,7 +177,6 @@ export class MWPTransport implements ExtendedTransport {
             (message.data as { method: string }).method ===
             'metamask_chainChanged'
           ) {
-            console.log('metamask_chainChanged in handleMessage', message.data);
             this.kvstore.set(
               CHAIN_STORE_KEY,
               JSON.stringify(
@@ -193,7 +190,6 @@ export class MWPTransport implements ExtendedTransport {
             (message.data as { method: string }).method ===
             'metamask_accountsChanged'
           ) {
-            console.log('metamask_accountsChanged in handleMessage', message.data);
             this.kvstore.set(
               ACCOUNTS_STORE_KEY,
               JSON.stringify(
@@ -207,7 +203,7 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-  
+
   private async onResumeSuccess(
     resumeResolve: () => void,
     resumeReject: (err: Error) => void,
@@ -535,12 +531,6 @@ export class MWPTransport implements ExtendedTransport {
         request,
         method: request.method,
         resolve: async (response: TransportResponse) => {
-          console.log(
-            'request in resolve:',
-            request,
-            'response in resolve:',
-            response,
-          );
           await this.storeWalletSession(request, response);
           return resolve(response as TResponse);
         },

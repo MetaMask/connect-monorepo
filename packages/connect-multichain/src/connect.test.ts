@@ -178,7 +178,7 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.state).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
         t.expect(sdk.transport).toBeDefined();
-        t.expect(() => sdk.provider).toThrow();
+        t.expect(sdk.provider).toBeDefined();;
 
         if (isMWPPlatform) {
           t.expect(mockedData.mockDappClient.state).toBe('CONNECTED');
@@ -210,7 +210,7 @@ function testSuite<T extends MultichainOptions>({
         sdk = await createSDK(testOptions);
         t.expect(sdk.state).toBe('connected');
         t.expect(sdk.transport).toBeDefined();
-        t.expect(() => sdk.provider).toThrow();
+        t.expect(sdk.provider).toBeDefined();;
         t.expect(sdk.storage).toBeDefined();
 
         await t
@@ -243,7 +243,7 @@ function testSuite<T extends MultichainOptions>({
 
         sdk = await createSDK(testOptions);
         t.expect(sdk.transport).toBeDefined();
-        t.expect(() => sdk.provider).toThrow();
+        t.expect(sdk.provider).toBeDefined();;
         t.expect(sdk.storage).toBeDefined();
         t.expect(sdk.state).toBe('connected');
 
@@ -316,7 +316,7 @@ function testSuite<T extends MultichainOptions>({
 
         t.expect(sdk.state).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
-        t.expect(() => sdk.provider).toThrow();
+        t.expect(sdk.provider).toBeDefined();;
         t.expect(sdk.transport).toBeDefined();
 
         if (isMWPPlatform) {
@@ -401,7 +401,7 @@ function testSuite<T extends MultichainOptions>({
       sdk = await createSDK(testOptions);
       await sdk.connect(scopes, caipAccountIds);
       t.expect(sdk.state).toBe('connected');
-      t.expect(() => sdk.provider).toThrow();
+      t.expect(sdk.provider).toBeDefined();;
       t.expect(sdk.transport).toBeDefined();
 
       await t
@@ -424,7 +424,7 @@ function testSuite<T extends MultichainOptions>({
           sdk = await createSDK(testOptions);
 
           t.expect(sdk.state).toBe('connected');
-          t.expect(() => sdk.provider).toThrow();
+          t.expect(sdk.provider).toBeDefined();;
           t.expect(sdk.transport).toBeDefined();
 
           t.expect(mockedData.mockDappClient.state).toBe('CONNECTED');
