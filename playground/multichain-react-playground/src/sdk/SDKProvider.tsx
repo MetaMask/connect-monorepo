@@ -52,7 +52,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
           url: 'https://playground.metamask.io',
         },
         api: {
-          readonlyRPCMap: getInfuraRpcUrls(process.env.INFURA_API_KEY || ''),
+          supportedChains: getInfuraRpcUrls(process.env.INFURA_API_KEY || ''),
         },
         analytics: {
           enabled: false,

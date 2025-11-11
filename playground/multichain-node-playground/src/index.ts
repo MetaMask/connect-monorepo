@@ -208,7 +208,7 @@ const main = async () => {
       url: 'https://playground.metamask.io',
     },
     api: {
-      readonlyRPCMap: getInfuraRpcUrls(process.env.INFURA_API_KEY || ''),
+      supportedChains: getInfuraRpcUrls(process.env.INFURA_API_KEY || ''),
     },
   });
 

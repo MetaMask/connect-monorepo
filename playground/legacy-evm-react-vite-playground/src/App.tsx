@@ -34,7 +34,7 @@ function useSDK() {
           url: 'https://localhost:3000',
         },
         api: {
-          readonlyRPCMap: readOnlyRpcMap,
+          supportedChains: readOnlyRpcMap,
         },
       });
       const provider = await clientSDK.getProvider();
