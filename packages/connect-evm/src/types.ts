@@ -7,13 +7,17 @@ export type Hex = `0x${string}`;
 export type Address = Hex;
 export type CaipAccountId = `${string}:${string}:${string}`;
 export type CaipChainId = `${string}:${string}`;
-export type MinimalEventEmitter = Pick<EIP1193Provider, 'on' | 'off' | 'emit'>;
+export type MinimalEventEmitter = Pick<
+  EIP1193Provider,
+  'on' | 'off' | 'removeListener' | 'emit'
+>;
 
 export type EIP1193ProviderEvents = {
-  connect: [{ chainId?: Hex }];
+  connect: [{ chainId: string }];
   disconnect: [];
   accountsChanged: [Address[]];
   chainChanged: [Hex];
+  message: [{ type: string; data: unknown }];
 };
 
 export type EventHandlers = {
