@@ -253,7 +253,7 @@ export const App = () => {
         <p>{`Connected chain: ${chainId}`}</p>
         <p>{`Connected account: ${account}`}</p>
         <p>{`Last request response: ${response}`}</p>
-        <p>{`Connected: ${connected}`}</p>
+        <p id='connected-status'>{`Connected: ${connected}`}</p>
       </div>
 
       {/* <div className="language-dropdown">
@@ -276,6 +276,7 @@ export const App = () => {
           <button
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
+            id='request-accounts-button'
             onClick={connect}
           >
             Request Accounts
@@ -369,6 +370,7 @@ export const App = () => {
           <button
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
+            id='connect-button'
             onClick={connect}
           >
             Connect
