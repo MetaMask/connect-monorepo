@@ -6,7 +6,7 @@ import type { EIP1193Provider } from './provider';
 export type Hex = `0x${string}`;
 export type Address = Hex;
 export type CaipAccountId = `${string}:${string}:${string}`;
-
+export type CaipChainId = `${string}:${string}`;
 export type MinimalEventEmitter = Pick<EIP1193Provider, 'on' | 'off' | 'emit'>;
 
 export type EIP1193ProviderEvents = {
@@ -27,7 +27,7 @@ export type MetamaskConnectEVMOptions = {
   core: MultichainCore;
   eventHandlers?: EventHandlers;
   notificationQueue?: unknown[];
-  readOnlyRpcMap?: Record<string, string>;
+  readOnlyRpcMap?: Record<CaipChainId, string>;
 };
 
 export type AddEthereumChainParameter = {
