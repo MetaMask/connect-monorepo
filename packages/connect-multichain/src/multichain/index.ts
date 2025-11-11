@@ -63,12 +63,12 @@ import {
   isSecure,
   PlatformType,
 } from '../domain/platform';
+import { RpcClient } from './rpc/handlers/rpcClient';
 import { RequestRouter } from './rpc/requestRouter';
 import { DefaultTransport } from './transports/default';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
 import { getDappId, openDeeplink, setupDappMetadata } from './utils';
-import { RpcClient } from './rpc/handlers/rpcClient';
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
@@ -213,8 +213,6 @@ export class MultichainSDK extends MultichainCore {
   private async getStoredTransport(): Promise<
     DefaultTransport | MWPTransport | undefined
   > {
-    const { ui } = this.options;
-    const { preferExtension = true } = ui;
     const transportType = await this.storage.getTransport();
     const hasExtensionInstalled = await hasExtension();
     if (transportType) {
