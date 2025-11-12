@@ -26,6 +26,9 @@ t.describe('Utils', () => {
 				url: 'test',
 			},
 			api: {
+				supportedNetworks: {
+					'eip155:1': 'https://mainnet.infura.io/v3/test',
+				},
 			},
 		} as MultichainOptions;
 	});
