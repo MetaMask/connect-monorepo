@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import {
   MetamaskConnectEVM,
   createMetamaskConnectEVM,
-  getInfuraRpcUrls,
 } from '@metamask/connect-evm';
 import './App.css';
 import { send_eth_signTypedData_v4, send_personal_sign } from './SignHelpers';
 import type { EIP1193Provider } from '@metamask/connect-evm';
+import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 
 function useSDK() {
   const [sdk, setSDK] = useState<MetamaskConnectEVM>();
@@ -253,7 +253,7 @@ export const App = () => {
         <p>{`Connected chain: ${chainId}`}</p>
         <p>{`Connected account: ${account}`}</p>
         <p>{`Last request response: ${response}`}</p>
-        <p>{`Connected: ${connected}`}</p>
+        <p id='connected-status'>{`Connected: ${connected}`}</p>
       </div>
 
       {/* <div className="language-dropdown">
@@ -277,6 +277,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connect}
+            id='request-accounts-button'
           >
             Request Accounts
           </button>
@@ -293,6 +294,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={eth_personal_sign}
+            id='personal-sign-button'
           >
             personal_sign
           </button>
@@ -301,6 +303,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={sendTransaction}
+            id='send-transaction-button'
           >
             Send transaction
           </button>
@@ -310,6 +313,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={() => changeNetwork('0x5')}
+              id='switch-to-goerli-button'
             >
               Switch to Goerli
             </button>
@@ -318,6 +322,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={() => changeNetwork('0x1')}
+              id='switch-to-mainnet-button'
             >
               Switch to Mainnet
             </button>
@@ -327,6 +332,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={() => changeNetwork('0x89')}
+            id='switch-to-polygon-button'
           >
             Switch to Polygon
           </button>
@@ -335,6 +341,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={addEthereumChain}
+            id='add-polygon-chain-button'
           >
             Add Polygon Chain
           </button>
@@ -345,6 +352,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_getBalance}
+              id='eth-get-balance-button'
             >
               eth_getBalance
             </button>
@@ -352,6 +360,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_blockNumber}
+              id='eth-block-number-button'
             >
               eth_blockNumber
             </button>
@@ -359,6 +368,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_gasPrice}
+              id='eth-gas-price-button'
             >
               eth_gasPrice
             </button>
@@ -370,6 +380,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connect}
+            id='connect-button'
           >
             Connect
           </button>
@@ -377,6 +388,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connectAndSign}
+            id='connect-and-sign-button'
           >
             Connect w/ Sign
           </button>
@@ -387,6 +399,7 @@ export const App = () => {
         className={'Button-Danger'}
         style={{ padding: 10, margin: 10 }}
         onClick={terminate}
+        id='terminate-button'
       >
         Terminate
       </button>
