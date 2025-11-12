@@ -18,7 +18,7 @@ function useSDK() {
   useEffect(() => {
     const setupSDK = async () => {
       const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY || '';
-      const readOnlyRpcMap = infuraApiKey
+      const supportedNetworks = infuraApiKey
         ? getInfuraRpcUrls(infuraApiKey)
         : {
             // Fallback public RPC endpoints if no Infura key is provided
@@ -34,7 +34,7 @@ function useSDK() {
           url: 'https://localhost:3000',
         },
         api: {
-          readonlyRPCMap: readOnlyRpcMap,
+          supportedNetworks,
         },
       });
       const provider = await clientSDK.getProvider();

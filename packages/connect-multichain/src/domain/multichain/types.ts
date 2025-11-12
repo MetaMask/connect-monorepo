@@ -42,8 +42,8 @@ export type MultichainOptions = {
   dapp: DappSettings;
   /** Optional API configuration for external services */
   api: {
-    /** A map of RPC URLs to use for read-only requests */
-    readonlyRPCMap: RpcUrlsMap;
+    /** A map of `caipChainIds` -> RPC Urls for all networks supported by the app*/
+    supportedNetworks: RpcUrlsMap;
   };
   /** Analytics configuration */
   analytics?: { enabled: false } | { enabled: true; integrationType: string };

@@ -60,3 +60,31 @@ export function isAccountsRequest(
 > {
   return req.method === 'eth_accounts' || req.method === 'eth_coinbase';
 }
+
+/**
+ * Validates that all values in a Record are valid URLs.
+ *
+ * @param record - The record to validate (e.g., supportedNetworks)
+ * @param recordName - The name of the record for error messages
+ * @throws Error if any values are invalid URLs
+ */
+export function validSupportedChainsUrls(
+  record: Record<string, string>,
+  recordName: string,
+): void {
+  const invalidUrls: string[] = [];
+  for (const [key, url] of Object.entries(record)) {
+    try {
+      // eslint-disable-next-line no-new
+      new URL(url);
+    } catch {
+      invalidUrls.push(`${key}: ${url}`);
+    }
+  }
+
+  if (invalidUrls.length > 0) {
+    throw new Error(
+      `${recordName} contains invalid URLs:\n${invalidUrls.join('\n')}`,
+    );
+  }
+}

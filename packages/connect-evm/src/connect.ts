@@ -32,6 +32,7 @@ import {
   isAddChainRequest,
   isConnectRequest,
   isSwitchChainRequest,
+  validSupportedChainsUrls,
 } from './utils/type-guards';
 
 /**
@@ -617,7 +618,7 @@ export class MetamaskConnectEVM {
  * @param options - The options for the Metamask Connect/EVM layer
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
- * @param options.api.readOnlyRpcMap - A map of CAIP chain IDs to RPC URLs for read-only requests
+ * @param options.api.supportedNetworks - A map of CAIP chain IDs to RPC URLs for read-only requests
  * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
  * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
  * @returns The Metamask Connect/EVM layer instance
@@ -630,28 +631,30 @@ export async function createMetamaskConnectEVM(
 ): Promise<MetamaskConnectEVM> {
   logger('Creating Metamask Connect/EVM with options:', options);
 
-  // Validate that readOnlyRpcMap is provided and not empty
+  // Validate that supportedNetworks is provided and not empty
   if (
-    !options.api?.readonlyRPCMap ||
-    Object.keys(options.api.readonlyRPCMap).length === 0
+    !options.api?.supportedNetworks ||
+    Object.keys(options.api.supportedNetworks).length === 0
   ) {
     throw new Error(
-      'readOnlyRpcMap is required and must contain at least one chain configuration',
+      'supportedNetworks is required and must contain at least one chain configuration',
     );
   }
+
+  validSupportedChainsUrls(options.api.supportedNetworks, 'supportedNetworks');
 
   try {
     const core = await createMetamaskConnect({
       ...options,
       api: {
-        readonlyRPCMap: options.api.readonlyRPCMap,
+        supportedNetworks: options.api.supportedNetworks,
       },
     });
 
     return new MetamaskConnectEVM({
       core,
       eventHandlers: options.eventHandlers,
-      readOnlyRpcMap: options.api.readonlyRPCMap,
+      supportedNetworks: options.api.supportedNetworks,
     });
   } catch (error) {
     console.error('Error creating Metamask Connect/EVM', error);
