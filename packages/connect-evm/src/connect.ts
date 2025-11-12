@@ -32,7 +32,7 @@ import {
   isAddChainRequest,
   isConnectRequest,
   isSwitchChainRequest,
-  validateUrlsInRecord,
+  validSupportedChainsUrls,
 } from './utils/type-guards';
 
 /**
@@ -641,7 +641,7 @@ export async function createMetamaskConnectEVM(
     );
   }
 
-  validateUrlsInRecord(options.api.supportedNetworks, 'supportedNetworks');
+  validSupportedChainsUrls(options.api.supportedNetworks, 'supportedNetworks');
 
   try {
     const core = await createMetamaskConnect({

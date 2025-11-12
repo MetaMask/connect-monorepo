@@ -68,7 +68,7 @@ export function isAccountsRequest(
  * @param recordName - The name of the record for error messages
  * @throws Error if any values are invalid URLs
  */
-export function validateUrlsInRecord(
+export function validSupportedChainsUrls(
   record: Record<string, string>,
   recordName: string,
 ): void {
