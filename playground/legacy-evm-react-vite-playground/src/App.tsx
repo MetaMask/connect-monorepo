@@ -205,6 +205,7 @@ export const App = () => {
       setResponse(txHash);
     } catch (e) {
       console.log(e);
+      setResponse(e instanceof Error ? e.message : 'Unknown error');
     }
   };
 
