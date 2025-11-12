@@ -285,14 +285,7 @@ function testSuite<T extends MultichainOptions>({
 
 const exampleDapp = { name: 'Test Dapp', url: 'https://test.dapp' };
 
-const baseTestOptions = {
-  dapp: exampleDapp,
-  api: {
-    supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/test',
-    },
-  },
-} as any;
+const baseTestOptions = { dapp: exampleDapp } as any;
 
 runTestsInNodeEnv(baseTestOptions, testSuite);
 runTestsInRNEnv(baseTestOptions, testSuite);
