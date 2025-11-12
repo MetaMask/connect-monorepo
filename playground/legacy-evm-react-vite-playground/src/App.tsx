@@ -250,9 +250,9 @@ export const App = () => {
     <div className="App">
       <h1>Vite React MMSDK Example</h1>
       <div className={'Info-Status'}>
-        <p>{`Connected chain: ${chainId}`}</p>
-        <p>{`Connected account: ${account}`}</p>
-        <p>{`Last request response: ${response}`}</p>
+        <p id='connected-chain'>{`Connected chain: ${chainId}`}</p>
+        <p id='connected-account'>{`Connected account: ${account}`}</p>
+        <p id='request-response'>{`Last request response: ${response}`}</p>
         <p id='connected-status'>{`Connected: ${connected}`}</p>
       </div>
 
