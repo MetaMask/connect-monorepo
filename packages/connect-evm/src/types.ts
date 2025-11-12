@@ -27,7 +27,7 @@ export type MetamaskConnectEVMOptions = {
   core: MultichainCore;
   eventHandlers?: EventHandlers;
   notificationQueue?: unknown[];
-  supportedChains?: Record<CaipChainId, string>;
+  supportedNetworks?: Record<CaipChainId, string>;
 };
 
 export type AddEthereumChainParameter = {

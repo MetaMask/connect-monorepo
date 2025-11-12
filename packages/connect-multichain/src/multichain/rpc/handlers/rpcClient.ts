@@ -47,9 +47,9 @@ export class RpcClient {
 
 	private getRpcEndpoint(scope: Scope) {
 
-		const supportedChains: RpcUrlsMap = this.config?.api?.supportedChains ?? {};
+		const supportedNetworks: RpcUrlsMap = this.config?.api?.supportedNetworks ?? {};
 
-		const rpcEndpoint = supportedChains[scope];
+		const rpcEndpoint = supportedNetworks[scope];
 		if (!rpcEndpoint) {
 			throw new MissingRpcEndpointErr(`No RPC endpoint found for scope ${scope}`);
 		}

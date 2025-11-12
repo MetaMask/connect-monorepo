@@ -59,15 +59,15 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     const chainId = hexToNumber(this.#selectedChainId);
     const scope: Scope = `eip155:${chainId}`;
 
-    // Validate that the chain is configured in supportedChains
+    // Validate that the chain is configured in supportedNetworks
     // This check is performed here to provide better error messages
     // The RpcClient will also validate, but this gives us a chance to provide
     // a clearer error message before the request is routed
     const coreOptions = (this.#core as any).options; // TODO: options is `protected readonly` property, this needs to be refactored so `any` type assertion is not necessary
-    const supportedChains = coreOptions?.api?.supportedChains ?? {};
-    if (!supportedChains[scope]) {
+    const supportedNetworks = coreOptions?.api?.supportedNetworks ?? {};
+    if (!supportedNetworks[scope]) {
       throw new Error(
-        `Chain ${scope} is not configured in supportedChains. Please add an RPC URL for this chain.`,
+        `Chain ${scope} is not configured in supportedNetworks. Requests cannot be made to chains not explicitly configured in supportedNetworks.`,
       );
     }
 
