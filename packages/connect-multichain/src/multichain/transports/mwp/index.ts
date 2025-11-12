@@ -490,24 +490,19 @@ export class MWPTransport implements ExtendedTransport {
     request: TransportRequest,
     response: TransportResponse,
   ): Promise<void> {
-    if ((!request as any).error) {
-      if (CACHED_METHOD_LIST.includes(request.method)) {
-        await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
-      } else if (request.method === 'eth_accounts') {
-        await this.kvstore.set(
-          ACCOUNTS_STORE_KEY,
-          JSON.stringify(response.result),
-        );
-      } else if (request.method === 'eth_chainId') {
-        await this.kvstore.set(
-          CHAIN_STORE_KEY,
-          JSON.stringify(response.result),
-        );
-      } else if (CACHED_RESET_METHOD_LIST.includes(request.method)) {
-        await this.kvstore.delete(SESSION_STORE_KEY);
-        await this.kvstore.delete(ACCOUNTS_STORE_KEY);
-        await this.kvstore.delete(CHAIN_STORE_KEY);
-      }
+    if (CACHED_METHOD_LIST.includes(request.method)) {
+      await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
+    } else if (request.method === 'eth_accounts') {
+      await this.kvstore.set(
+        ACCOUNTS_STORE_KEY,
+        JSON.stringify(response.result),
+      );
+    } else if (request.method === 'eth_chainId') {
+      await this.kvstore.set(CHAIN_STORE_KEY, JSON.stringify(response.result));
+    } else if (CACHED_RESET_METHOD_LIST.includes(request.method)) {
+      await this.kvstore.delete(SESSION_STORE_KEY);
+      await this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      await this.kvstore.delete(CHAIN_STORE_KEY);
     }
   }
 
