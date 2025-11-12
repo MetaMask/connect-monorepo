@@ -13,7 +13,7 @@ function useSDK() {
   const [connected, setConnected] = useState(false);
   const [provider, setProvider] = useState<EIP1193Provider>();
   const [chainId, setChainId] = useState<string>();
-  const [account, setAccount] = useState<string>();
+  const [accounts, setAccounts] = useState<string[]>([]);
 
   useEffect(() => {
     const setupSDK = async () => {
@@ -53,7 +53,7 @@ function useSDK() {
         });
 
         provider.on('accountsChanged', (accounts: string[]) => {
-          setAccount(accounts[0]);
+          setAccounts(accounts);
         });
 
         setSDK(clientSDK);
@@ -66,12 +66,12 @@ function useSDK() {
     }
   }, [sdk]);
 
-  return { sdk, connected, provider, chainId, account };
+  return { sdk, connected, provider, chainId, accounts };
 }
 
 export const App = () => {
   const [response, setResponse] = useState<unknown>('');
-  const { sdk, connected, provider, chainId, account } =
+  const { sdk, connected, provider, chainId, accounts } =
     useSDK();
 
   // TODO: Do we need language support?
@@ -115,14 +115,14 @@ export const App = () => {
   };
 
   const eth_getBalance = async () => {
-    if (!provider || !account) {
-      setResponse('Provider or account not available');
+    if (!provider || !accounts[0]) {
+      setResponse('Provider or accounts not available');
       return;
     }
     try {
       const result = await provider.request({
         method: 'eth_getBalance',
-        params: [account, 'latest'],
+        params: [accounts[0], 'latest'],
       });
       setResponse(`Balance: ${result}`);
     } catch (e) {
@@ -252,7 +252,7 @@ export const App = () => {
       <h1>Vite React MMSDK Example</h1>
       <div className={'Info-Status'}>
         <p id='connected-chain'>{`Connected chain: ${chainId}`}</p>
-        <p id='connected-account'>{`Connected account: ${account}`}</p>
+        <p id='connected-accounts'>{`Connected accounts: ${accounts}`}</p>
         <p id='request-response'>{`Last request response: ${response}`}</p>
         <p id='connected-status'>{`Connected: ${connected}`}</p>
       </div>
