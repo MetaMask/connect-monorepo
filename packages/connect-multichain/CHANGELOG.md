@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix connections made from within the MetaMask Mobile In-App Browser ([#21](https://github.com/MetaMask/connect-monorepo/pull/21))
 - Bump `@metamask/multichain-api-client` to prevent JSON RPC request ID conflicts across disconnect/reconnect cycles ([#38](https://github.com/MetaMask/connect-monorepo/pull/38))
+- Lowercase cached account address values from `metamask_accountsChanged` to align with `eth_accounts` ([#40](https://github.com/MetaMask/connect-monorepo/pull/40))
 
 ## [0.1.0]
 
