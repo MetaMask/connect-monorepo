@@ -190,10 +190,14 @@ export class MWPTransport implements ExtendedTransport {
             (message.data as { method: string }).method ===
             'metamask_accountsChanged'
           ) {
+            // Account addressed are being lowercased here to align with the eth_accounts returned casing
+            // and with how they are returned/emitted in the injected EIP-1193 provider.
+            const messageData = message.data as { params: string[] };
+            messageData.params = messageData.params.map(account => account.toLowerCase());
             this.kvstore.set(
               ACCOUNTS_STORE_KEY,
               JSON.stringify(
-                (message.data as { params: { accounts: string[] } }).params,
+                messageData.params,
               ),
             );
           }
