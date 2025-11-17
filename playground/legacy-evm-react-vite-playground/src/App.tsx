@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import {
   MetamaskConnectEVM,
   createMetamaskConnectEVM,
-  getInfuraRpcUrls,
 } from '@metamask/connect-evm';
 import './App.css';
 import { send_eth_signTypedData_v4, send_personal_sign } from './SignHelpers';
 import type { EIP1193Provider } from '@metamask/connect-evm';
+import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 
 function useSDK() {
   const [sdk, setSDK] = useState<MetamaskConnectEVM>();
   const [connected, setConnected] = useState(false);
   const [provider, setProvider] = useState<EIP1193Provider>();
   const [chainId, setChainId] = useState<string>();
-  const [account, setAccount] = useState<string>();
+  const [accounts, setAccounts] = useState<string[]>([]);
 
   useEffect(() => {
     const setupSDK = async () => {
@@ -53,7 +53,7 @@ function useSDK() {
         });
 
         provider.on('accountsChanged', (accounts: string[]) => {
-          setAccount(accounts[0]);
+          setAccounts(accounts);
         });
 
         setSDK(clientSDK);
@@ -66,12 +66,12 @@ function useSDK() {
     }
   }, [sdk]);
 
-  return { sdk, connected, provider, chainId, account };
+  return { sdk, connected, provider, chainId, accounts };
 }
 
 export const App = () => {
   const [response, setResponse] = useState<unknown>('');
-  const { sdk, connected, provider, chainId, account } =
+  const { sdk, connected, provider, chainId, accounts } =
     useSDK();
 
   // TODO: Do we need language support?
@@ -115,14 +115,14 @@ export const App = () => {
   };
 
   const eth_getBalance = async () => {
-    if (!provider || !account) {
-      setResponse('Provider or account not available');
+    if (!provider || !accounts[0]) {
+      setResponse('Provider or accounts not available');
       return;
     }
     try {
       const result = await provider.request({
         method: 'eth_getBalance',
-        params: [account, 'latest'],
+        params: [accounts[0], 'latest'],
       });
       setResponse(`Balance: ${result}`);
     } catch (e) {
@@ -205,6 +205,7 @@ export const App = () => {
       setResponse(txHash);
     } catch (e) {
       console.log(e);
+      setResponse(e instanceof Error ? e.message : 'Unknown error');
     }
   };
 
@@ -250,10 +251,10 @@ export const App = () => {
     <div className="App">
       <h1>Vite React MMSDK Example</h1>
       <div className={'Info-Status'}>
-        <p>{`Connected chain: ${chainId}`}</p>
-        <p>{`Connected account: ${account}`}</p>
-        <p>{`Last request response: ${response}`}</p>
-        <p>{`Connected: ${connected}`}</p>
+        <p id='connected-chain'>{`Connected chain: ${chainId}`}</p>
+        <p id='connected-accounts'>{`Connected accounts: ${accounts}`}</p>
+        <p id='request-response'>{`Last request response: ${response}`}</p>
+        <p id='connected-status'>{`Connected: ${connected}`}</p>
       </div>
 
       {/* <div className="language-dropdown">
@@ -277,6 +278,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connect}
+            id='request-accounts-button'
           >
             Request Accounts
           </button>
@@ -293,6 +295,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={eth_personal_sign}
+            id='personal-sign-button'
           >
             personal_sign
           </button>
@@ -301,6 +304,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={sendTransaction}
+            id='send-transaction-button'
           >
             Send transaction
           </button>
@@ -310,6 +314,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={() => changeNetwork('0x5')}
+              id='switch-to-goerli-button'
             >
               Switch to Goerli
             </button>
@@ -318,6 +323,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={() => changeNetwork('0x1')}
+              id='switch-to-mainnet-button'
             >
               Switch to Mainnet
             </button>
@@ -327,6 +333,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={() => changeNetwork('0x89')}
+            id='switch-to-polygon-button'
           >
             Switch to Polygon
           </button>
@@ -335,6 +342,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={addEthereumChain}
+            id='add-polygon-chain-button'
           >
             Add Polygon Chain
           </button>
@@ -345,6 +353,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_getBalance}
+              id='eth-get-balance-button'
             >
               eth_getBalance
             </button>
@@ -352,6 +361,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_blockNumber}
+              id='eth-block-number-button'
             >
               eth_blockNumber
             </button>
@@ -359,6 +369,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_gasPrice}
+              id='eth-gas-price-button'
             >
               eth_gasPrice
             </button>
@@ -370,6 +381,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connect}
+            id='connect-button'
           >
             Connect
           </button>
@@ -377,6 +389,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connectAndSign}
+            id='connect-and-sign-button'
           >
             Connect w/ Sign
           </button>
@@ -387,6 +400,7 @@ export const App = () => {
         className={'Button-Danger'}
         style={{ padding: 10, margin: 10 }}
         onClick={terminate}
+        id='terminate-button'
       >
         Terminate
       </button>
