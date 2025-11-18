@@ -156,7 +156,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
   }
 
   public async renderInstallModal(
-    preferDesktop: boolean,
+    showInstallModal: boolean,
     createConnectionRequest: () => Promise<ConnectionRequest>,
     successCallback: (error?: Error) => Promise<void>,
   ) {
@@ -173,7 +173,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
         (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000,
       connectionRequest,
       parentElement,
-      preferDesktop,
+      showInstallModal,
       link: qrCodeLink,
       sdkVersion: getVersion(),
       generateQRCode: async (request: ConnectionRequest) =>

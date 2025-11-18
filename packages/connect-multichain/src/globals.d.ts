@@ -27,7 +27,7 @@ declare global {
    * consuming projects do not load the full Stencil-generated global types.
    */
   type HTMLMmInstallModalElement = HTMLElement & {
-    preferDesktop: boolean;
+    showInstallModal: boolean;
     sdkVersion?: string;
     link: string;
     expiresIn: number;

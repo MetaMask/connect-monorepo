@@ -65,7 +65,7 @@ t.describe('Node Modals', () => {
       (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000;
     const installModal = new NodeModals.InstallModal({
       sdkVersion: getVersion(),
-      preferDesktop: false,
+      showInstallModal: false,
       onClose: vi.fn(),
       startDesktopOnboarding: vi.fn(),
       createConnectionRequest: vi.fn().mockResolvedValue(connectionRequest),
@@ -135,7 +135,7 @@ t.describe('Node Modals', () => {
         .mockResolvedValue(renewedConnectionRequest); // Only mock the renewal call
       const installModal = new NodeModals.InstallModal({
         sdkVersion: getVersion(),
-        preferDesktop: false,
+        showInstallModal: false,
         onClose: vi.fn(),
         startDesktopOnboarding: vi.fn(),
         createConnectionRequest: createConnectionRequestMock,

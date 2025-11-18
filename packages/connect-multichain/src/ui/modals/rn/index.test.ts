@@ -42,7 +42,7 @@ t.describe('RN Modals', () => {
   t.it('rendering InstallModal on RN', async () => {
     const installModal = new RNModals.InstallModal({
       sdkVersion: '1.0.0',
-      preferDesktop: false,
+      showInstallModal: false,
       onClose: t.vi.fn(),
       startDesktopOnboarding: t.vi.fn(),
       createConnectionRequest: t.vi.fn().mockResolvedValue(connectionRequest),

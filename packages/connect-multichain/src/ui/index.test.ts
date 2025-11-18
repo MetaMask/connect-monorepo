@@ -262,13 +262,13 @@ t.describe('ModalFactory', () => {
 
     t.describe('renderInstallModal', () => {
       t.it('should render install modal with correct props', async () => {
-        const preferDesktop = true;
+        const showInstallModal = true;
         t.vi
           .spyOn(uiModule as any, 'getContainer')
           .mockReturnValue(mockContainer);
 
         await uiModule.renderInstallModal(
-          preferDesktop,
+          showInstallModal,
           () => Promise.resolve(connectionRequest),
           async () => {},
         );
@@ -279,7 +279,7 @@ t.describe('ModalFactory', () => {
           t.expect.objectContaining({
             parentElement: mockContainer,
             connectionRequest,
-            preferDesktop,
+            showInstallModal,
             sdkVersion: getVersion(),
           }),
         );
@@ -323,13 +323,13 @@ t.describe('ModalFactory', () => {
             return Promise.resolve(connectionRequest);
           });
 
-          const preferDesktop = true;
+          const showInstallModal = true;
           t.vi
             .spyOn(uiModule as any, 'getContainer')
             .mockReturnValue(mockContainer);
 
           await uiModule.renderInstallModal(
-            preferDesktop,
+            showInstallModal,
             createSessionRequestMock,
             async () => {},
           );

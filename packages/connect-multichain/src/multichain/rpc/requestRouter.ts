@@ -46,9 +46,9 @@ export class RequestRouter {
 			});
 
 			const { ui, mobile } = this.config;
-			const { preferDesktop = false } = ui ?? {};
+			const { showInstallModal = false } = ui ?? {};
 			const secure = isSecure();
-			const shouldOpenDeeplink = secure && !preferDesktop;
+			const shouldOpenDeeplink = secure && !showInstallModal;
 
 			if (shouldOpenDeeplink) {
 				setTimeout(() => {

@@ -23,7 +23,7 @@ export type ModalFactoryOptions = Pick<
   ui: {
     headless?: boolean; // Whether to run without UI
     preferExtension?: boolean; // Whether to prefer browser extension
-    preferDesktop?: boolean; // Whether to prefer desktop wallet
+    showInstallModal?: boolean; // Whether to prefer desktop wallet
   };
   onConnection: (
     transport: Transport,
