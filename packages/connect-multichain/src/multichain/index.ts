@@ -142,7 +142,7 @@ export class MultichainSDK extends MultichainCore {
       ui: {
         ...withDappMetadata.ui,
         preferExtension: withDappMetadata.ui.preferExtension ?? true,
-        preferDesktop: withDappMetadata.ui.preferDesktop ?? false,
+        showInstallModal: withDappMetadata.ui.showInstallModal ?? false,
         headless: withDappMetadata.ui.headless ?? false,
       },
       analytics: {
@@ -521,7 +521,7 @@ export class MultichainSDK extends MultichainCore {
     const isWeb =
       platformType === PlatformType.MetaMaskMobileWebview ||
       platformType === PlatformType.DesktopWeb;
-    const { preferExtension = true, preferDesktop = false } = ui;
+    const { preferExtension = true, showInstallModal = false } = ui;
     const secure = isSecure();
     const hasExtensionInstalled = await hasExtension();
 
@@ -558,11 +558,11 @@ export class MultichainSDK extends MultichainCore {
     await this.setupMWP();
 
     // Determine preferred option for install modal
-    const isDesktopPreferred = hasExtensionInstalled
-      ? preferDesktop
-      : !preferExtension || preferDesktop;
+    const shouldShowInstallModal = hasExtensionInstalled
+      ? showInstallModal
+      : !preferExtension || showInstallModal;
 
-    if (secure && !isDesktopPreferred) {
+    if (secure && !shouldShowInstallModal) {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
       return this.handleConnection(
         this.deeplinkConnect(scopes, caipAccountIds),
@@ -571,7 +571,7 @@ export class MultichainSDK extends MultichainCore {
 
     // Show install modal for RN, Web + Node
     return this.handleConnection(
-      this.showInstallModal(isDesktopPreferred, scopes, caipAccountIds),
+      this.showInstallModal(shouldShowInstallModal, scopes, caipAccountIds),
     );
   }
 
@@ -610,9 +610,9 @@ export class MultichainSDK extends MultichainCore {
   // DRY THIS WITH REQUEST ROUTER
   openDeeplinkIfNeeded(): void {
     const { ui, mobile } = this.options;
-    const { preferDesktop = false } = ui ?? {};
+    const { showInstallModal = false } = ui ?? {};
     const secure = isSecure();
-    const shouldOpenDeeplink = secure && !preferDesktop;
+    const shouldOpenDeeplink = secure && !showInstallModal;
 
     if (shouldOpenDeeplink) {
       setTimeout(() => {

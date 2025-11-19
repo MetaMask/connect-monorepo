@@ -13,7 +13,7 @@ export class InstallModal extends AbstractInstallModal {
       'mm-install-modal',
     ) as HTMLMmInstallModalElement;
 
-    modal.preferDesktop = options.preferDesktop;
+    modal.showInstallModal = options.showInstallModal;
     modal.sdkVersion = options.sdkVersion;
     modal.addEventListener('close', (ev: Event) => {
       const { detail } = ev as MmInstallModalCustomEvent<{

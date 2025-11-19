@@ -54,7 +54,7 @@ export type MultichainOptions = {
     factory: ModalFactory;
     headless?: boolean;
     preferExtension?: boolean;
-    preferDesktop?: boolean;
+    showInstallModal?: boolean;
   };
   mobile?: {
     preferredOpenLink?: (deeplink: string, target?: string) => void;

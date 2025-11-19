@@ -33,7 +33,7 @@ function testSuite<T extends MultichainOptions>({
         platform === 'web-mobile'
           ? {
               ...originalSdkOptions.ui,
-              preferDesktop: false,
+              showInstallModal: false,
               preferExtension: false,
             }
           : originalSdkOptions.ui;
