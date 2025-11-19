@@ -262,7 +262,7 @@ export class DefaultTransport implements ExtendedTransport {
   async disconnect(): Promise<void> {
     this.#notificationCallbacks.clear();
 
-    await this.request({ method: 'wallet_revokeSession' });
+    await this.request({ method: 'wallet_revokeSession', params: {} });
 
     // Remove the message listener when disconnecting
     if (this.#handleResponseListener) {
