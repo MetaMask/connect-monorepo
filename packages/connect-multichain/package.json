@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-multichain",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Multichain package for MetaMask Connect",
   "keywords": [
     "MetaMask",
@@ -65,11 +65,11 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@metamask/analytics": "workspace:^",
+    "@metamask/analytics": "^0.1.0",
     "@metamask/mobile-wallet-protocol-core": "^0.3.0",
     "@metamask/mobile-wallet-protocol-dapp-client": "^0.2.1",
-    "@metamask/multichain-api-client": "^0.8.1",
-    "@metamask/multichain-ui": "workspace:^",
+    "@metamask/multichain-api-client": "^0.8.0",
+    "@metamask/multichain-ui": "0.1.0",
     "@metamask/onboarding": "^1.0.1",
     "@metamask/utils": "^11.8.1",
     "@paulmillr/qr": "^0.2.1",
@@ -95,8 +95,8 @@
     "nock": "^14.0.4",
     "prettier": "^3.3.3",
     "tsup": "^8.4.0",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "~5.9.2",
     "vitest": "^3.1.2"
   },
