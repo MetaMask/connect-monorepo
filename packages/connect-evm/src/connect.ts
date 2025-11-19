@@ -13,7 +13,7 @@ import {
 } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
-import { logger } from './logger';
+import { enableDebug, logger } from './logger';
 import { EIP1193Provider } from './provider';
 import type {
   AddEthereumChainParameter,
@@ -622,8 +622,11 @@ export async function createMetamaskConnectEVM(
   options: Pick<MultichainOptions, 'dapp' | 'api'> & {
     eventEmitter?: MinimalEventEmitter;
     eventHandlers?: EventHandlers;
+    debug?: boolean;
   },
 ): Promise<MetamaskConnectEVM> {
+  enableDebug(options.debug);
+
   logger('Creating Metamask Connect/EVM with options:', options);
 
   // Validate that supportedNetworks is provided and not empty
