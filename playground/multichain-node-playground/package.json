@@ -1,6 +1,7 @@
 {
   "name": "@metamask/multichain-node-playground",
   "version": "0.0.0",
+  "private": true,
   "description": "multichain-node-playground",
   "keywords": [
     "MetaMask",
@@ -16,15 +17,18 @@
   },
   "license": "MIT",
   "sideEffects": false,
-  "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "node -r ts-node/register -r tsconfig-paths/register src/index.ts",
     "build": "tsup src/index.ts --format cjs,esm",
-    "clean": "rm -rf dist .sdk-comm",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-node-playground",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-node-playground",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-node-playground",
+    "clean": "rm -rf dist .sdk-comm",
+    "start": "node -r ts-node/register -r tsconfig-paths/register src/index.ts",
     "test": "echo \"No test specified\""
+  },
+  "resolutions": {
+    "elliptic": "6.6.1"
   },
   "dependencies": {
     "@metamask/connect-multichain": "workspace:^",
@@ -46,9 +50,6 @@
     "typedoc": "^0.23.22",
     "typedoc-plugin-missing-exports": "^1.0.0",
     "typescript": "~5.9.2"
-  },
-  "resolutions": {
-    "elliptic": "6.6.1"
   },
   "engines": {
     "node": "^18.18 || >=20"

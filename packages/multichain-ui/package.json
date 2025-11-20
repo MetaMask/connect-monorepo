@@ -52,6 +52,7 @@
     "build:watch": "stencil build --watchAll",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-ui",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-ui",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-ui",
     "dev": "stencil build --dev --watch --serve",
     "generate": "stencil generate",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
