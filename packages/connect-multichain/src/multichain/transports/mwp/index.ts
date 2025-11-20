@@ -148,7 +148,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -160,7 +160,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
@@ -202,7 +202,6 @@ export class MWPTransport implements ExtendedTransport {
       }
     }
   }
-
 
   private async onResumeSuccess(
     resumeResolve: () => void,
@@ -449,6 +448,32 @@ export class MWPTransport implements ExtendedTransport {
     return (this.dappClient as any).state === 'CONNECTED';
   }
 
+  private async attemptResumeSession() {
+    try {
+      await this.dappClient.reconnect();
+      // Wait for connection to be established
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Resume timeout'));
+        }, 2_000);
+
+        if (this.isConnected()) {
+          clearTimeout(timeout);
+          resolve();
+        } else {
+          this.dappClient.once('connected', () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+        }
+      });
+    } catch (error) {
+      return Promise.reject(
+        new Error(`Failed to resume session: ${error.message}`),
+      );
+    }
+  }
+
   private async getCachedResponse(
     request: { jsonrpc: string; id: string } & TransportRequest,
   ): Promise<TransportResponse | undefined> {
@@ -520,6 +545,10 @@ export class MWPTransport implements ExtendedTransport {
     if (cachedWalletSession) {
       this.notifyCallbacks(cachedWalletSession);
       return cachedWalletSession as TResponse;
+    }
+
+    if (!this.isConnected()) {
+      await this.attemptResumeSession();
     }
 
     return new Promise<TResponse>((resolve, reject) => {
