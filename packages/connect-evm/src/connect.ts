@@ -77,9 +77,6 @@ export class MetamaskConnectEVM {
   /** Optional event handlers for the EIP-1193 provider events. */
   readonly #eventHandlers?: EventHandlers | undefined;
 
-  /** The latest chain configuration received from a switchEthereumChain request */
-  #latestChainConfiguration: AddEthereumChainParameter | undefined;
-
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
@@ -185,16 +182,6 @@ export class MetamaskConnectEVM {
         logger('transport-event: chainChanged', notificationChainId);
         this.#onChainChanged(notificationChainId);
       }
-
-      // // This error occurs when a chain switch failed because
-      //   // the target chain is not configured on the wallet.
-      //   if (notification?.error?.code === 4902) {
-      //     logger(
-      //       'chain switch failed, adding chain',
-      //       this.#latestChainConfiguration,
-      //     );
-      //     this.#addEthereumChain();
-      //   }
     });
 
     logger('fulfilled-request: connect', {
@@ -310,14 +297,19 @@ export class MetamaskConnectEVM {
       return Promise.resolve();
     }
 
-    // Save the chain configuration for adding in case
-    // the chain is not configured in the wallet.
-    this.#latestChainConfiguration = chainConfiguration;
+    try {
+      return await this.#request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hexChainId }],
+      });
+    } catch (error) {
+      // Fallback to add the chain if its not configured in the wallet.
+      if (error.message.includes('Unrecognized chain ID')) {
+        return this.#addEthereumChain(chainConfiguration);
+      }
 
-    return this.#request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: hexChainId }],
-    });
+      throw error;
+    }
   }
 
   /**
