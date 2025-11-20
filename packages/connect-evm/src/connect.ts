@@ -301,9 +301,9 @@ export class MetamaskConnectEVM {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
       });
-    } catch (error) {
+    } catch (error: unknown) {
       // Fallback to add the chain if its not configured in the wallet.
-      if (error.message.includes('Unrecognized chain ID')) {
+      if ((error as Error).message.includes('Unrecognized chain ID')) {
         return this.#addEthereumChain(chainConfiguration);
       }
 
