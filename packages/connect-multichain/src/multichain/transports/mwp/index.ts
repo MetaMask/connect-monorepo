@@ -148,7 +148,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -160,7 +160,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
@@ -202,7 +202,6 @@ export class MWPTransport implements ExtendedTransport {
       }
     }
   }
-
 
   private async onResumeSuccess(
     resumeResolve: () => void,
