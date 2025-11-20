@@ -1,65 +1,43 @@
 import {
+  type AddEthereumChainParameter,
   createMetamaskConnectEVM,
   type MetamaskConnectEVM,
 } from '@metamask/connect-evm';
 
-import type { MetaMaskSDKOptions } from '@metamask/sdk';
-
 import {
   ChainNotConfiguredError,
-  //type Connector,
   createConnector,
   ProviderNotFoundError,
 } from '@wagmi/core';
-import type {
-  Compute,
-  ExactPartial,
-  OneOf,
-  UnionCompute,
-} from '@wagmi/core/internal';
+
+import type { OneOf } from '@wagmi/core/internal';
+
 import {
   type EIP1193Provider,
   getAddress,
   type ProviderConnectInfo,
+  ResourceUnavailableRpcError,
+  type RpcError,
   SwitchChainError,
+  UserRejectedRequestError,
 } from 'viem';
 
-export type MetaMaskParameters = UnionCompute<
-  WagmiMetaMaskSDKOptions &
-    OneOf<
-      | {
-          /* Shortcut to connect and sign a message */
-          connectAndSign?: string | undefined;
-        }
-      | {
-          // TODO: Strongly type `method` and `params`
-          /* Allow `connectWith` any rpc method */
-          connectWith?: { method: string; params: unknown[] } | undefined;
-        }
-    >
->;
+type CreateMetamaskConnectEVMParameters = Parameters<
+  typeof createMetamaskConnectEVM
+>[0];
 
-type WagmiMetaMaskSDKOptions = Compute<
-  ExactPartial<
-    Omit<
-      MetaMaskSDKOptions,
-      | '_source'
-      | 'forceDeleteProvider'
-      | 'forceInjectProvider'
-      | 'injectProvider'
-      | 'useDeeplink'
-      | 'readonlyRPCMap'
-    >
-  > & {
-    /** @deprecated */
-    forceDeleteProvider?: MetaMaskSDKOptions['forceDeleteProvider'];
-    /** @deprecated */
-    forceInjectProvider?: MetaMaskSDKOptions['forceInjectProvider'];
-    /** @deprecated */
-    injectProvider?: MetaMaskSDKOptions['injectProvider'];
-    /** @deprecated */
-    useDeeplink?: MetaMaskSDKOptions['useDeeplink'];
-  }
+export type MetaMaskParameters = {
+  dapp?: CreateMetamaskConnectEVMParameters['dapp'] | undefined;
+} & OneOf<
+  | {
+      /* Shortcut to connect and sign a message */
+      connectAndSign?: string | undefined;
+    }
+  | {
+      // TODO: Strongly type `method` and `params`
+      /* Allow `connectWith` any rpc method */
+      connectWith?: { method: string; params: unknown[] } | undefined;
+    }
 >;
 
 metaMask.type = 'metaMask' as const;
@@ -78,54 +56,71 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
     rdns: ['io.metamask', 'io.metamask.mobile'],
     type: metaMask.type,
     async setup() {
-      // TODO: Add wagmi parameters as the per the OG get provider method
+      const supportedNetworks = Object.fromEntries(
+        config.chains.map((chain) => [
+          `eip155:${chain.id}`,
+          chain.rpcUrls.default?.http[0],
+        ]),
+      );
+
+      // TODO: check if we need to support other parameters
       metamask = await createMetamaskConnectEVM({
-        dapp: {
-          name: parameters.dappMetadata?.name,
-          url: parameters.dappMetadata?.url,
-        },
+        dapp: parameters.dapp ?? {},
         eventHandlers: {
           accountsChanged: this.onAccountsChanged.bind(this),
           chainChanged: this.onChainChanged.bind(this),
-          //@ts-expect-error cool
           connect: this.onConnect.bind(this),
           disconnect: this.onDisconnect.bind(this),
         },
+        api: {
+          supportedNetworks,
+        },
       });
     },
-    //@ts-expect-error cool
-    async connect({ chainId, isReconnecting, withCapabilities } = {}) {
-      // TODO (@wenfix): handle case where no chainId is provided
-      const _chainId = chainId ?? 1;
+
+    async connect<withCapabilities extends boolean = false>(parameters?: {
+      chainId?: number | undefined;
+      isReconnecting?: boolean | undefined;
+      withCapabilities?: withCapabilities | boolean | undefined;
+    }) {
+      // TODO: better handling when not providing a chainId?
+
+      const chainId = parameters?.chainId ?? 1;
+      const withCapabilities =
+        ('withCapabilities' in (parameters ?? {}) &&
+          parameters?.withCapabilities) ||
+        false;
 
       // TODO: Bind display_uri event?
       // TODO: Add connectAndSign and connectWith support, including events
-      // TODO: Ensure correct local state chainID after connection
-      // TODO: Fix types
-      // TODO: Understand event binding during connect
-      // TODO: Match error codes to wagmi errors
 
-      // @ts-expect-error - null accounts should be supported
-      const result = await metamask.connect({
-        chainId: _chainId,
-        account: undefined,
-      } as { chainId: number; account: string });
+      try {
+        const result = await metamask.connect({
+          chainId: chainId,
+          account: undefined,
+        });
 
-      // TODO: return this again after changing portfolio
-      // biome-ignore lint/correctness/noUnusedVariables: will be used in the future
-      const accounts = result.accounts.map((account) => ({
-        address: account,
-        capabilities: {},
-      }));
-
-      return {
-        accounts: result.accounts,
-        chainId: result.chainId ?? _chainId,
-      };
+        return {
+          accounts: (withCapabilities
+            ? result.accounts.map((account) => ({
+                address: account,
+                capabilities: {},
+              }))
+            : result.accounts) as never,
+          chainId: result.chainId ?? chainId,
+        };
+      } catch (err) {
+        const error = err as RpcError;
+        if (error.code === UserRejectedRequestError.code)
+          throw new UserRejectedRequestError(error);
+        if (error.code === ResourceUnavailableRpcError.code)
+          throw new ResourceUnavailableRpcError(error);
+        throw error;
+      }
     },
 
     async disconnect() {
-      await metamask.disconnect();
+      return metamask.disconnect();
     },
 
     async getAccounts() {
@@ -137,21 +132,29 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       if (chainId) {
         return Number(chainId);
       }
-      // TODO: Handle case where chainId is not found
-      return 1;
+      // Fallback to requesting chainId from provider if SDK doesn't return it
+      const provider = await this.getProvider();
+      if (!provider) {
+        throw new ProviderNotFoundError();
+      }
+      const hexChainId = await provider.request({ method: 'eth_chainId' });
+      return Number(hexChainId);
     },
 
-    //@ts-expect-error cool
     async getProvider() {
       const provider = await metamask.getProvider();
       if (!provider) {
         throw new ProviderNotFoundError();
       }
-      return provider;
+      // Provider type-mismatch because Metamask uses tuples,
+      // whereas viem uses direct parameters.
+      // This is safe because both providers implement the same runtime interface
+      // (on, removeListener, request); only the TypeScript signatures differ.
+      // TODO: potential improvement here to avoid cast?
+      return provider as unknown as Provider;
     },
 
     async isAuthorized() {
-      // TODO: Ensure this works correctly on mobile
       const accounts = await this.getAccounts();
       return accounts.length > 0;
     },
@@ -163,42 +166,81 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         throw new SwitchChainError(new ChainNotConfiguredError());
       }
 
-      //TODO: Add validation?
-      const chainConfiguration = addEthereumChainParameter ?? {
+      const rpcUrls = addEthereumChainParameter?.rpcUrls
+        ? [...addEthereumChainParameter.rpcUrls]
+        : chain.rpcUrls.default?.http
+          ? [...chain.rpcUrls.default.http]
+          : undefined;
+
+      const blockExplorerUrls = addEthereumChainParameter?.blockExplorerUrls
+        ? [...addEthereumChainParameter.blockExplorerUrls]
+        : chain.blockExplorers?.default.url
+          ? [chain.blockExplorers.default.url]
+          : undefined;
+
+      const chainConfiguration: AddEthereumChainParameter = {
         chainId: `0x${chainId.toString(16)}`,
-        rpcUrls: chain.rpcUrls.default?.http,
-        nativeCurrency: chain.nativeCurrency,
-        chainName: chain.name,
-        blockExplorerUrls: chain.blockExplorers?.default.url,
+        rpcUrls,
+        nativeCurrency:
+          addEthereumChainParameter?.nativeCurrency ?? chain.nativeCurrency,
+        chainName: addEthereumChainParameter?.chainName ?? chain.name,
+        blockExplorerUrls,
+        iconUrls: addEthereumChainParameter?.iconUrls,
       };
 
-      //@ts-expect-error cool
-      metamask.switchChain({ chainId, chainConfiguration });
+      try {
+        await metamask.switchChain({ chainId, chainConfiguration });
+        return chain;
+      } catch (err) {
+        const error = err as RpcError;
 
-      return chain;
+        if (error.code === UserRejectedRequestError.code) {
+          throw new UserRejectedRequestError(error);
+        }
+
+        throw new SwitchChainError(error);
+      }
     },
 
     async onAccountsChanged(accounts) {
-      //TODO: implement disconnects?
+      // Disconnect if there are no accounts
+      if (accounts.length === 0) {
+        this.onDisconnect();
+        return;
+      }
+      // Regular change event
+
       config.emitter.emit('change', {
         accounts: accounts.map((account) => getAddress(account)),
       });
     },
+
     async onChainChanged(chain) {
       const chainId = Number(chain);
       config.emitter.emit('change', { chainId });
     },
+
     async onConnect(connectInfo) {
-      const data = {
-        //@ts-expect-error fix types here ?
-        accounts: connectInfo.accounts.map((account) => getAddress(account)),
-        chainId: Number(connectInfo.chainId),
-      };
-      config.emitter.emit('connect', data);
+      const accounts = await this.getAccounts();
+      if (accounts.length === 0) return;
+
+      const chainId = Number(connectInfo.chainId);
+      config.emitter.emit('connect', { accounts, chainId });
     },
-    async onDisconnect() {
+
+    async onDisconnect(error?: RpcError) {
+      // TODO: (wenfix) Is this still necessary?
+
+      const provider = await this.getProvider();
+      // If MetaMask emits a `code: 1013` error, wait for reconnection before disconnecting
+      // https://github.com/MetaMask/providers/pull/120
+      if (error && (error as unknown as RpcError<1013>).code === 1013) {
+        if (provider && !!(await this.getAccounts()).length) return;
+      }
+
       config.emitter.emit('disconnect');
     },
+
     async onDisplayUri(uri) {
       config.emitter.emit('message', { type: 'display_uri', data: uri });
     },
