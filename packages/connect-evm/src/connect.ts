@@ -289,7 +289,6 @@ export class MetamaskConnectEVM {
       return Promise.resolve();
     }
 
-    // TODO: Check if approved scopes have the chain and early return
     const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
 
     if (permittedChainIds.includes(hexChainId)) {
@@ -352,11 +351,12 @@ export class MetamaskConnectEVM {
       // the user is already connected and skip the request if so, unless we
       // explicitly request a specific account. This is needed to workaround
       // wallet_requestPermissions not requesting specific accounts.
-      const shouldForce = request.method === 'wallet_requestPermissions';
+      const shouldForceConnectionRequest =
+        request.method === 'wallet_requestPermissions';
 
       return this.connect({
         chainId: DEFAULT_CHAIN_ID,
-        forceRequest: shouldForce,
+        forceRequest: shouldForceConnectionRequest,
       });
     }
 
@@ -394,15 +394,14 @@ export class MetamaskConnectEVM {
    */
   #addEthereumChain(chainConfiguration?: AddEthereumChainParameter): void {
     logger('addEthereumChain called', { chainConfiguration });
-    const config = chainConfiguration ?? this.#latestChainConfiguration;
 
-    if (!config) {
+    if (!chainConfiguration) {
       throw new Error('No chain configuration found.');
     }
 
     this.#request({
       method: 'wallet_addEthereumChain',
-      params: [config],
+      params: [chainConfiguration],
     }).catch((error) => {
       // TODO (wenfix): does it make sense to throw here?
       console.error('Error adding Ethereum chain', error);
