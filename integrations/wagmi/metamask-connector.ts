@@ -136,9 +136,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       }
       // Fallback to requesting chainId from provider if SDK doesn't return it
       const provider = await this.getProvider();
-      if (!provider) {
-        throw new ProviderNotFoundError();
-      }
+
       const hexChainId = await provider.request({ method: 'eth_chainId' });
       return Number(hexChainId);
     },
