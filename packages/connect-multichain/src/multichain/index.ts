@@ -77,7 +77,6 @@ export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 const logger = createLogger('metamask-sdk:core');
 
 export class MultichainSDK extends MultichainCore {
-  private __provider: MultichainApiClient<RPCAPI> | undefined = undefined;
   private __providerProxy = createProviderProxy(this);
 
   private __transport: ExtendedTransport | undefined = undefined;
@@ -103,15 +102,6 @@ export class MultichainSDK extends MultichainCore {
   }
 
   get provider(): MultichainApiClient<RPCAPI> {
-    if (this.__provider) {
-      return this.__provider;
-    }
-
-    if (this.__transport) {
-      this.__provider = getMultichainClient({ transport: this.__transport });
-      return this.__provider;
-    }
-
     return this.__providerProxy;
   }
 
@@ -595,14 +585,12 @@ export class MultichainSDK extends MultichainCore {
     this.listener = undefined;
     this.__beforeUnloadListener = undefined;
     this.__transport = undefined;
-    this.__provider = undefined;
     this.__dappClient = undefined;
   }
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
     const { sdkInfo, transport, options } = this;
 
-    this.__provider ??= getMultichainClient({ transport });
 
     const rpcClient = new RpcClient(options, sdkInfo);
     const requestRouter = new RequestRouter(transport, rpcClient, options);
