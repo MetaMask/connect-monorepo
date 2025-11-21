@@ -229,7 +229,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       // https://github.com/MetaMask/providers/pull/120
       if (error && (error as unknown as RpcError<1013>).code === 1013) {
         const provider = await this.getProvider();
-        if (provider && !!(await this.getAccounts()).length) return;
+        if (provider && (await this.getAccounts()).length > 0) return;
       }
 
       config.emitter.emit('disconnect');
