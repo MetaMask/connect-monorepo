@@ -26,6 +26,8 @@ type CreateMetamaskConnectEVMParameters = Parameters<
   typeof createMetamaskConnectEVM
 >[0];
 
+const DEFAULT_CHAIN_ID = 1;
+
 export type MetaMaskParameters = {
   dapp?: CreateMetamaskConnectEVMParameters['dapp'] | undefined;
 } & OneOf<
@@ -83,20 +85,14 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       isReconnecting?: boolean | undefined;
       withCapabilities?: withCapabilities | boolean | undefined;
     }) {
-      // TODO: better handling when not providing a chainId?
+      const chainId = parameters?.chainId ?? DEFAULT_CHAIN_ID;
+      const withCapabilities = parameters?.withCapabilities;
 
-      const chainId = parameters?.chainId ?? 1;
-      const withCapabilities =
-        ('withCapabilities' in (parameters ?? {}) &&
-          parameters?.withCapabilities) ||
-        false;
-
-      // TODO: Bind display_uri event?
       // TODO: Add connectAndSign and connectWith support, including events
 
       try {
         const result = await metamask.connect({
-          chainId: chainId,
+          chainId,
           account: undefined,
         });
 
