@@ -70,7 +70,7 @@ import { DefaultTransport } from './transports/default';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
 import { getDappId, openDeeplink, setupDappMetadata } from './utils';
-import { createProviderProxy } from './proxy/createProviderProxy';
+import { MultichainApiClientWrapperTransport } from './transports/multichainApiClientWrapper';
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
@@ -78,7 +78,9 @@ export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 const logger = createLogger('metamask-sdk:core');
 
 export class MultichainSDK extends MultichainCore {
-  private __providerProxy = createProviderProxy(this);
+  private __provider: MultichainApiClient<RPCAPI>;
+
+  private __providerTransportWrapper: MultichainApiClientWrapperTransport;
 
   private __transport: ExtendedTransport | undefined = undefined;
 
@@ -103,7 +105,7 @@ export class MultichainSDK extends MultichainCore {
   }
 
   get provider(): MultichainApiClient<RPCAPI> {
-    return this.__providerProxy;
+    return this.__provider;
   }
 
   get transport(): ExtendedTransport {
@@ -146,6 +148,9 @@ export class MultichainSDK extends MultichainCore {
     };
 
     super(allOptions);
+
+    this.__providerTransportWrapper = new MultichainApiClientWrapperTransport(this);
+    this.__provider = getMultichainClient({ transport: this.__providerTransportWrapper });
   }
 
   static async create(options: MultichainOptions): Promise<MultichainSDK> {
@@ -213,6 +218,7 @@ export class MultichainSDK extends MultichainCore {
         if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
           this.__transport = apiTransport;
+          this.__providerTransportWrapper.setupNotifcationListener();
           this.listener = apiTransport.onNotification(
             this.onTransportNotification.bind(this),
           );
@@ -224,6 +230,7 @@ export class MultichainSDK extends MultichainCore {
         const apiTransport = new MWPTransport(dappClient, kvstore);
         this.__dappClient = dappClient;
         this.__transport = apiTransport;
+        this.__providerTransportWrapper.setupNotifcationListener();
         this.listener = apiTransport.onNotification(
           this.onTransportNotification.bind(this),
         );
@@ -302,6 +309,7 @@ export class MultichainSDK extends MultichainCore {
     this.__dappClient = dappClient;
     const apiTransport = new MWPTransport(dappClient, kvstore);
     this.__transport = apiTransport;
+    this.__providerTransportWrapper.setupNotifcationListener();
     this.listener = this.transport.onNotification(
       this.onTransportNotification.bind(this),
     );
@@ -415,6 +423,7 @@ export class MultichainSDK extends MultichainCore {
       this.onTransportNotification.bind(this),
     );
     this.__transport = transport;
+    this.__providerTransportWrapper.setupNotifcationListener();
     return transport;
   }
 
@@ -589,6 +598,7 @@ export class MultichainSDK extends MultichainCore {
     this.listener = undefined;
     this.__beforeUnloadListener = undefined;
     this.__transport = undefined;
+    this.__providerTransportWrapper.clearNotificationCallbacks();
     this.__dappClient = undefined;
   }
 
