@@ -1,18 +1,42 @@
 import { MultichainSDK } from "..";
+import { providerErrors } from "@metamask/rpc-errors";
+import { getAllScopesFromCaip25CaveatValue, getCaipAccountIdsFromCaip25CaveatValue, getPermittedAccountsForScopes, getSessionScopes } from "@metamask/chain-agnostic-permission"
+import { Scope } from "src/domain";
 
-export const createProviderProxy = (multichainSDK: MultichainSDK) => new Proxy<any>(multichainSDK, {
-  get: function(target, prop, _receiver) {
-    return function(...args: any[]) {
-      console.log('proxy get', prop, args);
-      if(!target.transport) {
-        console.log('transport not initialized, connecting from proxy');
-        // Problem is that this will make a method that wasn't previously async become async
-        return target.connect().then(() => {
-          return target.provider[prop](...args);
-        });
-      } else {
-        return target.provider[prop](...args);
+export const createProviderProxy = (multichainSDK: MultichainSDK): any => ({
+  createSession: async (params: any) => {
+    const scopes = getAllScopesFromCaip25CaveatValue(params) as Scope[]
+    const accounts = getCaipAccountIdsFromCaip25CaveatValue(params)
+
+    await multichainSDK.connect(scopes, accounts, params.sessionProperties)
+    return multichainSDK.transport.request({ method: 'wallet_getSession' }) as any;
+  },
+  getSession: async () => {
+    if (!multichainSDK.transport) {
+      return {
+        "sessionScopes": {}
       }
-    };
-  }
-});
+    }
+
+    return multichainSDK.transport.request({ method: 'wallet_getSession' }) as any;
+  },
+  revokeSession: async (_params: any) => {
+    if (!multichainSDK.transport) {
+      return true;
+    }
+
+    return multichainSDK.disconnect() .then(() => true).catch(() => false) // ???
+  },
+  invokeMethod: async (params: any) => {
+    if (!multichainSDK.transport) {
+      return Promise.reject(providerErrors.unauthorized())
+    }
+    return multichainSDK.invokeMethod(params)
+  },
+  extendsRpcApi: () => {
+    return this
+  },
+  onNotification: (callback: (data: unknown) => void) => {
+    console.log('onNotification dropped', callback);
+  },
+})
