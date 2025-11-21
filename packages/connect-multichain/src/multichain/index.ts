@@ -69,6 +69,7 @@ import { DefaultTransport } from './transports/default';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
 import { getDappId, openDeeplink, setupDappMetadata } from './utils';
+import { createProviderProxy } from './proxy/createProviderProxy';
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
@@ -77,6 +78,7 @@ const logger = createLogger('metamask-sdk:core');
 
 export class MultichainSDK extends MultichainCore {
   private __provider: MultichainApiClient<RPCAPI> | undefined = undefined;
+  private __providerProxy = createProviderProxy(this);
 
   private __transport: ExtendedTransport | undefined = undefined;
 
@@ -101,16 +103,7 @@ export class MultichainSDK extends MultichainCore {
   }
 
   get provider(): MultichainApiClient<RPCAPI> {
-    if (!this.__provider && this.__transport) {
-      this.__provider = getMultichainClient({ transport: this.__transport });
-      return this.__provider;
-    }
-
-    if (!this.__provider) {
-      throw new Error('Provider not initialized, establish connection first');
-    }
-
-    return this.__provider;
+      return this.__providerProxy;
   }
 
   get transport(): ExtendedTransport {
