@@ -22,6 +22,14 @@ export class MultichainApiClientWrapperTransport implements Transport {
   constructor(private multichainSDK: MultichainSDK) {
   }
 
+  isTransportDefined(): boolean {
+    try {
+      return Boolean(this.multichainSDK.transport)
+    } catch (error) {
+      return false;
+    }
+  }
+
   clearNotificationCallbacks() {
     this.notificationCallbacks.clear();
   }
@@ -74,7 +82,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   onNotification(callback: (data: unknown) => void) {
-    if (!this.multichainSDK.transport) {
+    if (!this.isTransportDefined()) {
       this.notificationCallbacks.add(callback);
       return () => {
         this.notificationCallbacks.delete(callback);
@@ -108,7 +116,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   async #walletGetSession(request: TransportRequestWithId) {
-    if (!this.multichainSDK.transport) {
+    if (!this.isTransportDefined()) {
       return {
         jsonrpc: '2.0',
         id: request.id,
@@ -121,7 +129,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   async #walletRevokeSession(request: TransportRequestWithId) {
-    if (!this.multichainSDK.transport) {
+    if (!this.isTransportDefined()) {
       return { jsonrpc: '2.0', id: request.id, result: true };
     }
 
@@ -134,7 +142,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   async #walletInvokeMethod(request: TransportRequestWithId) {
-    if (!this.multichainSDK.transport) {
+    if (!this.isTransportDefined()) {
       return { error: providerErrors.unauthorized() }
     }
     return this.multichainSDK.invokeMethod(request.params as InvokeMethodOptions)
