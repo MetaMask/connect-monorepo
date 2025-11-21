@@ -34,6 +34,7 @@
   "scripts": {
     "build": "yarn tsup ",
     "build:docs": "typedoc",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-evm",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-evm",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-evm",
     "clean": "npx rimraf ./dist",
