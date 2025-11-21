@@ -103,7 +103,16 @@ export class MultichainSDK extends MultichainCore {
   }
 
   get provider(): MultichainApiClient<RPCAPI> {
-      return this.__providerProxy;
+    if (this.__provider) {
+      return this.__provider;
+    }
+
+    if (this.__transport) {
+      this.__provider = getMultichainClient({ transport: this.__transport });
+      return this.__provider;
+    }
+
+    return this.__providerProxy;
   }
 
   get transport(): ExtendedTransport {

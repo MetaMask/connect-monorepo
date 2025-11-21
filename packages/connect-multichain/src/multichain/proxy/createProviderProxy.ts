@@ -8,10 +8,10 @@ export const createProviderProxy = (multichainSDK: MultichainSDK) => new Proxy<a
         console.log('transport not initialized, connecting from proxy');
         // Problem is that this will make a method that wasn't previously async become async
         return target.connect().then(() => {
-          return target.__provider[prop](...args);
+          return target.provider[prop](...args);
         });
       } else {
-        return target.__provider[prop](...args);
+        return target.provider[prop](...args);
       }
     };
   }
