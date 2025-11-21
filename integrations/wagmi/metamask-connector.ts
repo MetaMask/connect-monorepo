@@ -111,10 +111,12 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         };
       } catch (err) {
         const error = err as RpcError;
-        if (error.code === UserRejectedRequestError.code)
+        if (error.code === UserRejectedRequestError.code) {
           throw new UserRejectedRequestError(error);
-        if (error.code === ResourceUnavailableRpcError.code)
+        }
+        if (error.code === ResourceUnavailableRpcError.code) {
           throw new ResourceUnavailableRpcError(error);
+        }
         throw error;
       }
     },
@@ -229,12 +231,10 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
     },
 
     async onDisconnect(error?: RpcError) {
-      // TODO: (wenfix) Is this still necessary?
-
-      const provider = await this.getProvider();
       // If MetaMask emits a `code: 1013` error, wait for reconnection before disconnecting
       // https://github.com/MetaMask/providers/pull/120
       if (error && (error as unknown as RpcError<1013>).code === 1013) {
+        const provider = await this.getProvider();
         if (provider && !!(await this.getAccounts()).length) return;
       }
 
