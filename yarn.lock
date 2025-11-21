@@ -4045,6 +4045,7 @@ __metadata:
     "@metamask/multichain-api-client": "npm:^0.8.1"
     "@metamask/multichain-ui": "workspace:^"
     "@metamask/onboarding": "npm:^1.0.1"
+    "@metamask/rpc-errors": "npm:^7.0.3"
     "@metamask/utils": "npm:^11.8.1"
     "@paulmillr/qr": "npm:^0.2.1"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
@@ -4628,7 +4629,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/rpc-errors@npm:^7.0.2":
+"@metamask/rpc-errors@npm:^7.0.2, @metamask/rpc-errors@npm:^7.0.3":
   version: 7.0.3
   resolution: "@metamask/rpc-errors@npm:7.0.3"
   dependencies:
