@@ -13,7 +13,7 @@ import {
 } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
-import { logger } from './logger';
+import { enableDebug, logger } from './logger';
 import { EIP1193Provider } from './provider';
 import type {
   AddEthereumChainParameter,
@@ -34,6 +34,8 @@ import {
   isSwitchChainRequest,
   validSupportedChainsUrls,
 } from './utils/type-guards';
+
+const DEFAULT_CHAIN_ID = 1;
 
 /**
  * The MetamaskConnectEVM class provides an EIP-1193 compatible interface for connecting
@@ -74,9 +76,6 @@ export class MetamaskConnectEVM {
 
   /** Optional event handlers for the EIP-1193 provider events. */
   readonly #eventHandlers?: EventHandlers | undefined;
-
-  /** The latest chain configuration received from a switchEthereumChain request */
-  #latestChainConfiguration: AddEthereumChainParameter | undefined;
 
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
@@ -132,16 +131,19 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.chainId - The chain ID to connect to (defaults to 1 for mainnet)
    * @param options.account - Optional specific account to connect to
+   * @param options.forceRequest - Wwhether to force a request regardless of an existing session
    * @returns A promise that resolves with the connected accounts and chain ID
    */
   async connect(
     {
       chainId,
       account,
+      forceRequest,
     }: {
       chainId: number;
       account?: string | undefined;
-    } = { chainId: 1 }, // Default to mainnet if no chain ID is provided
+      forceRequest?: boolean;
+    } = { chainId: DEFAULT_CHAIN_ID }, // Default to mainnet if no chain ID is provided
   ): Promise<{ accounts: Address[]; chainId?: number }> {
     logger('request: connect', { chainId, account });
     const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
@@ -149,7 +151,7 @@ export class MetamaskConnectEVM {
     const caipAccountId: CaipAccountId[] =
       chainId && account ? [`eip155:${chainId}:${account}`] : [];
 
-    await this.#core.connect(caipChainId, caipAccountId);
+    await this.#core.connect(caipChainId, caipAccountId, forceRequest);
 
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
     const initialChainId = hexPermittedChainIds[0];
@@ -164,10 +166,7 @@ export class MetamaskConnectEVM {
       accounts: initialAccounts.result as Address[],
     });
 
-    this.#onAccountsChanged(initialAccounts.result as Address[]);
-
     this.#core.transport.onNotification((notification) => {
-      console.log('notification in onNotification', notification);
       // @ts-expect-error TODO: address this
       if (notification?.method === 'metamask_accountsChanged') {
         // @ts-expect-error TODO: address this
@@ -183,19 +182,13 @@ export class MetamaskConnectEVM {
         logger('transport-event: chainChanged', notificationChainId);
         this.#onChainChanged(notificationChainId);
       }
-
-      // // This error occurs when a chain switch failed because
-      //   // the target chain is not configured on the wallet.
-      //   if (notification?.error?.code === 4902) {
-      //     logger(
-      //       'chain switch failed, adding chain',
-      //       this.#latestChainConfiguration,
-      //     );
-      //     this.#addEthereumChain();
-      //   }
     });
 
-    logger('fulfilled-request: connect', { chainId, account });
+    logger('fulfilled-request: connect', {
+      chainId,
+      accounts: this.#provider.accounts,
+    });
+
     // TODO: update required here since accounts and chainId are now promises
     return {
       accounts: this.#provider.accounts,
@@ -271,10 +264,6 @@ export class MetamaskConnectEVM {
 
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
 
-    // Need to disconnect chain as well?
-    // onDisconnect is called twice in this method
-    this.#onDisconnect();
-
     logger('fulfilled-request: disconnect');
   }
 
@@ -300,7 +289,6 @@ export class MetamaskConnectEVM {
       return Promise.resolve();
     }
 
-    // TODO: Check if approved scopes have the chain and early return
     const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
 
     if (permittedChainIds.includes(hexChainId)) {
@@ -308,14 +296,19 @@ export class MetamaskConnectEVM {
       return Promise.resolve();
     }
 
-    // Save the chain configuration for adding in case
-    // the chain is not configured in the wallet.
-    this.#latestChainConfiguration = chainConfiguration;
+    try {
+      return await this.#request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hexChainId }],
+      });
+    } catch (error: unknown) {
+      // Fallback to add the chain if its not configured in the wallet.
+      if ((error as Error).message.includes('Unrecognized chain ID')) {
+        return this.#addEthereumChain(chainConfiguration);
+      }
 
-    return this.#request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: hexChainId }],
-    });
+      throw error;
+    }
   }
 
   /**
@@ -353,9 +346,17 @@ export class MetamaskConnectEVM {
     }
 
     if (isConnectRequest(request)) {
+      // When calling wallet_requestPermissions, we need to force a new session request to prompt
+      // the user for accounts, because internally the Multichain SDK will check if
+      // the user is already connected and skip the request if so, unless we
+      // explicitly request a specific account. This is needed to workaround
+      // wallet_requestPermissions not requesting specific accounts.
+      const shouldForceConnectionRequest =
+        request.method === 'wallet_requestPermissions';
+
       return this.connect({
-        chainId: request.params[0] ?? 1,
-        account: request.params[1],
+        chainId: DEFAULT_CHAIN_ID,
+        forceRequest: shouldForceConnectionRequest,
       });
     }
 
@@ -393,15 +394,14 @@ export class MetamaskConnectEVM {
    */
   #addEthereumChain(chainConfiguration?: AddEthereumChainParameter): void {
     logger('addEthereumChain called', { chainConfiguration });
-    const config = chainConfiguration ?? this.#latestChainConfiguration;
 
-    if (!config) {
+    if (!chainConfiguration) {
       throw new Error('No chain configuration found.');
     }
 
     this.#request({
       method: 'wallet_addEthereumChain',
-      params: [config],
+      params: [chainConfiguration],
     }).catch((error) => {
       // TODO (wenfix): does it make sense to throw here?
       console.error('Error adding Ethereum chain', error);
@@ -471,9 +471,10 @@ export class MetamaskConnectEVM {
     chainId: Hex | number;
     accounts: Address[];
   }): void {
-    logger('handler: connect', { chainId });
+    logger('handler: connect', { chainId, accounts });
     const data = {
       chainId: isHex(chainId) ? chainId : numberToHex(chainId),
+      accounts,
     };
 
     this.#provider.emit('connect', data);
@@ -595,21 +596,6 @@ export class MetamaskConnectEVM {
   get selectedChainId(): Hex | undefined {
     return this.#provider.selectedChainId;
   }
-
-  /**
-   * Checks if a message event is from the MetaMask provider.
-   *
-   * @param event - The message event to check
-   * @returns True if the event is from the MetaMask provider, false otherwise
-   */
-  #isMetamaskProviderEvent(event: MessageEvent): boolean {
-    return (
-      event?.data?.data?.name === 'metamask-provider' &&
-      // TODO: (@wenfix): remove no-restricted-globals once we have a better way to do this
-      // eslint-disable-next-line no-restricted-globals
-      event.origin === location.origin
-    );
-  }
 }
 
 /**
@@ -627,8 +613,11 @@ export async function createMetamaskConnectEVM(
   options: Pick<MultichainOptions, 'dapp' | 'api'> & {
     eventEmitter?: MinimalEventEmitter;
     eventHandlers?: EventHandlers;
+    debug?: boolean;
   },
 ): Promise<MetamaskConnectEVM> {
+  enableDebug(options.debug);
+
   logger('Creating Metamask Connect/EVM with options:', options);
 
   // Validate that supportedNetworks is provided and not empty

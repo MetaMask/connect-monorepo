@@ -24,6 +24,12 @@ module.exports = {
         process: require.resolve('process/browser.js'),
       };
 
+      // === SUPPRESS SOURCE MAP WARNINGS ===
+      // Ignore source map warnings from node_modules dependencies
+      webpackConfig.ignoreWarnings = [
+        /Failed to parse source map/,
+      ];
+
       // === PROVIDE PLUGINS ===
       webpackConfig.plugins.push(
         new webpack.ProvidePlugin({

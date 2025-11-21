@@ -102,7 +102,6 @@ export class DefaultTransport implements ExtendedTransport {
     }
   }
 
-
   #handleNotification(event: MessageEvent): void {
     if (!this.#isMetamaskProviderEvent(event)) {
       return;
@@ -111,8 +110,8 @@ export class DefaultTransport implements ExtendedTransport {
     const responseData = event?.data?.data?.data;
 
     if (
-      typeof responseData === 'object' &&
-      responseData.method === 'metamask_chainChanged' ||
+      (typeof responseData === 'object' &&
+        responseData.method === 'metamask_chainChanged') ||
       responseData.method === 'metamask_accountsChanged'
     ) {
       this.#notifyCallbacks(responseData);
@@ -129,7 +128,6 @@ export class DefaultTransport implements ExtendedTransport {
     // Rename this to handleResponse or something like this
     this.#handleResponseListener = this.#handleResponse.bind(this);
     this.#handleNotificationListener = this.#handleNotification.bind(this);
-
 
     // Add the listener
     // eslint-disable-next-line no-restricted-globals
@@ -188,6 +186,7 @@ export class DefaultTransport implements ExtendedTransport {
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
+    forceRequest?: boolean;
   }): Promise<void> {
     // Ensure message listener is set up before connecting
     this.#setupMessageListener();
@@ -203,7 +202,7 @@ export class DefaultTransport implements ExtendedTransport {
       throw new Error(sessionRequest.error.message);
     }
     let walletSession = sessionRequest.result as SessionData;
-    if (walletSession && options) {
+    if (walletSession && options && !options.forceRequest) {
       const currentScopes = Object.keys(
         walletSession?.sessionScopes ?? {},
       ) as Scope[];
@@ -236,7 +235,7 @@ export class DefaultTransport implements ExtendedTransport {
         }
         walletSession = response.result as SessionData;
       }
-    } else if (!walletSession) {
+    } else if (!walletSession || options?.forceRequest) {
       const optionalScopes = addValidAccounts(
         getOptionalScopes(options?.scopes ?? []),
         getValidAccounts(options?.caipAccountIds ?? []),
