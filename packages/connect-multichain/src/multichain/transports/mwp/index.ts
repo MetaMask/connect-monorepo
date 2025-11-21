@@ -448,7 +448,14 @@ export class MWPTransport implements ExtendedTransport {
     return (this.dappClient as any).state === 'CONNECTED';
   }
 
-  private async attemptResumeSession() {
+  /**
+   * Attempts to re-establish a connection via DappClient
+   *
+   * @returns Nothing
+   */
+  // TODO: We should re-evaluate adding this to the WebSocketTransport layer from `@metamask/mobile-wallet-protocol-core`
+  // ticket: https://consensyssoftware.atlassian.net/browse/WAPI-862
+  private async attemptResumeSession(): Promise<void> {
     try {
       await this.dappClient.reconnect();
       // Wait for connection to be established
