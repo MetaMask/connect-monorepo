@@ -27,6 +27,7 @@ import {
 import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
   getMultichainClient,
+  SessionProperties,
   type MultichainApiClient,
   type SessionData,
 } from '@metamask/multichain-api-client';
@@ -338,6 +339,7 @@ export class MultichainSDK extends MultichainCore {
     desktopPreferred: boolean,
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    sessionProperties?: SessionProperties,
   ) {
     // create the listener only once to avoid memory leaks
     this.__beforeUnloadListener ??= this.createBeforeUnloadListener();
@@ -370,7 +372,7 @@ export class MultichainSDK extends MultichainCore {
             );
 
             this.transport
-              .connect({ scopes, caipAccountIds })
+              .connect({ scopes, caipAccountIds, sessionProperties })
               .then(() => {
                 this.options.ui.factory.unload();
                 this.options.ui.factory.modal?.unmount();
@@ -419,6 +421,7 @@ export class MultichainSDK extends MultichainCore {
   private async deeplinkConnect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    sessionProperties?: SessionProperties,
   ) {
     return new Promise<void>(async (resolve, reject) => {
       this.dappClient.on('message', (payload: any) => {
@@ -478,7 +481,7 @@ export class MultichainSDK extends MultichainCore {
       }
 
       this.transport
-        .connect({ scopes, caipAccountIds })
+        .connect({ scopes, caipAccountIds, sessionProperties })
         .then(resolve)
         .catch((error) => {
           this.storage.removeTransport();
@@ -507,6 +510,7 @@ export class MultichainSDK extends MultichainCore {
   async connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    sessionProperties?: SessionProperties,
   ): Promise<void> {
     const { ui } = this.options;
     const platformType = getPlatformType();
@@ -519,7 +523,7 @@ export class MultichainSDK extends MultichainCore {
 
     if (this.__transport?.isConnected() && !secure) {
       return this.handleConnection(
-        this.__transport.connect({ scopes, caipAccountIds }).then(() => {
+        this.__transport.connect({ scopes, caipAccountIds, sessionProperties }).then(() => {
           if (this.__transport instanceof MWPTransport) {
             return this.storage.setTransport(TransportType.MPW);
           } else {
@@ -533,7 +537,7 @@ export class MultichainSDK extends MultichainCore {
     if (platformType === PlatformType.MetaMaskMobileWebview) {
       const defaultTransport = await this.setupDefaultTransport();
       return this.handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds }),
+        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties }),
       );
     }
 
@@ -542,7 +546,7 @@ export class MultichainSDK extends MultichainCore {
       const defaultTransport = await this.setupDefaultTransport();
       // Web transport has no initial payload
       return this.handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds }),
+        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties }),
       );
     }
 
@@ -557,13 +561,13 @@ export class MultichainSDK extends MultichainCore {
     if (secure && !isDesktopPreferred) {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
       return this.handleConnection(
-        this.deeplinkConnect(scopes, caipAccountIds),
+        this.deeplinkConnect(scopes, caipAccountIds, sessionProperties),
       );
     }
 
     // Show install modal for RN, Web + Node
     return this.handleConnection(
-      this.showInstallModal(isDesktopPreferred, scopes, caipAccountIds),
+      this.showInstallModal(isDesktopPreferred, scopes, caipAccountIds, sessionProperties),
     );
   }
 
@@ -594,6 +598,7 @@ export class MultichainSDK extends MultichainCore {
 
     const rpcClient = new RpcClient(options, sdkInfo);
     const requestRouter = new RequestRouter(transport, rpcClient, options);
+    // need read only methods for solana
     return requestRouter.invokeMethod(request);
   }
 

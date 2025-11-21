@@ -20,6 +20,7 @@ import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import type { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
   type CreateSessionParams,
+  SessionProperties,
   type TransportRequest,
   type TransportResponse,
   TransportTimeoutError,
@@ -319,6 +320,7 @@ export class MWPTransport implements ExtendedTransport {
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
+    sessionProperties?: SessionProperties;
   }): Promise<void> {
     const { dappClient, kvstore } = this;
     const sessionStore = new SessionStore(kvstore);
@@ -357,6 +359,7 @@ export class MWPTransport implements ExtendedTransport {
             );
             const sessionRequest: CreateSessionParams<RPCAPI> = {
               optionalScopes,
+              sessionProperties: options?.sessionProperties,
             };
             const request = {
               jsonrpc: '2.0',
