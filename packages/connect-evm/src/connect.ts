@@ -5,7 +5,10 @@ import type {
   Scope,
   SessionData,
 } from '@metamask/connect-multichain';
-import { createMetamaskConnect } from '@metamask/connect-multichain';
+import {
+  createMetamaskConnect,
+  TransportType,
+} from '@metamask/connect-multichain';
 import {
   numberToHex,
   hexToNumber,
@@ -291,7 +294,10 @@ export class MetamaskConnectEVM {
 
     const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
 
-    if (permittedChainIds.includes(hexChainId)) {
+    if (
+      permittedChainIds.includes(hexChainId) &&
+      this.#core.transportType === TransportType.MWP
+    ) {
       this.#onChainChanged(hexChainId);
       return Promise.resolve();
     }

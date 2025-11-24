@@ -88,6 +88,8 @@ export class MultichainSDK extends MultichainCore {
 
   private listener: (() => void | Promise<void>) | undefined;
 
+  private __transportType: TransportType = TransportType.Browser;
+
   get state(): SDKState {
     return this.__state;
   }
@@ -129,6 +131,10 @@ export class MultichainSDK extends MultichainCore {
 
   get storage(): StoreClient {
     return this.options.storage;
+  }
+
+  get transportType(): TransportType {
+    return this.__transportType;
   }
 
   private get sdkInfo(): string {
@@ -225,7 +231,7 @@ export class MultichainSDK extends MultichainCore {
           );
           return apiTransport;
         }
-      } else if (transportType === TransportType.MPW) {
+      } else if (transportType === TransportType.MWP) {
         const { adapter: kvstore } = this.options.storage;
         const dappClient = await this.createDappClient();
         const apiTransport = new MWPTransport(dappClient, kvstore);
@@ -252,7 +258,7 @@ export class MultichainSDK extends MultichainCore {
       }
       this.state = 'connected';
       if (this.transport instanceof MWPTransport) {
-        await this.storage.setTransport(TransportType.MPW);
+        await this.storage.setTransport(TransportType.MWP);
       } else {
         await this.storage.setTransport(TransportType.Browser);
       }
@@ -303,6 +309,7 @@ export class MultichainSDK extends MultichainCore {
     if (this.__transport instanceof MWPTransport) {
       return;
     }
+    this.__transportType = TransportType.MWP;
     // Only setup MWP if it is not already mwp
     const { adapter: kvstore } = this.options.storage;
     const dappClient = await this.createDappClient();
@@ -312,7 +319,7 @@ export class MultichainSDK extends MultichainCore {
     this.listener = this.transport.onNotification(
       this.onTransportNotification.bind(this),
     );
-    await this.storage.setTransport(TransportType.MPW);
+    await this.storage.setTransport(TransportType.MWP);
   }
 
   private async onBeforeUnload(): Promise<void> {
@@ -383,7 +390,7 @@ export class MultichainSDK extends MultichainCore {
                 this.options.ui.factory.unload();
                 this.options.ui.factory.modal?.unmount();
                 this.state = 'connected';
-                return this.storage.setTransport(TransportType.MPW);
+                return this.storage.setTransport(TransportType.MWP);
               })
               .catch((error) => {
                 if (error instanceof ProtocolError) {
@@ -402,7 +409,7 @@ export class MultichainSDK extends MultichainCore {
         },
         async (error?: Error) => {
           if (!error) {
-            await this.storage.setTransport(TransportType.MPW);
+            await this.storage.setTransport(TransportType.MWP);
             resolve();
           } else {
             await this.storage.removeTransport();
@@ -532,7 +539,7 @@ export class MultichainSDK extends MultichainCore {
           .connect({ scopes, caipAccountIds, forceRequest })
           .then(() => {
             if (this.__transport instanceof MWPTransport) {
-              return this.storage.setTransport(TransportType.MPW);
+              return this.storage.setTransport(TransportType.MWP);
             } else {
               return this.storage.setTransport(TransportType.Browser);
             }
