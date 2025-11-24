@@ -73,6 +73,37 @@ export class EventEmitter<TEvents extends Record<string, unknown[]>> {
   ) {
     this.#emitter.off(eventName, handler as (...args: any[]) => void);
   }
+
+  /**
+   * Registers an event handler for the specified event that will only be called once.
+   *
+   * @template TEventName - The name of the event to listen for (must be a key of TEvents)
+   * @param eventName - The name of the event to listen for
+   * @param handler - The function to call when the event is emitted (only once)
+   * @returns A function to remove the listener
+   */
+  once<TEventName extends keyof TEvents & string>(
+    eventName: TEventName,
+    handler: (...eventArg: TEvents[TEventName]) => void,
+  ) {
+    this.#emitter.once(eventName, handler as (...args: any[]) => void);
+    return () => {
+      this.off(eventName, handler as (...args: any[]) => void);
+    };
+  }
+
+  /**
+   * Returns the number of listeners registered for the specified event.
+   *
+   * @template TEventName - The name of the event to count listeners for (must be a key of TEvents)
+   * @param eventName - The name of the event to count listeners for
+   * @returns The number of listeners registered for the event
+   */
+  listenerCount<TEventName extends keyof TEvents & string>(
+    eventName: TEventName,
+  ): number {
+    return this.#emitter.listenerCount(eventName);
+  }
 }
 
 export type * from './types';
