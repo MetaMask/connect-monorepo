@@ -439,8 +439,11 @@ export class MetamaskConnectEVM {
    * @param chainId - The new chain ID (can be hex string or number)
    */
   #onChainChanged(chainId: Hex | number): void {
-    logger('handler: chainChanged', { chainId });
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
+    if (hexChainId === this.#provider.selectedChainId) {
+      return;
+    }
+    logger('handler: chainChanged', { chainId });
     this.#provider.selectedChainId = chainId;
     this.#eventHandlers?.chainChanged?.(hexChainId);
     this.#provider.emit('chainChanged', hexChainId);
