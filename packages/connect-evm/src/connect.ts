@@ -25,7 +25,6 @@ import type {
   EventHandlers,
   Hex,
   MetamaskConnectEVMOptions,
-  MinimalEventEmitter,
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
@@ -110,10 +109,6 @@ export class MetamaskConnectEVM {
       logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
     };
-
-    // eslint-disable-next-line no-restricted-globals
-    // window.addEventListener('message', this.#metamaskProviderHandler);
-
     this.#core.on(
       'wallet_sessionChanged',
       this.#sessionChangedHandler.bind(this),
@@ -617,7 +612,6 @@ export class MetamaskConnectEVM {
  */
 export async function createMetamaskConnectEVM(
   options: Pick<MultichainOptions, 'dapp' | 'api'> & {
-    eventEmitter?: MinimalEventEmitter;
     eventHandlers?: EventHandlers;
     debug?: boolean;
   },

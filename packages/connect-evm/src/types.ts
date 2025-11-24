@@ -1,16 +1,10 @@
 // Basic types redefined to avoid importing @metamask/utils due to Buffer dependency
 import type { MultichainCore } from '@metamask/connect-multichain';
 
-import type { EIP1193Provider } from './provider';
-
 export type Hex = `0x${string}`;
 export type Address = Hex;
 export type CaipAccountId = `${string}:${string}:${string}`;
 export type CaipChainId = `${string}:${string}`;
-export type MinimalEventEmitter = Pick<
-  EIP1193Provider,
-  'on' | 'off' | 'removeListener' | 'emit'
->;
 
 export type EIP1193ProviderEvents = {
   connect: [{ chainId: string }];
