@@ -249,6 +249,82 @@ export class MetamaskConnectEVM {
   }
 
   /**
+   * Connects to the wallet and invokes a method with specified parameters.
+   *
+   * @param options - The options for connecting and invoking the method
+   * @param options.method - The method name to invoke
+   * @param options.params - The parameters to pass to the method
+   * @param options.chainId - Optional chain ID to connect to (defaults to mainnet)
+   * @param options.account - Optional specific account to connect to
+   * @param options.forceRequest - Whether to force a request regardless of an existing session
+   * @returns A promise that resolves with the result of the method invocation
+   * @throws Error if the selected account is not available after timeout (for methods that require an account)
+   */
+  async connectWith({
+    method,
+    params,
+    chainId,
+    account,
+    forceRequest,
+  }: {
+    method: string;
+    params: unknown[];
+    chainId?: number;
+    account?: string | undefined;
+    forceRequest?: boolean;
+  }): Promise<unknown> {
+    await this.connect({
+      chainId: chainId ?? DEFAULT_CHAIN_ID,
+      account,
+      forceRequest,
+    });
+
+    // If account is already available, proceed immediately
+    if (this.#provider.selectedAccount) {
+      return await this.#provider.request({
+        method,
+        params,
+      });
+    }
+
+    // Otherwise, wait for the accountsChanged event to be triggered
+    // This is only needed for methods that require an account
+    const timeout = 5000;
+    const accountPromise = new Promise<Address>((resolve, reject) => {
+      // eslint-disable-next-line prefer-const
+      let timeoutId: ReturnType<typeof setTimeout>;
+
+      const handler = (accounts: Address[]): void => {
+        if (accounts.length > 0) {
+          clearTimeout(timeoutId);
+          this.#provider.off('accountsChanged', handler);
+          resolve(accounts[0]);
+        }
+      };
+
+      this.#provider.on('accountsChanged', handler);
+
+      timeoutId = setTimeout(() => {
+        this.#provider.off('accountsChanged', handler);
+        reject(new Error('Selected account not available after timeout'));
+      }, timeout);
+
+      if (this.#provider.selectedAccount) {
+        clearTimeout(timeoutId);
+        this.#provider.off('accountsChanged', handler);
+        resolve(this.#provider.selectedAccount);
+      }
+    });
+
+    await accountPromise;
+
+    return await this.#provider.request({
+      method,
+      params,
+    });
+  }
+
+  /**
    * Disconnects from the wallet by revoking the session and cleaning up event listeners.
    *
    * @returns A promise that resolves when disconnection is complete
