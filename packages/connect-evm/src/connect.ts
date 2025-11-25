@@ -465,15 +465,6 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Terminates the connection to the wallet
-   *
-   * @deprecated Use disconnect() instead
-   */
-  async terminate(): Promise<void> {
-    await this.disconnect();
-  }
-
-  /**
    * Handles several EIP-1193 requests that require special handling
    * due the nature of the Multichain SDK.
    *
@@ -779,21 +770,6 @@ export class MetamaskConnectEVM {
    */
   get selectedChainId(): Hex | undefined {
     return this.#provider.selectedChainId;
-  }
-
-  /**
-   * Checks if a message event is from the MetaMask provider.
-   *
-   * @param event - The message event to check
-   * @returns True if the event is from the MetaMask provider, false otherwise
-   */
-  #isMetamaskProviderEvent(event: MessageEvent): boolean {
-    return (
-      event?.data?.data?.name === 'metamask-provider' &&
-      // TODO: (@wenfix): remove no-restricted-globals once we have a better way to do this
-      // eslint-disable-next-line no-restricted-globals
-      event.origin === location.origin
-    );
   }
 }
 
