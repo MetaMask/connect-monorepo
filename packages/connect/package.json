@@ -46,16 +46,19 @@
   ],
   "scripts": {
     "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts --format esm,cjs --external @metamask/connect-multichain",
-    "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect",
+    "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test"
+  },
+  "dependencies": {
+    "@metamask/connect-multichain": "workspace:^"
   },
   "devDependencies": {
     "@metamask/auto-changelog": "^3.4.3",
@@ -66,9 +69,6 @@
     "typedoc": "^0.23.22",
     "typedoc-plugin-missing-exports": "^1.0.0",
     "typescript": "~5.9.2"
-  },
-  "dependencies": {
-    "@metamask/connect-multichain": "workspace:^"
   },
   "engines": {
     "node": "^18.18 || >=20"

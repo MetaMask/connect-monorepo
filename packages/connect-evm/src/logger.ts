@@ -1,8 +1,16 @@
-import { createLogger, enableDebug } from '@metamask/connect-multichain';
+import {
+  createLogger,
+  enableDebug as debug,
+} from '@metamask/connect-multichain';
 
 const namespace = 'metamask-connect:evm';
 
-// TODO: (@wenfix) Conditionally enable debug based on environment variable or storage setting
-enableDebug(namespace);
-
+// @ts-expect-error logger needs to be typed properly
 export const logger = createLogger(namespace, '63');
+
+export const enableDebug = (debugEnabled: boolean = false): void => {
+  if (debugEnabled) {
+    // @ts-expect-error logger needs to be typed properly
+    debug(namespace);
+  }
+};

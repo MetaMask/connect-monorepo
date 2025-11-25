@@ -96,8 +96,8 @@
     "nock": "^14.0.4",
     "prettier": "^3.3.3",
     "tsup": "^8.4.0",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "~5.9.2",
     "vitest": "^3.1.2"
   },

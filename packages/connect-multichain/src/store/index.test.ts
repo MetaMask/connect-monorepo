@@ -1,5 +1,3 @@
-
-
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -152,7 +150,7 @@ function createStoreTests(
     t.it('should return the transport value when it exists - MPW', async () => {
       await adapter.set('multichain-transport', 'mwp');
       const result = await store.getTransport();
-      t.expect(result).toBe(TransportType.MPW);
+      t.expect(result).toBe(TransportType.MWP);
     });
 
     t.it('should return UNKNOWN for unknown transport types', async () => {
@@ -174,8 +172,8 @@ function createStoreTests(
       t.expect(result).toBe('browser');
     });
 
-    t.it('should set the transport successfully - MPW', async () => {
-      await store.setTransport(TransportType.MPW);
+    t.it('should set the transport successfully - MWP', async () => {
+      await store.setTransport(TransportType.MWP);
       const result = await adapter.get('multichain-transport');
       t.expect(result).toBe('mwp');
     });
