@@ -58,15 +58,15 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @description A union of all possible event types, differentiated by the 'name' property. */
-        Event: components["schemas"]["SdkInitializedEvent"] | components["schemas"]["SdkUsedChainEvent"] | components["schemas"]["SdkConnectionInitiatedEvent"] | components["schemas"]["SdkConnectionEstablishedEvent"] | components["schemas"]["SdkConnectionRejectedEvent"] | components["schemas"]["SdkConnectionFailedEvent"] | components["schemas"]["WalletConnectionRequestReceivedEvent"] | components["schemas"]["WalletConnectionUserApprovedEvent"] | components["schemas"]["WalletConnectionUserRejectedEvent"] | components["schemas"]["SdkActionRequestedEvent"] | components["schemas"]["SdkActionSucceededEvent"] | components["schemas"]["SdkActionFailedEvent"] | components["schemas"]["SdkActionRejectedEvent"] | components["schemas"]["WalletActionReceivedEvent"] | components["schemas"]["WalletActionUserApprovedEvent"] | components["schemas"]["WalletActionUserRejectedEvent"];
-        SdkInitializedEvent: {
+        Event: components["schemas"]["MmconnectInitializedEvent"] | components["schemas"]["SdkUsedChainEvent"] | components["schemas"]["MmconnectConnectionInitiatedEvent"] | components["schemas"]["MmconnectConnectionEstablishedEvent"] | components["schemas"]["MmconnectConnectionRejectedEvent"] | components["schemas"]["MmconnectConnectionFailedEvent"] | components["schemas"]["WalletConnectionRequestReceivedEvent"] | components["schemas"]["WalletConnectionUserApprovedEvent"] | components["schemas"]["WalletConnectionUserRejectedEvent"] | components["schemas"]["SdkActionRequestedEvent"] | components["schemas"]["SdkActionSucceededEvent"] | components["schemas"]["SdkActionFailedEvent"] | components["schemas"]["SdkActionRejectedEvent"] | components["schemas"]["WalletActionReceivedEvent"] | components["schemas"]["WalletActionUserApprovedEvent"] | components["schemas"]["WalletActionUserRejectedEvent"];
+        MmconnectInitializedEvent: {
             /**
-             * @description Identifies the event as SDK initialization. (enum property replaced by openapi-typescript)
+             * @description Identifies the event as MM Connect initialization. (enum property replaced by openapi-typescript)
              * @enum {string}
              */
-            name: "sdk_initialized";
-            /** @description Version of the SDK. */
-            sdk_version: string;
+            name: "mmconnect_initialized";
+            /** @description Version of MM Connect. */
+            mmconnect_version: string;
             /** @description Unique identifier for the dApp. */
             dapp_id: string;
             /**
@@ -75,7 +75,7 @@ export interface components {
              */
             anon_id: string;
             /**
-             * @description Platform on which the SDK is running.
+             * @description Platform on which MM Connect is running.
              * @enum {string}
              */
             platform: "web-desktop" | "web-mobile" | "nodejs" | "in-app-browser" | "react-native";
@@ -107,14 +107,14 @@ export interface components {
             /** @description Type of integration used by the SDK. */
             integration_type: string;
         };
-        SdkConnectionInitiatedEvent: {
+        MmconnectConnectionInitiatedEvent: {
             /**
              * @description Identifies the event as connection initiation. (enum property replaced by openapi-typescript)
              * @enum {string}
              */
-            name: "sdk_connection_initiated";
+            name: "mmconnect_connection_initiated";
             /** @description Version of the SDK. */
-            sdk_version: string;
+            mmconnect_version: string;
             /** @description Unique identifier for the dApp. */
             dapp_id: string;
             /**
@@ -126,7 +126,7 @@ export interface components {
              * @description Type of transport used for the connection.
              * @enum {string}
              */
-            transport_type: "direct" | "websocket" | "deeplink";
+            transport_type: "browser" | "mwp" | "unknown";
             /**
              * @description Platform on which the SDK is running.
              * @enum {string}
@@ -134,15 +134,19 @@ export interface components {
             platform: "web-desktop" | "web-mobile" | "nodejs" | "in-app-browser" | "react-native";
             /** @description Type of integration used by the SDK. */
             integration_type: string;
+            /** @description Chains the dapp is configured to operate. */
+            dapp_configured_chains: string;
+            /** @description Chains the dapp requests for connection to wallet. */
+            dapp_requested_chains: string;
         };
-        SdkConnectionEstablishedEvent: {
+        MmconnectConnectionEstablishedEvent: {
             /**
              * @description Identifies the event as connection established. (enum property replaced by openapi-typescript)
              * @enum {string}
              */
-            name: "sdk_connection_established";
+            name: "mmconnect_connection_established";
             /** @description Version of the SDK. */
-            sdk_version: string;
+            mmconnect_version: string;
             /** @description Unique identifier for the dApp. */
             dapp_id: string;
             /**
@@ -154,7 +158,7 @@ export interface components {
              * @description Type of transport used for the connection.
              * @enum {string}
              */
-            transport_type: "direct" | "websocket" | "deeplink";
+            transport_type: "browser" | "mwp" | "unknown";
             /**
              * @description Platform on which the SDK is running.
              * @enum {string}
@@ -162,15 +166,17 @@ export interface components {
             platform: "web-desktop" | "web-mobile" | "nodejs" | "in-app-browser" | "react-native";
             /** @description Type of integration used by the SDK. */
             integration_type: string;
+            /** @description The chains a user permissions. */
+            user_permissioned_chains: string;
         };
-        SdkConnectionRejectedEvent: {
+        MmconnectConnectionRejectedEvent: {
             /**
              * @description Identifies the event as connection rejected. (enum property replaced by openapi-typescript)
              * @enum {string}
              */
-            name: "sdk_connection_rejected";
+            name: "mmconnect_connection_rejected";
             /** @description Version of the SDK. */
-            sdk_version: string;
+            mmconnect_version: string;
             /** @description Unique identifier for the dApp. */
             dapp_id: string;
             /**
@@ -182,7 +188,7 @@ export interface components {
              * @description Type of transport used for the connection.
              * @enum {string}
              */
-            transport_type: "direct" | "websocket" | "deeplink";
+            transport_type: "browser" | "mwp" | "unknown";
             /**
              * @description Platform on which the SDK is running.
              * @enum {string}
@@ -191,14 +197,14 @@ export interface components {
             /** @description Type of integration used by the SDK. */
             integration_type: string;
         };
-        SdkConnectionFailedEvent: {
+        MmconnectConnectionFailedEvent: {
             /**
              * @description Identifies the event as connection failed. (enum property replaced by openapi-typescript)
              * @enum {string}
              */
-            name: "sdk_connection_failed";
+            name: "mmconnect_connection_failed";
             /** @description Version of the SDK. */
-            sdk_version: string;
+            mmconnect_version: string;
             /** @description Unique identifier for the dApp. */
             dapp_id: string;
             /**
@@ -210,7 +216,7 @@ export interface components {
              * @description Type of transport used for the connection.
              * @enum {string}
              */
-            transport_type: "direct" | "websocket" | "deeplink";
+            transport_type: "browser" | "mwp" | "unknown";
             /**
              * @description Platform on which the SDK is running.
              * @enum {string}

@@ -10,11 +10,12 @@ t.describe('Analytics Integration', () => {
   let analytics: Analytics;
   let scope: nock.Scope;
 
-  const event: schema.components['schemas']['SdkInitializedEvent'] = {
-    name: 'sdk_initialized',
-    sdk_version: '1.0.0',
+  const event: schema.components['schemas']['MmconnectInitializedEvent'] = {
+    name: 'mmconnect_initialized',
+    mmconnect_version: '1.0.0',
     dapp_id: 'aave.com',
     anon_id: 'bbbc1727-8b85-433a-a26a-e9df70ddc81c',
+
     platform: 'web-desktop',
     integration_type: 'direct',
   };
@@ -65,7 +66,7 @@ t.describe('Analytics Integration', () => {
 
     analytics = new Analytics('http://127.0.0.2');
     analytics.enable();
-    analytics.setGlobalProperty('sdk_version', event.sdk_version);
+    analytics.setGlobalProperty('mmconnect_version', event.mmconnect_version);
     analytics.setGlobalProperty('anon_id', event.anon_id);
     analytics.setGlobalProperty('platform', event.platform);
     analytics.setGlobalProperty('integration_type', event.integration_type);
