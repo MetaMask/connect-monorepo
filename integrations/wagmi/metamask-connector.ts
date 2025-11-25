@@ -199,6 +199,8 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
     },
 
     async onAccountsChanged(accounts) {
+      // TODO: verify if this is needed or if we can just rely on the
+      // existing disconnect event instead
       // Disconnect if there are no accounts
       if (accounts.length === 0) {
         this.onDisconnect();
