@@ -1,8 +1,10 @@
+import { analytics } from '@metamask/analytics';
 import type { Json } from '@metamask/utils';
 import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from '../../config';
 import { type ExtendedTransport, type InvokeMethodOptions, isSecure, type MultichainOptions, RPC_HANDLED_METHODS, RPCInvokeMethodErr, SDK_HANDLED_METHODS } from '../../domain';
 
 import { openDeeplink } from '../utils';
+import { getWalletActionAnalyticsProperties, isRejectionError } from '../utils/analytics';
 import { MissingRpcEndpointErr, RpcClient } from './handlers/rpcClient';
 
 let rpcId = 1;
@@ -39,6 +41,11 @@ export class RequestRouter {
 	 * Forwards the request directly to the wallet via the transport.
 	 */
 	private async handleWithWallet(options: InvokeMethodOptions): Promise<Json> {
+		// Track wallet action requested event
+		if (this.config.analytics?.enabled) {
+				await this.trackWalletActionRequested(options);
+		}
+
 		try {
 			const request = this.transport.request({
 				method: 'wallet_invokeMethod',
@@ -62,13 +69,70 @@ export class RequestRouter {
 
 			const response = await request;
 			if (response.error) {
+				// Track wallet action failed or rejected event
+				if (this.config.analytics?.enabled) {
+					const isRejection = isRejectionError(response.error);
+
+					if (isRejection) {
+						await this.trackWalletActionRejected(options);
+					} else {
+						await this.trackWalletActionFailed(options);
+					}
+				}
 				throw new RPCInvokeMethodErr(`RPC Request failed with code ${response.error.code}: ${response.error.message}`);
 			}
+
+			if (this.config.analytics?.enabled) {
+					await this.trackWalletActionSucceeded(options);
+			}
+
 			return response.result as Json;
 		} catch (error) {
+			if (this.config.analytics?.enabled) {
+				const isRejection = isRejectionError(error);
+
+				if (isRejection) {
+					await this.trackWalletActionRejected(options);
+				} else {
+					await this.trackWalletActionFailed(options);
+				}
+			}
 			throw new RPCInvokeMethodErr(error.message);
 		}
 	}
+
+	/**
+	 * Tracks wallet action requested event.
+	 */
+	private async trackWalletActionRequested(options: InvokeMethodOptions): Promise<void> {
+		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
+		analytics.track('mmconnect_wallet_action_requested', props);
+	}
+
+	/**
+	 * Tracks wallet action succeeded event.
+	 */
+	private async trackWalletActionSucceeded(options: InvokeMethodOptions): Promise<void> {
+		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
+		analytics.track('mmconnect_wallet_action_succeeded', props);
+	}
+
+	/**
+	 * Tracks wallet action failed event.
+	 */
+	private async trackWalletActionFailed(options: InvokeMethodOptions): Promise<void> {
+		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
+		analytics.track('mmconnect_wallet_action_failed', props);
+	}
+
+	/**
+	 * Tracks wallet action rejected event.
+	 */
+	private async trackWalletActionRejected(options: InvokeMethodOptions): Promise<void> {
+		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
+		analytics.track('mmconnect_wallet_action_rejected', props);
+	}
+
 
 	/**
 	 * Routes the request to a configured RPC node.

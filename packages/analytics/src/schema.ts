@@ -58,7 +58,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @description A union of all possible event types, differentiated by the 'name' property. */
-        Event: components["schemas"]["MmconnectInitializedEvent"] | components["schemas"]["SdkUsedChainEvent"] | components["schemas"]["MmconnectConnectionInitiatedEvent"] | components["schemas"]["MmconnectConnectionEstablishedEvent"] | components["schemas"]["MmconnectConnectionRejectedEvent"] | components["schemas"]["MmconnectConnectionFailedEvent"] | components["schemas"]["WalletConnectionRequestReceivedEvent"] | components["schemas"]["WalletConnectionUserApprovedEvent"] | components["schemas"]["WalletConnectionUserRejectedEvent"] | components["schemas"]["SdkActionRequestedEvent"] | components["schemas"]["SdkActionSucceededEvent"] | components["schemas"]["SdkActionFailedEvent"] | components["schemas"]["SdkActionRejectedEvent"] | components["schemas"]["WalletActionReceivedEvent"] | components["schemas"]["WalletActionUserApprovedEvent"] | components["schemas"]["WalletActionUserRejectedEvent"];
+        Event: components["schemas"]["MmconnectInitializedEvent"] | components["schemas"]["SdkUsedChainEvent"] | components["schemas"]["MmconnectConnectionInitiatedEvent"] | components["schemas"]["MmconnectConnectionEstablishedEvent"] | components["schemas"]["MmconnectConnectionRejectedEvent"] | components["schemas"]["MmconnectConnectionFailedEvent"] | components["schemas"]["MmconnectWalletActionRequestedEvent"] | components["schemas"]["MmconnectWalletActionSucceededEvent"] | components["schemas"]["MmconnectWalletActionFailedEvent"] | components["schemas"]["MmconnectWalletActionRejectedEvent"] | components["schemas"]["WalletConnectionRequestReceivedEvent"] | components["schemas"]["WalletConnectionUserApprovedEvent"] | components["schemas"]["WalletConnectionUserRejectedEvent"] | components["schemas"]["SdkActionRequestedEvent"] | components["schemas"]["SdkActionSucceededEvent"] | components["schemas"]["SdkActionFailedEvent"] | components["schemas"]["SdkActionRejectedEvent"] | components["schemas"]["WalletActionReceivedEvent"] | components["schemas"]["WalletActionUserApprovedEvent"] | components["schemas"]["WalletActionUserRejectedEvent"];
         MmconnectInitializedEvent: {
             /**
              * @description Identifies the event as MM Connect initialization. (enum property replaced by openapi-typescript)
@@ -224,6 +224,94 @@ export interface components {
             platform: "web-desktop" | "web-mobile" | "nodejs" | "in-app-browser" | "react-native";
             /** @description Type of integration used by the SDK. */
             integration_type: string;
+        };
+        MmconnectWalletActionRequestedEvent: {
+            /**
+             * @description Identifies the event as wallet action requested. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            name: "mmconnect_wallet_action_requested";
+            /** @description Version of the SDK. */
+            mmconnect_version: string;
+            /** @description Unique identifier for the dApp. */
+            dapp_id: string;
+            /** @description The RPC method name. */
+            method: string;
+            /** @description Type of integration used by the SDK. */
+            integration_type: string;
+            /** @description CAIP-2 chain ID. */
+            caip_chain_id: string;
+            /**
+             * Format: uuid
+             * @description Anonymous identifier for the user or session.
+             */
+            anon_id: string;
+        };
+        MmconnectWalletActionSucceededEvent: {
+            /**
+             * @description Identifies the event as wallet action succeeded. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            name: "mmconnect_wallet_action_succeeded";
+            /** @description Version of the SDK. */
+            mmconnect_version: string;
+            /** @description Unique identifier for the dApp. */
+            dapp_id: string;
+            /** @description The RPC method name. */
+            method: string;
+            /** @description Type of integration used by the SDK. */
+            integration_type: string;
+            /** @description CAIP-2 chain ID. */
+            caip_chain_id: string;
+            /**
+             * Format: uuid
+             * @description Anonymous identifier for the user or session.
+             */
+            anon_id: string;
+        };
+        MmconnectWalletActionFailedEvent: {
+            /**
+             * @description Identifies the event as wallet action failed. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            name: "mmconnect_wallet_action_failed";
+            /** @description Version of the SDK. */
+            mmconnect_version: string;
+            /** @description Unique identifier for the dApp. */
+            dapp_id: string;
+            /** @description The RPC method name. */
+            method: string;
+            /** @description Type of integration used by the SDK. */
+            integration_type: string;
+            /** @description CAIP-2 chain ID. */
+            caip_chain_id: string;
+            /**
+             * Format: uuid
+             * @description Anonymous identifier for the user or session.
+             */
+            anon_id: string;
+        };
+        MmconnectWalletActionRejectedEvent: {
+            /**
+             * @description Identifies the event as wallet action rejected. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            name: "mmconnect_wallet_action_rejected";
+            /** @description Version of the SDK. */
+            mmconnect_version: string;
+            /** @description Unique identifier for the dApp. */
+            dapp_id: string;
+            /** @description The RPC method name. */
+            method: string;
+            /** @description Type of integration used by the SDK. */
+            integration_type: string;
+            /** @description CAIP-2 chain ID. */
+            caip_chain_id: string;
+            /**
+             * Format: uuid
+             * @description Anonymous identifier for the user or session.
+             */
+            anon_id: string;
         };
         WalletConnectionRequestReceivedEvent: {
             /**

@@ -47,6 +47,11 @@ import {
   TransportType,
 } from '../domain';
 import {
+  formatChainsForAnalytics,
+  getBaseAnalyticsProperties,
+  isRejectionError,
+} from './utils/analytics';
+import {
   createLogger,
   enableDebug,
   isEnabled as isLoggerEnabled,
@@ -200,34 +205,6 @@ export class MultichainSDK extends MultichainCore {
     analytics.enable();
   }
 
-  private formatChainsForAnalytics(chains: Scope[]): string {
-    return chains.join(',');
-  }
-
-  private async getAnalyticsProperties(): Promise<{
-    mmconnect_version: string;
-    dapp_id: string;
-    platform: PlatformType;
-    integration_type: TransportType;
-    anon_id: string;
-  }> {
-    const version = getVersion();
-    const dappId = getDappId(this.options.dapp);
-    const platform = getPlatformType();
-    const anonId = await this.storage.getAnonId();
-    const integrationType =
-      (this.options.analytics as { enabled: true; integrationType: string })
-        .integrationType ?? TransportType.UNKNOWN;
-
-    return {
-      mmconnect_version: version,
-      dapp_id: dappId,
-      platform,
-      integration_type: integrationType as TransportType,
-      anon_id: anonId,
-    };
-  }
-
   private async onTransportNotification(payload: any): Promise<void> {
     if (
       typeof payload === 'object' &&
@@ -299,7 +276,10 @@ export class MultichainSDK extends MultichainCore {
         await this.setupTransport();
         if (this.options.analytics?.enabled) {
           try {
-            const baseProps = await this.getAnalyticsProperties();
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
             analytics.track('mmconnect_initialized', baseProps);
           } catch (error) {
             logger('Error tracking initialized event', error);
@@ -546,9 +526,11 @@ export class MultichainSDK extends MultichainCore {
         this.state = 'connected';
         if (this.options.analytics?.enabled) {
           try {
-            const baseProps = await this.getAnalyticsProperties();
-            const userPermissionedChains =
-              this.formatChainsForAnalytics(scopes);
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
+            const userPermissionedChains = formatChainsForAnalytics(scopes);
 
             analytics.track('mmconnect_connection_established', {
               ...baseProps,
@@ -564,16 +546,11 @@ export class MultichainSDK extends MultichainCore {
         this.state = 'disconnected';
         if (this.options.analytics?.enabled) {
           try {
-            const baseProps = await this.getAnalyticsProperties();
-            // Check if it's a rejection (user-initiated) vs failure
-            // Common rejection codes: user denied, request cancelled, etc.
-            // Check error message for rejection indicators
-            const errorMessage = error.message?.toLowerCase() ?? '';
-            const isRejection =
-              errorMessage.includes('reject') ??
-              errorMessage.includes('denied') ??
-              errorMessage.includes('cancel') ??
-              errorMessage.includes('user');
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
+            const isRejection = isRejectionError(error);
 
             if (isRejection) {
               analytics.track('mmconnect_connection_rejected', {
@@ -619,11 +596,14 @@ export class MultichainSDK extends MultichainCore {
 
     if (this.options.analytics?.enabled) {
       try {
-        const baseProps = await this.getAnalyticsProperties();
-        const dappConfiguredChains = this.formatChainsForAnalytics(
+        const baseProps = await getBaseAnalyticsProperties(
+          this.options,
+          this.storage,
+        );
+        const dappConfiguredChains = formatChainsForAnalytics(
           Object.keys(this.options.api.supportedNetworks) as Scope[],
         );
-        const dappRequestedChains = this.formatChainsForAnalytics(scopes);
+        const dappRequestedChains = formatChainsForAnalytics(scopes);
 
         analytics.track('mmconnect_connection_initiated', {
           ...baseProps,
