@@ -26,9 +26,10 @@
   "scripts": {
     "build": "DISABLE_ESLINT_PLUGIN=true craco build",
     "build:docs": "typedoc",
-    "deploy": "serve -s build",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-react-playground",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-react-playground",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-react-playground",
+    "deploy": "serve -s build",
     "prepack": "./scripts/prepack.sh",
     "start": "DISABLE_ESLINT_PLUGIN=true craco start",
     "test": "echo \"No test specified\"",

@@ -448,6 +448,39 @@ export class MWPTransport implements ExtendedTransport {
     return (this.dappClient as any).state === 'CONNECTED';
   }
 
+  /**
+   * Attempts to re-establish a connection via DappClient
+   *
+   * @returns Nothing
+   */
+  // TODO: We should re-evaluate adding this to the WebSocketTransport layer from `@metamask/mobile-wallet-protocol-core`
+  // ticket: https://consensyssoftware.atlassian.net/browse/WAPI-862
+  private async attemptResumeSession(): Promise<void> {
+    try {
+      await this.dappClient.reconnect();
+      // Wait for connection to be established
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Resume timeout'));
+        }, 2_000);
+
+        if (this.isConnected()) {
+          clearTimeout(timeout);
+          resolve();
+        } else {
+          this.dappClient.once('connected', () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+        }
+      });
+    } catch (error) {
+      return Promise.reject(
+        new Error(`Failed to resume session: ${error.message}`),
+      );
+    }
+  }
+
   private async getCachedResponse(
     request: { jsonrpc: string; id: string } & TransportRequest,
   ): Promise<TransportResponse | undefined> {
@@ -519,6 +552,10 @@ export class MWPTransport implements ExtendedTransport {
     if (cachedWalletSession) {
       this.notifyCallbacks(cachedWalletSession);
       return cachedWalletSession as TResponse;
+    }
+
+    if (!this.isConnected()) {
+      await this.attemptResumeSession();
     }
 
     return new Promise<TResponse>((resolve, reject) => {

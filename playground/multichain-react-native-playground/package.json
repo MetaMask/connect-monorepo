@@ -1,6 +1,7 @@
 {
   "name": "@metamask/multichain-react-native-playground",
   "version": "0.0.0",
+  "private": true,
   "description": "A native test dapp for multichain api",
   "keywords": [
     "MetaMask",
@@ -21,16 +22,17 @@
     "dist/"
   ],
   "scripts": {
+    "allow-scripts": "",
+    "android": "expo start --android",
     "build": "echo 'builds via expo'",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-react-native-playground",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-react-native-playground",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-react-native-playground",
-    "start": "expo start --tunnel",
-    "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
+    "start": "expo start --tunnel",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test",
-    "allow-scripts": ""
+    "web": "expo start --web"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -82,6 +84,13 @@
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
   },
+  "engines": {
+    "node": "^18.18 || >=20"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://registry.npmjs.org/"
+  },
   "lavamoat": {
     "allowScripts": {
       "@lavamoat/preinstall-always-fail": false,
@@ -93,13 +102,5 @@
       "@metamask/connect-multichain>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
       "@metamask/connect-multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
     }
-  },
-  "private": true,
-  "engines": {
-    "node": "^18.18 || >=20"
-  },
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://registry.npmjs.org/"
   }
 }
