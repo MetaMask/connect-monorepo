@@ -551,7 +551,7 @@ export class MetamaskConnectEVM {
    *
    * @returns The EIP-1193 provider instance
    */
-  async getProvider(): Promise<EIP1193Provider> {
+  getProvider(): EIP1193Provider {
     return this.#provider;
   }
 
