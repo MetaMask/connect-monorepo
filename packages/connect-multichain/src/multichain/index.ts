@@ -88,8 +88,6 @@ export class MultichainSDK extends MultichainCore {
 
   private listener: (() => void | Promise<void>) | undefined;
 
-  private __transportType: TransportType = TransportType.Browser;
-
   get state(): SDKState {
     return this.__state;
   }
@@ -134,7 +132,9 @@ export class MultichainSDK extends MultichainCore {
   }
 
   get transportType(): TransportType {
-    return this.__transportType;
+    return this.__transport instanceof MWPTransport
+      ? TransportType.MWP
+      : TransportType.Browser;
   }
 
   private get sdkInfo(): string {
@@ -309,7 +309,6 @@ export class MultichainSDK extends MultichainCore {
     if (this.__transport instanceof MWPTransport) {
       return;
     }
-    this.__transportType = TransportType.MWP;
     // Only setup MWP if it is not already mwp
     const { adapter: kvstore } = this.options.storage;
     const dappClient = await this.createDappClient();
