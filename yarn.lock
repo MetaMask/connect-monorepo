@@ -4217,7 +4217,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/analytics@npm:^0.1.0, @metamask/analytics@workspace:packages/analytics":
+"@metamask/analytics@workspace:^, @metamask/analytics@workspace:packages/analytics":
   version: 0.0.0-use.local
   resolution: "@metamask/analytics@workspace:packages/analytics"
   dependencies:
@@ -4321,12 +4321,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/connect-multichain@workspace:packages/connect-multichain"
   dependencies:
-    "@metamask/analytics": "npm:^0.1.0"
+    "@metamask/analytics": "workspace:^"
     "@metamask/auto-changelog": "npm:^3.4.3"
     "@metamask/mobile-wallet-protocol-core": "npm:^0.3.0"
     "@metamask/mobile-wallet-protocol-dapp-client": "npm:^0.2.1"
-    "@metamask/multichain-api-client": "npm:^0.8.0"
-    "@metamask/multichain-ui": "npm:0.1.0"
+    "@metamask/multichain-api-client": "npm:^0.8.1"
+    "@metamask/multichain-ui": "workspace:^"
     "@metamask/onboarding": "npm:^1.0.1"
     "@metamask/utils": "npm:^11.8.1"
     "@paulmillr/qr": "npm:^0.2.1"
@@ -4734,10 +4734,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/multichain-api-client@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "@metamask/multichain-api-client@npm:0.8.0"
-  checksum: 10/73a9cc74c9bc8d20423535a28f690818a82d81ad76077670a4968e6322b8364f70c3fab40558fae79028f9003766cd0eeaada2cefd39042a1df4d327a22cb2f8
+"@metamask/multichain-api-client@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "@metamask/multichain-api-client@npm:0.8.1"
+  checksum: 10/a6e079b4acce94d25ffdccbbf7f09ce1b5c650ceec6119e7002f8095cd1eb18c59a26fbfe0ac775c60862e38c657273dad507e27ddbdc166fea404b03f54bdb6
   languageName: node
   linkType: hard
 
@@ -4863,7 +4863,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@metamask/multichain-ui@npm:0.1.0, @metamask/multichain-ui@workspace:packages/multichain-ui":
+"@metamask/multichain-ui@workspace:^, @metamask/multichain-ui@workspace:packages/multichain-ui":
   version: 0.0.0-use.local
   resolution: "@metamask/multichain-ui@workspace:packages/multichain-ui"
   dependencies:
