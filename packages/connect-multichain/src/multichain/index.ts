@@ -142,6 +142,9 @@ export class MultichainSDK extends MultichainCore {
 
   private constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
+    const integrationType = options.analytics?.enabled
+      ? options.analytics.integrationType
+      : 'direct';
     const allOptions = {
       ...withDappMetadata,
       ui: {
@@ -153,7 +156,7 @@ export class MultichainSDK extends MultichainCore {
       analytics: {
         ...(options.analytics ?? {}),
         enabled: options.analytics?.enabled ?? true,
-        integrationType: 'unknown',
+        integrationType,
       },
     };
 

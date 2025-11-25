@@ -48,6 +48,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
+    "@metamask/analytics": "workspace:^",
     "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect-multichain": "workspace:^",
     "@metamask/utils": "^11.8.1"

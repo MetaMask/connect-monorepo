@@ -64,6 +64,11 @@ type AddEthereumChainRequest = {
   params: [AddEthereumChainParameter];
 };
 
+type AccountsRequest = {
+  method: 'eth_accounts' | 'eth_coinbase';
+  params: [];
+};
+
 type GenericProviderRequest = {
   method: Exclude<
     string,
@@ -84,6 +89,7 @@ export type ProviderRequest =
   | RevokePermissionsRequest
   | SwitchEthereumChainRequest
   | AddEthereumChainRequest
+  | AccountsRequest
   | GenericProviderRequest;
 
 export type ProviderRequestInterceptor = (

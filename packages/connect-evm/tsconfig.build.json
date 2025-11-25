@@ -20,6 +20,10 @@
     "types": ["node"],
     "noEmit": false
   },
+  "references": [
+    { "path": "../analytics/tsconfig.build.json" },
+    { "path": "../connect-multichain/tsconfig.build.json" }
+  ],
   "include": ["./src"],
   "exclude": [
     "node_modules",
@@ -28,5 +32,4 @@
     "**/*.spec.ts",
     "**/*.test.ts"
   ],
-  "references": []
 }

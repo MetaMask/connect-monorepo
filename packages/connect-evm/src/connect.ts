@@ -1,3 +1,4 @@
+import { analytics } from '@metamask/analytics';
 import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
   MultichainCore,
@@ -5,7 +6,11 @@ import type {
   Scope,
   SessionData,
 } from '@metamask/connect-multichain';
-import { createMetamaskConnect } from '@metamask/connect-multichain';
+import {
+  createMetamaskConnect,
+  getWalletActionAnalyticsProperties,
+  isRejectionError,
+} from '@metamask/connect-multichain';
 import {
   numberToHex,
   hexToNumber,
@@ -293,7 +298,30 @@ export class MetamaskConnectEVM {
     chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
   }): Promise<unknown> {
+    const coreOptions = (this.#core as any).options as MultichainOptions;
+    const method = 'wallet_switchEthereumChain';
+    const scope: Scope = `eip155:${isHex(chainId) ? hexToNumber(chainId) : chainId}`;
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
+
+    if (coreOptions.analytics?.enabled) {
+      try {
+        const invokeOptions = {
+          scope,
+          request: {
+            method,
+            params: [{ chainId: hexChainId }],
+          },
+        };
+        const props = await getWalletActionAnalyticsProperties(
+          coreOptions,
+          this.#core.storage,
+          invokeOptions,
+        );
+        analytics.track('mmconnect_wallet_action_requested', props);
+      } catch (error) {
+        logger('Error tracking mmconnect_wallet_action_requested event', error);
+      }
+    }
 
     // TODO (wenfix): better way to return here other than resolving.
     if (this.selectedChainId === hexChainId) {
@@ -305,6 +333,28 @@ export class MetamaskConnectEVM {
 
     if (permittedChainIds.includes(hexChainId)) {
       this.#onChainChanged(hexChainId);
+      if (coreOptions.analytics?.enabled) {
+        try {
+          const invokeOptions = {
+            scope,
+            request: {
+              method,
+              params: [{ chainId: hexChainId }],
+            },
+          };
+          const props = await getWalletActionAnalyticsProperties(
+            coreOptions,
+            this.#core.storage,
+            invokeOptions,
+          );
+          analytics.track('mmconnect_wallet_action_succeeded', props);
+        } catch (error) {
+          logger(
+            'Error tracking mmconnect_wallet_action_succeeded event',
+            error,
+          );
+        }
+      }
       return Promise.resolve();
     }
 
@@ -312,10 +362,66 @@ export class MetamaskConnectEVM {
     // the chain is not configured in the wallet.
     this.#latestChainConfiguration = chainConfiguration;
 
-    return this.#request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: hexChainId }],
-    });
+    try {
+      const result = await this.#request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hexChainId }],
+      });
+
+      if (coreOptions.analytics?.enabled) {
+        try {
+          const invokeOptions = {
+            scope,
+            request: {
+              method,
+              params: [{ chainId: hexChainId }],
+            },
+          };
+          const props = await getWalletActionAnalyticsProperties(
+            coreOptions,
+            this.#core.storage,
+            invokeOptions,
+          );
+          analytics.track('mmconnect_wallet_action_succeeded', props);
+        } catch (error) {
+          logger(
+            'Error tracking mmconnect_wallet_action_succeeded event',
+            error,
+          );
+        }
+      }
+
+      return result;
+    } catch (error) {
+      if (coreOptions.analytics?.enabled) {
+        try {
+          const invokeOptions = {
+            scope,
+            request: {
+              method,
+              params: [{ chainId: hexChainId }],
+            },
+          };
+          const props = await getWalletActionAnalyticsProperties(
+            coreOptions,
+            this.#core.storage,
+            invokeOptions,
+          );
+          const isRejection = isRejectionError(error);
+          if (isRejection) {
+            analytics.track('mmconnect_wallet_action_rejected', props);
+          } else {
+            analytics.track('mmconnect_wallet_action_failed', props);
+          }
+        } catch {
+          logger(
+            'Error tracking wallet action rejected or failed event',
+            error,
+          );
+        }
+      }
+      throw error;
+    }
   }
 
   /**
@@ -353,10 +459,80 @@ export class MetamaskConnectEVM {
     }
 
     if (isConnectRequest(request)) {
-      return this.connect({
-        chainId: request.params[0] ?? 1,
-        account: request.params[1],
-      });
+      const coreOptions = (this.#core as any).options as MultichainOptions;
+      const method = request.method;
+      const chainId = request.params[0] ?? 1;
+      const scope: Scope = `eip155:${chainId}`;
+      const invokeOptions = {
+        scope,
+        request: {
+          method,
+          params: request.params,
+        },
+      };
+
+      if (coreOptions.analytics?.enabled) {
+        try {
+          const props = await getWalletActionAnalyticsProperties(
+            coreOptions,
+            this.#core.storage,
+            invokeOptions,
+          );
+          analytics.track('mmconnect_wallet_action_requested', props);
+        } catch (error) {
+          logger(
+            'Error tracking mmconnect_wallet_action_requested event',
+            error,
+          );
+        }
+      }
+
+      try {
+        const result = await this.connect({
+          chainId,
+          account: request.params[1],
+        });
+
+        if (coreOptions.analytics?.enabled) {
+          try {
+            const props = await getWalletActionAnalyticsProperties(
+              coreOptions,
+              this.#core.storage,
+              invokeOptions,
+            );
+            analytics.track('mmconnect_wallet_action_succeeded', props);
+          } catch (error) {
+            logger(
+              'Error tracking mmconnect_wallet_action_succeeded event',
+              error,
+            );
+          }
+        }
+
+        return result;
+      } catch (error) {
+        if (coreOptions.analytics?.enabled) {
+          try {
+            const props = await getWalletActionAnalyticsProperties(
+              coreOptions,
+              this.#core.storage,
+              invokeOptions,
+            );
+            const isRejection = isRejectionError(error);
+            if (isRejection) {
+              analytics.track('mmconnect_wallet_action_rejected', props);
+            } else {
+              analytics.track('mmconnect_wallet_action_failed', props);
+            }
+          } catch {
+            logger(
+              'Error tracking wallet action rejected or failed event',
+              error,
+            );
+          }
+        }
+        throw error;
+      }
     }
 
     if (isSwitchChainRequest(request)) {
@@ -370,6 +546,36 @@ export class MetamaskConnectEVM {
     }
 
     if (isAccountsRequest(request)) {
+      const coreOptions = (this.#core as any).options as MultichainOptions;
+      const method = request.method;
+      const chainId = this.#provider.selectedChainId
+        ? hexToNumber(this.#provider.selectedChainId)
+        : 1;
+      const scope: Scope = `eip155:${chainId}`;
+      const invokeOptions = {
+        scope,
+        request: {
+          method,
+          params: [],
+        },
+      };
+      if (coreOptions.analytics?.enabled) {
+        try {
+          const props = await getWalletActionAnalyticsProperties(
+            coreOptions,
+            this.#core.storage,
+            invokeOptions,
+          );
+          analytics.track('mmconnect_wallet_action_requested', props);
+          analytics.track('mmconnect_wallet_action_succeeded', props);
+        } catch (error) {
+          logger(
+            'Error tracking wallet action rejected or failed event',
+            error,
+          );
+        }
+      }
+
       return this.#provider.accounts;
     }
 
@@ -390,23 +596,91 @@ export class MetamaskConnectEVM {
    * a switchEthereumChain request
    *
    * @param chainConfiguration - The chain configuration to use in case the chain is not present by the wallet
+   * @returns Nothing
    */
-  #addEthereumChain(chainConfiguration?: AddEthereumChainParameter): void {
+  async #addEthereumChain(
+    chainConfiguration?: AddEthereumChainParameter,
+  ): Promise<void> {
     logger('addEthereumChain called', { chainConfiguration });
+    const coreOptions = (this.#core as any).options as MultichainOptions;
+    const method = 'wallet_addEthereumChain';
     const config = chainConfiguration ?? this.#latestChainConfiguration;
 
     if (!config) {
       throw new Error('No chain configuration found.');
     }
 
-    this.#request({
-      method: 'wallet_addEthereumChain',
-      params: [config],
-    }).catch((error) => {
-      // TODO (wenfix): does it make sense to throw here?
-      console.error('Error adding Ethereum chain', error);
+    // Get chain ID from config or use current chain
+    const chainId = config.chainId
+      ? parseInt(config.chainId, 16)
+      : hexToNumber(this.#provider.selectedChainId ?? '0x1');
+    const scope: Scope = `eip155:${chainId}`;
+    const invokeOptions = {
+      scope,
+      request: {
+        method,
+        params: [config],
+      },
+    };
+    if (coreOptions.analytics?.enabled) {
+      try {
+        const props = await getWalletActionAnalyticsProperties(
+          coreOptions,
+          this.#core.storage,
+          invokeOptions,
+        );
+        analytics.track('mmconnect_wallet_action_requested', props);
+      } catch (error) {
+        logger('Error tracking mmconnect_wallet_action_requested event', error);
+      }
+    }
+
+    try {
+      const result = await this.#request({
+        method: 'wallet_addEthereumChain',
+        params: [config],
+      });
+
+      if (coreOptions.analytics?.enabled) {
+        try {
+          const props = await getWalletActionAnalyticsProperties(
+            coreOptions,
+            this.#core.storage,
+            invokeOptions,
+          );
+          analytics.track('mmconnect_wallet_action_succeeded', props);
+        } catch (error) {
+          logger(
+            'Error tracking mmconnect_wallet_action_requested event',
+            error,
+          );
+        }
+      }
+
+      return result;
+    } catch (error) {
+      if (coreOptions.analytics?.enabled) {
+        try {
+          const props = await getWalletActionAnalyticsProperties(
+            coreOptions,
+            this.#core.storage,
+            invokeOptions,
+          );
+          const isRejection = isRejectionError(error);
+          if (isRejection) {
+            analytics.track('mmconnect_wallet_action_rejected', props);
+          } else {
+            analytics.track('mmconnect_wallet_action_failed', props);
+          }
+        } catch {
+          logger(
+            'Error tracking wallet action rejected or failed event',
+            error,
+          );
+        }
+      }
       throw error;
-    });
+    }
   }
 
   /**
