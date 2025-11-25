@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `schema.ts` ([#46](https://github.com/MetaMask/connect-monorepo/pull/46))
+
 ## [0.1.0]
 
 ### Added
