@@ -253,7 +253,7 @@ export class MetamaskConnectEVM {
    *
    * @param options - The options for connecting and invoking the method
    * @param options.method - The method name to invoke
-   * @param options.params - The parameters to pass to the method
+   * @param options.params - The parameters to pass to the method, or a function that receives the account and returns params
    * @param options.chainId - Optional chain ID to connect to (defaults to mainnet)
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Whether to force a request regardless of an existing session
@@ -268,7 +268,7 @@ export class MetamaskConnectEVM {
     forceRequest,
   }: {
     method: string;
-    params: unknown[];
+    params: unknown[] | ((account: Address) => unknown[]);
     chainId?: number;
     account?: string | undefined;
     forceRequest?: boolean;
@@ -281,9 +281,13 @@ export class MetamaskConnectEVM {
 
     // If account is already available, proceed immediately
     if (this.#provider.selectedAccount) {
+      const resolvedParams =
+        typeof params === 'function'
+          ? params(this.#provider.selectedAccount)
+          : params;
       return await this.#provider.request({
         method,
-        params,
+        params: resolvedParams,
       });
     }
 
@@ -316,11 +320,13 @@ export class MetamaskConnectEVM {
       }
     });
 
-    await accountPromise;
+    const selectedAccount = await accountPromise;
+    const resolvedParams =
+      typeof params === 'function' ? params(selectedAccount) : params;
 
     return await this.#provider.request({
       method,
-      params,
+      params: resolvedParams,
     });
   }
 
