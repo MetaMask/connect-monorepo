@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `removeListener` function to internal `EventEmitter` ([#31](https://github.com/MetaMask/connect-monorepo/pull/31))
 - Initial release ([#21](https://github.com/MetaMask/connect-monorepo/pull/21))
 
 ### Fixed
