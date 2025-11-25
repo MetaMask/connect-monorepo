@@ -129,7 +129,7 @@ export const App = () => {
       console.error('Error requesting accounts', e);
       setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
-    // setResponse(`Accounts: ${response}`);
+    setResponse(`Accounts: ${response}`);
   };
 
   const eth_getBalance = async () => {
