@@ -124,12 +124,11 @@ export const App = () => {
         method: 'wallet_requestPermissions',
         params: [],
       });
-      console.log('requestPermissions response', response);
+      setResponse(`Accounts: ${response}`);
     } catch (e) {
       console.error('Error requesting accounts', e);
       setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
-    setResponse(`Accounts: ${response}`);
   };
 
   const eth_getBalance = async () => {
