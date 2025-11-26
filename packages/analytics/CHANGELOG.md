@@ -7,11 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1]
+
+### Added
+
+- Add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
+
+### Changed
+
+- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
+
 ## [0.1.0]
 
 ### Added
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/analytics@0.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/analytics@0.1.1...HEAD
+[0.1.1]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/analytics@0.1.0...@metamask/analytics@0.1.1
 [0.1.0]: https://github.com/MetaMask/metamask-connect-monorepo/releases/tag/@metamask/analytics@0.1.0
