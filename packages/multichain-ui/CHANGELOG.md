@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0]
 
-### Uncategorized
+### Added
 
-- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
-- add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
+- Add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
 
 ### Changed
 
+- Align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
 - Rename `preferDesktop` flag to `showInstallModal` ([#42](https://github.com/MetaMask/connect-monorepo/pull/42))
 
 ## [0.1.0]
