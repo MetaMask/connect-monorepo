@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0]
-
 ### Added
 
 - Updated analytics tracking of connection and request handling ([#46](https://github.com/MetaMask/connect-monorepo/pull/46))
+
+## [0.2.0]
+
 - Add `removeListener`, `once` and `listenerCount` function to internal `EventEmitter` ([#31](https://github.com/MetaMask/connect-monorepo/pull/31))
 - Add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
 - Add support for read only RPC calls ([#33](https://github.com/MetaMask/metamask-connect-monorepo/pull/33))
