@@ -7,14 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
-- feat: wagmi connector ([#31](https://github.com/MetaMask/metamask-connect-monorepo/pull/31))
-- add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
-- refactor: rename `readonlyRpcMap` to `supportedNetworks` ([#37](https://github.com/MetaMask/metamask-connect-monorepo/pull/37))
-- feat: Remove api.infuraAPIKey SDK param. Export getInfuraRpcUrls. Add env to playgrounds ([#19](https://github.com/MetaMask/metamask-connect-monorepo/pull/19))
-
 ### Changed
 
 - Bump `@types/jest` from ^28.1.6 to ^29.5.14 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
