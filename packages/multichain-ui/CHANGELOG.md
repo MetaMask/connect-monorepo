@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
+- add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
+
 ### Changed
 
 - Rename `preferDesktop` flag to `showInstallModal` ([#42](https://github.com/MetaMask/connect-monorepo/pull/42))

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
+- fix: reconnect `dappClient` on resumed session ([#43](https://github.com/MetaMask/metamask-connect-monorepo/pull/43))
+- add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
+- refactor: rename `readonlyRpcMap` to `supportedNetworks` ([#37](https://github.com/MetaMask/metamask-connect-monorepo/pull/37))
+- feat: add support for read only RPC calls ([#33](https://github.com/MetaMask/metamask-connect-monorepo/pull/33))
+- fix: switch to Bowser’s default export to fix Vite build ([#26](https://github.com/MetaMask/metamask-connect-monorepo/pull/26))
+- feat: Remove api.infuraAPIKey SDK param. Export getInfuraRpcUrls. Add env to playgrounds ([#19](https://github.com/MetaMask/metamask-connect-monorepo/pull/19))
+
 ### Added
 
 - Add `removeListener`, `once` and `listenerCount` function to internal `EventEmitter` ([#31](https://github.com/MetaMask/connect-monorepo/pull/31))
