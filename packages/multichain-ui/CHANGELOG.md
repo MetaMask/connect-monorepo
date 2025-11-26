@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0]
+
 ### Uncategorized
 
 - align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
@@ -22,5 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/multichain-ui@0.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/multichain-ui@0.2.0...HEAD
+[0.2.0]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/multichain-ui@0.1.0...@metamask/multichain-ui@0.2.0
 [0.1.0]: https://github.com/MetaMask/metamask-connect-monorepo/releases/tag/@metamask/multichain-ui@0.1.0
