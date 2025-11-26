@@ -6,16 +6,18 @@ import * as t from 'vitest';
 import Analytics from './analytics';
 import type * as schema from './schema';
 
+type EventV2 = schema.components['schemas']['EventV2'];
+type MMConnectPayload = schema.components['schemas']['MMConnectPayload'];
+type MMConnectProperties = schema.components['schemas']['MMConnectProperties'];
+
 t.describe('Analytics Integration', () => {
   let analytics: Analytics;
   let scope: nock.Scope;
 
-  const event: schema.components['schemas']['MmconnectInitializedEvent'] = {
-    name: 'mmconnect_initialized',
+  const eventProperties: MMConnectProperties = {
     mmconnect_version: '1.0.0',
     dapp_id: 'aave.com',
     anon_id: 'bbbc1727-8b85-433a-a26a-e9df70ddc81c',
-
     platform: 'web-desktop',
     integration_type: 'direct',
   };
@@ -26,9 +28,9 @@ t.describe('Analytics Integration', () => {
   });
 
   t.it('should do nothing when disabled', async () => {
-    let captured: Event[] = [];
+    let captured: EventV2[] = [];
     scope = nock('http://127.0.0.1')
-      .post('/v1/events', (body) => {
+      .post('/v2/events', (body) => {
         captured = body; // Capture the request body directly
         return true; // Accept any body to proceed with the intercept
       })
@@ -40,7 +42,7 @@ t.describe('Analytics Integration', () => {
       );
 
     analytics = new Analytics('http://127.0.0.1');
-    analytics.track(event.name, { ...event });
+    analytics.track('mmconnect_initialized', eventProperties);
 
     // Wait for the Sender to flush the event (baseIntervalMs = 200ms + buffer)
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -52,9 +54,9 @@ t.describe('Analytics Integration', () => {
   });
 
   t.it('should track an event when enabled', async () => {
-    let captured: Event[] = [];
+    let captured: EventV2[] = [];
     scope = nock('http://127.0.0.2')
-      .post('/v1/events', (body) => {
+      .post('/v2/events', (body) => {
         captured = body; // Capture the request body directly
         return true; // Accept any body to proceed with the intercept
       })
@@ -66,19 +68,33 @@ t.describe('Analytics Integration', () => {
 
     analytics = new Analytics('http://127.0.0.2');
     analytics.enable();
-    analytics.setGlobalProperty('mmconnect_version', event.mmconnect_version);
-    analytics.setGlobalProperty('anon_id', event.anon_id);
-    analytics.setGlobalProperty('platform', event.platform);
-    analytics.setGlobalProperty('integration_type', event.integration_type);
-    analytics.track(event.name, { dapp_id: 'some-non-global-property' });
+    analytics.setGlobalProperty(
+      'mmconnect_version',
+      eventProperties.mmconnect_version,
+    );
+    analytics.setGlobalProperty('anon_id', eventProperties.anon_id);
+    analytics.setGlobalProperty('platform', eventProperties.platform);
+    analytics.setGlobalProperty(
+      'integration_type',
+      eventProperties.integration_type,
+    );
+    analytics.track('mmconnect_initialized', {
+      dapp_id: 'some-non-global-property',
+    });
 
     // Wait for the Sender to flush the event (baseIntervalMs = 200ms + buffer)
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // Verify the captured payload
-    t.expect(captured).toEqual([
-      { ...event, dapp_id: 'some-non-global-property' },
-    ]);
+    const expectedEvent: MMConnectPayload = {
+      namespace: 'metamask/connect',
+      event_name: 'mmconnect_initialized',
+      properties: {
+        ...eventProperties,
+        dapp_id: 'some-non-global-property',
+      },
+    };
+    t.expect(captured).toEqual([expectedEvent]);
 
     scope.done();
   });

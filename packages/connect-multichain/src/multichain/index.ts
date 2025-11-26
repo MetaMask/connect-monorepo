@@ -47,7 +47,6 @@ import {
   TransportType,
 } from '../domain';
 import {
-  formatChainsForAnalytics,
   getBaseAnalyticsProperties,
   isRejectionError,
 } from './utils/analytics';
@@ -539,12 +538,11 @@ export class MultichainSDK extends MultichainCore {
               this.options,
               this.storage,
             );
-            const userPermissionedChains = formatChainsForAnalytics(scopes);
 
             analytics.track('mmconnect_connection_established', {
               ...baseProps,
               transport_type: transportType,
-              user_permissioned_chains: userPermissionedChains,
+              user_permissioned_chains: scopes,
             });
           } catch (error) {
             logger('Error tracking connection_established event', error);
@@ -610,16 +608,15 @@ export class MultichainSDK extends MultichainCore {
           this.options,
           this.storage,
         );
-        const dappConfiguredChains = formatChainsForAnalytics(
-          Object.keys(this.options.api.supportedNetworks) as Scope[],
+        const dappConfiguredChains = Object.keys(
+          this.options.api.supportedNetworks,
         );
-        const dappRequestedChains = formatChainsForAnalytics(scopes);
 
         analytics.track('mmconnect_connection_initiated', {
           ...baseProps,
           transport_type: transportType,
           dapp_configured_chains: dappConfiguredChains,
-          dapp_requested_chains: dappRequestedChains,
+          dapp_requested_chains: scopes,
         });
       } catch (error) {
         logger('Error tracking connection_initiated event', error);

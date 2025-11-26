@@ -7,7 +7,7 @@ import type {
   Scope,
   StoreClient,
 } from '../../domain';
-import { getPlatformType, getVersion } from '../../domain';
+import { getPlatformType, getVersion, TransportType } from '../../domain';
 
 /**
  * Checks if an error represents a user rejection.
@@ -35,16 +35,6 @@ export function isRejectionError(error: unknown): boolean {
 }
 
 /**
- * Formats an array of chain scopes into a comma-separated string for analytics.
- *
- * @param chains - Array of chain scopes
- * @returns Comma-separated string of chains
- */
-export function formatChainsForAnalytics(chains: Scope[]): string {
-  return chains.join(',');
-}
-
-/**
  * Gets base analytics properties that are common across all events.
  *
  * @param options - Multichain options containing dapp and analytics config
@@ -67,7 +57,7 @@ export async function getBaseAnalyticsProperties(
   const anonId = await storage.getAnonId();
   const integrationType =
     (options.analytics as { enabled: true; integrationType: string })
-      ?.integrationType ?? 'unknown';
+      ?.integrationType ?? TransportType.UNKNOWN;
 
   return {
     mmconnect_version: version,
