@@ -20,7 +20,7 @@ export type SDKState =
 
 export enum TransportType {
   Browser = 'browser',
-  MPW = 'mwp',
+  MWP = 'mwp',
   UNKNOWN = 'unknown',
 }
 
@@ -39,6 +39,8 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   abstract transport: ExtendedTransport;
 
+  abstract transportType: TransportType;
+
   /**
    * Establishes a connection to the multichain provider, or re-use existing session
    *
@@ -47,6 +49,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    forceRequest?: boolean,
   ): Promise<void>;
 
   /**
@@ -77,7 +80,7 @@ export function getTransportType(type: string): TransportType {
     case 'browser':
       return TransportType.Browser;
     case 'mwp':
-      return TransportType.MPW;
+      return TransportType.MWP;
     default:
       return TransportType.UNKNOWN;
   }

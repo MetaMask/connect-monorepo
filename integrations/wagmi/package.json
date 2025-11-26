@@ -1,0 +1,32 @@
+{
+  "name": "wagmi-demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@metamask/connect-evm": "workspace:^",
+    "@tanstack/query-sync-storage-persister": "5.0.5",
+    "@tanstack/react-query": ">=5.45.1",
+    "@tanstack/react-query-persist-client": "5.0.5",
+    "@wagmi/core": "^2.22.1",
+    "idb-keyval": "^6.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "2.*",
+    "wagmi": "^2.19.2"
+  },
+  "devDependencies": {
+    "@tanstack/react-query-devtools": "5.0.5",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "@wagmi/cli": "^2.3.2",
+    "buffer": "^6.0.3",
+    "vite": "^5.4.20"
+  }
+}

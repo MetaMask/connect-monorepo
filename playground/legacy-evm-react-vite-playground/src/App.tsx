@@ -114,6 +114,23 @@ export const App = () => {
     }
   };
 
+  const requestPermissions = async () => {
+    if (!provider) {
+      setResponse('Provider not available');
+      return;
+    }
+    try {
+      const response = await provider.request({
+        method: 'wallet_requestPermissions',
+        params: [],
+      });
+      setResponse(`Accounts: ${response}`);
+    } catch (e) {
+      console.error('Error requesting accounts', e);
+      setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    }
+  };
+
   const eth_getBalance = async () => {
     if (!provider || !accounts[0]) {
       setResponse('Provider or accounts not available');
@@ -277,10 +294,10 @@ export const App = () => {
           <button
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
-            onClick={connect}
+            onClick={requestPermissions}
             id='request-accounts-button'
           >
-            Request Accounts
+            wallet_requestPermissions
           </button>
 
           <button

@@ -136,6 +136,12 @@ export class MultichainSDK extends MultichainCore {
     return this.options.storage;
   }
 
+  get transportType(): TransportType {
+    return this.__transport instanceof MWPTransport
+      ? TransportType.MWP
+      : TransportType.Browser;
+  }
+
   private get sdkInfo(): string {
     return `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
   }
@@ -233,7 +239,7 @@ export class MultichainSDK extends MultichainCore {
           );
           return apiTransport;
         }
-      } else if (transportType === TransportType.MPW) {
+      } else if (transportType === TransportType.MWP) {
         const { adapter: kvstore } = this.options.storage;
         const dappClient = await this.createDappClient();
         const apiTransport = new MWPTransport(dappClient, kvstore);
@@ -260,7 +266,7 @@ export class MultichainSDK extends MultichainCore {
       }
       this.state = 'connected';
       if (this.transport instanceof MWPTransport) {
-        await this.storage.setTransport(TransportType.MPW);
+        await this.storage.setTransport(TransportType.MWP);
       } else {
         await this.storage.setTransport(TransportType.Browser);
       }
@@ -330,7 +336,7 @@ export class MultichainSDK extends MultichainCore {
     this.listener = this.transport.onNotification(
       this.onTransportNotification.bind(this),
     );
-    await this.storage.setTransport(TransportType.MPW);
+    await this.storage.setTransport(TransportType.MWP);
   }
 
   private async onBeforeUnload(): Promise<void> {
@@ -401,7 +407,7 @@ export class MultichainSDK extends MultichainCore {
                 this.options.ui.factory.unload();
                 this.options.ui.factory.modal?.unmount();
                 this.state = 'connected';
-                return this.storage.setTransport(TransportType.MPW);
+                return this.storage.setTransport(TransportType.MWP);
               })
               .catch((error) => {
                 if (error instanceof ProtocolError) {
@@ -420,7 +426,7 @@ export class MultichainSDK extends MultichainCore {
         },
         async (error?: Error) => {
           if (!error) {
-            await this.storage.setTransport(TransportType.MPW);
+            await this.storage.setTransport(TransportType.MWP);
             resolve();
           } else {
             await this.storage.removeTransport();
@@ -577,6 +583,7 @@ export class MultichainSDK extends MultichainCore {
   async connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    forceRequest?: boolean,
   ): Promise<void> {
     const { ui } = this.options;
     const platformType = getPlatformType();
@@ -594,7 +601,7 @@ export class MultichainSDK extends MultichainCore {
     ) {
       transportType = TransportType.Browser;
     } else {
-      transportType = TransportType.MPW;
+      transportType = TransportType.MWP;
     }
 
     if (this.options.analytics?.enabled) {
@@ -621,13 +628,15 @@ export class MultichainSDK extends MultichainCore {
 
     if (this.__transport?.isConnected() && !secure) {
       return this.handleConnection(
-        this.__transport.connect({ scopes, caipAccountIds }).then(() => {
-          if (this.__transport instanceof MWPTransport) {
-            return this.storage.setTransport(TransportType.MPW);
-          } else {
-            return this.storage.setTransport(TransportType.Browser);
-          }
-        }),
+        this.__transport
+          .connect({ scopes, caipAccountIds, forceRequest })
+          .then(() => {
+            if (this.__transport instanceof MWPTransport) {
+              return this.storage.setTransport(TransportType.MWP);
+            } else {
+              return this.storage.setTransport(TransportType.Browser);
+            }
+          }),
         scopes,
         transportType,
       );
@@ -637,7 +646,7 @@ export class MultichainSDK extends MultichainCore {
     if (platformType === PlatformType.MetaMaskMobileWebview) {
       const defaultTransport = await this.setupDefaultTransport();
       return this.handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds }),
+        defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
         scopes,
         transportType,
       );
@@ -648,7 +657,7 @@ export class MultichainSDK extends MultichainCore {
       const defaultTransport = await this.setupDefaultTransport();
       // Web transport has no initial payload
       return this.handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds }),
+        defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
         scopes,
         transportType,
       );

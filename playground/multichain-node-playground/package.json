@@ -37,7 +37,7 @@
     "ora": "^5.4.1"
   },
   "devDependencies": {
-    "@metamask/auto-changelog": "^3.4.3",
+    "@metamask/auto-changelog": "^3.4.4",
     "@types/inquirer": "^8.2.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",
@@ -47,8 +47,8 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "tsup": "^8.4.0",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "~5.9.2"
   },
   "engines": {

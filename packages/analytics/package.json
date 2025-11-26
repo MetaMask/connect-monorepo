@@ -53,12 +53,12 @@
     "openapi-fetch": "^0.13.5"
   },
   "devDependencies": {
-    "@metamask/auto-changelog": "^3.4.3",
+    "@metamask/auto-changelog": "^3.4.4",
     "deepmerge": "^4.2.2",
     "nock": "^14.0.4",
     "tsup": "^8.4.0",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "~5.9.2",
     "vitest": "^3.1.2"
   },
