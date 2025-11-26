@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
+- Align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
 
 ## [0.1.0]
 
