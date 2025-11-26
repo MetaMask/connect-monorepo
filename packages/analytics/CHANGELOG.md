@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- Revert "Release/2.0.0 (#49)" ([#49](https://github.com/MetaMask/metamask-connect-monorepo/pull/49))
+- Release/2.0.0 ([#49](https://github.com/MetaMask/metamask-connect-monorepo/pull/49))
+- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
+- add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
+
 ## [0.1.0]
 
 ### Added
