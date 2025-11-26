@@ -12,6 +12,16 @@ export type EIP1193ProviderEvents = {
   accountsChanged: [Address[]];
   chainChanged: [Hex];
   message: [{ type: string; data: unknown }];
+  connectAndSign: [
+    { accounts: readonly Address[]; chainId: number; signResponse: string },
+  ];
+  connectWith: [
+    {
+      accounts: readonly Address[];
+      chainId: number;
+      connectWithResponse: unknown;
+    },
+  ];
 };
 
 export type EventHandlers = {
@@ -19,11 +29,21 @@ export type EventHandlers = {
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;
+  connectAndSign: (result: {
+    accounts: readonly Address[];
+    chainId: number;
+    signResponse: string;
+  }) => void;
+  connectWith: (result: {
+    accounts: readonly Address[];
+    chainId: number;
+    connectWithResponse: unknown;
+  }) => void;
 };
 
 export type MetamaskConnectEVMOptions = {
   core: MultichainCore;
-  eventHandlers?: EventHandlers;
+  eventHandlers?: Partial<EventHandlers>;
   notificationQueue?: unknown[];
   supportedNetworks?: Record<CaipChainId, string>;
 };

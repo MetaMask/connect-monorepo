@@ -77,7 +77,7 @@ export class MetamaskConnectEVM {
   #sessionScopes: SessionData['sessionScopes'] = {};
 
   /** Optional event handlers for the EIP-1193 provider events. */
-  readonly #eventHandlers?: EventHandlers | undefined;
+  readonly #eventHandlers?: Partial<EventHandlers> | undefined;
 
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
@@ -697,7 +697,7 @@ export class MetamaskConnectEVM {
  */
 export async function createMetamaskConnectEVM(
   options: Pick<MultichainOptions, 'dapp' | 'api'> & {
-    eventHandlers?: EventHandlers;
+    eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
   },
 ): Promise<MetamaskConnectEVM> {
