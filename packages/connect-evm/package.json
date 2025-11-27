@@ -18,8 +18,14 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/browser/es/connect-evm.mjs",
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/browser/es/connect-evm.mjs"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/browser/es/connect-evm.mjs"
+      },
       "default": "./dist/browser/es/connect-evm.mjs"
     },
     "./package.json": "./package.json"
@@ -67,5 +73,9 @@
   },
   "engines": {
     "node": "^18.18 || >=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
