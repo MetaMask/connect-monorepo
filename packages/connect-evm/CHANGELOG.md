@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- build: fix constraints ([#54](https://github.com/MetaMask/metamask-connect-monorepo/pull/54))
+
 ### Added
 
 - Added analytics tracking of request handling ([#46](https://github.com/MetaMask/connect-monorepo/pull/46))
