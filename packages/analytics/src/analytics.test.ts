@@ -79,7 +79,7 @@ t.describe('Analytics Integration', () => {
       eventProperties.integration_type,
     );
     analytics.track('mmconnect_initialized', {
-      dapp_id: 'some-non-global-property',
+      dapp_id: 'dapp_id',
     });
 
     // Wait for the Sender to flush the event (baseIntervalMs = 200ms + buffer)
@@ -91,7 +91,7 @@ t.describe('Analytics Integration', () => {
       event_name: 'mmconnect_initialized',
       properties: {
         ...eventProperties,
-        dapp_id: 'some-non-global-property',
+        dapp_id: 'dapp_id',
       },
     };
     t.expect(captured).toEqual([expectedEvent]);
