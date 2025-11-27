@@ -1,6 +1,7 @@
 import {
   type AddEthereumChainParameter,
   createMetamaskConnectEVM,
+  type EIP1193Provider,
   type MetamaskConnectEVM,
 } from '@metamask/connect-evm';
 
@@ -13,7 +14,7 @@ import {
 import type { OneOf } from '@wagmi/core/internal';
 
 import {
-  type EIP1193Provider,
+  type Address,
   getAddress,
   type ProviderConnectInfo,
   ResourceUnavailableRpcError,
@@ -80,30 +81,83 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       });
     },
 
-    async connect<withCapabilities extends boolean = false>(parameters?: {
+    async connect<withCapabilities extends boolean = false>(connectParams?: {
       chainId?: number | undefined;
       isReconnecting?: boolean | undefined;
       withCapabilities?: withCapabilities | boolean | undefined;
     }) {
-      const chainId = parameters?.chainId ?? DEFAULT_CHAIN_ID;
-      const withCapabilities = parameters?.withCapabilities;
+      const chainId = connectParams?.chainId ?? DEFAULT_CHAIN_ID;
+      const withCapabilities = connectParams?.withCapabilities;
 
-      // TODO: Add connectAndSign and connectWith support, including events
+      let accounts: readonly string[] = [];
+      if (connectParams?.isReconnecting) {
+        accounts = (await this.getAccounts().catch(() => [])).map((account) =>
+          getAddress(account),
+        );
+      }
 
       try {
-        const result = await metamask.connect({
-          chainId,
-          account: undefined,
-        });
+        let signResponse: string | undefined;
+        let connectWithResponse: unknown | undefined;
+
+        if (!accounts?.length) {
+          if (parameters.connectAndSign || parameters.connectWith) {
+            if (parameters.connectAndSign) {
+              signResponse = await (metamask as any).connectAndSign({
+                msg: parameters.connectAndSign,
+              });
+            } else if (parameters.connectWith) {
+              connectWithResponse = await (metamask as any).connectWith({
+                method: parameters.connectWith.method,
+                params: parameters.connectWith.params,
+              });
+            }
+
+            accounts = (await this.getAccounts()).map((account) =>
+              getAddress(account),
+            );
+          } else {
+            const result = await metamask.connect({
+              chainId,
+              account: undefined,
+            });
+            accounts = result.accounts.map((account) => getAddress(account));
+          }
+        }
+
+        // Switch to chain if provided
+        let currentChainId = (await this.getChainId()) as number;
+        if (chainId && currentChainId !== chainId) {
+          const chain = await this.switchChain!({ chainId }).catch((error) => {
+            if (error.code === UserRejectedRequestError.code) throw error;
+            return { id: currentChainId };
+          });
+          currentChainId = chain?.id ?? currentChainId;
+        }
+
+        // Emit events for connectAndSign and connectWith
+        const provider = await this.getProvider();
+        if (signResponse)
+          provider.emit('connectAndSign', {
+            accounts: accounts as Address[],
+            chainId: currentChainId,
+            signResponse,
+          });
+        else if (connectWithResponse)
+          provider.emit('connectWith', {
+            accounts: accounts as Address[],
+            chainId: currentChainId,
+            connectWithResponse,
+          });
 
         return {
           accounts: (withCapabilities
-            ? result.accounts.map((account) => ({
+            ? accounts.map((account) => ({
                 address: account,
                 capabilities: {},
               }))
-            : result.accounts) as never,
-          chainId: result.chainId ?? chainId,
+            : accounts) as never,
+          chainId: currentChainId,
         };
       } catch (err) {
         const error = err as RpcError;
@@ -199,15 +253,6 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
     },
 
     async onAccountsChanged(accounts) {
-      // TODO: verify if this is needed or if we can just rely on the
-      // existing disconnect event instead
-      // Disconnect if there are no accounts
-      if (accounts.length === 0) {
-        this.onDisconnect();
-        return;
-      }
-      // Regular change event
-
       config.emitter.emit('change', {
         accounts: accounts.map((account) => getAddress(account)),
       });
@@ -231,7 +276,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       // https://github.com/MetaMask/providers/pull/120
       if (error && (error as unknown as RpcError<1013>).code === 1013) {
         const provider = await this.getProvider();
-        if (provider && (await this.getAccounts()).length > 0) return;
+        if (provider && !!(await this.getAccounts()).length) return;
       }
 
       config.emitter.emit('disconnect');
