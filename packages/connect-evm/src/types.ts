@@ -93,7 +93,7 @@ type GenericProviderRequest = {
     | 'wallet_switchEthereumChain'
     | 'wallet_addEthereumChain'
   >;
-  params: unknown;
+  params?: unknown;
 };
 
 // Discriminated union for provider requests
