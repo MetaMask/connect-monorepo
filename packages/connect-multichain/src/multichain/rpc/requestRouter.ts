@@ -41,12 +41,7 @@ export class RequestRouter {
 	 * Forwards the request directly to the wallet via the transport.
 	 */
 	private async handleWithWallet(options: InvokeMethodOptions): Promise<Json> {
-		// Track wallet action requested event
-		if (this.config.analytics?.enabled) {
-				await this.trackWalletActionRequested(options);
-		}
-
-		try {
+		return this.#withAnalyticsTracking(options, async () => {
 			const request = this.transport.request({
 				method: 'wallet_invokeMethod',
 				params: options,
@@ -69,32 +64,44 @@ export class RequestRouter {
 
 			const response = await request;
 			if (response.error) {
-				// Track wallet action failed or rejected event
-				if (this.config.analytics?.enabled) {
-					const isRejection = isRejectionError(response.error);
-
-					if (isRejection) {
-						await this.trackWalletActionRejected(options);
-					} else {
-						await this.trackWalletActionFailed(options);
-					}
-				}
 				throw new RPCInvokeMethodErr(`RPC Request failed with code ${response.error.code}: ${response.error.message}`);
 			}
 
+			return response.result as Json;
+		});
+	}
+
+	/**
+	 * Wraps execution with analytics tracking.
+	 *
+	 * @param options - The invoke method options
+	 * @param execute - The function to execute
+	 * @returns The result of the execution
+	 */
+	async #withAnalyticsTracking(
+		options: InvokeMethodOptions,
+		execute: () => Promise<Json>,
+	): Promise<Json> {
+		if (this.config.analytics?.enabled) {
+			await this.#trackWalletActionRequested(options);
+		}
+
+		try {
+			const result = await execute();
+
 			if (this.config.analytics?.enabled) {
-					await this.trackWalletActionSucceeded(options);
+				await this.#trackWalletActionSucceeded(options);
 			}
 
-			return response.result as Json;
+			return result;
 		} catch (error) {
 			if (this.config.analytics?.enabled) {
 				const isRejection = isRejectionError(error);
 
 				if (isRejection) {
-					await this.trackWalletActionRejected(options);
+					await this.#trackWalletActionRejected(options);
 				} else {
-					await this.trackWalletActionFailed(options);
+					await this.#trackWalletActionFailed(options);
 				}
 			}
 			throw new RPCInvokeMethodErr(error.message);
@@ -104,7 +111,7 @@ export class RequestRouter {
 	/**
 	 * Tracks wallet action requested event.
 	 */
-	private async trackWalletActionRequested(options: InvokeMethodOptions): Promise<void> {
+	async #trackWalletActionRequested(options: InvokeMethodOptions): Promise<void> {
 		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
 		analytics.track('mmconnect_wallet_action_requested', props);
 	}
@@ -112,7 +119,7 @@ export class RequestRouter {
 	/**
 	 * Tracks wallet action succeeded event.
 	 */
-	private async trackWalletActionSucceeded(options: InvokeMethodOptions): Promise<void> {
+	async #trackWalletActionSucceeded(options: InvokeMethodOptions): Promise<void> {
 		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
 		analytics.track('mmconnect_wallet_action_succeeded', props);
 	}
@@ -120,7 +127,7 @@ export class RequestRouter {
 	/**
 	 * Tracks wallet action failed event.
 	 */
-	private async trackWalletActionFailed(options: InvokeMethodOptions): Promise<void> {
+	async #trackWalletActionFailed(options: InvokeMethodOptions): Promise<void> {
 		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
 		analytics.track('mmconnect_wallet_action_failed', props);
 	}
@@ -128,24 +135,25 @@ export class RequestRouter {
 	/**
 	 * Tracks wallet action rejected event.
 	 */
-	private async trackWalletActionRejected(options: InvokeMethodOptions): Promise<void> {
+	async #trackWalletActionRejected(options: InvokeMethodOptions): Promise<void> {
 		const props = await getWalletActionAnalyticsProperties(this.config, this.config.storage, options);
 		analytics.track('mmconnect_wallet_action_rejected', props);
 	}
-
 
 	/**
 	 * Routes the request to a configured RPC node.
 	 */
 	private async handleWithRpcNode(options: InvokeMethodOptions): Promise<Json> {
-		try {
-			return await this.rpcClient.request(options);
-		} catch (error) {
-			if (error instanceof MissingRpcEndpointErr) {
-				return this.handleWithWallet(options);
+		return this.#withAnalyticsTracking(options, async () => {
+			try {
+				return await this.rpcClient.request(options);
+			} catch (error) {
+				if (error instanceof MissingRpcEndpointErr) {
+					return this.handleWithWallet(options);
+				}
+				throw error;
 			}
-			throw error;
-		}
+		});
 	}
 
 	/**
@@ -154,6 +162,8 @@ export class RequestRouter {
 	private async handleWithSdkState(options: InvokeMethodOptions): Promise<Json> {
 		// TODO: to be implemented
 		console.warn(`Method "${options.request.method}" is configured for SDK state handling, but this is not yet implemented. Falling back to wallet passthrough.`);
+		// Fallback to wallet
 		return this.handleWithWallet(options);
 	}
 }
+
