@@ -4265,6 +4265,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/connect-evm@workspace:packages/connect-evm"
   dependencies:
+    "@metamask/analytics": "workspace:^"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
     "@metamask/connect-multichain": "workspace:^"

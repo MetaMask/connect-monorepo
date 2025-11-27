@@ -70,15 +70,24 @@ function testSuite<T extends MultichainOptions>({
 
         if (platform !== 'web') {
           t.expect(analytics.enable).not.toHaveBeenCalled();
+          t.expect(analytics.track).not.toHaveBeenCalled();
         } else {
           t.expect(analytics.enable).toHaveBeenCalled();
+          t.expect(analytics.track).toHaveBeenCalledWith(
+            'mmconnect_initialized',
+            t.expect.objectContaining({
+              mmconnect_version: t.expect.any(String),
+              dapp_id: t.expect.any(String),
+              platform: t.expect.any(String),
+              integration_type: t.expect.any(String),
+            }),
+          );
         }
-        t.expect(analytics.track).toHaveBeenCalledWith('sdk_initialized', {});
       },
     );
 
     t.it(
-      `${platform} should NOT call analytics.enable if analytics is DISABLED but trigger event anyways`,
+      `${platform} should NOT call analytics.enable if analytics is DISABLED and should NOT trigger event`,
       async () => {
         (testOptions.analytics as any).enabled = false;
         sdk = await createSDK(testOptions);
@@ -86,7 +95,7 @@ function testSuite<T extends MultichainOptions>({
         t.expect(mockedData.initSpy).toHaveBeenCalled();
         t.expect(mockedData.setupAnalyticsSpy).toHaveBeenCalled();
         t.expect(analytics.enable).not.toHaveBeenCalled();
-        t.expect(analytics.track).toHaveBeenCalled();
+        t.expect(analytics.track).not.toHaveBeenCalled();
       },
     );
 

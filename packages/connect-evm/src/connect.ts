@@ -1,3 +1,4 @@
+import { analytics } from '@metamask/analytics';
 import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
   MultichainCore,
@@ -7,6 +8,8 @@ import type {
 } from '@metamask/connect-multichain';
 import {
   createMetamaskConnect,
+  getWalletActionAnalyticsProperties,
+  isRejectionError,
   TransportType,
 } from '@metamask/connect-multichain';
 import {
@@ -121,6 +124,134 @@ export class MetamaskConnectEVM {
     });
 
     logger('Connect/EVM constructor completed');
+  }
+
+  /**
+   * Gets the core options for analytics checks.
+   *
+   * @returns The multichain options from the core instance
+   */
+  #getCoreOptions(): MultichainOptions {
+    return (this.#core as any).options as MultichainOptions;
+  }
+
+  /**
+   * Creates invoke options for analytics tracking.
+   *
+   * @param method - The RPC method name
+   * @param scope - The CAIP chain ID scope
+   * @param params - The method parameters
+   * @returns Invoke options object for analytics
+   */
+  #createInvokeOptions(
+    method: string,
+    scope: Scope,
+    params: unknown[],
+  ): {
+    scope: Scope;
+    request: { method: string; params: unknown[] };
+  } {
+    return {
+      scope,
+      request: { method, params },
+    };
+  }
+
+  /**
+   * Tracks a wallet action requested event.
+   *
+   * @param method - The RPC method name
+   * @param scope - The CAIP chain ID scope
+   * @param params - The method parameters
+   */
+  async #trackWalletActionRequested(
+    method: string,
+    scope: Scope,
+    params: unknown[],
+  ): Promise<void> {
+    const coreOptions = this.#getCoreOptions();
+    if (!coreOptions.analytics?.enabled) {
+      return;
+    }
+
+    try {
+      const invokeOptions = this.#createInvokeOptions(method, scope, params);
+      const props = await getWalletActionAnalyticsProperties(
+        coreOptions,
+        this.#core.storage,
+        invokeOptions,
+      );
+      analytics.track('mmconnect_wallet_action_requested', props);
+    } catch (error) {
+      logger('Error tracking mmconnect_wallet_action_requested event', error);
+    }
+  }
+
+  /**
+   * Tracks a wallet action succeeded event.
+   *
+   * @param method - The RPC method name
+   * @param scope - The CAIP chain ID scope
+   * @param params - The method parameters
+   */
+  async #trackWalletActionSucceeded(
+    method: string,
+    scope: Scope,
+    params: unknown[],
+  ): Promise<void> {
+    const coreOptions = this.#getCoreOptions();
+    if (!coreOptions.analytics?.enabled) {
+      return;
+    }
+
+    try {
+      const invokeOptions = this.#createInvokeOptions(method, scope, params);
+      const props = await getWalletActionAnalyticsProperties(
+        coreOptions,
+        this.#core.storage,
+        invokeOptions,
+      );
+      analytics.track('mmconnect_wallet_action_succeeded', props);
+    } catch (error) {
+      logger('Error tracking mmconnect_wallet_action_succeeded event', error);
+    }
+  }
+
+  /**
+   * Tracks a wallet action failed or rejected event based on the error.
+   *
+   * @param method - The RPC method name
+   * @param scope - The CAIP chain ID scope
+   * @param params - The method parameters
+   * @param error - The error that occurred
+   */
+  async #trackWalletActionFailed(
+    method: string,
+    scope: Scope,
+    params: unknown[],
+    error: unknown,
+  ): Promise<void> {
+    const coreOptions = this.#getCoreOptions();
+    if (!coreOptions.analytics?.enabled) {
+      return;
+    }
+
+    try {
+      const invokeOptions = this.#createInvokeOptions(method, scope, params);
+      const props = await getWalletActionAnalyticsProperties(
+        coreOptions,
+        this.#core.storage,
+        invokeOptions,
+      );
+      const isRejection = isRejectionError(error);
+      if (isRejection) {
+        analytics.track('mmconnect_wallet_action_rejected', props);
+      } else {
+        analytics.track('mmconnect_wallet_action_failed', props);
+      }
+    } catch {
+      logger('Error tracking wallet action rejected or failed event', error);
+    }
   }
 
   /**
@@ -280,7 +411,12 @@ export class MetamaskConnectEVM {
     chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
   }): Promise<unknown> {
+    const method = 'wallet_switchEthereumChain';
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
+    const scope: Scope = `eip155:${isHex(chainId) ? hexToNumber(chainId) : chainId}`;
+    const params = [{ chainId: hexChainId }];
+
+    await this.#trackWalletActionRequested(method, scope, params);
 
     // TODO (wenfix): better way to return here other than resolving.
     if (this.selectedChainId === hexChainId) {
@@ -294,31 +430,25 @@ export class MetamaskConnectEVM {
       this.#core.transportType === TransportType.MWP
     ) {
       this.#onChainChanged(hexChainId);
+      await this.#trackWalletActionSucceeded(method, scope, params);
       return Promise.resolve();
     }
 
     try {
-      return await this.#request({
+      const result = await this.#request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: hexChainId }],
+        params,
       });
-    } catch (error: unknown) {
+      await this.#trackWalletActionSucceeded(method, scope, params);
+      return result;
+    } catch (error) {
+      await this.#trackWalletActionFailed(method, scope, params, error);
       // Fallback to add the chain if its not configured in the wallet.
       if ((error as Error).message.includes('Unrecognized chain ID')) {
         return this.#addEthereumChain(chainConfiguration);
       }
-
       throw error;
     }
-  }
-
-  /**
-   * Terminates the connection to the wallet
-   *
-   * @deprecated Use disconnect() instead
-   */
-  async terminate(): Promise<void> {
-    await this.disconnect();
   }
 
   /**
@@ -355,10 +485,23 @@ export class MetamaskConnectEVM {
       const shouldForceConnectionRequest =
         request.method === 'wallet_requestPermissions';
 
-      return this.connect({
-        chainId: DEFAULT_CHAIN_ID,
-        forceRequest: shouldForceConnectionRequest,
-      });
+      const { method, params } = request;
+      const chainId = DEFAULT_CHAIN_ID;
+      const scope: Scope = `eip155:${chainId}`;
+
+      await this.#trackWalletActionRequested(method, scope, params);
+
+      try {
+        const result = await this.connect({
+          chainId,
+          forceRequest: shouldForceConnectionRequest,
+        });
+        await this.#trackWalletActionSucceeded(method, scope, params);
+        return result;
+      } catch (error) {
+        await this.#trackWalletActionFailed(method, scope, params, error);
+        throw error;
+      }
     }
 
     if (isSwitchChainRequest(request)) {
@@ -372,6 +515,16 @@ export class MetamaskConnectEVM {
     }
 
     if (isAccountsRequest(request)) {
+      const { method } = request;
+      const chainId = this.#provider.selectedChainId
+        ? hexToNumber(this.#provider.selectedChainId)
+        : 1;
+      const scope: Scope = `eip155:${chainId}`;
+      const params: unknown[] = [];
+
+      await this.#trackWalletActionRequested(method, scope, params);
+      await this.#trackWalletActionSucceeded(method, scope, params);
+
       return this.#provider.accounts;
     }
 
@@ -392,22 +545,37 @@ export class MetamaskConnectEVM {
    * a switchEthereumChain request
    *
    * @param chainConfiguration - The chain configuration to use in case the chain is not present by the wallet
+   * @returns Nothing
    */
-  #addEthereumChain(chainConfiguration?: AddEthereumChainParameter): void {
+  async #addEthereumChain(
+    chainConfiguration?: AddEthereumChainParameter,
+  ): Promise<void> {
     logger('addEthereumChain called', { chainConfiguration });
+    const method = 'wallet_addEthereumChain';
 
     if (!chainConfiguration) {
       throw new Error('No chain configuration found.');
     }
 
-    this.#request({
-      method: 'wallet_addEthereumChain',
-      params: [chainConfiguration],
-    }).catch((error) => {
-      // TODO (wenfix): does it make sense to throw here?
-      console.error('Error adding Ethereum chain', error);
+    // Get chain ID from config or use current chain
+    const chainId = chainConfiguration.chainId
+      ? parseInt(chainConfiguration.chainId, 16)
+      : hexToNumber(this.#provider.selectedChainId ?? '0x1');
+    const scope: Scope = `eip155:${chainId}`;
+    const params = [chainConfiguration];
+
+    await this.#trackWalletActionRequested(method, scope, params);
+
+    try {
+      await this.#request({
+        method: 'wallet_addEthereumChain',
+        params,
+      });
+      await this.#trackWalletActionSucceeded(method, scope, params);
+    } catch (error) {
+      await this.#trackWalletActionFailed(method, scope, params, error);
       throw error;
-    });
+    }
   }
 
   /**

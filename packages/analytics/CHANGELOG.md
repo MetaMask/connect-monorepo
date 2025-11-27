@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `v2/events/` endpoint to `schema.ts` ([#46](https://github.com/MetaMask/connect-monorepo/pull/46))
+
+### Changed
+
+- Updated `analytics.ts` to point towards `v2/events` endpoint and update payload accordingly ([#46](https://github.com/MetaMask/connect-monorepo/pull/46))
+
 ## [0.1.1]
 
 ### Added

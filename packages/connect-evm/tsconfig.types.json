@@ -9,13 +9,16 @@
     "tsBuildInfoFile": "./tsconfig.types.tsbuildinfo",
     "outDir": "dist/browser/es",
     "baseUrl": "./",
-    "rootDir": "./src",
     "module": "ES2020",
     "moduleResolution": "bundler",
     "lib": ["DOM", "ES2020"],
     "skipLibCheck": true,
     "types": ["node"]
   },
+  "references": [
+    { "path": "../analytics/tsconfig.build.json" },
+    { "path": "../connect-multichain/tsconfig.build.json" }
+  ],
   "include": ["src"],
   "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts"]
 }
