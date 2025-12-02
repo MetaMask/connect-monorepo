@@ -279,22 +279,14 @@ export class MetamaskConnectEVM {
       forceRequest,
     });
 
-    // If account is already available, proceed immediately
-    if (this.#provider.selectedAccount) {
-      const resolvedParams =
-        typeof params === 'function'
-          ? params(this.#provider.selectedAccount)
-          : params;
-      return await this.#provider.request({
-        method,
-        params: resolvedParams,
-      });
-    }
-
-    // Otherwise, wait for the accountsChanged event to be triggered
     // This is only needed for methods that require an account
     const timeout = 5000;
     const accountPromise = new Promise<Address>((resolve, reject) => {
+      // If account is already available, proceed immediately
+      if (this.#provider.selectedAccount) {
+        return this.#provider.selectedAccount;
+      }
+      // Otherwise, wait for the accountsChanged event to be triggered
       // eslint-disable-next-line prefer-const
       let timeoutId: ReturnType<typeof setTimeout>;
 
