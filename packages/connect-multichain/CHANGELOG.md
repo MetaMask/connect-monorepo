@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0]
+
 ### Changed
 
 - **BREAKING** Make the `dapp.name` and `dapp.url` properties required in `createMetamaskConnect()` ([#56](https://github.com/MetaMask/connect-monorepo/pull/56))
@@ -54,7 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.2.1...HEAD
+[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.3.0...HEAD
+[0.3.0]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.2.1...@metamask/connect-multichain@0.3.0
 [0.2.1]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.2.0...@metamask/connect-multichain@0.2.1
 [0.2.0]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.1.0...@metamask/connect-multichain@0.2.0
 [0.1.0]: https://github.com/MetaMask/metamask-connect-monorepo/releases/tag/@metamask/connect-multichain@0.1.0
