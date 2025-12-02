@@ -80,7 +80,7 @@ export class MetamaskConnectEVM {
   #sessionScopes: SessionData['sessionScopes'] = {};
 
   /** Optional event handlers for the EIP-1193 provider events. */
-  readonly #eventHandlers?: EventHandlers | undefined;
+  readonly #eventHandlers?: Partial<EventHandlers> | undefined;
 
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
@@ -273,7 +273,7 @@ export class MetamaskConnectEVM {
       account?: string | undefined;
       forceRequest?: boolean;
     } = { chainId: DEFAULT_CHAIN_ID }, // Default to mainnet if no chain ID is provided
-  ): Promise<{ accounts: Address[]; chainId?: number }> {
+  ): Promise<{ accounts: Address[]; chainId: number }> {
     logger('request: connect', { chainId, account });
     const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
 
@@ -333,50 +333,69 @@ export class MetamaskConnectEVM {
    * @throws Error if the selected account is not available after timeout
    */
   async connectAndSign(message: string): Promise<string> {
-    await this.connect();
+    const { accounts, chainId } = await this.connect();
 
-    // If account is already available, proceed immediately
-    if (this.#provider.selectedAccount) {
-      return (await this.#provider.request({
-        method: 'personal_sign',
-        params: [this.#provider.selectedAccount, message],
-      })) as string;
-    }
+    const result = (await this.#provider.request({
+      method: 'personal_sign',
+      params: [accounts[0], message],
+    })) as string;
 
-    // Otherwise, wait for the accountsChanged event to be triggered
-    const timeout = 5000;
-    const accountPromise = new Promise<Address>((resolve, reject) => {
-      // eslint-disable-next-line prefer-const
-      let timeoutId: ReturnType<typeof setTimeout>;
+    this.#eventHandlers?.connectAndSign?.({
+      accounts,
+      chainId,
+      signResponse: result,
+    })
 
-      const handler = (accounts: Address[]): void => {
-        if (accounts.length > 0) {
-          clearTimeout(timeoutId);
-          this.#provider.off('accountsChanged', handler);
-          resolve(accounts[0]);
-        }
-      };
+    return result;
+  }
 
-      this.#provider.on('accountsChanged', handler);
 
-      timeoutId = setTimeout(() => {
-        this.#provider.off('accountsChanged', handler);
-        reject(new Error('Selected account not available after timeout'));
-      }, timeout);
-
-      if (this.#provider.selectedAccount) {
-        clearTimeout(timeoutId);
-        this.#provider.off('accountsChanged', handler);
-        resolve(this.#provider.selectedAccount);
-      }
+  /**
+   * Connects to the wallet and invokes a method with specified parameters.
+   *
+   * @param options - The options for connecting and invoking the method
+   * @param options.method - The method name to invoke
+   * @param options.params - The parameters to pass to the method, or a function that receives the account and returns params
+   * @param options.chainId - Optional chain ID to connect to (defaults to mainnet)
+   * @param options.account - Optional specific account to connect to
+   * @param options.forceRequest - Whether to force a request regardless of an existing session
+   * @returns A promise that resolves with the result of the method invocation
+   * @throws Error if the selected account is not available after timeout (for methods that require an account)
+   */
+  async connectWith({
+    method,
+    params,
+    chainId,
+    account,
+    forceRequest,
+  }: {
+    method: string;
+    params: unknown[] | ((account: Address) => unknown[]);
+    chainId?: number;
+    account?: string | undefined;
+    forceRequest?: boolean;
+  }): Promise<unknown> {
+    const { accounts: connectedAccounts, chainId: connectedChainId} = await this.connect({
+      chainId: chainId ?? DEFAULT_CHAIN_ID,
+      account,
+      forceRequest,
     });
 
-    const selectedAccount = await accountPromise;
+    const resolvedParams =
+      typeof params === 'function' ? params(connectedAccounts[0]) : params;
 
-    return (await this.#provider.request({
-      method: 'personal_sign',
-      params: [selectedAccount, message],
-    })) as string;
+    const result = await this.#provider.request({
+      method,
+      params: resolvedParams,
+    });
+
+    this.#eventHandlers?.connectWith?.({
+      accounts: connectedAccounts,
+      chainId: connectedChainId,
+      connectWithResponse: result,
+    })
+
+    return result;
   }
 
   /**
@@ -783,7 +802,7 @@ export class MetamaskConnectEVM {
  */
 export async function createMetamaskConnectEVM(
   options: Pick<MultichainOptions, 'dapp' | 'api'> & {
-    eventHandlers?: EventHandlers;
+    eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
   },
 ): Promise<MetamaskConnectEVM> {
