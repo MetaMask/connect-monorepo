@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- Fixed mobile deeplink bug that occurred when `MultichainSDK.connect()` was called and the transport was already connected ([#57](https://github.com/MetaMask/connect-monorepo/pull/57))
-
 ### Changed
 
 - **BREAKING** Make the `dapp.name` and `dapp.url` properties required in `createMetamaskConnect()` ([#56](https://github.com/MetaMask/connect-monorepo/pull/56))
   - The `dapp.url` property is now always overwritten with the value of the page's url when MetaMask Connect is running in a browser context ([#56](https://github.com/MetaMask/connect-monorepo/pull/56))
+
+### Fixed
+
+- Fixed mobile deeplink bug that occurred when `MultichainSDK.connect()` was called and the transport was already connected ([#57](https://github.com/MetaMask/connect-monorepo/pull/57))
 
 ## [0.2.1]
 
