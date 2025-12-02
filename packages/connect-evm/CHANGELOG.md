@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- **BREAKING** Make the `dapp.name` and `dapp.url` properties required in `createMetamaskConnectEVM()` ([#56](https://github.com/MetaMask/connect-monorepo/pull/56))
-  - The `dapp.url` property is now always overwritten with the value of the page's url when MetaMask Connect is running in a browser context ([#56](https://github.com/MetaMask/connect-monorepo/pull/56))
-
 ### Added
 
 - Added `connectWith()` method which makes a request for the method to be paired together with a connection request ([#53](https://github.com/MetaMask/connect-monorepo/pull/53))
@@ -24,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING** Make the `dapp.name` and `dapp.url` properties required in `createMetamaskConnectEVM()` ([#56](https://github.com/MetaMask/connect-monorepo/pull/56))
+  - The `dapp.url` property is now always overwritten with the value of the page's url when MetaMask Connect is running in a browser context ([#56](https://github.com/MetaMask/connect-monorepo/pull/56))
 - `connect()` now always returns `chainId`, previously it could undefined ([#53](https://github.com/MetaMask/connect-monorepo/pull/53))
 
 ### Fixed
