@@ -12,6 +12,12 @@
 ## Installation
 
 ```bash
+yarn add @metamask/connect-evm
+```
+
+or
+
+```bash
 npm install @metamask/connect-evm
 ```
 

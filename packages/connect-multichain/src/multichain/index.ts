@@ -47,6 +47,10 @@ import {
   TransportType,
 } from '../domain';
 import {
+  getBaseAnalyticsProperties,
+  isRejectionError,
+} from './utils/analytics';
+import {
   createLogger,
   enableDebug,
   isEnabled as isLoggerEnabled,
@@ -143,6 +147,9 @@ export class MultichainSDK extends MultichainCore {
 
   private constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
+    const integrationType = options.analytics?.enabled
+      ? options.analytics.integrationType
+      : 'direct';
     const allOptions = {
       ...withDappMetadata,
       ui: {
@@ -154,7 +161,7 @@ export class MultichainSDK extends MultichainCore {
       analytics: {
         ...(options.analytics ?? {}),
         enabled: options.analytics?.enabled ?? true,
-        integrationType: 'unknown',
+        integrationType,
       },
     };
 
@@ -198,7 +205,7 @@ export class MultichainSDK extends MultichainCore {
     const { integrationType } = this.options.analytics ?? {
       integrationType: '',
     };
-    analytics.setGlobalProperty('sdk_version', version);
+    analytics.setGlobalProperty('mmconnect_version', version);
     analytics.setGlobalProperty('dapp_id', dappId);
     analytics.setGlobalProperty('anon_id', anonId);
     analytics.setGlobalProperty('platform', platform);
@@ -275,7 +282,17 @@ export class MultichainSDK extends MultichainCore {
       } else {
         await this.setupAnalytics();
         await this.setupTransport();
-        analytics.track('sdk_initialized', {});
+        if (this.options.analytics?.enabled) {
+          try {
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
+            analytics.track('mmconnect_initialized', baseProps);
+          } catch (error) {
+            logger('Error tracking initialized event', error);
+          }
+        }
         if (typeof window !== 'undefined') {
           // @ts-expect-error mmsdk should be accessible
           window.mmsdk = this;
@@ -506,14 +523,57 @@ export class MultichainSDK extends MultichainCore {
     });
   }
 
-  private async handleConnection(promise: Promise<void>) {
+  private async handleConnection(
+    promise: Promise<void>,
+    scopes: Scope[],
+    transportType: TransportType,
+  ) {
     this.state = 'connecting';
     return promise
-      .then(() => {
+      .then(async () => {
         this.state = 'connected';
+        if (this.options.analytics?.enabled) {
+          try {
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
+
+            analytics.track('mmconnect_connection_established', {
+              ...baseProps,
+              transport_type: transportType,
+              user_permissioned_chains: scopes,
+            });
+          } catch (error) {
+            logger('Error tracking connection_established event', error);
+          }
+        }
       })
-      .catch((error) => {
+      .catch(async (error) => {
         this.state = 'disconnected';
+        if (this.options.analytics?.enabled) {
+          try {
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
+            const isRejection = isRejectionError(error);
+
+            if (isRejection) {
+              analytics.track('mmconnect_connection_rejected', {
+                ...baseProps,
+                transport_type: transportType,
+              });
+            } else {
+              analytics.track('mmconnect_connection_failed', {
+                ...baseProps,
+                transport_type: transportType,
+              });
+            }
+          } catch {
+            logger('Error tracking connection failed/rejected event', error);
+          }
+        }
         return Promise.reject(error);
       });
   }
@@ -532,6 +592,37 @@ export class MultichainSDK extends MultichainCore {
     const secure = isSecure();
     const hasExtensionInstalled = await hasExtension();
 
+    let transportType;
+    if (
+      platformType === PlatformType.MetaMaskMobileWebview ||
+      (isWeb && hasExtensionInstalled && preferExtension)
+    ) {
+      transportType = TransportType.Browser;
+    } else {
+      transportType = TransportType.MWP;
+    }
+
+    if (this.options.analytics?.enabled) {
+      try {
+        const baseProps = await getBaseAnalyticsProperties(
+          this.options,
+          this.storage,
+        );
+        const dappConfiguredChains = Object.keys(
+          this.options.api.supportedNetworks,
+        );
+
+        analytics.track('mmconnect_connection_initiated', {
+          ...baseProps,
+          transport_type: transportType,
+          dapp_configured_chains: dappConfiguredChains,
+          dapp_requested_chains: scopes,
+        });
+      } catch (error) {
+        logger('Error tracking connection_initiated event', error);
+      }
+    }
+
     if (this.__transport?.isConnected() && !secure) {
       return this.handleConnection(
         this.__transport
@@ -543,6 +634,8 @@ export class MultichainSDK extends MultichainCore {
               return this.storage.setTransport(TransportType.Browser);
             }
           }),
+        scopes,
+        transportType,
       );
     }
 
@@ -551,6 +644,8 @@ export class MultichainSDK extends MultichainCore {
       const defaultTransport = await this.setupDefaultTransport();
       return this.handleConnection(
         defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
+        scopes,
+        transportType,
       );
     }
 
@@ -560,6 +655,8 @@ export class MultichainSDK extends MultichainCore {
       // Web transport has no initial payload
       return this.handleConnection(
         defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
+        scopes,
+        transportType,
       );
     }
 
@@ -575,12 +672,16 @@ export class MultichainSDK extends MultichainCore {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
       return this.handleConnection(
         this.deeplinkConnect(scopes, caipAccountIds),
+        scopes,
+        transportType,
       );
     }
 
     // Show install modal for RN, Web + Node
     return this.handleConnection(
       this.showInstallModal(shouldShowInstallModal, scopes, caipAccountIds),
+      scopes,
+      transportType,
     );
   }
 

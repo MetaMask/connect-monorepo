@@ -51,8 +51,8 @@ module.exports = defineConfig({
     );
 
     for (const workspace of Yarn.workspaces()) {
-      // We skip playground checks, as these are not user facing packages
-      if (workspace.cwd.includes('playground')) {
+      // We skip playground and integration checks, as these are not user facing packages
+      if (workspace.cwd.includes('playground') || workspace.cwd.includes('integrations')) {
         continue;
       }
       const workspaceBasename = getWorkspaceBasename(workspace);

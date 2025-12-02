@@ -53,6 +53,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v2/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Track V2 namespaced events
+         * @description Endpoint to submit namespaced analytics events for the MetaMask SDK (version 2).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EventV2"][];
+                };
+            };
+            responses: {
+                /** @description Events tracked successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Indicates the success of the event tracking.
+                             * @example success
+                             */
+                            status?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -420,6 +469,52 @@ export interface components {
              * @enum {string}
              */
             platform: "extension" | "mobile";
+        };
+        EventV2: components["schemas"]["MMConnectPayload"] | components["schemas"]["MobileSDKConnectV2Payload"];
+        MMConnectPayload: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            namespace: "metamask/connect";
+            /** @enum {string} */
+            event_name: "mmconnect_initialized" | "mmconnect_connection_initiated" | "mmconnect_connection_established" | "mmconnect_connection_rejected" | "mmconnect_connection_failed" | "mmconnect_wallet_action_requested" | "mmconnect_wallet_action_succeeded" | "mmconnect_wallet_action_failed" | "mmconnect_wallet_action_rejected";
+            properties: components["schemas"]["MMConnectProperties"];
+        };
+        MobileSDKConnectV2Payload: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            namespace: "mobile/sdk-connect-v2";
+            /** @enum {string} */
+            event_name: "wallet_connection_request_received" | "wallet_connection_request_failed" | "wallet_connection_user_approved" | "wallet_connection_user_rejected" | "wallet_action_received" | "wallet_action_user_approved" | "wallet_action_user_rejected";
+            properties: components["schemas"]["MobileSDKConnectV2Properties"];
+        };
+        MMConnectProperties: {
+            mmconnect_version: string;
+            dapp_id: string;
+            /** Format: uuid */
+            anon_id: string;
+            /** @enum {string} */
+            platform: "web-desktop" | "web-mobile" | "nodejs" | "in-app-browser" | "react-native";
+            integration_type: string;
+            /** @enum {string} */
+            transport_type?: "browser" | "mwp" | "unknown";
+            method?: string;
+            caip_chain_id?: string;
+            /** @description Array of CAIP-2 chain IDs that the dApp has configured */
+            dapp_configured_chains?: string[];
+            /** @description Array of CAIP-2 chain IDs that the dApp has requested */
+            dapp_requested_chains?: string[];
+            /** @description Array of CAIP-2 chain IDs that the user has permissioned */
+            user_permissioned_chains?: string[];
+        };
+        MobileSDKConnectV2Properties: {
+            /** Format: uuid */
+            anon_id: string;
+            /** @enum {string} */
+            platform: "mobile";
         };
     };
     responses: never;

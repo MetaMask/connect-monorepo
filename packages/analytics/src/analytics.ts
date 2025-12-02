@@ -5,20 +5,23 @@ import createClient from 'openapi-fetch';
 import type * as schema from './schema';
 import Sender from './sender';
 
-type Event = schema.components['schemas']['Event'];
+type Event = schema.components['schemas']['EventV2'];
+type MMConnectPayload = schema.components['schemas']['MMConnectPayload'];
+type MMConnectProperties = schema.components['schemas']['MMConnectProperties'];
+type MMConnectEventName = MMConnectPayload['event_name'];
 
 class Analytics {
   private enabled = false;
 
   private readonly sender: Sender<Event>;
 
-  private properties: Record<string, string> = {};
+  private properties: Partial<MMConnectProperties> = {};
 
   constructor(baseUrl: string) {
     const client = createClient<schema.paths>({ baseUrl });
 
     const sendFn = async (batch: Event[]): Promise<void> => {
-      const res = await client.POST('/v1/events', { body: batch });
+      const res = await client.POST('/v2/events', { body: batch });
       if (res.response.status !== 200) {
         throw new Error(res.error);
       }
@@ -31,20 +34,26 @@ class Analytics {
     this.enabled = true;
   }
 
-  public setGlobalProperty(key: string, value: string): void {
+  public setGlobalProperty<K extends keyof MMConnectProperties>(
+    key: K,
+    value: MMConnectProperties[K],
+  ): void {
     this.properties[key] = value;
   }
 
-  public track<T extends Event>(name: T['name'], properties: Partial<T>): void {
+  public track(
+    eventName: MMConnectEventName,
+    properties: Partial<MMConnectProperties>,
+  ): void {
     if (!this.enabled) {
       return;
     }
 
-    const event = {
-      name,
-      ...this.properties,
-      ...properties,
-    } as T;
+    const event: MMConnectPayload = {
+      namespace: 'metamask/connect',
+      event_name: eventName,
+      properties: { ...properties, ...this.properties } as MMConnectProperties,
+    };
 
     this.sender.enqueue(event);
   }

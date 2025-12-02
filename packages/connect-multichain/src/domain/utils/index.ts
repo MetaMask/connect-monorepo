@@ -6,3 +6,8 @@
 export function getVersion(): string {
   return '0.0.0';
 }
+
+export {
+  getWalletActionAnalyticsProperties,
+  isRejectionError,
+} from '../../multichain/utils/analytics';
