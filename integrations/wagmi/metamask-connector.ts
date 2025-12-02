@@ -89,11 +89,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       const chainId = connectParams?.chainId ?? DEFAULT_CHAIN_ID;
       const withCapabilities = connectParams?.withCapabilities;
 
-      let accounts: readonly string[] = [];
+      let accounts: readonly Address[] = [];
       if (connectParams?.isReconnecting) {
-        accounts = (await this.getAccounts().catch(() => [])).map((account) =>
-          getAddress(account),
-        );
+        try {
+          accounts = await this.getAccounts()
+        } catch {
+          // noop
+        }
       }
 
       try {
@@ -113,17 +115,21 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               });
             }
 
-            accounts = (await this.getAccounts()).map((account) =>
-              getAddress(account),
-            );
+            try {
+              accounts = await this.getAccounts()
+            } catch {
+              // noop
+            }
           } else {
             const result = await metamask.connect({
               chainId,
               account: undefined,
             });
-            accounts = result.accounts.map((account) => getAddress(account));
+            accounts = result.accounts
           }
         }
+
+        const checksummedAccounts = accounts.map((account) => getAddress(account));
 
         // Switch to chain if provided
         let currentChainId = (await this.getChainId()) as number;
@@ -139,24 +145,24 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         const provider = await this.getProvider();
         if (signResponse)
           provider.emit('connectAndSign', {
-            accounts: accounts as Address[],
+            accounts: checksummedAccounts as Address[],
             chainId: currentChainId,
             signResponse,
           });
         else if (connectWithResponse)
           provider.emit('connectWith', {
-            accounts: accounts as Address[],
+            accounts: checksummedAccounts as Address[],
             chainId: currentChainId,
             connectWithResponse,
           });
 
         return {
           accounts: (withCapabilities
-            ? accounts.map((account) => ({
+            ? checksummedAccounts.map((account) => ({
                 address: account,
                 capabilities: {},
               }))
-            : accounts) as never,
+            : checksummedAccounts) as never,
           chainId: currentChainId,
         };
       } catch (err) {
