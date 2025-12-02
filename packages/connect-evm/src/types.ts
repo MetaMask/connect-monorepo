@@ -25,7 +25,7 @@ export type EIP1193ProviderEvents = {
 };
 
 export type EventHandlers = {
-  connect: (result: { chainId: string }) => void;
+  connect: (result: { chainId: string, accounts: Address[] }) => void;
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;

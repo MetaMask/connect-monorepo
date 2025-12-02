@@ -141,21 +141,6 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           currentChainId = chain?.id ?? currentChainId;
         }
 
-        // Emit events for connectAndSign and connectWith
-        const provider = await this.getProvider();
-        if (signResponse)
-          provider.emit('connectAndSign', {
-            accounts: checksummedAccounts as Address[],
-            chainId: currentChainId,
-            signResponse,
-          });
-        else if (connectWithResponse)
-          provider.emit('connectWith', {
-            accounts: checksummedAccounts as Address[],
-            chainId: currentChainId,
-            connectWithResponse,
-          });
-
         return {
           accounts: (withCapabilities
             ? checksummedAccounts.map((account) => ({
