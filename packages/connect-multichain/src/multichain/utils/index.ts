@@ -44,11 +44,7 @@ export function compressString(str: string): string {
 }
 
 export function getDappId(dapp?: DappSettings) {
-  if (typeof window === 'undefined' || typeof window.location === 'undefined') {
-    return dapp?.name ?? dapp?.url ?? 'N/A';
-  }
-
-  return window.location.hostname;
+  return dapp?.url ?? dapp?.name;
 }
 
 export function openDeeplink(

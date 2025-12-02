@@ -31,41 +31,21 @@ t.describe('Utils', () => {
 	});
 
 	t.describe('getDappId', () => {
-		const mockHostname = 'mockdapp.com';
 		const mockDappName = 'Mock DApp Name';
 		const mockDappUrl = 'http://mockdapp.com';
-		const originalWindow = global.window;
 
-		t.afterEach(() => {
-			global.window = originalWindow;
-		});
-
-		t.it('should return window.location.hostname if window and window.location are defined', () => {
-			global.window = {
-				location: {
-					hostname: mockHostname,
-				},
-			} as any;
-			t.expect(utils.getDappId()).toBe(mockHostname);
-		});
-
-		t.it('should return dappMetadata.name if window is undefined and name is available', () => {
+		t.it('should return dappMetadata.name if defined and url is not', () => {
 			global.window = undefined as any;
-			const dappSettings = { name: mockDappName, url: mockDappUrl };
+			const dappSettings = { name: mockDappName };
 			t.expect(utils.getDappId(dappSettings)).toBe(mockDappName);
 		});
 
-		t.it('should return dappMetadata.url if window is undefined and name is not available but url is', () => {
+		t.it('should return dappMetadata.url if defined', () => {
 			global.window = undefined as any;
-			const dappSettings = { url: mockDappUrl };
+			const dappSettings = { url: mockDappUrl, name: mockDappName };
 			t.expect(utils.getDappId(dappSettings)).toBe(mockDappUrl);
 		});
 
-		t.it('should return "N/A" if window is undefined and neither name nor url is available', () => {
-			global.window = undefined as any;
-			const dappSettings = {};
-			t.expect(utils.getDappId(dappSettings)).toBe('N/A');
-		});
 	});
 
 	t.describe('getSDKVersion', () => {
