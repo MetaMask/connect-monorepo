@@ -23,7 +23,7 @@ export type { SessionData } from '@metamask/multichain-api-client';
  */
 export type DappSettings = {
   name: string;
-  url: string;
+  url?: string;
 } & ({ iconUrl?: string } | { base64Icon?: string });
 
 export type ConnectionRequest = {

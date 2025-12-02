@@ -122,16 +122,14 @@ export function setupDappMetadata(
     platform === PlatformType.MobileWeb ||
     platform === PlatformType.MetaMaskMobileWebview;
 
+  if (isBrowser) {
+    options.dapp = {
+      ...options.dapp,
+      url: `${window.location.protocol}//${window.location.host}`,
+    };
+  }
   if (!options.dapp?.url) {
-    // Automatically set dappMetadata on web env if not defined
-    if (isBrowser) {
-      options.dapp = {
-        ...options.dapp,
-        url: `${window.location.protocol}//${window.location.host}`,
-      };
-    } else {
-      throw new Error('You must provide dapp url');
-    }
+    throw new Error('You must provide dapp url');
   }
   const BASE_64_ICON_MAX_LENGTH = 163400;
   // Check if iconUrl and url are valid
