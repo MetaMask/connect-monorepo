@@ -43,8 +43,8 @@ export function compressString(str: string): string {
   return base64Encode(binaryString);
 }
 
-export function getDappId(dapp?: DappSettings) {
-  return dapp?.url ?? dapp?.name;
+export function getDappId(dapp: DappSettings) {
+  return dapp.url ?? dapp.name;
 }
 
 export function openDeeplink(
