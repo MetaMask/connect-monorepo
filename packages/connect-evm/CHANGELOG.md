@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- `connect()` now always returns `chainId`, previously it could undefined ([#53](https://github.com/MetaMask/connect-monorepo/pull/53))
-
 ### Added
 
 - Added `connectWith()` method which makes a request for the method to be paired together with a connection request ([#53](https://github.com/MetaMask/connect-monorepo/pull/53))
@@ -20,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `eventHandlers.connectWith` handler which is called on successful `connectWith` request with an object including the `accounts`, `chainId`, and `connectWithResponse` ([#53](https://github.com/MetaMask/connect-monorepo/pull/53))
 - Added analytics tracking of request handling ([#46](https://github.com/MetaMask/connect-monorepo/pull/46))
 - Initial release ([#21](https://github.com/MetaMask/connect-monorepo/pull/21))
+
+### Changed
+
+- `connect()` now always returns `chainId`, previously it could undefined ([#53](https://github.com/MetaMask/connect-monorepo/pull/53))
 
 ### Fixed
 
