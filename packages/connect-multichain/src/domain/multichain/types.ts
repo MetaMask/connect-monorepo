@@ -22,7 +22,7 @@ export type { SessionData } from '@metamask/multichain-api-client';
  * - Using a base64-encoded icon
  */
 export type DappSettings = {
-  name?: string;
+  name: string;
   url?: string;
 } & ({ iconUrl?: string } | { base64Icon?: string });
 
