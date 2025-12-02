@@ -122,6 +122,9 @@ export function setupDappMetadata(
     platform === PlatformType.MobileWeb ||
     platform === PlatformType.MetaMaskMobileWebview;
 
+  if (!options.dapp?.name) {
+    throw new Error('You must provide dapp name');
+  }
   if (isBrowser) {
     options.dapp = {
       ...options.dapp,
