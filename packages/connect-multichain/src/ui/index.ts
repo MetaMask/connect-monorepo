@@ -147,7 +147,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
 
   createDeeplink(connectionRequest?: ConnectionRequest) {
     if (!connectionRequest) {
-      return `${METAMASK_DEEPLINK_BASE}`;
+      throw new Error('createDeeplink can only be called with a connection request');
     }
     const json = JSON.stringify(connectionRequest);
     const compressed = compressString(json);

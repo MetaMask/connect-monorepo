@@ -496,16 +496,6 @@ export class MultichainSDK extends MultichainCore {
             }
           },
         );
-      } else {
-        timeout = setTimeout(() => {
-          const deeplink = this.options.ui.factory.createDeeplink();
-          const universalLink = this.options.ui.factory.createUniversalLink();
-          if (this.options.mobile?.preferredOpenLink) {
-            this.options.mobile.preferredOpenLink(deeplink, '_self');
-          } else {
-            openDeeplink(this.options, deeplink, universalLink);
-          }
-        }, 250);
       }
 
       this.transport
