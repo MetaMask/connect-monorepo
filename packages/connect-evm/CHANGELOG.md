@@ -18,5 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Typedoc generation ([#31](https://github.com/MetaMask/connect-monorepo/pull/31))
 - Permissioning accounts through `wallet_requestPermissions` ([#31](https://github.com/MetaMask/connect-monorepo/pull/31))
 - Enable conditional logging through options in `createMetamaskConnectEVM` ([#31](https://github.com/MetaMask/connect-monorepo/pull/31))
+- Fixed mobile deeplink bug when attempting to connect when already connected ([#57](https://github.com/MetaMask/connect-monorepo/pull/57))
 
 [Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/
