@@ -319,18 +319,11 @@ export class MWPTransport implements ExtendedTransport {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
   }): Promise<void> {
-    const { dappClient, kvstore } = this;
-    const sessionStore = new SessionStore(kvstore);
+    const { dappClient } = this;
 
-    let session: Session | undefined;
-    try {
-      const [activeSession] = await sessionStore.list();
-      if (activeSession) {
-        logger('active session found', activeSession);
-        session = activeSession;
-      }
-    } catch {
-      /* empty */
+    const session = await this.getActiveSession();
+    if (session) {
+      logger('active session found', session);
     }
 
     let timeout: NodeJS.Timeout;
@@ -588,5 +581,17 @@ export class MWPTransport implements ExtendedTransport {
     return () => {
       this.notificationCallbacks.delete(callback);
     };
+  }
+
+  async getActiveSession(): Promise<Session | undefined> {
+    const { kvstore } = this;
+    const sessionStore = new SessionStore(kvstore);
+
+    try {
+      const [activeSession] = await sessionStore.list();
+      return activeSession;
+    } catch {
+      /* empty */
+    }
   }
 }

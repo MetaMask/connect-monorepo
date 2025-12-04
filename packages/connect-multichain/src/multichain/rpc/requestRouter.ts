@@ -53,11 +53,17 @@ export class RequestRouter {
 			const shouldOpenDeeplink = secure && !showInstallModal;
 
 			if (shouldOpenDeeplink) {
-				setTimeout(() => {
+				setTimeout(async () => {
+					const session = await this.transport.getActiveSession();
+					if (!session) {
+						throw new Error('No active session found');
+					}
+
+					const url = `${METAMASK_DEEPLINK_BASE}/mwp?s=${encodeURIComponent(session.id)}`;
 					if (mobile?.preferredOpenLink) {
-						mobile.preferredOpenLink(METAMASK_DEEPLINK_BASE, '_self');
+						mobile.preferredOpenLink(url, '_self'); // here
 					} else {
-						openDeeplink(this.config, METAMASK_DEEPLINK_BASE, METAMASK_CONNECT_BASE_URL);
+						openDeeplink(this.config, url, METAMASK_CONNECT_BASE_URL);
 					}
 				}, 10); // small delay to ensure the message encryption and dispatch completes
 			}
@@ -166,4 +172,3 @@ export class RequestRouter {
 		return this.handleWithWallet(options);
 	}
 }
-

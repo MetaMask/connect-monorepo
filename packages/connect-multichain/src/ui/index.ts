@@ -145,9 +145,9 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     return container;
   }
 
-  createDeeplink(connectionRequest?: ConnectionRequest) {
+  createConnectionDeeplink(connectionRequest?: ConnectionRequest) {
     if (!connectionRequest) {
-      throw new Error('createDeeplink can only be called with a connection request');
+      throw new Error('createConnectionDeeplink can only be called with a connection request');
     }
     const json = JSON.stringify(connectionRequest);
     const compressed = compressString(json);
@@ -155,7 +155,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     return `${METAMASK_DEEPLINK_BASE}/mwp?p=${urlEncoded}&c=1`;
   }
 
-  createUniversalLink(connectionRequest?: ConnectionRequest) {
+  createConnectionUniversalLink(connectionRequest?: ConnectionRequest) {
     if (!connectionRequest) {
       return `${METAMASK_CONNECT_BASE_URL}`;
     }
@@ -186,7 +186,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
 
     const parentElement = this.getMountedContainer();
     const connectionRequest = await createConnectionRequest();
-    const qrCodeLink = this.createDeeplink(connectionRequest);
+    const qrCodeLink = this.createConnectionDeeplink(connectionRequest);
 
     const modal: Modal<any> = new this.options.InstallModal({
       expiresIn:
@@ -197,7 +197,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
       link: qrCodeLink,
       sdkVersion: getVersion(),
       generateQRCode: async (request: ConnectionRequest) =>
-        this.createDeeplink(request),
+        this.createConnectionDeeplink(request),
       onClose: this.onCloseModal.bind(this),
       startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
       createConnectionRequest,

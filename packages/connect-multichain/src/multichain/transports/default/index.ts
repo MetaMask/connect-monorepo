@@ -14,6 +14,7 @@ import {
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
+import { Session } from '@metamask/mobile-wallet-protocol-core';
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 
@@ -300,5 +301,9 @@ export class DefaultTransport implements ExtendedTransport {
     return () => {
       this.#notificationCallbacks.delete(callback);
     };
+  }
+
+  getActiveSession(): Promise<Session | undefined> {
+    throw new Error('getActiveSession is purposely not implemented for the DefaultTransport');
   }
 }
