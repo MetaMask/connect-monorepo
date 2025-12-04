@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `@metamask/multichain-api-client` to prevent `RPC request with id already seen.` error on extension when using firefox ([#60](https://github.com/MetaMask/connect-monorepo/pull/60))
+
 ### Fixed
 
 - Fixed incorrect caching of error responses for some requests/events ([#59](https://github.com/MetaMask/connect-monorepo/pull/59))
