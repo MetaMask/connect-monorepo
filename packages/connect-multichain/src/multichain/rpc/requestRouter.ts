@@ -59,7 +59,7 @@ export class RequestRouter {
 						throw new Error('No active session found');
 					}
 
-					const url = `${METAMASK_DEEPLINK_BASE}/mwp?s=${encodeURIComponent(session.id)}`;
+					const url = `${METAMASK_DEEPLINK_BASE}/mwp?id=${encodeURIComponent(session.id)}`;
 					if (mobile?.preferredOpenLink) {
 						mobile.preferredOpenLink(url, '_self'); // here
 					} else {
