@@ -459,6 +459,10 @@ export class MetamaskConnectEVM {
         params,
       });
       await this.#trackWalletActionSucceeded(method, scope, params);
+      if((result as unknown as { result: unknown }).result === null) {
+      // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
+      this.#onChainChanged(hexChainId);
+      }
       return result;
     } catch (error) {
       await this.#trackWalletActionFailed(method, scope, params, error);
