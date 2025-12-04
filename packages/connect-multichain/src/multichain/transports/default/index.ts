@@ -39,6 +39,7 @@ export class DefaultTransport implements ExtendedTransport {
   readonly #pendingRequests = new Map<string, PendingRequest>();
 
   #handleResponseListener: ((event: MessageEvent) => void) | undefined;
+
   #handleNotificationListener: ((event: MessageEvent) => void) | undefined;
 
   #notifyCallbacks(data: unknown): void {
@@ -132,8 +133,8 @@ export class DefaultTransport implements ExtendedTransport {
 
     // Add the listener
     // eslint-disable-next-line no-restricted-globals
-
     window.addEventListener('message', this.#handleResponseListener);
+    // eslint-disable-next-line no-restricted-globals
     window.addEventListener('message', this.#handleNotificationListener);
   }
 
@@ -269,6 +270,13 @@ export class DefaultTransport implements ExtendedTransport {
       // eslint-disable-next-line no-restricted-globals
       window.removeEventListener('message', this.#handleResponseListener);
       this.#handleResponseListener = undefined;
+    }
+
+    // Remove the notification listener when disconnecting
+    if (this.#handleNotificationListener) {
+      // eslint-disable-next-line no-restricted-globals
+      window.removeEventListener('message', this.#handleNotificationListener);
+      this.#handleNotificationListener = undefined;
     }
 
     // Reject all pending requests
