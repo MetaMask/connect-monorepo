@@ -61,7 +61,7 @@ export class RequestRouter {
 
 					const url = `${METAMASK_DEEPLINK_BASE}/mwp?id=${encodeURIComponent(session.id)}`;
 					if (mobile?.preferredOpenLink) {
-						mobile.preferredOpenLink(url, '_self'); // here
+						mobile.preferredOpenLink(url, '_self');
 					} else {
 						openDeeplink(this.config, url, METAMASK_CONNECT_BASE_URL);
 					}
