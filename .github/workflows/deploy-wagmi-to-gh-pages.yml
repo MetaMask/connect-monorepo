@@ -56,8 +56,6 @@ jobs:
 
       - name: Build wagmi integration
         working-directory: integrations/wagmi
-        env:
-          VITE_BASE_PATH: /${{ inputs.destination_dir }}/
         run: yarn build
 
       - name: Deploy to `${{ inputs.destination_dir }}` directory of `gh-pages` branch
@@ -68,4 +66,3 @@ jobs:
           personal_token: ${{ secrets.PUBLISH_DOCS_TOKEN }}
           publish_dir: ./integrations/wagmi/dist
           destination_dir: ${{ inputs.destination_dir }}
-
