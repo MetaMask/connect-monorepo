@@ -486,9 +486,9 @@ export class MultichainSDK extends MultichainCore {
               },
             };
             const deeplink =
-              this.options.ui.factory.createDeeplink(connectionRequest);
+              this.options.ui.factory.createConnectionDeeplink(connectionRequest);
             const universalLink =
-              this.options.ui.factory.createUniversalLink(connectionRequest);
+              this.options.ui.factory.createConnectionUniversalLink(connectionRequest);
             if (this.options.mobile?.preferredOpenLink) {
               this.options.mobile.preferredOpenLink(deeplink, '_self');
             } else {
@@ -715,13 +715,19 @@ export class MultichainSDK extends MultichainCore {
     const shouldOpenDeeplink = secure && !showInstallModal;
 
     if (shouldOpenDeeplink) {
-      setTimeout(() => {
+      setTimeout(async () => {
+        const session = await this.transport.getActiveSession();
+        if (!session) {
+          throw new Error('No active session found');
+        }
+
+        const url = `${METAMASK_DEEPLINK_BASE}/mwp?id=${encodeURIComponent(session.id)}`;
         if (mobile?.preferredOpenLink) {
-          mobile.preferredOpenLink(METAMASK_DEEPLINK_BASE, '_self');
+          mobile.preferredOpenLink(url, '_self');
         } else {
           openDeeplink(
             this.options,
-            METAMASK_DEEPLINK_BASE,
+            url,
             METAMASK_CONNECT_BASE_URL,
           );
         }

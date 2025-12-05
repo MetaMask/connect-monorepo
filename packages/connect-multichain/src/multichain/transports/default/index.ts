@@ -14,6 +14,7 @@ import {
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
+import { Session } from '@metamask/mobile-wallet-protocol-core';
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 
@@ -308,5 +309,12 @@ export class DefaultTransport implements ExtendedTransport {
     return () => {
       this.#notificationCallbacks.delete(callback);
     };
+  }
+
+  getActiveSession(): Promise<Session | undefined> {
+    // This code path should never be triggered when the DefaultTransport is being used
+    // It's only purpose is for exposing the session ID used for deeplinking to the mobile app
+    // and so it is only implemented for the MWPTransport.
+    throw new Error('getActiveSession is purposely not implemented for the DefaultTransport');
   }
 }

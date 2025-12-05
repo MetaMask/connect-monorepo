@@ -1,4 +1,4 @@
-import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
+import type { Session, SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type {
   Transport,
   TransportRequest,
@@ -109,4 +109,6 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
       timeout?: number;
     },
   ) => Promise<TResponse>;
+
+  getActiveSession: () => Promise<Session | undefined>;
 };
