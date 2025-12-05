@@ -7,6 +7,8 @@ on:
         required: true
       SLACK_WEBHOOK_URL:
         required: true
+      PUBLISH_DOCS_TOKEN:
+        required: true
 
 jobs:
   publish-release:
@@ -71,3 +73,48 @@ jobs:
         uses: MetaMask/action-npm-publish@v5
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
+
+  get-release-version:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    outputs:
+      RELEASE_VERSION: ${{ steps.get-release-version.outputs.RELEASE_VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - id: get-release-version
+        shell: bash
+        run: |
+          # Get version from the latest git tag created by the release action
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$VERSION" ]; then
+            # Fallback to package.json version if no tag found
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          # Remove 'v' prefix if present
+          VERSION=${VERSION#v}
+          echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+
+  publish-wagmi-to-gh-pages:
+    name: Publish Wagmi Integration to `${{ needs.get-release-version.outputs.RELEASE_VERSION }}` directory of `gh-pages` branch
+    needs: get-release-version
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy-wagmi-to-gh-pages.yml
+    with:
+      destination_dir: ${{ needs.get-release-version.outputs.RELEASE_VERSION }}
+    secrets:
+      PUBLISH_DOCS_TOKEN: ${{ secrets.PUBLISH_DOCS_TOKEN }}
+
+  publish-wagmi-to-latest-gh-pages:
+    name: Publish Wagmi Integration to `latest` directory of `gh-pages` branch
+    needs: publish-npm
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy-wagmi-to-gh-pages.yml
+    with:
+      destination_dir: latest
+    secrets:
+      PUBLISH_DOCS_TOKEN: ${{ secrets.PUBLISH_DOCS_TOKEN }}
