@@ -6,7 +6,10 @@ import { metaMask } from '../metamask-connector';
 export const config = createConfig({
   chains: [mainnet, sepolia, optimism, celo],
   connectors: [
-    metaMask({ dapp: { name: 'Wagmi Demo', url: 'http://localhost:5173' } }),
+    metaMask({ dapp: {
+      name: window.location.hostname,
+      url: window.location.href,}
+    }),
   ],
   transports: {
     [mainnet.id]: http(),
