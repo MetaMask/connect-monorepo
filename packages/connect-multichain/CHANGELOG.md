@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2]
+
 ### Uncategorized
 
 - feat: add connection id to simple deeplinks ([#63](https://github.com/MetaMask/metamask-connect-monorepo/pull/63))
@@ -70,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.3.1...HEAD
+[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.3.2...HEAD
+[0.3.2]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.3.1...@metamask/connect-multichain@0.3.2
 [0.3.1]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.3.0...@metamask/connect-multichain@0.3.1
 [0.3.0]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.2.1...@metamask/connect-multichain@0.3.0
 [0.2.1]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-multichain@0.2.0...@metamask/connect-multichain@0.2.1
