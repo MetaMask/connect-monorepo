@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.2]
 
 ### Added
+
 - Add connection id to simple deeplinks ([#63](https://github.com/MetaMask/metamask-connect-monorepo/pull/63))
 
 ## [0.3.1]
