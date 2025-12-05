@@ -281,11 +281,11 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         // Convert viem AddEthereumChainParameter to MetaMask SDK format
         const chainConfiguration = {
           chainId: `0x${chainId.toString(16)}`,
-          rpcUrls: rpcUrls,
+          rpcUrls: rpcUrls as string[] | undefined,
           nativeCurrency:
             addEthereumChainParameter?.nativeCurrency ?? chain.nativeCurrency,
           chainName: addEthereumChainParameter?.chainName ?? chain.name,
-          blockExplorerUrls: blockExplorerUrls,
+          blockExplorerUrls: blockExplorerUrls as string[] | undefined,
           iconUrls: addEthereumChainParameter?.iconUrls,
         }
 
