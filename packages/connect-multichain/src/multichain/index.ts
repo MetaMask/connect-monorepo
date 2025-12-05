@@ -723,7 +723,7 @@ export class MultichainSDK extends MultichainCore {
 
         const url = `${METAMASK_DEEPLINK_BASE}/mwp?id=${encodeURIComponent(session.id)}`;
         if (mobile?.preferredOpenLink) {
-          mobile.preferredOpenLink(url, '_self'); // here
+          mobile.preferredOpenLink(url, '_self');
         } else {
           openDeeplink(
             this.options,
