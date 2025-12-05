@@ -593,8 +593,10 @@ export class MWPTransport implements ExtendedTransport {
     try {
       const [activeSession] = await sessionStore.list();
       return activeSession;
-    } catch {
-      /* empty */
+    } catch (error){
+      // TODO: verify if this try catch is necessary
+      logger('error getting active session', error);
+      return undefined;
     }
   }
 }
