@@ -8,9 +8,16 @@ const peerDependencies = Object.keys(pkg.peerDependencies || {});
 const optionalDependencies = Object.keys(pkg.optionalDependencies || {});
 
 // Dependencies that should be bundled
-const bundledDeps = [ 'readable-stream'];
+const bundledDeps = ['readable-stream'];
 // Shared dependencies that should be deduplicated
-const sharedDeps = ['eventemitter2', 'socket.io-client', 'debug', 'uuid', 'cross-fetch', '@metamask/sdk-analytics'];
+const sharedDeps = [
+  'eventemitter2',
+  'socket.io-client',
+  'debug',
+  'uuid',
+  'cross-fetch',
+  '@metamask/sdk-analytics',
+];
 
 // Filter function to exclude bundled dependencies
 const excludeBundledDeps = (dep: string) => !bundledDeps.includes(dep);
@@ -23,7 +30,8 @@ const baseExternalDeps = [
   '@react-native-async-storage/async-storage',
   'extension-port-stream',
   '@metamask/utils',
-  'ws'
+  '@metamask/rpc-errors',
+  'ws',
 ];
 
 // Platform-specific externals
@@ -42,7 +50,6 @@ const baseConfig: Partial<Options> = {
   splitting: false, // Keep bundle as single file to match rollup,
 };
 
-
 const entryName = packageJson.name.replace('@metamask/', '');
 
 // TSUP Configuration
@@ -59,12 +66,12 @@ export default defineConfig([
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
-      options.outExtension = { ".js": '.mjs' };
+      options.outExtension = { '.js': '.mjs' };
       options.define = { ...options.define, __ESM_BUILD__: 'true' } as any;
     },
     banner: {
       js: '/* Browser ES build */',
-    }
+    },
   },
   {
     ...baseConfig,
@@ -72,12 +79,10 @@ export default defineConfig([
     outDir: 'dist/browser/umd',
     platform: 'browser',
     external: [...baseExternalDeps, ...peerDependencies],
-    esbuildPlugins: [
-      umdWrapper({}) as any,
-    ],
+    esbuildPlugins: [umdWrapper({}) as any],
     esbuildOptions: (options) => {
       options.metafile = true;
-      options.outExtension = { ".js": '.js' };
+      options.outExtension = { '.js': '.js' };
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
@@ -97,7 +102,7 @@ export default defineConfig([
     globalName: 'MetaMaskSDK', // Matches rollup IIFE config
     esbuildOptions: (options) => {
       options.metafile = true;
-      options.outExtension = { ".js": '.js' };
+      options.outExtension = { '.js': '.js' };
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
@@ -119,7 +124,7 @@ export default defineConfig([
       options.platform = 'node';
       options.mainFields = ['module', 'main'];
       options.conditions = ['node'];
-      options.outExtension = { ".js": '.js' };
+      options.outExtension = { '.js': '.js' };
       options.define = { ...options.define, __ESM_BUILD__: 'false' } as any;
     },
     banner: {
@@ -138,7 +143,7 @@ export default defineConfig([
       options.platform = 'node';
       options.mainFields = ['module', 'main'];
       options.conditions = ['node'];
-      options.outExtension = { ".js": '.mjs' };
+      options.outExtension = { '.js': '.mjs' };
       options.define = { ...options.define, __ESM_BUILD__: 'false' } as any;
     },
     banner: {
@@ -156,7 +161,7 @@ export default defineConfig([
       options.metafile = true;
       options.mainFields = ['react-native', 'node', 'browser'];
       options.conditions = ['react-native', 'node', 'browser'];
-      options.outExtension = { ".js": '.mjs' };
+      options.outExtension = { '.js': '.mjs' };
       options.define = { ...options.define, __ESM_BUILD__: 'false' } as any;
     },
     banner: {
@@ -168,5 +173,5 @@ export default defineConfig([
     entry: { [entryName]: 'src/index.browser.ts' },
     outDir: 'dist/types',
     dts: { only: true },
-  }
+  },
 ]);

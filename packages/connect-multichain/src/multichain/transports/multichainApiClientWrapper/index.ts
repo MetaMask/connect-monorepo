@@ -1,8 +1,13 @@
-import { CreateSessionParams, Transport, TransportRequest, TransportResponse } from "@metamask/multichain-api-client";
-import { providerErrors } from "@metamask/rpc-errors";
-import { CaipAccountId } from "@metamask/utils";
-import { InvokeMethodOptions, RPCAPI, Scope } from "src/domain";
-import { MultichainSDK } from "src/multichain";
+import type {
+  CreateSessionParams,
+  Transport,
+  TransportRequest,
+  TransportResponse,
+} from '@metamask/multichain-api-client';
+import { providerErrors } from '@metamask/rpc-errors';
+import type { CaipAccountId } from '@metamask/utils';
+import type { InvokeMethodOptions, RPCAPI, Scope } from 'src/domain';
+import type { MultichainSDK } from 'src/multichain';
 
 // uint32 (two's complement) max
 // more conservative than Number.MAX_SAFE_INTEGER
@@ -18,13 +23,14 @@ type TransportRequestWithId = TransportRequest & { id: number };
 
 export class MultichainApiClientWrapperTransport implements Transport {
   private requestId = getUniqueId();
-  private notificationCallbacks = new Set<(data: unknown) => void>();
-  constructor(private multichainSDK: MultichainSDK) {
-  }
+
+  private readonly notificationCallbacks = new Set<(data: unknown) => void>();
+
+  constructor(private readonly multichainSDK: MultichainSDK) {}
 
   isTransportDefined(): boolean {
     try {
-      return Boolean(this.multichainSDK.transport)
+      return Boolean(this.multichainSDK.transport);
     } catch (error) {
       return false;
     }
@@ -41,23 +47,29 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   setupNotifcationListener() {
-    this.multichainSDK.transport.onNotification(this.notifyCallbacks.bind(this));
+    this.multichainSDK.transport.onNotification(
+      this.notifyCallbacks.bind(this),
+    );
   }
 
-  connect(): Promise<void> {
+  async connect(): Promise<void> {
+    console.log('📚 connect');
     // noop
     return Promise.resolve();
   }
 
-  disconnect(): Promise<void> {
+  async disconnect(): Promise<void> {
     return Promise.resolve();
   }
 
   isConnected(): boolean {
-    return true
+    return true;
   }
 
-  async request<ParamsType extends TransportRequest, ReturnType extends TransportResponse>(
+  async request<
+    ParamsType extends TransportRequest,
+    ReturnType extends TransportResponse,
+  >(
     params: ParamsType,
     options: { timeout?: number } = {},
   ): Promise<ReturnType> {
@@ -93,8 +105,12 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   async #walletCreateSession(request: TransportRequestWithId) {
+    console.log('📚 #walletCreateSession', request);
     const createSessionParams = request.params as CreateSessionParams<RPCAPI>;
-    const scopes = Object.keys({...createSessionParams.optionalScopes, ...createSessionParams.requiredScopes}) as Scope[]
+    const scopes = Object.keys({
+      ...createSessionParams.optionalScopes,
+      ...createSessionParams.requiredScopes,
+    }) as Scope[];
     const scopeAccounts: CaipAccountId[] = [];
 
     scopes.forEach((scope) => {
@@ -110,9 +126,16 @@ export class MultichainApiClientWrapperTransport implements Transport {
     });
     const accounts = [...new Set(scopeAccounts)];
 
-
-    await this.multichainSDK.connect(scopes, accounts, createSessionParams.sessionProperties)
-    return this.multichainSDK.transport.request({ method: 'wallet_getSession' });
+    console.log('📚 SDK connect');
+    await this.multichainSDK.connect(
+      scopes,
+      accounts,
+      createSessionParams.sessionProperties,
+    );
+    console.log('📚 SDK connected');
+    return this.multichainSDK.transport.request({
+      method: 'wallet_getSession',
+    });
   }
 
   async #walletGetSession(request: TransportRequestWithId) {
@@ -121,11 +144,13 @@ export class MultichainApiClientWrapperTransport implements Transport {
         jsonrpc: '2.0',
         id: request.id,
         result: {
-          "sessionScopes": {}
-        }
-      }
+          sessionScopes: {},
+        },
+      };
     }
-    return this.multichainSDK.transport.request({ method: 'wallet_getSession' });
+    return this.multichainSDK.transport.request({
+      method: 'wallet_getSession',
+    });
   }
 
   async #walletRevokeSession(request: TransportRequestWithId) {
@@ -134,17 +159,19 @@ export class MultichainApiClientWrapperTransport implements Transport {
     }
 
     try {
-      this.multichainSDK.disconnect()
-      return { jsonrpc: '2.0', id: request.id, result: true }
+      this.multichainSDK.disconnect();
+      return { jsonrpc: '2.0', id: request.id, result: true };
     } catch (error) {
-      return { jsonrpc: '2.0', id: request.id, result: false }
+      return { jsonrpc: '2.0', id: request.id, result: false };
     }
   }
 
   async #walletInvokeMethod(request: TransportRequestWithId) {
     if (!this.isTransportDefined()) {
-      return { error: providerErrors.unauthorized() }
+      return { error: providerErrors.unauthorized() };
     }
-    return this.multichainSDK.invokeMethod(request.params as InvokeMethodOptions)
+    return this.multichainSDK.invokeMethod(
+      request.params as InvokeMethodOptions,
+    );
   }
 }

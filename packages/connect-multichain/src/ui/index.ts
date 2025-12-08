@@ -5,9 +5,9 @@
 /* eslint-disable @typescript-eslint/parameter-properties */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable no-restricted-syntax */
-/* eslint-disable promise/no-return-wrap */
-/* eslint-disable require-atomic-updates */
+
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as __instance from '@metamask/multichain-ui';
 import MetaMaskOnboarding from '@metamask/onboarding';
 
 import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from '../config';
@@ -24,29 +24,27 @@ import type { FactoryModals, ModalTypes } from './modals/types';
 import { preloadQR } from './qr';
 import { compressString } from '../multichain/utils';
 
-let __instance;
-
 /**
  * Preload install modal custom elements only once
  */
 export async function preload() {
-  __instance ??= await import(
-    // Use a non-literal specifier to avoid Vite static analysis of deep imports
-    // and gracefully handle absence of the Stencil loader in this package build.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    '@metamask/multichain-ui'.concat('/dist/loader/index.js') // Prefer ESM loader in browsers
-  )
-    .then(async (loader: any) => {
-      if (typeof loader?.defineCustomElements === 'function') {
-        loader.defineCustomElements();
-      }
-      return Promise.resolve(loader);
-    })
-    .catch(async (error) => {
-      console.error(`Gracefully Failed to load modal customElements:`, error);
-      return Promise.resolve(undefined);
-    });
+  // __instance ??= await import(
+  //   // Use a non-literal specifier to avoid Vite static analysis of deep imports
+  //   // and gracefully handle absence of the Stencil loader in this package build.
+  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //   // @ts-ignore
+  //   '@metamask/multichain-ui'.concat('/dist/loader/index.js') // Prefer ESM loader in browsers
+  // )
+  //   .then(async (loader: any) => {
+  //     if (typeof loader?.defineCustomElements === 'function') {
+  //       loader.defineCustomElements();
+  //     }
+  //     return Promise.resolve(loader);
+  //   })
+  //   .catch(async (error) => {
+  //     console.error(`Gracefully Failed to load modal customElements:`, error);
+  //     return Promise.resolve(undefined);
+  //   });
 }
 
 export class ModalFactory<T extends FactoryModals = FactoryModals> {
