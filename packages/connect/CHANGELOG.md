@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- setup/configure @metamask/connect root package + repoint playgrounds (ex node playground) to @metamask/connect ([#70](https://github.com/MetaMask/metamask-connect-monorepo/pull/70))
+- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
+- feat: wagmi connector ([#31](https://github.com/MetaMask/metamask-connect-monorepo/pull/31))
+- add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
+
 ### Added
 
 - Added subpath exports to `@metamask/connect` package: `@metamask/connect/evm` - unified export for EVM functionality
