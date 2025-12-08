@@ -20,7 +20,7 @@ jobs:
   deploy-wagmi-to-gh-pages:
     name: Deploy Wagmi Integration to GitHub Pages
     runs-on: ubuntu-latest
-    environment: gh-pages
+    environment: github-pages
     permissions:
       contents: write
 
