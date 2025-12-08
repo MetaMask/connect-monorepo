@@ -47,25 +47,6 @@
       },
       "default": "./dist/evm/index.js"
     },
-    "./multichain": {
-      "browser": {
-        "types": "./dist/multichain/index.d.ts",
-        "import": "./dist/multichain/index.mjs"
-      },
-      "react-native": {
-        "types": "./dist/multichain/index.d.ts",
-        "import": "./dist/multichain/index.mjs"
-      },
-      "import": {
-        "types": "./dist/multichain/index.d.ts",
-        "default": "./dist/multichain/index.mjs"
-      },
-      "require": {
-        "types": "./dist/multichain/index.d.ts",
-        "default": "./dist/multichain/index.js"
-      },
-      "default": "./dist/multichain/index.js"
-    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",

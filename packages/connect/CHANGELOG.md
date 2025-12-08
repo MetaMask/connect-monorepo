@@ -8,9 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Added subpath exports to `@metamask/connect` package ([#70](https://github.com/MetaMask/connect-monorepo/pull/70)): 
-  - `@metamask/connect/evm` - unified export for EVM functionality 
-  - `@metamask/connect/multichain` - unified export for multichain functionality
+- Added subpath exports to `@metamask/connect` package: `@metamask/connect/evm` - unified export for EVM functionality
 
 ### Changed
 

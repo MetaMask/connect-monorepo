@@ -8,7 +8,7 @@ import {
   type Scope,
   type SDKState,
   type SessionData,
-} from '@metamask/connect/multichain';
+} from '@metamask/connect';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
 import {
