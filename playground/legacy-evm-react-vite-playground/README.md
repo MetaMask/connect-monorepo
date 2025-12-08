@@ -1,8 +1,8 @@
 # Legacy EVM React Vite Playground
 
-> A demo application showcasing `@metamask/connect-evm` integration in a React + Vite application.
+> A demo application showcasing `@metamask/connect/evm` integration in a React + Vite application.
 
-This playground demonstrates how to use `@metamask/connect-evm` in a React application with Vite. It provides working examples of all major features including connection, signing, transactions, and chain switching.
+This playground demonstrates how to use `@metamask/connect/evm` in a React application with Vite. It provides working examples of all major features including connection, signing, transactions, and chain switching.
 
 ## Features Demonstrated
 
@@ -98,7 +98,7 @@ legacy-evm-react-vite-playground/
 - **React 18** - UI framework
 - **Vite** - Build tool and dev server
 - **TypeScript** - Type safety
-- **@metamask/connect-evm** - MetaMask connection SDK
+- **@metamask/connect/evm** - MetaMask connection SDK
 
 ## Troubleshooting
 
@@ -116,7 +116,7 @@ legacy-evm-react-vite-playground/
 
 ## Learn More
 
-- [@metamask/connect-evm Documentation](../../packages/connect-evm/README.md)
+- [@metamask/connect/evm Documentation](../../packages/connect-evm/README.md)
 - [MetaMask Documentation](https://docs.metamask.io)
 - [EIP-1193 Specification](https://eips.ethereum.org/EIPS/eip-1193)
 

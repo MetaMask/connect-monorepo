@@ -1,5 +1,5 @@
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
-import type { Scope, SessionData } from '@metamask/connect-multichain';
+import type { Scope, SessionData } from '@metamask/connect';
 import {
   type CaipAccountAddress,
   type CaipAccountId,

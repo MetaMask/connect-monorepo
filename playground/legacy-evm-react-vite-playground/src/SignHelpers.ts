@@ -1,4 +1,4 @@
-import { EIP1193Provider } from '@metamask/connect-evm';
+import { EIP1193Provider } from '@metamask/connect/evm';
 import { Buffer } from 'buffer';
 
 export const send_eth_signTypedData_v4 = async (
