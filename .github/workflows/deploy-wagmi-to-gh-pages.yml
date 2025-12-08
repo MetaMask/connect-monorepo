@@ -56,15 +56,13 @@ jobs:
 
       - name: Build wagmi integration
         working-directory: integrations/wagmi
-        env:
-          VITE_BASE_PATH: /mm-connect/wagmi/${{ inputs.destination_dir }}/
         run: yarn build
 
-      - name: Deploy to `mm-connect/wagmi/${{ inputs.destination_dir }}` directory of `gh-pages` branch
+      - name: Deploy to `${{ inputs.destination_dir }}` directory of `gh-pages` branch
         uses: peaceiris/actions-gh-pages@de7ea6f8efb354206b205ef54722213d99067935
         with:
           # This `PUBLISH_DOCS_TOKEN` needs to be manually set per-repository.
-          # Look in the repository settings under "Environments", and set this token in the `gh-pages` environment.
+          # Look in the repository settings under "Environments", and set this token in the `github-pages` environment.
           personal_token: ${{ secrets.PUBLISH_DOCS_TOKEN }}
           publish_dir: ./integrations/wagmi/dist
-          destination_dir: mm-connect/wagmi/${{ inputs.destination_dir }}
+          destination_dir: ${{ inputs.destination_dir }}
