@@ -21,7 +21,7 @@ t.vi.mock('@metamask/onboarding', () => ({
   },
 }));
 
-t.vi.mock('@metamask/multichain-ui/dist/loader/index.js', () => ({
+t.vi.mock('@metamask/multichain-ui/loader', () => ({
   defineCustomElements: t.vi.fn(),
 }));
 
@@ -551,9 +551,9 @@ t.describe('ModalFactory', () => {
         const testError = new Error('Failed to load modal customElements');
 
         // Temporarily unmock the module and re-mock it to throw an error
-        t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.js');
+        t.vi.doUnmock('@metamask/multichain-ui/loader');
         t.vi.doMock(
-          '@metamask/multichain-ui/dist/loader/index.js',
+          '@metamask/multichain-ui/loader',
           async () => {
             throw testError;
           },
@@ -576,8 +576,8 @@ t.describe('ModalFactory', () => {
         consoleErrorSpy.mockRestore();
 
         // Restore the original mock
-        t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-        t.vi.doMock('@metamask/multichain-ui/dist/loader/index.cjs.js', () => ({
+        t.vi.doUnmock('@metamask/multichain-ui/loader');
+        t.vi.doMock('@metamask/multichain-ui/loader', () => ({
           defineCustomElements: t.vi.fn(),
         }));
       },
@@ -589,9 +589,9 @@ t.describe('ModalFactory', () => {
         .mockImplementation(() => {});
 
       // Mock the module to fail
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
+      t.vi.doUnmock('@metamask/multichain-ui/loader');
       t.vi.doMock(
-        '@metamask/multichain-ui/dist/loader/index.cjs.js',
+        '@metamask/multichain-ui/loader',
         async () => {
           throw new Error('Test import failure');
         },
@@ -617,8 +617,8 @@ t.describe('ModalFactory', () => {
       consoleErrorSpy.mockRestore();
 
       // Restore the original mock
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-      t.vi.doMock('@metamask/multichain-ui/dist/loader/index.cjs.js', () => ({
+      t.vi.doUnmock('@metamask/multichain-ui/loader');
+      t.vi.doMock('@metamask/multichain-ui/loader', () => ({
         defineCustomElements: t.vi.fn(),
       }));
     });
@@ -629,9 +629,9 @@ t.describe('ModalFactory', () => {
         .mockImplementation(() => {});
 
       // First, cause preload to fail
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
+      t.vi.doUnmock('@metamask/multichain-ui/loader');
       t.vi.doMock(
-        '@metamask/multichain-ui/dist/loader/index.cjs.js',
+        '@metamask/multichain-ui/loader',
         async () => {
           throw new Error('Module load failed');
         },
@@ -680,8 +680,8 @@ t.describe('ModalFactory', () => {
       consoleErrorSpy.mockRestore();
 
       // Restore the original mock
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-      t.vi.doMock('@metamask/multichain-ui/dist/loader/index.cjs.js', () => ({
+      t.vi.doUnmock('@metamask/multichain-ui/loader');
+      t.vi.doMock('@metamask/multichain-ui/loader', () => ({
         defineCustomElements: t.vi.fn(),
       }));
     });

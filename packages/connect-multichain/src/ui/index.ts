@@ -22,7 +22,7 @@ import {
 import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
 import type { FactoryModals, ModalTypes } from './modals/types';
 import { compressString } from '../multichain/utils';
-import { defineCustomElements } from '@metamask/multichain-ui/dist/loader/index.js';
+import { defineCustomElements } from '@metamask/multichain-ui/loader';
 
 /**
  * Preload install modal custom elements only once
