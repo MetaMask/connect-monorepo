@@ -27,10 +27,16 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./dist/loader": {
+      "types": "./dist/loader/index.d.ts",
+      "default": "./dist/loader/index.js"
+    },
     "./dist/loader/index.js": {
+      "types": "./dist/loader/index.d.ts",
       "default": "./dist/loader/index.js"
     },
     "./dist/loader/index.cjs.js": {
+      "types": "./dist/loader/index.d.ts",
       "default": "./dist/loader/index.cjs.js"
     },
     "./package.json": "./package.json"

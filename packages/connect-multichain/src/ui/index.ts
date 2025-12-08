@@ -21,52 +21,14 @@ import {
 } from '../domain';
 import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
 import type { FactoryModals, ModalTypes } from './modals/types';
-import { preloadQR } from './qr';
 import { compressString } from '../multichain/utils';
-
-let __instance;
-
-// Build-time flag injected by tsup/esbuild to differentiate ESM vs non-ESM bundles
-declare const __ESM_BUILD__: boolean;
+import { defineCustomElements } from '@metamask/multichain-ui/dist/loader/index.js';
 
 /**
  * Preload install modal custom elements only once
  */
 export async function preload() {
-  /**
-   * We use a literal specifier for ESM/Vite builds (so Rollup can resolve it), and guard non-ESM builds (UMD/IIFE/Node)
-   * by computing the specifier at runtime or marking it external so the bundler doesn’t try to split. This avoids the
-   * IIFE failure while keeping Vite happy.
-   */
-  if (typeof __ESM_BUILD__ !== 'undefined' && __ESM_BUILD__) {
-    __instance ??= await import('@metamask/multichain-ui/dist/loader/index.js')
-      .then(async (loader: any) => {
-        if (typeof loader?.defineCustomElements === 'function') {
-          loader.defineCustomElements();
-        }
-        return Promise.resolve(loader);
-      })
-      .catch(async (error: unknown) => {
-        console.error(`Gracefully Failed to load modal customElements:`, error);
-        return Promise.resolve(undefined);
-      });
-  } else {
-    // Avoid bundler static analysis in non-ESM builds, to avoid IIFE build failure
-    const dynamicImport = (0, eval)('import');
-    __instance ??= await dynamicImport(
-      '@metamask/multichain-ui/dist/loader/index.js',
-    )
-      .then(async (loader: any) => {
-        if (typeof loader?.defineCustomElements === 'function') {
-          loader.defineCustomElements();
-        }
-        return Promise.resolve(loader);
-      })
-      .catch(async (error: unknown) => {
-        console.error(`Gracefully Failed to load modal customElements:`, error);
-        return Promise.resolve(undefined);
-      });
-  }
+  defineCustomElements();
 }
 
 export class ModalFactory<T extends FactoryModals = FactoryModals> {
@@ -181,7 +143,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     successCallback: (error?: Error) => Promise<void>,
   ) {
     this.modal?.unmount();
-    await Promise.all([preload(), preloadQR()]);
+    await preload()
     this.successCallback = successCallback;
 
     const parentElement = this.getMountedContainer();
@@ -213,7 +175,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     updateOTPCode: (otpCode: OTPCode, modal: AbstractOTPCodeModal) => void,
   ) {
     this.modal?.unmount();
-    await Promise.all([preload(), preloadQR()]);
+    await preload()
     this.successCallback = successCallback;
 
     const container = this.getMountedContainer();
