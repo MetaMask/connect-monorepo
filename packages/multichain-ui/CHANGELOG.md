@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **BREAKING** Change stencil loader export path to `./loader` for previous paths `./dist/loader/index.js` and `./dist/loader/index.cjs.js` ([#73](https://github.com/MetaMask/metamask-connect-monorepo/pull/73))
+
 ## [0.2.0]
 
 ### Added
