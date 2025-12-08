@@ -20,7 +20,7 @@ jobs:
   deploy-wagmi-to-gh-pages:
     name: Deploy Wagmi Integration to GitHub Pages
     runs-on: ubuntu-latest
-    environment: github-pages
+    environment: gh-pages
     permissions:
       contents: write
 
@@ -64,7 +64,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@de7ea6f8efb354206b205ef54722213d99067935
         with:
           # This `PUBLISH_DOCS_TOKEN` needs to be manually set per-repository.
-          # Look in the repository settings under "Environments", and set this token in the `github-pages` environment.
+          # Look in the repository settings under "Environments", and set this token in the `gh-pages` environment.
           personal_token: ${{ secrets.PUBLISH_DOCS_TOKEN }}
           publish_dir: ./integrations/wagmi/dist
           destination_dir: mm-connect/wagmi/${{ inputs.destination_dir }}
