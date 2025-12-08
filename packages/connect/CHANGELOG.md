@@ -7,12 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- setup/configure @metamask/connect root package + repoint playgrounds (ex node playground) to @metamask/connect ([#70](https://github.com/MetaMask/metamask-connect-monorepo/pull/70))
-- align package versions ([#48](https://github.com/MetaMask/metamask-connect-monorepo/pull/48))
-- feat: wagmi connector ([#31](https://github.com/MetaMask/metamask-connect-monorepo/pull/31))
-- add changelog formatting script ([#44](https://github.com/MetaMask/metamask-connect-monorepo/pull/44))
+## [0.2.0]
 
 ### Added
 
@@ -28,5 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect@0.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect@0.2.0...HEAD
+[0.2.0]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect@0.1.0...@metamask/connect@0.2.0
 [0.1.0]: https://github.com/MetaMask/metamask-connect-monorepo/releases/tag/@metamask/connect@0.1.0
