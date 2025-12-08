@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Scope, SessionData } from '@metamask/connect-multichain';
+import type { Scope, SessionData } from '@metamask/connect/multichain';
 import type { CaipAccountId } from '@metamask/utils';
 import { useSDK } from './sdk';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';

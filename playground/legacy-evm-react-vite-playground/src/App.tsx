@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import {
   MetamaskConnectEVM,
   createMetamaskConnectEVM,
-} from '@metamask/connect-evm';
+} from '@metamask/connect/evm';
 import './App.css';
 import { send_eth_signTypedData_v4, send_personal_sign } from './SignHelpers';
-import type { EIP1193Provider } from '@metamask/connect-evm';
+import type { EIP1193Provider } from '@metamask/connect/evm';
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 
 function useSDK() {

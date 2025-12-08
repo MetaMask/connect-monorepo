@@ -4077,11 +4077,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@metamask/connect@workspace:packages/connect":
+"@metamask/connect@workspace:^, @metamask/connect@workspace:packages/connect":
   version: 0.0.0-use.local
   resolution: "@metamask/connect@workspace:packages/connect"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.4"
+    "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
     "@types/jest": "npm:^29.5.14"
     deepmerge: "npm:^4.2.2"
@@ -4465,7 +4466,7 @@ __metadata:
   resolution: "@metamask/multichain-node-playground@workspace:playground/multichain-node-playground"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.4"
-    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect": "workspace:^"
     "@types/inquirer": "npm:^8.2.1"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.9.0"
@@ -4546,7 +4547,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "npm:^2.0.0"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.4"
-    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@open-rpc/schema-utils-js": "npm:^2.0.5"
@@ -20099,7 +20100,7 @@ __metadata:
   resolution: "legacy-evm-react-vite@workspace:playground/legacy-evm-react-vite-playground"
   dependencies:
     "@eslint/js": "npm:^9.13.0"
-    "@metamask/connect-evm": "workspace:^"
+    "@metamask/connect": "workspace:^"
     "@types/react": "npm:^18.3.1"
     "@types/react-dom": "npm:^18.3.1"
     "@vitejs/plugin-react": "npm:^4.3.3"
