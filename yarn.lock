@@ -4466,7 +4466,7 @@ __metadata:
   resolution: "@metamask/multichain-node-playground@workspace:playground/multichain-node-playground"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.4"
-    "@metamask/connect": "workspace:^"
+    "@metamask/connect-multichain": "workspace:^"
     "@types/inquirer": "npm:^8.2.1"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.9.0"
