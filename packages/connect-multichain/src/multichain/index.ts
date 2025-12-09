@@ -496,6 +496,10 @@ export class MultichainSDK extends MultichainCore {
             }
           },
         );
+      } else {
+        timeout = setTimeout(() => {
+          this.openDeeplinkIfNeeded();
+        }, 250);
       }
 
       this.transport
