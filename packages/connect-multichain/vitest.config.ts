@@ -1,9 +1,6 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-	define: {
-		__ESM_BUILD__: 'true',
-	},
 	test: {
 		exclude: [
 			"**/node_modules/**",
