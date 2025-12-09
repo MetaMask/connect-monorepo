@@ -549,7 +549,6 @@ t.describe('ModalFactory', () => {
           .mockImplementation(() => {});
         const testError = new Error('Failed to load modal customElements');
 
-        // Make the mock throw an error
         mockDefineCustomElements.mockImplementationOnce(() => {
           throw testError;
         });
@@ -574,7 +573,6 @@ t.describe('ModalFactory', () => {
         .mockImplementation(() => {});
 
       const testError = new Error('Test import failure');
-      // Make the mock throw an error
       mockDefineCustomElements.mockImplementationOnce(() => {
         throw testError;
       });
@@ -602,7 +600,6 @@ t.describe('ModalFactory', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      // Make the mock throw an error
       mockDefineCustomElements.mockImplementationOnce(() => {
         throw new Error('Module load failed');
       });
