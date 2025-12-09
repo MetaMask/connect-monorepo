@@ -52,6 +52,7 @@ t.describe('ModalFactory', () => {
 
   t.beforeEach(() => {
     t.vi.clearAllMocks();
+    t.vi.useFakeTimers();
 
     // Create DOM environment
     dom = new Page(
@@ -163,6 +164,8 @@ t.describe('ModalFactory', () => {
   });
 
   t.afterEach(() => {
+    t.vi.clearAllTimers();
+    t.vi.useRealTimers();
     t.vi.unstubAllGlobals();
     t.vi.restoreAllMocks();
   });
@@ -288,8 +291,6 @@ t.describe('ModalFactory', () => {
       t.it(
         'should renew sessionrequest qrCode after expiration automatically',
         async () => {
-          t.vi.useFakeTimers();
-
           let connectionRequest: ConnectionRequest = {
             sessionRequest: {
               id: v4(),
@@ -339,8 +340,6 @@ t.describe('ModalFactory', () => {
           await t.vi.advanceTimersByTimeAsync(2000);
 
           t.expect(createSessionRequestMock).toHaveBeenCalledTimes(1);
-
-          t.vi.useRealTimers();
         },
       );
 
