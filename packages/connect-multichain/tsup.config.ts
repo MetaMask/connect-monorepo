@@ -70,7 +70,7 @@ export default defineConfig([
     entry: { [entryName]: 'src/index.browser.ts' },
     outDir: 'dist/browser/umd',
     platform: 'browser',
-    external: [...baseExternalDeps, ...peerDependencies, /^@metamask\/multichain-ui\//],
+    external: [...baseExternalDeps, ...peerDependencies],
     esbuildPlugins: [
       umdWrapper({}) as any,
     ],
@@ -91,7 +91,7 @@ export default defineConfig([
     outDir: 'dist/browser/iife',
     format: 'iife',
     platform: 'browser',
-    external: [...baseExternalDeps, ...peerDependencies, /^@metamask\/multichain-ui\//],
+    external: [...baseExternalDeps, ...peerDependencies],
     globalName: 'MetaMaskSDK', // Matches rollup IIFE config
     esbuildOptions: (options) => {
       options.metafile = true;
