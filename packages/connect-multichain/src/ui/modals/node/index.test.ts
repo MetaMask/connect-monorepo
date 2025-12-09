@@ -9,11 +9,11 @@ import {
 } from '../../../domain';
 import * as NodeModals from './';
 import { v4 } from 'uuid';
-import { encodeQRSync } from '../../qr';
+import encodeQR from '@paulmillr/qr';
 
-vi.mock('../../qr', () => {
+vi.mock('@paulmillr/qr', () => {
   return {
-    encodeQRSync: vi.fn().mockReturnValue('qrcode'),
+    default: vi.fn().mockReturnValue('qrcode'),
   };
 });
 
@@ -57,7 +57,7 @@ t.describe('Node Modals', () => {
   t.afterEach(() => {
     modal?.unmount();
     consoleLogSpy.mockClear();
-    (encodeQRSync as any).mockClear();
+    (encodeQR as any).mockClear();
   });
 
   t.it('should render QR code and expiration time to the console', async () => {
@@ -77,7 +77,7 @@ t.describe('Node Modals', () => {
 
     installModal.mount();
 
-    t.expect(encodeQRSync).toHaveBeenCalledWith('test-link');
+    t.expect(encodeQR).toHaveBeenCalledWith('test-link', 'ascii');
     t.expect(consoleLogSpy).toHaveBeenCalledWith('qrcode'); // 'qrcode' is the mocked return value of encodeQR
     t.expect(consoleLogSpy).toHaveBeenCalledWith(
       t.expect.stringContaining('EXPIRES IN:'),
@@ -150,14 +150,14 @@ t.describe('Node Modals', () => {
       t.expect(installModal.mount).toBeDefined();
 
       installModal.mount();
-      t.expect(encodeQRSync).toHaveBeenCalledWith('qrcode');
+      t.expect(encodeQR).toHaveBeenCalledWith('qrcode', 'ascii');
       t.expect(consoleLogSpy).toHaveBeenCalledWith('qrcode');
 
       // Verify initial call count
       t.expect(createConnectionRequestMock).toHaveBeenCalledTimes(0);
 
       // Store the initial call count for encodeQR
-      const initialEncodeQRCallCount = (encodeQRSync as any).mock.calls.length;
+      const initialEncodeQRCallCount = (encodeQR as any).mock.calls.length;
 
       // Advance timers to trigger expiration (1000ms + a bit more to ensure expiration)
       await t.vi.advanceTimersByTimeAsync(1100);
@@ -166,10 +166,10 @@ t.describe('Node Modals', () => {
       t.expect(createConnectionRequestMock).toHaveBeenCalledTimes(1);
 
       // Verify that encodeQR was called again (for renewal)
-      t.expect(encodeQRSync).toHaveBeenCalledTimes(initialEncodeQRCallCount + 1);
+      t.expect(encodeQR).toHaveBeenCalledTimes(initialEncodeQRCallCount + 1);
 
       // Verify that the QR code was regenerated with the renewed session request
-      t.expect(encodeQRSync).toHaveBeenLastCalledWith('qrcode');
+      t.expect(encodeQR).toHaveBeenLastCalledWith('qrcode', 'ascii');
 
       modal = installModal;
     },

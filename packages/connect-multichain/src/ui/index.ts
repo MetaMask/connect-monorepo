@@ -28,7 +28,11 @@ import { defineCustomElements } from '@metamask/multichain-ui/loader';
  * Preload install modal custom elements only once
  */
 export async function preload() {
-  defineCustomElements();
+  try {
+    defineCustomElements();
+  } catch (error) {
+    console.error('Failed to load customElements:', error);
+  }
 }
 
 export class ModalFactory<T extends FactoryModals = FactoryModals> {
