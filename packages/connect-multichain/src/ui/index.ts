@@ -29,7 +29,7 @@ import { defineCustomElements } from '@metamask/multichain-ui/loader';
  */
 export async function preload() {
   try {
-    defineCustomElements();
+    await defineCustomElements();
   } catch (error) {
     console.error('Failed to load customElements:', error);
   }
