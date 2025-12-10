@@ -1,6 +1,7 @@
 import {
   type CreateSessionParams,
   getDefaultTransport,
+  SessionProperties,
   type Transport,
   type TransportRequest,
   type TransportResponse,
@@ -188,6 +189,7 @@ export class DefaultTransport implements ExtendedTransport {
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
+    sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
     // Ensure message listener is set up before connecting
@@ -244,6 +246,7 @@ export class DefaultTransport implements ExtendedTransport {
       );
       const createSessionParams: CreateSessionParams<RPCAPI> = {
         optionalScopes,
+        sessionProperties: options?.sessionProperties,
       };
       const response = await this.request(
         { method: 'wallet_createSession', params: createSessionParams },

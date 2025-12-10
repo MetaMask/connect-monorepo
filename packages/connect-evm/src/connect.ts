@@ -280,7 +280,7 @@ export class MetamaskConnectEVM {
     const caipAccountId: CaipAccountId[] =
       chainId && account ? [`eip155:${chainId}:${account}`] : [];
 
-    await this.#core.connect(caipChainId, caipAccountId, forceRequest);
+    await this.#core.connect(caipChainId, caipAccountId, {}, forceRequest);
 
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
     const initialChainId = hexPermittedChainIds[0];

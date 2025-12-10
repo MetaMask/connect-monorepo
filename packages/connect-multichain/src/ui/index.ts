@@ -5,9 +5,9 @@
 /* eslint-disable @typescript-eslint/parameter-properties */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable no-restricted-syntax */
-/* eslint-disable promise/no-return-wrap */
-/* eslint-disable require-atomic-updates */
+
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as __instance from '@metamask/multichain-ui';
 import MetaMaskOnboarding from '@metamask/onboarding';
 
 import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from '../config';
