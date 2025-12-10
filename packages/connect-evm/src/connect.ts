@@ -461,8 +461,9 @@ export class MetamaskConnectEVM {
 
       // When using the MWP transport, the error is returned instead of thrown,
       // so we force it into the catch block here.
-      if (result?.error) {
-        throw new Error(result.error.message);
+      const resultWithError = result as { error?: { message: string } };
+      if (resultWithError?.error) {
+        throw resultWithError.error;
       }
 
       await this.#trackWalletActionSucceeded(method, scope, params);
