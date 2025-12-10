@@ -1,5 +1,10 @@
-import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
-import type { SessionProperties, Transport, TransportRequest, TransportResponse } from '@metamask/multichain-api-client';
+import type { Session, SessionRequest } from '@metamask/mobile-wallet-protocol-core';
+import type {
+  SessionProperties,
+  Transport,
+  TransportRequest,
+  TransportResponse,
+} from '@metamask/multichain-api-client';
 import type { CaipAccountId } from '@metamask/utils';
 
 import type { MultichainCore } from '.';
@@ -18,7 +23,7 @@ export type { SessionData } from '@metamask/multichain-api-client';
  * - Using a base64-encoded icon
  */
 export type DappSettings = {
-  name?: string;
+  name: string;
   url?: string;
 } & ({ iconUrl?: string } | { base64Icon?: string });
 
@@ -54,7 +59,7 @@ export type MultichainOptions = {
     factory: ModalFactory;
     headless?: boolean;
     preferExtension?: boolean;
-    preferDesktop?: boolean;
+    showInstallModal?: boolean;
   };
   mobile?: {
     preferredOpenLink?: (deeplink: string, target?: string) => void;
@@ -94,9 +99,18 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
+    forceRequest?: boolean;
   }) => Promise<void>;
 
-  sendEip1193Message: <TRequest extends TransportRequest, TResponse extends TransportResponse>(request: TRequest, options?: {
-    timeout?: number;
-}) => Promise<TResponse>;
+  sendEip1193Message: <
+    TRequest extends TransportRequest,
+    TResponse extends TransportResponse,
+  >(
+    request: TRequest,
+    options?: {
+      timeout?: number;
+    },
+  ) => Promise<TResponse>;
+
+  getActiveSession: () => Promise<Session | undefined>;
 };

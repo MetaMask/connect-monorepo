@@ -1,6 +1,6 @@
 {
   "name": "@metamask/metamask-connect-monorepo",
-  "version": "1.0.0",
+  "version": "7.0.0",
   "private": true,
   "description": "MetaMask Connect Monorepo",
   "repository": {
@@ -10,13 +10,15 @@
   "files": [],
   "workspaces": [
     "packages/*",
-    "playground/*"
+    "playground/*",
+    "integrations/*"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach --all --parallel --topological-dev --verbose run build",
+    "build": "yarn workspaces foreach --all --parallel --topological-dev --verbose --no-private run build",
     "build:clean": "yarn build:only-clean && yarn build",
     "build:docs": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run build:docs",
     "build:only-clean": "rimraf -g 'packages/*/dist' 'packages/*/*.tsbuildinfo'",
+    "changelog:format": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:format",
     "changelog:update": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:update",
     "changelog:validate": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:validate",
     "clean": "rimraf -g 'packages/*/node_modules/.cache' 'playground/*/node_modules/.cache' 'packages/*/node_modules' 'packages/*/dist' 'packages/*/build' 'playground/*/node_modules' 'playground/*/dist' 'playground/*/build' node_modules",
@@ -83,7 +85,7 @@
     "simple-git-hooks": "^2.8.0",
     "tsx": "^4.19.3",
     "typescript": "~5.9.2",
-    "typescript-eslint": "^8.7.0",
+    "typescript-eslint": "^8.10.0",
     "yargs": "^17.7.2"
   },
   "packageManager": "yarn@4.9.2",

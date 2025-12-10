@@ -5,7 +5,7 @@ import {
   createLogger,
   type QRLink,
 } from '../../../domain';
-import { encodeQRSync } from '../../qr';
+import encodeQR from '@paulmillr/qr';
 import { AbstractInstallModal } from '../base/AbstractInstallModal';
 import { formatRemainingTime, shouldLogCountdown } from '../base/utils';
 
@@ -15,7 +15,7 @@ export class InstallModal extends AbstractInstallModal {
   private displayQRWithCountdown(qrCodeLink: QRLink, expiresInMs: number) {
     const isExpired = expiresInMs <= 0;
     const formattedTime = formatRemainingTime(expiresInMs);
-    const qrCode = encodeQRSync(qrCodeLink);
+    const qrCode = encodeQR(qrCodeLink, 'ascii');
 
     // Clear console and display QR code with live countdown
     console.clear();

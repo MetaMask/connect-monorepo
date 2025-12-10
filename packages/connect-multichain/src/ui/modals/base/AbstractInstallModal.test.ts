@@ -47,7 +47,7 @@ t.describe('AbstractInstallModal', () => {
       createConnectionRequest: t.vi.fn(),
       generateQRCode: t.vi.fn(),
       startDesktopOnboarding: t.vi.fn(),
-      preferDesktop: false,
+      showInstallModal: false,
       expiresIn:
         (mockConnectionRequest.sessionRequest.expiresAt - Date.now()) / 1000,
     });

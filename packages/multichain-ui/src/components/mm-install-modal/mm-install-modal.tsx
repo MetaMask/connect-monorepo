@@ -29,7 +29,7 @@ export class InstallModal {
 
   @Prop() sdkVersion?: string;
 
-  @Prop() preferDesktop: boolean;
+  @Prop() showInstallModal: boolean;
 
   private i18nInstance: SimpleI18n;
   private qrCodeContainer: HTMLDivElement | undefined;
@@ -131,8 +131,8 @@ export class InstallModal {
 
     const t = (key: string) => this.i18nInstance.t(key);
 
-    // Determine which section should be shown first based on preferDesktop
-    const showExtensionFirst = this.preferDesktop;
+    // Determine which section should be shown first based on showInstallModal
+    const showExtensionFirst = this.showInstallModal;
 
     return (
       <WidgetWrapper className="install-model">

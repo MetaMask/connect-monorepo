@@ -31,41 +31,21 @@ t.describe('Utils', () => {
 	});
 
 	t.describe('getDappId', () => {
-		const mockHostname = 'mockdapp.com';
 		const mockDappName = 'Mock DApp Name';
 		const mockDappUrl = 'http://mockdapp.com';
-		const originalWindow = global.window;
 
-		t.afterEach(() => {
-			global.window = originalWindow;
-		});
-
-		t.it('should return window.location.hostname if window and window.location are defined', () => {
-			global.window = {
-				location: {
-					hostname: mockHostname,
-				},
-			} as any;
-			t.expect(utils.getDappId()).toBe(mockHostname);
-		});
-
-		t.it('should return dappMetadata.name if window is undefined and name is available', () => {
+		t.it('should return dappMetadata.name if defined and url is not', () => {
 			global.window = undefined as any;
-			const dappSettings = { name: mockDappName, url: mockDappUrl };
+			const dappSettings = { name: mockDappName };
 			t.expect(utils.getDappId(dappSettings)).toBe(mockDappName);
 		});
 
-		t.it('should return dappMetadata.url if window is undefined and name is not available but url is', () => {
+		t.it('should return dappMetadata.url if defined', () => {
 			global.window = undefined as any;
-			const dappSettings = { url: mockDappUrl };
+			const dappSettings = { url: mockDappUrl, name: mockDappName };
 			t.expect(utils.getDappId(dappSettings)).toBe(mockDappUrl);
 		});
 
-		t.it('should return "N/A" if window is undefined and neither name nor url is available', () => {
-			global.window = undefined as any;
-			const dappSettings = {};
-			t.expect(utils.getDappId(dappSettings)).toBe('N/A');
-		});
 	});
 
 	t.describe('getSDKVersion', () => {
@@ -161,7 +141,7 @@ t.describe('Utils', () => {
 			t.expect(consoleWarnSpy).toHaveBeenCalledWith('Invalid dappMetadata.iconUrl: URL must start with http:// or https://');
 		});
 
-		t.it('should set url to undenied if it does not start with http:// or https:// and favicon is undefined', async () => {
+		t.it('should set url to undefined if it does not start with http:// or https:// and favicon is undefined', async () => {
 			options.dapp.url = 'wrong';
 			const consoleWarnSpy = t.vi.spyOn(console, 'warn');
 
@@ -171,12 +151,17 @@ t.describe('Utils', () => {
 			t.expect(consoleWarnSpy).toHaveBeenCalledWith('Invalid dappMetadata.url: URL must start with http:// or https://');
 		});
 
-		t.it('should prove that dapp is mandatory is platform is not browser', async () => {
-			(options.dapp as any) = undefined;
+		t.it('throw if platform is not browser and dapp url is missing', async () => {
+			(options.dapp as any) = { name: 'test' };
 			await t.expect(() => utils.setupDappMetadata(options)).toThrow('You must provide dapp url');
 		});
 
-		t.it('should prove that dapp is optional is platform is browser', async () => {
+		t.it('throw if platform dapp name is missing', async () => {
+			(options.dapp as any) = { url: 'https://example.com' };
+			await t.expect(() => utils.setupDappMetadata(options)).toThrow('You must provide dapp name');
+		});
+
+		t.it('should set the dapp url if not provided and platform is browser', async () => {
 			const mockGetPlatformType = t.vi.mocked(getPlatformType);
 			mockGetPlatformType.mockReturnValue(PlatformType.DesktopWeb);
 			t.vi.stubGlobal('window', {
@@ -185,7 +170,9 @@ t.describe('Utils', () => {
 					host: 'example.com',
 				},
 			});
-			(options.dapp as any) = undefined;
+			(options.dapp as any) = {
+				name: 'test',
+			};
 			utils.setupDappMetadata(options);
 			t.expect(options.dapp.url).toBe('https://example.com');
 		});
@@ -195,6 +182,7 @@ t.describe('Utils', () => {
 			const consoleWarnSpy = t.vi.spyOn(console, 'warn');
 
 			options.dapp = {
+				name: 'test',
 				iconUrl: 'https://example.com/favicon.ico',
 				url: 'https://example.com',
 				base64Icon: longString,
@@ -208,6 +196,7 @@ t.describe('Utils', () => {
 
 		t.it('should set iconUrl to the extracted favicon if iconUrl and base64Icon are not provided', async () => {
 			options.dapp = {
+				name: 'test',
 				url: 'https://example.com',
 			};
 

@@ -21,30 +21,18 @@ import {
 } from '../domain';
 import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
 import type { FactoryModals, ModalTypes } from './modals/types';
-import { preloadQR } from './qr';
 import { compressString } from '../multichain/utils';
+import { defineCustomElements } from '@metamask/multichain-ui/loader';
 
 /**
  * Preload install modal custom elements only once
  */
 export async function preload() {
-  // __instance ??= await import(
-  //   // Use a non-literal specifier to avoid Vite static analysis of deep imports
-  //   // and gracefully handle absence of the Stencil loader in this package build.
-  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //   // @ts-ignore
-  //   '@metamask/multichain-ui'.concat('/dist/loader/index.js') // Prefer ESM loader in browsers
-  // )
-  //   .then(async (loader: any) => {
-  //     if (typeof loader?.defineCustomElements === 'function') {
-  //       loader.defineCustomElements();
-  //     }
-  //     return Promise.resolve(loader);
-  //   })
-  //   .catch(async (error) => {
-  //     console.error(`Gracefully Failed to load modal customElements:`, error);
-  //     return Promise.resolve(undefined);
-  //   });
+  try {
+    await defineCustomElements();
+  } catch (error) {
+    console.error('Failed to load customElements:', error);
+  }
 }
 
 export class ModalFactory<T extends FactoryModals = FactoryModals> {
@@ -123,9 +111,9 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     return container;
   }
 
-  createDeeplink(connectionRequest?: ConnectionRequest) {
+  createConnectionDeeplink(connectionRequest?: ConnectionRequest) {
     if (!connectionRequest) {
-      return `${METAMASK_DEEPLINK_BASE}`;
+      throw new Error('createConnectionDeeplink can only be called with a connection request');
     }
     const json = JSON.stringify(connectionRequest);
     const compressed = compressString(json);
@@ -133,7 +121,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     return `${METAMASK_DEEPLINK_BASE}/mwp?p=${urlEncoded}&c=1`;
   }
 
-  createUniversalLink(connectionRequest?: ConnectionRequest) {
+  createConnectionUniversalLink(connectionRequest?: ConnectionRequest) {
     if (!connectionRequest) {
       return `${METAMASK_CONNECT_BASE_URL}`;
     }
@@ -154,28 +142,28 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
   }
 
   public async renderInstallModal(
-    preferDesktop: boolean,
+    showInstallModal: boolean,
     createConnectionRequest: () => Promise<ConnectionRequest>,
     successCallback: (error?: Error) => Promise<void>,
   ) {
     this.modal?.unmount();
-    await Promise.all([preload(), preloadQR()]);
+    await preload()
     this.successCallback = successCallback;
 
     const parentElement = this.getMountedContainer();
     const connectionRequest = await createConnectionRequest();
-    const qrCodeLink = this.createDeeplink(connectionRequest);
+    const qrCodeLink = this.createConnectionDeeplink(connectionRequest);
 
     const modal: Modal<any> = new this.options.InstallModal({
       expiresIn:
         (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000,
       connectionRequest,
       parentElement,
-      preferDesktop,
+      showInstallModal,
       link: qrCodeLink,
       sdkVersion: getVersion(),
       generateQRCode: async (request: ConnectionRequest) =>
-        this.createDeeplink(request),
+        this.createConnectionDeeplink(request),
       onClose: this.onCloseModal.bind(this),
       startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
       createConnectionRequest,
@@ -191,7 +179,7 @@ export class ModalFactory<T extends FactoryModals = FactoryModals> {
     updateOTPCode: (otpCode: OTPCode, modal: AbstractOTPCodeModal) => void,
   ) {
     this.modal?.unmount();
-    await Promise.all([preload(), preloadQR()]);
+    await preload()
     this.successCallback = successCallback;
 
     const container = this.getMountedContainer();

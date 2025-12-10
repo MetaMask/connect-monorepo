@@ -1,6 +1,6 @@
 {
   "name": "@metamask/analytics",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Analytics package for MetaMask Connect",
   "keywords": [
     "MetaMask",
@@ -38,6 +38,7 @@
   "scripts": {
     "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts --format esm,cjs",
     "build:docs": "typedoc",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/analytics",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/analytics",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/analytics",
     "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
@@ -52,12 +53,12 @@
     "openapi-fetch": "^0.13.5"
   },
   "devDependencies": {
-    "@metamask/auto-changelog": "^3.4.3",
+    "@metamask/auto-changelog": "^3.4.4",
     "deepmerge": "^4.2.2",
     "nock": "^14.0.4",
     "tsup": "^8.4.0",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "~5.9.2",
     "vitest": "^3.1.2"
   },

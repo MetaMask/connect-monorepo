@@ -1,6 +1,6 @@
 {
   "name": "@metamask/multichain-ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MetaMask Connect Install Modal for Web",
   "keywords": [
     "MetaMask",
@@ -27,11 +27,15 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./dist/loader/index.js": {
-      "default": "./dist/loader/index.js"
-    },
-    "./dist/loader/index.cjs.js": {
-      "default": "./dist/loader/index.cjs.js"
+    "./loader": {
+      "import": {
+        "types": "./dist/loader/index.d.ts",
+        "default": "./dist/loader/index.js"
+      },
+      "require": {
+        "types": "./dist/loader/index.d.ts",
+        "default": "./dist/loader/index.cjs.js"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -52,6 +56,7 @@
     "build:watch": "stencil build --watchAll",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-ui",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-ui",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-ui",
     "dev": "stencil build --dev --watch --serve",
     "generate": "stencil generate",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
@@ -69,7 +74,7 @@
   },
   "devDependencies": {
     "@lavamoat/allow-scripts": "^3.0.4",
-    "@metamask/auto-changelog": "^3.4.3",
+    "@metamask/auto-changelog": "^3.4.4",
     "@size-limit/preset-big-lib": "^11.0.2",
     "@stencil/core": "4.22.2",
     "@types/i18n": "^0.13.12",
@@ -81,8 +86,8 @@
     "puppeteer": "^23.8.0",
     "rollup-plugin-visualizer": "^5.12.0",
     "size-limit": "^11.1.6",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-missing-exports": "^1.0.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "~5.9.2"
   },
   "engines": {

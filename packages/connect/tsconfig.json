@@ -3,5 +3,9 @@
   "compilerOptions": {
     "baseUrl": "./"
   },
+  "references": [
+    { "path": "../connect-evm/tsconfig.build.json" },
+    { "path": "../connect-multichain/tsconfig.build.json" }
+  ],
   "include": ["./src"]
 }

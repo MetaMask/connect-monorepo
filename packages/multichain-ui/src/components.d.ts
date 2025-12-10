@@ -9,8 +9,8 @@ export namespace Components {
     interface MmInstallModal {
         "expiresIn": number;
         "link": string;
-        "preferDesktop": boolean;
         "sdkVersion"?: string;
+        "showInstallModal": boolean;
     }
     interface MmOtpModal {
         /**
@@ -82,8 +82,8 @@ declare namespace LocalJSX {
         "onStartDesktopOnboarding"?: (event: MmInstallModalCustomEvent<any>) => void;
         "onUpdateExpiresIn"?: (event: MmInstallModalCustomEvent<number>) => void;
         "onUpdateLink"?: (event: MmInstallModalCustomEvent<string>) => void;
-        "preferDesktop"?: boolean;
         "sdkVersion"?: string;
+        "showInstallModal"?: boolean;
     }
     interface MmOtpModal {
         /**

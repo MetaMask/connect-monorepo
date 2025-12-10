@@ -149,7 +149,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -161,7 +161,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
@@ -203,7 +203,6 @@ export class MWPTransport implements ExtendedTransport {
       }
     }
   }
-
 
   private async onResumeSuccess(
     resumeResolve: () => void,
@@ -322,18 +321,11 @@ export class MWPTransport implements ExtendedTransport {
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
   }): Promise<void> {
-    const { dappClient, kvstore } = this;
-    const sessionStore = new SessionStore(kvstore);
+    const { dappClient } = this;
 
-    let session: Session | undefined;
-    try {
-      const [activeSession] = await sessionStore.list();
-      if (activeSession) {
-        logger('active session found', activeSession);
-        session = activeSession;
-      }
-    } catch {
-      /* empty */
+    const session = await this.getActiveSession();
+    if (session) {
+      logger('active session found', session);
     }
 
     let timeout: NodeJS.Timeout;
@@ -452,6 +444,39 @@ export class MWPTransport implements ExtendedTransport {
     return (this.dappClient as any).state === 'CONNECTED';
   }
 
+  /**
+   * Attempts to re-establish a connection via DappClient
+   *
+   * @returns Nothing
+   */
+  // TODO: We should re-evaluate adding this to the WebSocketTransport layer from `@metamask/mobile-wallet-protocol-core`
+  // ticket: https://consensyssoftware.atlassian.net/browse/WAPI-862
+  private async attemptResumeSession(): Promise<void> {
+    try {
+      await this.dappClient.reconnect();
+      // Wait for connection to be established
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Resume timeout'));
+        }, 2_000);
+
+        if (this.isConnected()) {
+          clearTimeout(timeout);
+          resolve();
+        } else {
+          this.dappClient.once('connected', () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+        }
+      });
+    } catch (error) {
+      return Promise.reject(
+        new Error(`Failed to resume session: ${error.message}`),
+      );
+    }
+  }
+
   private async getCachedResponse(
     request: { jsonrpc: string; id: string } & TransportRequest,
   ): Promise<TransportResponse | undefined> {
@@ -493,6 +518,9 @@ export class MWPTransport implements ExtendedTransport {
     request: TransportRequest,
     response: TransportResponse,
   ): Promise<void> {
+    if(response.error) {
+      return;
+    }
     if (CACHED_METHOD_LIST.includes(request.method)) {
       await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
     } else if (request.method === 'eth_accounts') {
@@ -525,6 +553,10 @@ export class MWPTransport implements ExtendedTransport {
       return cachedWalletSession as TResponse;
     }
 
+    if (!this.isConnected()) {
+      await this.attemptResumeSession();
+    }
+
     return new Promise<TResponse>((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.rejectRequest(request.id, new TransportTimeoutError());
@@ -555,5 +587,19 @@ export class MWPTransport implements ExtendedTransport {
     return () => {
       this.notificationCallbacks.delete(callback);
     };
+  }
+
+  async getActiveSession(): Promise<Session | undefined> {
+    const { kvstore } = this;
+    const sessionStore = new SessionStore(kvstore);
+
+    try {
+      const [activeSession] = await sessionStore.list();
+      return activeSession;
+    } catch (error){
+      // TODO: verify if this try catch is necessary
+      logger('error getting active session', error);
+      return undefined;
+    }
   }
 }

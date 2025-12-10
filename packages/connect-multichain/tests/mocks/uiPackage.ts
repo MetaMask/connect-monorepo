@@ -1,5 +1,5 @@
 import * as t from 'vitest';
 
-t.vi.mock('@metamask/multichain-ui/dist/loader/index.cjs.js', () => ({
+t.vi.mock('@metamask/multichain-ui/loader', () => ({
   defineCustomElements: t.vi.fn(),
 }));

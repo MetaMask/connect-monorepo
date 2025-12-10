@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import {
   MetamaskConnectEVM,
   createMetamaskConnectEVM,
-} from '@metamask/connect-evm';
+} from '@metamask/connect/evm';
 import './App.css';
 import { send_eth_signTypedData_v4, send_personal_sign } from './SignHelpers';
-import type { EIP1193Provider } from '@metamask/connect-evm';
+import type { EIP1193Provider } from '@metamask/connect/evm';
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 
 function useSDK() {
@@ -71,8 +71,7 @@ function useSDK() {
 
 export const App = () => {
   const [response, setResponse] = useState<unknown>('');
-  const { sdk, connected, provider, chainId, accounts } =
-    useSDK();
+  const { sdk, connected, provider, chainId, accounts } = useSDK();
 
   // TODO: Do we need language support?
   // const languages = sdk?.availableLanguages ?? ['en'];
@@ -105,12 +104,48 @@ export const App = () => {
     }
   };
 
+  const connectWith = async () => {
+    try {
+      const result = await sdk?.connectWith({
+        method: 'eth_sendTransaction',
+        params: (account) => [
+          {
+            to: account,
+            from: account,
+            value: '0x0',
+          },
+        ],
+      });
+      setResponse(result);
+    } catch (err) {
+      console.warn(`failed to connect with...`, err);
+      setResponse(err instanceof Error ? err.message : 'Unknown error');
+    }
+  };
+
   const connect = async () => {
     try {
       const response = await sdk?.connect();
       console.log('connect response', response);
     } catch (err) {
       console.warn(`failed to connect...`, err);
+    }
+  };
+
+  const requestPermissions = async () => {
+    if (!provider) {
+      setResponse('Provider not available');
+      return;
+    }
+    try {
+      const response = await provider.request({
+        method: 'wallet_requestPermissions',
+        params: [],
+      });
+      setResponse(`Accounts: ${response}`);
+    } catch (e) {
+      console.error('Error requesting accounts', e);
+      setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
   };
 
@@ -170,19 +205,18 @@ export const App = () => {
       throw new Error(`invalid ethereum provider`);
     }
 
-    provider
-      .request({
-        method: 'wallet_addEthereumChain',
-        params: [
-          {
-            chainId: '0x89',
-            chainName: 'Polygon',
-            blockExplorerUrls: ['https://polygonscan.com'],
-            nativeCurrency: { symbol: 'MATIC', decimals: 18 },
-            rpcUrls: ['https://polygon-rpc.com/'],
-          },
-        ],
-      })
+    provider.request({
+      method: 'wallet_addEthereumChain',
+      params: [
+        {
+          chainId: '0x89',
+          chainName: 'Polygon',
+          blockExplorerUrls: ['https://polygonscan.com'],
+          nativeCurrency: { symbol: 'MATIC', decimals: 18 },
+          rpcUrls: ['https://polygon-rpc.com/'],
+        },
+      ],
+    });
   };
 
   const sendTransaction = async () => {
@@ -251,10 +285,10 @@ export const App = () => {
     <div className="App">
       <h1>Vite React MMSDK Example</h1>
       <div className={'Info-Status'}>
-        <p id='connected-chain'>{`Connected chain: ${chainId}`}</p>
-        <p id='connected-accounts'>{`Connected accounts: ${accounts}`}</p>
-        <p id='request-response'>{`Last request response: ${response}`}</p>
-        <p id='connected-status'>{`Connected: ${connected}`}</p>
+        <p id="connected-chain">{`Connected chain: ${chainId}`}</p>
+        <p id="connected-accounts">{`Connected accounts: ${accounts}`}</p>
+        <p id="request-response">{`Last request response: ${response}`}</p>
+        <p id="connected-status">{`Connected: ${connected}`}</p>
       </div>
 
       {/* <div className="language-dropdown">
@@ -278,9 +312,9 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connect}
-            id='request-accounts-button'
+            id="request-accounts-button"
           >
-            Request Accounts
+            wallet_requestPermissions
           </button>
 
           <button
@@ -295,7 +329,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={eth_personal_sign}
-            id='personal-sign-button'
+            id="personal-sign-button"
           >
             personal_sign
           </button>
@@ -304,7 +338,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={sendTransaction}
-            id='send-transaction-button'
+            id="send-transaction-button"
           >
             Send transaction
           </button>
@@ -314,7 +348,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={() => changeNetwork('0x5')}
-              id='switch-to-goerli-button'
+              id="switch-to-goerli-button"
             >
               Switch to Goerli
             </button>
@@ -323,7 +357,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={() => changeNetwork('0x1')}
-              id='switch-to-mainnet-button'
+              id="switch-to-mainnet-button"
             >
               Switch to Mainnet
             </button>
@@ -333,7 +367,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={() => changeNetwork('0x89')}
-            id='switch-to-polygon-button'
+            id="switch-to-polygon-button"
           >
             Switch to Polygon
           </button>
@@ -342,18 +376,24 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={addEthereumChain}
-            id='add-polygon-chain-button'
+            id="add-polygon-chain-button"
           >
             Add Polygon Chain
           </button>
 
-          <div style={{ marginTop: 20, borderTop: '1px solid #ccc', paddingTop: 10 }}>
+          <div
+            style={{
+              marginTop: 20,
+              borderTop: '1px solid #ccc',
+              paddingTop: 10,
+            }}
+          >
             <h3>Read-Only RPC Calls</h3>
             <button
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_getBalance}
-              id='eth-get-balance-button'
+              id="eth-get-balance-button"
             >
               eth_getBalance
             </button>
@@ -361,7 +401,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_blockNumber}
-              id='eth-block-number-button'
+              id="eth-block-number-button"
             >
               eth_blockNumber
             </button>
@@ -369,7 +409,7 @@ export const App = () => {
               className={'Button-Normal'}
               style={{ padding: 10, margin: 10 }}
               onClick={eth_gasPrice}
-              id='eth-gas-price-button'
+              id="eth-gas-price-button"
             >
               eth_gasPrice
             </button>
@@ -381,7 +421,7 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connect}
-            id='connect-button'
+            id="connect-button"
           >
             Connect
           </button>
@@ -389,9 +429,17 @@ export const App = () => {
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
             onClick={connectAndSign}
-            id='connect-and-sign-button'
+            id="connect-and-sign-button"
           >
             Connect w/ Sign
+          </button>
+          <button
+            className={'Button-Normal'}
+            style={{ padding: 10, margin: 10 }}
+            onClick={connectWith}
+            id="connect-with-button"
+          >
+            Connect w/ Method
           </button>
         </div>
       )}
@@ -400,7 +448,7 @@ export const App = () => {
         className={'Button-Danger'}
         style={{ padding: 10, margin: 10 }}
         onClick={terminate}
-        id='terminate-button'
+        id="terminate-button"
       >
         Terminate
       </button>

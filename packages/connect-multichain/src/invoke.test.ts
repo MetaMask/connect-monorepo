@@ -65,7 +65,7 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 				platform === 'web-mobile'
 					? {
 							...originalSdkOptions.ui,
-							preferDesktop: false,
+							showInstallModal: false,
 							preferExtension: false,
 						}
 					: originalSdkOptions.ui;
@@ -124,6 +124,9 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 			t.expect(sdk.state).toBe('connected');
 			t.expect(sdk.storage).toBeDefined();
 			t.expect(sdk.transport).toBeDefined();
+			if (platform === 'web-mobile') {
+				sdk.transport.getActiveSession = t.vi.fn().mockResolvedValue({id: 'mock-session-id'});
+			}
 
 			const providerInvokeMethodSpy = t.vi.spyOn(RequestRouter.prototype, 'invokeMethod');
 			const options = {
@@ -154,6 +157,10 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 				sdk = await createSDK(testOptions);
 				await sdk.connect(scopes, caipAccountIds);
 				t.expect(sdk.state).toBe('connected');
+
+				if (platform === 'web-mobile') {
+					sdk.transport.getActiveSession = t.vi.fn().mockResolvedValue({id: 'mock-session-id'});
+				}
 
 				const options = {
 					scope: 'eip155:1',
@@ -228,6 +235,10 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 			} as InvokeMethodOptions;
 			t.expect(sdk.state).toBe('connected');
 			t.expect(sdk.provider).toBeDefined();;
+
+			if (platform === 'web-mobile') {
+				sdk.transport.getActiveSession = t.vi.fn().mockResolvedValue({id: 'mock-session-id'});
+			}
 
 			await t.expect(sdk.invokeMethod(options)).rejects.toThrow('RPCErr53: RPC Client invoke method reason (Failed to invoke method)');
 		});

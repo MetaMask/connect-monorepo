@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-evm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "EVM Layer for MetaMask Connect",
   "keywords": [
     "MetaMask",
@@ -18,8 +18,14 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/browser/es/connect-evm.mjs",
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/browser/es/connect-evm.mjs"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/browser/es/connect-evm.mjs"
+      },
       "default": "./dist/browser/es/connect-evm.mjs"
     },
     "./package.json": "./package.json"
@@ -34,6 +40,7 @@
   "scripts": {
     "build": "yarn tsup ",
     "build:docs": "typedoc",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-evm",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-evm",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-evm",
     "clean": "npx rimraf ./dist",
@@ -47,6 +54,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
+    "@metamask/analytics": "workspace:^",
     "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect-multichain": "workspace:^",
     "@metamask/utils": "^11.8.1"
@@ -57,13 +65,17 @@
     "@vitest/coverage-v8": "^3.2.4",
     "jsdom": "^26.1.0",
     "prettier": "^3.3.3",
-    "tsup": "^8.3.0",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-missing-exports": "^1.0.0",
+    "tsup": "^8.4.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "~5.9.2",
     "vitest": "^3.1.2"
   },
   "engines": {
     "node": "^18.18 || >=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

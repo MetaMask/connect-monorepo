@@ -15,6 +15,7 @@ import {
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
+import { Session } from '@metamask/mobile-wallet-protocol-core';
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 
@@ -39,6 +40,7 @@ export class DefaultTransport implements ExtendedTransport {
   readonly #pendingRequests = new Map<string, PendingRequest>();
 
   #handleResponseListener: ((event: MessageEvent) => void) | undefined;
+
   #handleNotificationListener: ((event: MessageEvent) => void) | undefined;
 
   #notifyCallbacks(data: unknown): void {
@@ -103,7 +105,6 @@ export class DefaultTransport implements ExtendedTransport {
     }
   }
 
-
   #handleNotification(event: MessageEvent): void {
     if (!this.#isMetamaskProviderEvent(event)) {
       return;
@@ -112,8 +113,8 @@ export class DefaultTransport implements ExtendedTransport {
     const responseData = event?.data?.data?.data;
 
     if (
-      typeof responseData === 'object' &&
-      responseData.method === 'metamask_chainChanged' ||
+      (typeof responseData === 'object' &&
+        responseData.method === 'metamask_chainChanged') ||
       responseData.method === 'metamask_accountsChanged'
     ) {
       this.#notifyCallbacks(responseData);
@@ -131,11 +132,10 @@ export class DefaultTransport implements ExtendedTransport {
     this.#handleResponseListener = this.#handleResponse.bind(this);
     this.#handleNotificationListener = this.#handleNotification.bind(this);
 
-
     // Add the listener
     // eslint-disable-next-line no-restricted-globals
-
     window.addEventListener('message', this.#handleResponseListener);
+    // eslint-disable-next-line no-restricted-globals
     window.addEventListener('message', this.#handleNotificationListener);
   }
 
@@ -190,6 +190,7 @@ export class DefaultTransport implements ExtendedTransport {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
+    forceRequest?: boolean;
   }): Promise<void> {
     // Ensure message listener is set up before connecting
     this.#setupMessageListener();
@@ -205,7 +206,7 @@ export class DefaultTransport implements ExtendedTransport {
       throw new Error(sessionRequest.error.message);
     }
     let walletSession = sessionRequest.result as SessionData;
-    if (walletSession && options) {
+    if (walletSession && options && !options.forceRequest) {
       const currentScopes = Object.keys(
         walletSession?.sessionScopes ?? {},
       ) as Scope[];
@@ -238,7 +239,7 @@ export class DefaultTransport implements ExtendedTransport {
         }
         walletSession = response.result as SessionData;
       }
-    } else if (!walletSession) {
+    } else if (!walletSession || options?.forceRequest) {
       const optionalScopes = addValidAccounts(
         getOptionalScopes(options?.scopes ?? []),
         getValidAccounts(options?.caipAccountIds ?? []),
@@ -265,13 +266,20 @@ export class DefaultTransport implements ExtendedTransport {
   async disconnect(): Promise<void> {
     this.#notificationCallbacks.clear();
 
-    await this.request({ method: 'wallet_revokeSession' });
+    await this.request({ method: 'wallet_revokeSession', params: {} });
 
     // Remove the message listener when disconnecting
     if (this.#handleResponseListener) {
       // eslint-disable-next-line no-restricted-globals
       window.removeEventListener('message', this.#handleResponseListener);
       this.#handleResponseListener = undefined;
+    }
+
+    // Remove the notification listener when disconnecting
+    if (this.#handleNotificationListener) {
+      // eslint-disable-next-line no-restricted-globals
+      window.removeEventListener('message', this.#handleNotificationListener);
+      this.#handleNotificationListener = undefined;
     }
 
     // Reject all pending requests
@@ -304,5 +312,12 @@ export class DefaultTransport implements ExtendedTransport {
     return () => {
       this.#notificationCallbacks.delete(callback);
     };
+  }
+
+  getActiveSession(): Promise<Session | undefined> {
+    // This code path should never be triggered when the DefaultTransport is being used
+    // It's only purpose is for exposing the session ID used for deeplinking to the mobile app
+    // and so it is only implemented for the MWPTransport.
+    throw new Error('getActiveSession is purposely not implemented for the DefaultTransport');
   }
 }

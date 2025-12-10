@@ -2,6 +2,7 @@ import { JSDOM as Page } from 'jsdom';
 import * as t from 'vitest';
 import {
   type ConnectionRequest,
+  getPlatformType,
   getVersion,
   type InstallWidgetProps,
   type Modal,
@@ -10,7 +11,7 @@ import {
   PlatformType,
   type QRLink,
 } from '../domain';
-import { ModalFactory } from './index';
+import { ModalFactory, preload } from './index';
 import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type { FactoryModals } from './modals/types';
 import { v4 } from 'uuid';
@@ -21,16 +22,20 @@ t.vi.mock('@metamask/onboarding', () => ({
   },
 }));
 
-t.vi.mock('@metamask/multichain-ui/dist/loader/index.js', () => ({
-  defineCustomElements: t.vi.fn(),
+const mockDefineCustomElements = t.vi.fn();
+
+t.vi.mock('@metamask/multichain-ui/loader', () => ({
+  defineCustomElements: mockDefineCustomElements,
 }));
+
+const mockGetPlatformType = t.vi.fn();
 
 // Mock the domain functions
 t.vi.mock('../domain', async () => {
   const actual = await t.vi.importActual('../domain');
   return {
     ...actual,
-    getPlatformType: t.vi.fn(),
+    getPlatformType: mockGetPlatformType,
     getVersion: t.vi.fn(() => '1.0.0'),
   };
 });
@@ -47,6 +52,7 @@ t.describe('ModalFactory', () => {
 
   t.beforeEach(() => {
     t.vi.clearAllMocks();
+    t.vi.useFakeTimers();
 
     // Create DOM environment
     dom = new Page(
@@ -158,6 +164,8 @@ t.describe('ModalFactory', () => {
   });
 
   t.afterEach(() => {
+    t.vi.clearAllTimers();
+    t.vi.useRealTimers();
     t.vi.unstubAllGlobals();
     t.vi.restoreAllMocks();
   });
@@ -187,30 +195,25 @@ t.describe('ModalFactory', () => {
     t.it(
       'should correctly identify mobile platform (React Native)',
       async () => {
-        const { getPlatformType } = await import('../domain');
-        t.vi.mocked(getPlatformType).mockReturnValue(PlatformType.ReactNative);
+        mockGetPlatformType.mockReturnValue(PlatformType.ReactNative);
 
         t.vi.resetModules();
         const { ModalFactory: TestModalFactory } = await import('./index');
-
         const modalFactory = new TestModalFactory(mockFactoryOptions);
         t.expect(modalFactory.isMobile).toBe(true);
       },
     );
 
     t.it('should correctly identify Node.js platform', async () => {
-      const { getPlatformType } = await import('../domain');
-      t.vi.mocked(getPlatformType).mockReturnValue(PlatformType.NonBrowser);
+      mockGetPlatformType.mockReturnValue(PlatformType.NonBrowser);
 
       t.vi.resetModules();
       const { ModalFactory: TestModalFactory } = await import('./index');
-
       const modalFactory = new TestModalFactory(mockFactoryOptions);
       t.expect(modalFactory.isNode).toBe(true);
     });
 
     t.it('should correctly identify web platforms', async () => {
-      const { getPlatformType } = await import('../domain');
       const webPlatforms = [
         PlatformType.DesktopWeb,
         PlatformType.MetaMaskMobileWebview,
@@ -218,11 +221,10 @@ t.describe('ModalFactory', () => {
       ];
 
       for (const platform of webPlatforms) {
-        t.vi.mocked(getPlatformType).mockReturnValue(platform);
+        mockGetPlatformType.mockReturnValue(platform);
 
         t.vi.resetModules();
         const { ModalFactory: TestModalFactory } = await import('./index');
-
         const modalFactory = new TestModalFactory(mockFactoryOptions);
         t.expect(modalFactory.isWeb).toBe(true);
       }
@@ -262,13 +264,13 @@ t.describe('ModalFactory', () => {
 
     t.describe('renderInstallModal', () => {
       t.it('should render install modal with correct props', async () => {
-        const preferDesktop = true;
+        const showInstallModal = true;
         t.vi
           .spyOn(uiModule as any, 'getContainer')
           .mockReturnValue(mockContainer);
 
         await uiModule.renderInstallModal(
-          preferDesktop,
+          showInstallModal,
           () => Promise.resolve(connectionRequest),
           async () => {},
         );
@@ -279,7 +281,7 @@ t.describe('ModalFactory', () => {
           t.expect.objectContaining({
             parentElement: mockContainer,
             connectionRequest,
-            preferDesktop,
+            showInstallModal,
             sdkVersion: getVersion(),
           }),
         );
@@ -289,8 +291,6 @@ t.describe('ModalFactory', () => {
       t.it(
         'should renew sessionrequest qrCode after expiration automatically',
         async () => {
-          t.vi.useFakeTimers();
-
           let connectionRequest: ConnectionRequest = {
             sessionRequest: {
               id: v4(),
@@ -323,13 +323,13 @@ t.describe('ModalFactory', () => {
             return Promise.resolve(connectionRequest);
           });
 
-          const preferDesktop = true;
+          const showInstallModal = true;
           t.vi
             .spyOn(uiModule as any, 'getContainer')
             .mockReturnValue(mockContainer);
 
           await uiModule.renderInstallModal(
-            preferDesktop,
+            showInstallModal,
             createSessionRequestMock,
             async () => {},
           );
@@ -340,8 +340,6 @@ t.describe('ModalFactory', () => {
           await t.vi.advanceTimersByTimeAsync(2000);
 
           t.expect(createSessionRequestMock).toHaveBeenCalledTimes(1);
-
-          t.vi.useRealTimers();
         },
       );
 
@@ -550,36 +548,21 @@ t.describe('ModalFactory', () => {
           .mockImplementation(() => {});
         const testError = new Error('Failed to load modal customElements');
 
-        // Temporarily unmock the module and re-mock it to throw an error
-        t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.js');
-        t.vi.doMock(
-          '@metamask/multichain-ui/dist/loader/index.js',
-          async () => {
-            throw testError;
-          },
-        );
+        mockDefineCustomElements.mockImplementationOnce(() => {
+          throw testError;
+        });
 
-        // Re-import to get the fresh module with cleared singleton
-        const { preload: freshPreload } = (await t.vi.importActual(
-          './index',
-        )) as any;
-
-        // Test that preload handles the error gracefully
-        await t.expect(freshPreload()).resolves.not.toThrow();
+        t.vi.resetModules();
+        const { preload: TestPreload } = await import('./index');
+        await TestPreload();
 
         // Verify that the error was logged
         t.expect(consoleErrorSpy).toHaveBeenCalledWith(
-          'Gracefully Failed to load modal customElements:',
-          t.expect.any(Error),
+          'Failed to load customElements:',
+          testError,
         );
 
         consoleErrorSpy.mockRestore();
-
-        // Restore the original mock
-        t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-        t.vi.doMock('@metamask/multichain-ui/dist/loader/index.cjs.js', () => ({
-          defineCustomElements: t.vi.fn(),
-        }));
       },
     );
 
@@ -588,21 +571,14 @@ t.describe('ModalFactory', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      // Mock the module to fail
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-      t.vi.doMock(
-        '@metamask/multichain-ui/dist/loader/index.cjs.js',
-        async () => {
-          throw new Error('Test import failure');
-        },
-      );
+      const testError = new Error('Test import failure');
+      mockDefineCustomElements.mockImplementationOnce(() => {
+        throw testError;
+      });
 
-      // Re-import to get the fresh module with cleared singleton
-      const { preload: freshPreload } = (await t.vi.importActual(
-        './index',
-      )) as any;
-
-      await freshPreload();
+      t.vi.resetModules();
+      const { preload: TestPreload } = await import('./index');
+      await TestPreload();
 
       // Verify the exact format: first argument should be the message string,
       // second argument should be an Error object
@@ -610,17 +586,12 @@ t.describe('ModalFactory', () => {
       const [firstArg, secondArg] = consoleErrorSpy.mock.calls[0];
 
       t.expect(firstArg).toBe(
-        'Gracefully Failed to load modal customElements:',
+        'Failed to load customElements:',
       );
       t.expect(secondArg).toBeInstanceOf(Error);
+      t.expect(secondArg).toBe(testError);
 
       consoleErrorSpy.mockRestore();
-
-      // Restore the original mock
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-      t.vi.doMock('@metamask/multichain-ui/dist/loader/index.cjs.js', () => ({
-        defineCustomElements: t.vi.fn(),
-      }));
     });
 
     t.it('should continue working after preload failure', async () => {
@@ -628,22 +599,12 @@ t.describe('ModalFactory', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      // First, cause preload to fail
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-      t.vi.doMock(
-        '@metamask/multichain-ui/dist/loader/index.cjs.js',
-        async () => {
-          throw new Error('Module load failed');
-        },
-      );
-
-      // Re-import to get the fresh module with cleared singleton
-      const { ModalFactory: FreshUIModule } = (await t.vi.importActual(
-        './index',
-      )) as any;
+      mockDefineCustomElements.mockImplementationOnce(() => {
+        throw new Error('Module load failed');
+      });
 
       // Test that modal rendering still works even when preload fails
-      const uiModule = new FreshUIModule(mockFactoryOptions);
+      const uiModule = new ModalFactory(mockFactoryOptions);
       const connectionRequest: ConnectionRequest = {
         sessionRequest: {
           id: v4(),
@@ -668,7 +629,7 @@ t.describe('ModalFactory', () => {
           uiModule.renderInstallModal(
             false,
             () => Promise.resolve(connectionRequest),
-            () => {},
+            async () => {},
           ),
         )
         .resolves.not.toThrow();
@@ -678,12 +639,6 @@ t.describe('ModalFactory', () => {
       t.expect(mockModal.mount).toHaveBeenCalled();
 
       consoleErrorSpy.mockRestore();
-
-      // Restore the original mock
-      t.vi.doUnmock('@metamask/multichain-ui/dist/loader/index.cjs.js');
-      t.vi.doMock('@metamask/multichain-ui/dist/loader/index.cjs.js', () => ({
-        defineCustomElements: t.vi.fn(),
-      }));
     });
   });
 });
