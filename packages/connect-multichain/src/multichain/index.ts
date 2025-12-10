@@ -577,6 +577,7 @@ export class MultichainSDK extends MultichainCore {
       });
   }
 
+  // TODO: make this into param object
   async connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
