@@ -344,11 +344,10 @@ export class MetamaskConnectEVM {
       accounts,
       chainId,
       signResponse: result,
-    })
+    });
 
     return result;
   }
-
 
   /**
    * Connects to the wallet and invokes a method with specified parameters.
@@ -375,11 +374,12 @@ export class MetamaskConnectEVM {
     account?: string | undefined;
     forceRequest?: boolean;
   }): Promise<unknown> {
-    const { accounts: connectedAccounts, chainId: connectedChainId} = await this.connect({
-      chainId: chainId ?? DEFAULT_CHAIN_ID,
-      account,
-      forceRequest,
-    });
+    const { accounts: connectedAccounts, chainId: connectedChainId } =
+      await this.connect({
+        chainId: chainId ?? DEFAULT_CHAIN_ID,
+        account,
+        forceRequest,
+      });
 
     const resolvedParams =
       typeof params === 'function' ? params(connectedAccounts[0]) : params;
@@ -393,7 +393,7 @@ export class MetamaskConnectEVM {
       accounts: connectedAccounts,
       chainId: connectedChainId,
       connectWithResponse: result,
-    })
+    });
 
     return result;
   }
@@ -458,10 +458,18 @@ export class MetamaskConnectEVM {
         method: 'wallet_switchEthereumChain',
         params,
       });
+
+      // When using the MWP transport, the error is returned instead of thrown,
+      // so we force it into the catch block here.
+      if (result?.error) {
+        throw new Error(result.error.message);
+      }
+
       await this.#trackWalletActionSucceeded(method, scope, params);
-      if((result as unknown as { result: unknown }).result === null) {
-      // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
-      this.#onChainChanged(hexChainId);
+
+      if ((result as unknown as { result: unknown }).result === null) {
+        // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
+        this.#onChainChanged(hexChainId);
       }
       return result;
     } catch (error) {
