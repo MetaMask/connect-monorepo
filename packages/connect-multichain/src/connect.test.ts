@@ -140,10 +140,21 @@ function testSuite<T extends MultichainOptions>({
 
       // Expect sdk.connect to reject if transport cannot connect
       // Add timeout wrapper for web-mobile platform to prevent hanging
+      let timeoutId: NodeJS.Timeout;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('Test timeout')), 3000);
+      });
+      
       const connectPromise = sdk.connect(scopes, caipAccountIds);
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Test timeout')), 3000),
-      );
+      
+      // Ensure both promises have catch handlers BEFORE racing to prevent unhandled rejections
+      // This ensures that even if one promise rejects after the race resolves, it won't be unhandled
+      connectPromise.catch(() => {
+        // Silently handle - error will be processed by race or ignored if timeout wins
+      });
+      timeoutPromise.catch(() => {
+        // Silently handle - timeout will be processed by race or ignored if connect wins
+      });
       
       let connectError: any;
       let timedOut = false;
@@ -152,11 +163,15 @@ function testSuite<T extends MultichainOptions>({
         await Promise.race([connectPromise, timeoutPromise]);
         t.expect.fail('Expected connect to throw an error');
       } catch (error) {
+        clearTimeout(timeoutId);
+        
         if (error instanceof Error && error.message === 'Test timeout') {
           timedOut = true;
         } else {
           connectError = error;
         }
+      } finally {
+        clearTimeout(timeoutId);
       }
 
       // For web-mobile, timeout might be expected due to deeplink hanging
@@ -169,6 +184,20 @@ function testSuite<T extends MultichainOptions>({
       } else {
         // If timed out, at least verify it's not connected
         t.expect(['loaded', 'disconnected', 'connecting']).toContain(sdk.state);
+      }
+      
+      // Ensure both promises are fully handled to prevent unhandled rejections
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      
+      // Disconnect SDK to clean up any ongoing async operations
+      try {
+        if (sdk.state !== 'disconnected' && sdk.state !== 'pending') {
+          await sdk.disconnect().catch(() => {
+            // Ignore disconnect errors
+          });
+        }
+      } catch {
+        // Ignore disconnect errors
       }
 
       mockedData.mockDefaultTransport.connect.mockClear();
@@ -387,10 +416,21 @@ function testSuite<T extends MultichainOptions>({
       t.expect(() => sdk.transport).toThrow();
 
       // Add timeout wrapper for web-mobile platform to prevent hanging
+      let timeoutId: NodeJS.Timeout;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('Test timeout')), 3000);
+      });
+      
       const connectPromise = sdk.connect(scopes, caipAccountIds);
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Test timeout')), 3000),
-      );
+      
+      // Ensure both promises have catch handlers BEFORE racing to prevent unhandled rejections
+      // This ensures that even if one promise rejects after the race resolves, it won't be unhandled
+      connectPromise.catch(() => {
+        // Silently handle - error will be processed by race or ignored if timeout wins
+      });
+      timeoutPromise.catch(() => {
+        // Silently handle - timeout will be processed by race or ignored if connect wins
+      });
       
       let connectError: any;
       let timedOut = false;
@@ -399,11 +439,15 @@ function testSuite<T extends MultichainOptions>({
         await Promise.race([connectPromise, timeoutPromise]);
         t.expect.fail('Expected connect to throw an error');
       } catch (error) {
+        clearTimeout(timeoutId);
+        
         if (error instanceof Error && error.message === 'Test timeout') {
           timedOut = true;
         } else {
           connectError = error;
         }
+      } finally {
+        clearTimeout(timeoutId);
       }
       
       // For web-mobile, timeout might be expected due to deeplink hanging
@@ -413,6 +457,20 @@ function testSuite<T extends MultichainOptions>({
       } else {
         // If timed out, at least verify it's not connected
         t.expect(['loaded', 'disconnected', 'connecting']).toContain(sdk.state);
+      }
+      
+      // Ensure both promises are fully handled to prevent unhandled rejections
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      
+      // Disconnect SDK to clean up any ongoing async operations
+      try {
+        if (sdk.state !== 'disconnected' && sdk.state !== 'pending') {
+          await sdk.disconnect().catch(() => {
+            // Ignore disconnect errors
+          });
+        }
+      } catch {
+        // Ignore disconnect errors
       }
     });
 
