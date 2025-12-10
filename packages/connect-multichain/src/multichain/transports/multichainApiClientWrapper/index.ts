@@ -170,8 +170,12 @@ export class MultichainApiClientWrapperTransport implements Transport {
     if (!this.isTransportDefined()) {
       return { error: providerErrors.unauthorized() };
     }
-    return this.multichainSDK.invokeMethod(
+    const result = this.multichainSDK.invokeMethod(
       request.params as InvokeMethodOptions,
     );
+
+    return {
+      result,
+    }
   }
 }
