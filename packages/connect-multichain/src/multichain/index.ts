@@ -549,6 +549,7 @@ export class MultichainSDK extends MultichainCore {
             logger('Error tracking connection_established event', error);
           }
         }
+        return undefined; // explicitly return `undefined` to avoid eslintpromise/always-return
       })
       .catch(async (error) => {
         this.state = 'disconnected';
@@ -575,7 +576,7 @@ export class MultichainSDK extends MultichainCore {
             logger('Error tracking connection failed/rejected event', error);
           }
         }
-        return Promise.reject(error);
+        throw error instanceof Error ? error : new Error(String(error));
       });
   }
 
