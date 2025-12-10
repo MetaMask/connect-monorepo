@@ -453,8 +453,11 @@ export class MultichainSDK extends MultichainCore {
   ) {
     return new Promise<void>(async (resolve, reject) => {
       // Handle the response to the initial wallet_createSession request
-      const dappClientMessageHandler = (payload: any) => {
-        const data = payload.data as Record<string, unknown>;
+      const dappClientMessageHandler = (payload: unknown) => {
+        if (typeof payload !== 'object' || payload === null || !('data' in payload) {
+          return;
+        }
+        const data = payload.data as { result?: SessionData , error?: unknown };
         if (typeof data === 'object' && data !== null) {
           // optimistically assume any error is due to the initial wallet_createSession request failure
           if (data.error) {
@@ -462,7 +465,7 @@ export class MultichainSDK extends MultichainCore {
             return reject(data.error);
           }
           // if sessionScopes is set in the result, then this is a response to wallet_createSession
-          if ((data?.result as unknown as SessionData)?.sessionScopes) {
+          if (data?.result?.sessionScopes) {
             this.dappClient.off('message', dappClientMessageHandler);
             return; // unsure if we need to call resolve here like we do above for reject()
           }
