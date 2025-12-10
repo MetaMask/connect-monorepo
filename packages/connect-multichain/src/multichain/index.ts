@@ -348,6 +348,83 @@ export class MultichainSDK extends MultichainCore {
     };
   }
 
+  async #renderInstallModalAsync(
+    desktopPreferred: boolean,
+    scopes: Scope[],
+    caipAccountIds: CaipAccountId[],
+  ): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      // Use Connection Modal
+      this.options.ui.factory
+        .renderInstallModal(
+          desktopPreferred,
+          async () => {
+            if (
+              this.dappClient.state === 'CONNECTED' ||
+              this.dappClient.state === 'CONNECTING'
+            ) {
+              await this.dappClient.disconnect();
+            }
+            return new Promise<ConnectionRequest>((_resolve) => {
+              this.dappClient.on(
+                'session_request',
+                (sessionRequest: SessionRequest) => {
+                  _resolve({
+                    sessionRequest,
+                    metadata: {
+                      dapp: this.options.dapp,
+                      sdk: {
+                        version: getVersion(),
+                        platform: getPlatformType(),
+                      },
+                    },
+                  });
+                },
+              );
+
+              (async (): Promise<void> => {
+                try {
+                  await this.transport.connect({ scopes, caipAccountIds });
+                  await this.options.ui.factory.unload();
+                  this.options.ui.factory.modal?.unmount();
+                  this.state = 'connected';
+                  await this.storage.setTransport(TransportType.MWP);
+                } catch (error) {
+                  if (error instanceof ProtocolError) {
+                    // Ignore Request expired errors to allow modal to regenerate expired qr codes
+                    if (error.code !== ErrorCode.REQUEST_EXPIRED) {
+                      this.state = 'disconnected';
+                      reject(error);
+                    }
+                    // If request is expires, the QRCode will automatically be regenerated we can ignore this case
+                  } else {
+                    this.state = 'disconnected';
+                    reject(
+                      error instanceof Error ? error : new Error(String(error)),
+                    );
+                  }
+                }
+              })().catch(() => {
+                // Error already handled in the async function
+              });
+            });
+          },
+          async (error?: Error) => {
+            if (error) {
+              await this.storage.removeTransport();
+              reject(error);
+            } else {
+              await this.storage.setTransport(TransportType.MWP);
+              resolve();
+            }
+          },
+        )
+        .catch(() => {
+          // Errors are handled by the callbacks
+        });
+    });
+  }
+
   async #showInstallModal(
     desktopPreferred: boolean,
     scopes: Scope[],
@@ -355,68 +432,11 @@ export class MultichainSDK extends MultichainCore {
   ): Promise<void> {
     // create the listener only once to avoid memory leaks
     this.#beforeUnloadListener ??= this.#createBeforeUnloadListener();
-    return new Promise<void>((resolve, reject) => {
-      // Use Connection Modal
-      this.options.ui.factory.renderInstallModal(
-        desktopPreferred,
-        async () => {
-          if (
-            this.dappClient.state === 'CONNECTED' ||
-            this.dappClient.state === 'CONNECTING'
-          ) {
-            await this.dappClient.disconnect();
-          }
-          return new Promise<ConnectionRequest>((resolveConnectionRequest) => {
-            this.dappClient.on(
-              'session_request',
-              (sessionRequest: SessionRequest) => {
-                resolveConnectionRequest({
-                  sessionRequest,
-                  metadata: {
-                    dapp: this.options.dapp,
-                    sdk: {
-                      version: getVersion(),
-                      platform: getPlatformType(),
-                    },
-                  },
-                });
-              },
-            );
-
-            this.transport
-              .connect({ scopes, caipAccountIds })
-              .then(() => {
-                this.options.ui.factory.unload();
-                this.options.ui.factory.modal?.unmount();
-                this.state = 'connected';
-                return this.storage.setTransport(TransportType.MWP);
-              })
-              .catch((error) => {
-                if (error instanceof ProtocolError) {
-                  // Ignore Request expired errors to allow modal to regenerate expired qr codes
-                  if (error.code !== ErrorCode.REQUEST_EXPIRED) {
-                    this.state = 'disconnected';
-                    reject(error);
-                  }
-                  // If request is expires, the QRCode will automatically be regenerated we can ignore this case
-                } else {
-                  this.state = 'disconnected';
-                  reject(error);
-                }
-              });
-          });
-        },
-        async (error?: Error) => {
-          if (!error) {
-            await this.storage.setTransport(TransportType.MWP);
-            resolve();
-          } else {
-            await this.storage.removeTransport();
-            reject(error);
-          }
-        },
-      );
-    });
+    await this.#renderInstallModalAsync(
+      desktopPreferred,
+      scopes,
+      caipAccountIds,
+    );
   }
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {
