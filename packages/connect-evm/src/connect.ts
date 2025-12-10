@@ -286,6 +286,14 @@ export class MetamaskConnectEVM {
   ): Promise<{ accounts: Address[]; chainId: number }> {
     logger('request: connect', { chainId, account });
 
+    if (
+      chainId &&
+      Array.isArray(availableChainIds) &&
+      !availableChainIds.includes(chainId)
+    ) {
+      throw new Error('availableChainIds must include the provided chainId');
+    }
+
     const caipChainIds = Array.from(
       new Set(
         availableChainIds?.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID],
