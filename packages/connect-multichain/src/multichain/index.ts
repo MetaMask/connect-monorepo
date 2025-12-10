@@ -454,7 +454,7 @@ export class MultichainSDK extends MultichainCore {
     return new Promise<void>(async (resolve, reject) => {
       // Handle the response to the initial wallet_createSession request
       const dappClientMessageHandler = (payload: unknown) => {
-        if (typeof payload !== 'object' || payload === null || !('data' in payload) {
+        if (typeof payload !== 'object' || payload === null || !('data' in payload)) {
           return;
         }
         const data = payload.data as { result?: SessionData , error?: unknown };
