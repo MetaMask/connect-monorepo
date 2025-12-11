@@ -384,19 +384,19 @@ export class MetamaskConnectEVM {
   async connectWith({
     method,
     params,
-    chainId,
+    chainIds,
     account,
     forceRequest,
   }: {
     method: string;
     params: unknown[] | ((account: Address) => unknown[]);
-    chainId?: number;
+    chainIds?: number[];
     account?: string | undefined;
     forceRequest?: boolean;
   }): Promise<unknown> {
     const { accounts: connectedAccounts, chainId: connectedChainId } =
       await this.connect({
-        initiallySelectedChainId: chainId ?? DEFAULT_CHAIN_ID,
+        chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
         account,
         forceRequest,
       });
@@ -544,7 +544,7 @@ export class MetamaskConnectEVM {
 
       try {
         const result = await this.connect({
-          initiallySelectedChainId,
+          chainIds: [initiallySelectedChainId],
           forceRequest: shouldForceConnectionRequest,
         });
         await this.#trackWalletActionSucceeded(method, scope, params);
