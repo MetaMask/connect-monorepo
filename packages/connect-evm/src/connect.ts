@@ -273,7 +273,7 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Wwhether to force a request regardless of an existing session
-   * @param options.chainIds - Optional array of chain IDs to connect to
+   * @param options.chainIds - Array of chain IDs to connect to
    * @returns A promise that resolves with the connected accounts and chain ID
    */
   async connect(
@@ -282,6 +282,10 @@ export class MetamaskConnectEVM {
     },
   ): Promise<{ accounts: Address[]; chainId: number }> {
     logger('request: connect', { account });
+
+    if (!chainIds || chainIds.length === 0) {
+      throw new Error('chainIds must be an array of at least one chain ID');
+    }
 
     const caipChainIds = Array.from(
       new Set(chainIds.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID]),
