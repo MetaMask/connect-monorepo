@@ -452,25 +452,26 @@ export class MultichainSDK extends MultichainCore {
     caipAccountIds: CaipAccountId[],
   ) {
     return new Promise<void>(async (resolve, reject) => {
-      this.dappClient.on('message', (payload: any) => {
-        const data = payload.data as Record<string, unknown>;
+      // Handle the response to the initial wallet_createSession request
+      const dappClientMessageHandler = (payload: unknown) => {
+        if (typeof payload !== 'object' || payload === null || !('data' in payload)) {
+          return;
+        }
+        const data = payload.data as { result?: SessionData , error?: unknown };
         if (typeof data === 'object' && data !== null) {
-          if ('method' in data && data.method === 'wallet_createSession') {
-            if (data.error) {
-              this.state = 'loaded';
-              return reject(data.error);
-            }
-            // TODO: is it .params or .result?
-            const session = ((data as any).params ??
-              (data as any).result) as SessionData;
-            if (session) {
-              // Initial request will be what resolves the connection when options is specified
-              this.options.transport?.onNotification?.(payload.data);
-              this.emit('wallet_sessionChanged', session);
-            }
+          // optimistically assume any error is due to the initial wallet_createSession request failure
+          if (data.error) {
+            this.dappClient.off('message', dappClientMessageHandler);
+            return reject(data.error);
+          }
+          // if sessionScopes is set in the result, then this is a response to wallet_createSession
+          if (data?.result?.sessionScopes) {
+            this.dappClient.off('message', dappClientMessageHandler);
+            return; // unsure if we need to call resolve here like we do above for reject()
           }
         }
-      });
+      };
+      this.dappClient.on('message', dappClientMessageHandler);
 
       let timeout: NodeJS.Timeout | undefined;
 
@@ -691,7 +692,6 @@ export class MultichainSDK extends MultichainCore {
     await this.__transport?.disconnect();
     await this.storage.removeTransport();
 
-    this.emit('wallet_sessionChanged', undefined);
     this.emit('stateChanged', 'disconnected');
 
     this.listener = undefined;

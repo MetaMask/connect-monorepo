@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reverted: Fix mobile deeplink bug that occurred when `MultichainSDK.connect()` was called and the transport was already connected ([#74](https://github.com/MetaMask/connect-monorepo/pull/74))
+- Fix rejections of the initial permission approval for deeplink connections not correctly updating the connection status to disconnected ([#75](https://github.com/MetaMask/connect-monorepo/pull/75))
 
 ## [0.3.2]
 
