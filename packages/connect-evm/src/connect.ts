@@ -352,7 +352,9 @@ export class MetamaskConnectEVM {
   /**
    * Connects to the wallet and signs a message using personal_sign.
    *
-   * @param message - The message to sign
+   * @param options - The connection options
+   * @param options.message - The message to sign after connecting
+   * @param [options.chainIds] - Array of chain IDs to connect to
    * @returns A promise that resolves with the signature
    * @throws Error if the selected account is not available after timeout
    */
