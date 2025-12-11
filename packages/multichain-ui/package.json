@@ -37,16 +37,6 @@
         "default": "./dist/loader/index.cjs.js"
       }
     },
-    "./dist/loader/index.js": {
-      "import": {
-        "types": "./dist/loader/index.d.ts",
-        "default": "./dist/loader/index.js"
-      },
-      "require": {
-        "types": "./dist/loader/index.d.ts",
-        "default": "./dist/loader/index.cjs.js"
-      }
-    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs.js",
