@@ -2,20 +2,20 @@ import {
   createMetamaskConnectEVM,
   type EIP1193Provider,
   type MetamaskConnectEVM,
-} from '@metamask/connect-evm'
+} from '@metamask/connect-evm';
 
 import {
   ChainNotConfiguredError,
   createConnector,
   ProviderNotFoundError,
-} from '@wagmi/core'
+} from '@wagmi/core';
 
 import type {
   Compute,
   ExactPartial,
   OneOf,
   Omit as StrictOmit,
-} from '@wagmi/core/internal'
+} from '@wagmi/core/internal';
 
 import {
   type Address,
@@ -28,38 +28,39 @@ import {
   type AddEthereumChainParameter as ViemAddEthereumChainParameter,
   withRetry,
   withTimeout,
-} from 'viem'
+} from 'viem';
 
 type CreateMetamaskConnectEVMParameters = Parameters<
   typeof createMetamaskConnectEVM
->[0]
+>[0];
 
-const DEFAULT_CHAIN_ID = 1
+const DEFAULT_CHAIN_ID = 1;
 
-export type MetaMaskParameters = {
-  dapp?: CreateMetamaskConnectEVMParameters['dapp'] | undefined
-} & OneOf<
-  | {
-      /* Shortcut to connect and sign a message */
-      connectAndSign?: string | undefined
-    }
-  | {
-      // TODO: Strongly type `method` and `params`
-      /* Allow `connectWith` any rpc method */
-      connectWith?: { method: string; params: unknown[] } | undefined
-    }
->
+export type MetaMaskParameters = Partial<
+  Pick<CreateMetamaskConnectEVMParameters, 'dapp' | 'debug'>
+> &
+  OneOf<
+    | {
+        /* Shortcut to connect and sign a message */
+        connectAndSign?: string | undefined;
+      }
+    | {
+        // TODO: Strongly type `method` and `params`
+        /* Allow `connectWith` any rpc method */
+        connectWith?: { method: string; params: unknown[] } | undefined;
+      }
+  >;
 
-metaMask.type = 'metaMask' as const
+metaMask.type = 'metaMask' as const;
 export function metaMask(parameters: MetaMaskParameters = {}) {
-  type Provider = EIP1193Provider
+  type Provider = EIP1193Provider;
   type Properties = {
-    onConnect(connectInfo: ProviderConnectInfo): void
-    onDisplayUri(uri: string): void
-  }
+    onConnect(connectInfo: ProviderConnectInfo): void;
+    onDisplayUri(uri: string): void;
+  };
 
-  let metamask: MetamaskConnectEVM | undefined
-  let metamaskPromise: Promise<MetamaskConnectEVM> | undefined
+  let metamask: MetamaskConnectEVM | undefined;
+  let metamaskPromise: Promise<MetamaskConnectEVM> | undefined;
 
   return createConnector<Provider, Properties>((config) => {
     // Helper to ensure metamask is initialized
@@ -71,7 +72,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               `eip155:${chain.id}`,
               chain.rpcUrls.default?.http[0],
             ]),
-          )
+          );
 
           metamaskPromise = createMetamaskConnectEVM({
             dapp: parameters.dapp ?? { name: window.location.hostname },
@@ -84,11 +85,12 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
             api: {
               supportedNetworks,
             },
-          })
+            debug: parameters.debug,
+          });
         }
-        metamask = await metamaskPromise
+        metamask = await metamaskPromise;
       }
-      return metamask
+      return metamask;
     }
 
     const connector = {
@@ -98,82 +100,100 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       type: metaMask.type,
       async setup() {
         // Ensure provider is initialized by calling getProvider
-        await this.getProvider()
+        await this.getProvider();
       },
 
       async connect<withCapabilities extends boolean = false>(connectParams?: {
-        chainId?: number | undefined
-        isReconnecting?: boolean | undefined
-        withCapabilities?: withCapabilities | boolean | undefined
+        chainId?: number | undefined;
+        isReconnecting?: boolean | undefined;
+        withCapabilities?: withCapabilities | boolean | undefined;
       }) {
-        const chainId = connectParams?.chainId ?? DEFAULT_CHAIN_ID
-        const withCapabilities = connectParams?.withCapabilities
+        const chainId = connectParams?.chainId ?? DEFAULT_CHAIN_ID;
+        const withCapabilities = connectParams?.withCapabilities;
 
-        const instance = await ensureMetamask()
+        const chainIds = config.chains.map((chain) => chain.id);
 
-        let accounts: readonly Address[] = []
+        const instance = await ensureMetamask();
+
+        let accounts: readonly Address[] = [];
         if (connectParams?.isReconnecting) {
           accounts = (await this.getAccounts().catch(() => [])).map((account) =>
             getAddress(account),
-          )
+          );
         }
 
         try {
-          let signResponse: string | undefined
-          let connectWithResponse: unknown | undefined
+          let signResponse: string | undefined;
+          let connectWithResponse: unknown | undefined;
 
           if (!accounts?.length) {
             if (parameters.connectAndSign || parameters.connectWith) {
               if (parameters.connectAndSign) {
-                signResponse = await instance.connectAndSign(
-                  parameters.connectAndSign,
-                )
+                signResponse = await instance.connectAndSign({
+                  message: parameters.connectAndSign,
+                  chainIds,
+                });
               } else if (parameters.connectWith) {
                 connectWithResponse = await instance.connectWith({
                   method: parameters.connectWith.method,
                   params: parameters.connectWith.params,
-                })
+                  chainIds,
+                });
               }
 
               accounts = (await this.getAccounts()).map((account) =>
                 getAddress(account),
-              )
+              );
             } else {
               const result = await instance.connect({
                 chainId,
                 account: undefined,
-              })
-              accounts = result.accounts.map((account) => getAddress(account))
+                chainIds,
+              });
+              accounts = result.accounts.map((account) => getAddress(account));
             }
           }
 
           // Switch to chain if provided
-          let currentChainId = (await this.getChainId()) as number
+          let currentChainId = (await this.getChainId()) as number;
           if (chainId && currentChainId !== chainId) {
+            const chainConfig = config.chains.find(
+              (chain) => chain.id === chainId,
+            );
+
             const chain = await this.switchChain!({
               chainId,
-              addEthereumChainParameter: undefined,
+              addEthereumChainParameter: chainConfig
+                ? {
+                    chainName: chainConfig.name,
+                    nativeCurrency: chainConfig.nativeCurrency,
+                    rpcUrls: chainConfig.rpcUrls.default?.http,
+                    blockExplorerUrls: chainConfig.blockExplorers?.default.url
+                      ? [chainConfig.blockExplorers?.default.url]
+                      : undefined,
+                  }
+                : undefined,
             }).catch((error) => {
-              if (error.code === UserRejectedRequestError.code) throw error
-              return { id: currentChainId }
-            })
-            currentChainId = chain?.id ?? currentChainId
+              if (error.code === UserRejectedRequestError.code) throw error;
+              return { id: currentChainId };
+            });
+            currentChainId = chain?.id ?? currentChainId;
           }
 
           // Emit events for connectAndSign and connectWith
-          const provider = await this.getProvider()
+          const provider = await this.getProvider();
           if (signResponse)
             provider.emit('connectAndSign', {
               accounts,
               chainId: currentChainId,
               signResponse,
-            })
+            });
           else if (connectWithResponse)
             provider.emit('connectWith', {
               accounts,
               chainId: currentChainId,
               connectWithResponse,
-            })
+            });
 
           return {
             accounts: (withCapabilities
@@ -183,70 +203,70 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
                 }))
               : accounts) as never,
             chainId: currentChainId,
-          }
+          };
         } catch (err) {
-          const error = err as RpcError
+          const error = err as RpcError;
           if (error.code === UserRejectedRequestError.code) {
-            throw new UserRejectedRequestError(error)
+            throw new UserRejectedRequestError(error);
           }
           if (error.code === ResourceUnavailableRpcError.code) {
-            throw new ResourceUnavailableRpcError(error)
+            throw new ResourceUnavailableRpcError(error);
           }
-          throw error
+          throw error;
         }
       },
 
       async disconnect() {
-        const instance = await ensureMetamask()
-        return instance.disconnect()
+        const instance = await ensureMetamask();
+        return instance.disconnect();
       },
 
       async getAccounts() {
-        const instance = await ensureMetamask()
-        return instance.accounts
+        const instance = await ensureMetamask();
+        return instance.accounts;
       },
 
       async getChainId() {
-        const instance = await ensureMetamask()
-        const chainId = await instance.getChainId()
+        const instance = await ensureMetamask();
+        const chainId = await instance.getChainId();
         if (chainId) {
-          return Number(chainId)
+          return Number(chainId);
         }
         // Fallback to requesting chainId from provider if SDK doesn't return it
-        const provider = await this.getProvider()
+        const provider = await this.getProvider();
 
-        const hexChainId = await provider.request({ method: 'eth_chainId' })
-        return Number(hexChainId)
+        const hexChainId = await provider.request({ method: 'eth_chainId' });
+        return Number(hexChainId);
       },
 
       async getProvider() {
-        const instance = await ensureMetamask()
-        const provider = await instance.getProvider()
+        const instance = await ensureMetamask();
+        const provider = await instance.getProvider();
         if (!provider) {
-          throw new ProviderNotFoundError()
+          throw new ProviderNotFoundError();
         }
         // Provider type-mismatch because Metamask uses tuples,
         // whereas viem uses direct parameters.
         // This is safe because both providers implement the same runtime interface
         // (on, removeListener, request); only the TypeScript signatures differ.
-        return provider
+        return provider;
       },
 
       async isAuthorized() {
         try {
           // MetaMask mobile provider sometimes fails to immediately resolve
           // JSON-RPC requests on page load
-          const timeout = 200
+          const timeout = 200;
           const accounts = await withRetry(
             () => withTimeout(() => this.getAccounts(), { timeout }),
             {
               delay: timeout + 1,
               retryCount: 3,
             },
-          )
-          return !!accounts.length
+          );
+          return !!accounts.length;
         } catch {
-          return false
+          return false;
         }
       },
 
@@ -254,90 +274,90 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         parameters: Compute<{
           addEthereumChainParameter?:
             | ExactPartial<StrictOmit<ViemAddEthereumChainParameter, 'chainId'>>
-            | undefined
-          chainId: number
+            | undefined;
+          chainId: number;
         }>,
       ) {
-        const { addEthereumChainParameter, chainId } = parameters
-        const instance = await ensureMetamask()
-        const chain = config.chains.find(({ id }) => id === chainId)
+        const { addEthereumChainParameter, chainId } = parameters;
+        const instance = await ensureMetamask();
+        const chain = config.chains.find(({ id }) => id === chainId);
 
         if (!chain) {
-          throw new SwitchChainError(new ChainNotConfiguredError())
+          throw new SwitchChainError(new ChainNotConfiguredError());
         }
 
         const rpcUrls = addEthereumChainParameter?.rpcUrls
           ? [...addEthereumChainParameter.rpcUrls]
           : chain.rpcUrls.default?.http
             ? [...chain.rpcUrls.default.http]
-            : undefined
+            : undefined;
 
         const blockExplorerUrls = addEthereumChainParameter?.blockExplorerUrls
           ? [...addEthereumChainParameter.blockExplorerUrls]
           : chain.blockExplorers?.default.url
             ? [chain.blockExplorers.default.url]
-            : undefined
+            : undefined;
 
         // Convert viem AddEthereumChainParameter to MetaMask SDK format
         const chainConfiguration = {
           chainId: `0x${chainId.toString(16)}`,
-          rpcUrls: rpcUrls as string[] | undefined,
+          rpcUrls: rpcUrls,
           nativeCurrency:
             addEthereumChainParameter?.nativeCurrency ?? chain.nativeCurrency,
           chainName: addEthereumChainParameter?.chainName ?? chain.name,
-          blockExplorerUrls: blockExplorerUrls as string[] | undefined,
+          blockExplorerUrls: blockExplorerUrls,
           iconUrls: addEthereumChainParameter?.iconUrls,
-        }
+        };
 
         try {
-          await instance.switchChain({ chainId, chainConfiguration })
-          return chain
+          await instance.switchChain({ chainId, chainConfiguration });
+          return chain;
         } catch (err) {
-          const error = err as RpcError
+          const error = err as RpcError;
 
           if (error.code === UserRejectedRequestError.code) {
-            throw new UserRejectedRequestError(error)
+            throw new UserRejectedRequestError(error);
           }
 
-          throw new SwitchChainError(error)
+          throw new SwitchChainError(error);
         }
       },
 
       async onAccountsChanged(accounts: string[]) {
         config.emitter.emit('change', {
           accounts: accounts.map((account: string) => getAddress(account)),
-        })
+        });
       },
 
       async onChainChanged(chain: string) {
-        const chainId = Number(chain)
-        config.emitter.emit('change', { chainId })
+        const chainId = Number(chain);
+        config.emitter.emit('change', { chainId });
       },
 
       async onConnect(connectInfo: ProviderConnectInfo) {
-        const accounts = await this.getAccounts()
-        if (accounts.length === 0) return
+        const accounts = await this.getAccounts();
+        if (accounts.length === 0) return;
 
-        const chainId = Number(connectInfo.chainId)
-        config.emitter.emit('connect', { accounts, chainId })
+        const chainId = Number(connectInfo.chainId);
+        config.emitter.emit('connect', { accounts, chainId });
       },
 
       async onDisconnect(error?: RpcError) {
         // If MetaMask emits a `code: 1013` error, wait for reconnection before disconnecting
         // https://github.com/MetaMask/providers/pull/120
         if (error && (error as unknown as RpcError<1013>).code === 1013) {
-          const provider = await this.getProvider()
-          if (provider && !!(await this.getAccounts()).length) return
+          const provider = await this.getProvider();
+          if (provider && !!(await this.getAccounts()).length) return;
         }
 
-        config.emitter.emit('disconnect')
+        config.emitter.emit('disconnect');
       },
 
       async onDisplayUri(uri: string) {
-        config.emitter.emit('message', { type: 'display_uri', data: uri })
+        config.emitter.emit('message', { type: 'display_uri', data: uri });
       },
-    }
+    };
 
-    return connector
-  })
+    return connector;
+  });
 }

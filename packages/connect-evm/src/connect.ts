@@ -42,6 +42,16 @@ import {
 
 const DEFAULT_CHAIN_ID = 1;
 
+/** The options for the connect method */
+type ConnectOptions = {
+  /** The account to connect to */
+  account?: string | undefined;
+  /** Whether to force a request regardless of an existing session */
+  forceRequest?: boolean;
+  /** All available chain IDs in the dapp */
+  chainIds: number[];
+};
+
 /**
  * The MetamaskConnectEVM class provides an EIP-1193 compatible interface for connecting
  * to MetaMask and interacting with Ethereum Virtual Machine (EVM) networks.
@@ -84,6 +94,9 @@ export class MetamaskConnectEVM {
 
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
+
+  /** The clean-up function for the notification handler */
+  #removeNotificationHandler?: () => void;
 
   /**
    * Creates a new MetamaskConnectEVM instance.
@@ -258,29 +271,35 @@ export class MetamaskConnectEVM {
    * Connects to the wallet with the specified chain ID and optional account.
    *
    * @param options - The connection options
-   * @param options.chainId - The chain ID to connect to (defaults to 1 for mainnet)
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Wwhether to force a request regardless of an existing session
+   * @param options.chainIds - Array of chain IDs to connect to
    * @returns A promise that resolves with the connected accounts and chain ID
    */
   async connect(
-    {
-      chainId,
-      account,
-      forceRequest,
-    }: {
-      chainId: number;
-      account?: string | undefined;
-      forceRequest?: boolean;
-    } = { chainId: DEFAULT_CHAIN_ID }, // Default to mainnet if no chain ID is provided
+    { account, forceRequest, chainIds }: ConnectOptions = {
+      chainIds: [DEFAULT_CHAIN_ID],
+    },
   ): Promise<{ accounts: Address[]; chainId: number }> {
-    logger('request: connect', { chainId, account });
-    const caipChainId: Scope[] = chainId ? [`eip155:${chainId}`] : [];
+    logger('request: connect', { account });
 
-    const caipAccountId: CaipAccountId[] =
-      chainId && account ? [`eip155:${chainId}:${account}`] : [];
+    if (!chainIds || chainIds.length === 0) {
+      throw new Error('chainIds must be an array of at least one chain ID');
+    }
 
-    await this.#core.connect(caipChainId, caipAccountId, forceRequest);
+    const caipChainIds = Array.from(
+      new Set(chainIds.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID]),
+    ).map((id) => `eip155:${id}`);
+
+    const caipAccountIds = account
+      ? caipChainIds.map((caipChainId) => `${caipChainId}:${account}`)
+      : [];
+
+    await this.#core.connect(
+      caipChainIds as Scope[],
+      caipAccountIds as CaipAccountId[],
+      forceRequest,
+    );
 
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
     const initialChainId = hexPermittedChainIds[0];
@@ -295,26 +314,31 @@ export class MetamaskConnectEVM {
       accounts: initialAccounts.result as Address[],
     });
 
-    this.#core.transport.onNotification((notification) => {
-      // @ts-expect-error TODO: address this
-      if (notification?.method === 'metamask_accountsChanged') {
-        // @ts-expect-error TODO: address this
-        const accounts = notification?.params;
-        logger('transport-event: accountsChanged', accounts);
-        this.#onAccountsChanged(accounts);
-      }
+    // Remove previous notification handler if it exists
+    this.#removeNotificationHandler?.();
 
-      // @ts-expect-error TODO: address this
-      if (notification?.method === 'metamask_chainChanged') {
+    this.#removeNotificationHandler = this.#core.transport.onNotification(
+      (notification) => {
         // @ts-expect-error TODO: address this
-        const notificationChainId = Number(notification?.params?.chainId);
-        logger('transport-event: chainChanged', notificationChainId);
-        this.#onChainChanged(notificationChainId);
-      }
-    });
+        if (notification?.method === 'metamask_accountsChanged') {
+          // @ts-expect-error TODO: address this
+          const accounts = notification?.params;
+          logger('transport-event: accountsChanged', accounts);
+          this.#onAccountsChanged(accounts);
+        }
+
+        // @ts-expect-error TODO: address this
+        if (notification?.method === 'metamask_chainChanged') {
+          // @ts-expect-error TODO: address this
+          const notificationChainId = Number(notification?.params?.chainId);
+          logger('transport-event: chainChanged', notificationChainId);
+          this.#onChainChanged(notificationChainId);
+        }
+      },
+    );
 
     logger('fulfilled-request: connect', {
-      chainId,
+      chainId: chainIds[0],
       accounts: this.#provider.accounts,
     });
 
@@ -364,19 +388,19 @@ export class MetamaskConnectEVM {
   async connectWith({
     method,
     params,
-    chainId,
+    chainIds,
     account,
     forceRequest,
   }: {
     method: string;
     params: unknown[] | ((account: Address) => unknown[]);
-    chainId?: number;
+    chainIds?: number[];
     account?: string | undefined;
     forceRequest?: boolean;
   }): Promise<unknown> {
     const { accounts: connectedAccounts, chainId: connectedChainId } =
       await this.connect({
-        chainId: chainId ?? DEFAULT_CHAIN_ID,
+        chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
         account,
         forceRequest,
       });
@@ -467,7 +491,6 @@ export class MetamaskConnectEVM {
       }
 
       await this.#trackWalletActionSucceeded(method, scope, params);
-
       if ((result as { result: unknown }).result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         this.#onChainChanged(hexChainId);
@@ -518,14 +541,14 @@ export class MetamaskConnectEVM {
         request.method === 'wallet_requestPermissions';
 
       const { method, params } = request;
-      const chainId = DEFAULT_CHAIN_ID;
-      const scope: Scope = `eip155:${chainId}`;
+      const initiallySelectedChainId = DEFAULT_CHAIN_ID;
+      const scope: Scope = `eip155:${initiallySelectedChainId}`;
 
       await this.#trackWalletActionRequested(method, scope, params);
 
       try {
         const result = await this.connect({
-          chainId,
+          chainIds: [initiallySelectedChainId],
           forceRequest: shouldForceConnectionRequest,
         });
         await this.#trackWalletActionSucceeded(method, scope, params);
