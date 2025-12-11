@@ -113,10 +113,10 @@ If you're developing your project locally and want to test changes to a package,
 
       > **Example:**
       >
-      > - If your project uses Yarn, `@metamask/wallet-utils` is listed in dependencies at `^1.1.4`, and your clone of this repo (`metamask-connect-monorepo`) is at the same level as your project, add the following to `resolutions`:
+      > - If your project uses Yarn, `@metamask/wallet-utils` is listed in dependencies at `^1.1.4`, and your clone of this repo (`connect-monorepo`) is at the same level as your project, add the following to `resolutions`:
       >
       >   ```
-      >   "@metamask/wallet-utils@^1.1.4": "file:../metamask-connect-monorepo/packages/controller-utils"
+      >   "@metamask/wallet-utils@^1.1.4": "file:../connect-monorepo/packages/controller-utils"
       >   ```
 
    4. Run `yarn install`.
