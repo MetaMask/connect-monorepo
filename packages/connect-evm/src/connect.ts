@@ -354,7 +354,7 @@ export class MetamaskConnectEVM {
    *
    * @param options - The connection options
    * @param options.message - The message to sign after connecting
-   * @param [options.chainIds] - Array of chain IDs to connect to
+   * @param options.chainIds - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the signature
    * @throws Error if the selected account is not available after timeout
    */
