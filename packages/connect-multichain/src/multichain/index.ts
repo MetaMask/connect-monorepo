@@ -419,8 +419,8 @@ export class MultichainSDK extends MultichainCore {
             }
           },
         )
-        .catch(() => {
-          // Errors are handled by the callbacks
+        .catch((error) => {
+          reject(error instanceof Error ? error : new Error(String(error)));
         });
     });
   }
@@ -454,14 +454,14 @@ export class MultichainSDK extends MultichainCore {
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
   ): Promise<void> {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       this.dappClient.on('message', (payload: any) => {
         const data = payload.data as Record<string, unknown>;
         if (typeof data === 'object' && data !== null) {
           if ('method' in data && data.method === 'wallet_createSession') {
             if (data.error) {
               this.state = 'loaded';
-              throw data.error as Error;
+              return reject(data.error as Error);
             }
             // TODO: is it .params or .result?
             const session = ((data as any).params ??
@@ -514,7 +514,7 @@ export class MultichainSDK extends MultichainCore {
         .then(resolve)
         .catch(async (error) => {
           await this.storage.removeTransport();
-          throw error;
+          reject(error instanceof Error ? error : new Error(String(error)));
         })
         .finally(() => {
           if (timeout) {
