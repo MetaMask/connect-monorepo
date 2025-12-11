@@ -352,12 +352,22 @@ export class MetamaskConnectEVM {
   /**
    * Connects to the wallet and signs a message using personal_sign.
    *
-   * @param message - The message to sign
+   * @param options - The connection options
+   * @param options.message - The message to sign after connecting
+   * @param options.chainIds - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the signature
    * @throws Error if the selected account is not available after timeout
    */
-  async connectAndSign(message: string): Promise<string> {
-    const { accounts, chainId } = await this.connect();
+  async connectAndSign({
+    message,
+    chainIds,
+  }: {
+    message: string;
+    chainIds?: number[];
+  }): Promise<string> {
+    const { accounts, chainId } = await this.connect({
+      chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
+    });
 
     const result = (await this.#provider.request({
       method: 'personal_sign',
@@ -379,7 +389,7 @@ export class MetamaskConnectEVM {
    * @param options - The options for connecting and invoking the method
    * @param options.method - The method name to invoke
    * @param options.params - The parameters to pass to the method, or a function that receives the account and returns params
-   * @param options.chainId - Optional chain ID to connect to (defaults to mainnet)
+   * @param options.chainIds - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Whether to force a request regardless of an existing session
    * @returns A promise that resolves with the result of the method invocation

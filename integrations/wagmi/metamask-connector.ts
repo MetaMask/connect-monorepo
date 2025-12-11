@@ -146,7 +146,6 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               );
             } else {
               const result = await instance.connect({
-                chainId,
                 account: undefined,
                 chainIds,
               });
