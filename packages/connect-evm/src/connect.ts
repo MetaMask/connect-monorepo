@@ -389,7 +389,7 @@ export class MetamaskConnectEVM {
    * @param options - The options for connecting and invoking the method
    * @param options.method - The method name to invoke
    * @param options.params - The parameters to pass to the method, or a function that receives the account and returns params
-   * @param options.chainId - Optional chain ID to connect to (defaults to mainnet)
+   * @param options.chainIds - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Whether to force a request regardless of an existing session
    * @returns A promise that resolves with the result of the method invocation
