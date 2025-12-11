@@ -356,8 +356,10 @@ export class MetamaskConnectEVM {
    * @returns A promise that resolves with the signature
    * @throws Error if the selected account is not available after timeout
    */
-  async connectAndSign(message: string): Promise<string> {
-    const { accounts, chainId } = await this.connect();
+  async connectAndSign(message: string, chainIds?: number[]): Promise<string> {
+    const { accounts, chainId } = await this.connect({
+      chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
+    });
 
     const result = (await this.#provider.request({
       method: 'personal_sign',
