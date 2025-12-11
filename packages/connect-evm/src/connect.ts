@@ -44,14 +44,12 @@ const DEFAULT_CHAIN_ID = 1;
 
 /** The options for the connect method */
 type ConnectOptions = {
-  /** The chain ID to switch to */
-  initiallySelectedChainId: number;
   /** The account to connect to */
   account?: string | undefined;
   /** Whether to force a request regardless of an existing session */
   forceRequest?: boolean;
   /** All available chain IDs in the dapp */
-  dappSupportedChainIds?: number[];
+  chainIds: number[];
 };
 
 /**
@@ -273,42 +271,25 @@ export class MetamaskConnectEVM {
    * Connects to the wallet with the specified chain ID and optional account.
    *
    * @param options - The connection options
-   * @param options.initiallySelectedChainId - The chain ID to initially select upon connection (defaults to 1 for mainnet)
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Wwhether to force a request regardless of an existing session
-   * @param options.dappSupportedChainIds - Optional array of chain IDs to connect to
+   * @param options.chainIds - Optional array of chain IDs to connect to
    * @returns A promise that resolves with the connected accounts and chain ID
    */
   async connect(
-    {
-      initiallySelectedChainId,
-      account,
-      forceRequest,
-      dappSupportedChainIds,
-    }: ConnectOptions = {
-      initiallySelectedChainId: DEFAULT_CHAIN_ID,
-    }, // Default to mainnet if no chain ID is provided
+    { account, forceRequest, chainIds }: ConnectOptions = {
+      chainIds: [DEFAULT_CHAIN_ID],
+    },
   ): Promise<{ accounts: Address[]; chainId: number }> {
-    logger('request: connect', { chainId: initiallySelectedChainId, account });
-
-    if (
-      initiallySelectedChainId &&
-      Array.isArray(dappSupportedChainIds) &&
-      !dappSupportedChainIds.includes(initiallySelectedChainId)
-    ) {
-      throw new Error('availableChainIds must include the provided chainId');
-    }
+    logger('request: connect', { account });
 
     const caipChainIds = Array.from(
-      new Set(
-        dappSupportedChainIds?.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID],
-      ),
+      new Set(chainIds.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID]),
     ).map((id) => `eip155:${id}`);
 
-    const caipAccountIds =
-      initiallySelectedChainId && account
-        ? caipChainIds.map((caipChainId) => `${caipChainId}:${account}`)
-        : [];
+    const caipAccountIds = account
+      ? caipChainIds.map((caipChainId) => `${caipChainId}:${account}`)
+      : [];
 
     await this.#core.connect(
       caipChainIds as Scope[],
@@ -353,7 +334,7 @@ export class MetamaskConnectEVM {
     );
 
     logger('fulfilled-request: connect', {
-      chainId: initiallySelectedChainId,
+      chainId: chainIds[0],
       accounts: this.#provider.accounts,
     });
 

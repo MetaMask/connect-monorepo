@@ -111,7 +111,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         const chainId = connectParams?.chainId ?? DEFAULT_CHAIN_ID;
         const withCapabilities = connectParams?.withCapabilities;
 
-        const availableChainIds = config.chains.map((chain) => chain.id);
+        const chainIds = config.chains.map((chain) => chain.id);
 
         const instance = await ensureMetamask();
 
@@ -131,15 +131,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               if (parameters.connectAndSign) {
                 signResponse = await instance.connectAndSign({
                   message: parameters.connectAndSign,
-                  chainId,
-                  availableChainIds,
+                  chainIds,
                 });
               } else if (parameters.connectWith) {
                 connectWithResponse = await instance.connectWith({
                   method: parameters.connectWith.method,
                   params: parameters.connectWith.params,
-                  chainId,
-                  availableChainIds,
+                  chainIds,
                 });
               }
 
@@ -150,7 +148,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               const result = await instance.connect({
                 chainId,
                 account: undefined,
-                availableChainIds,
+                chainIds,
               });
               accounts = result.accounts.map((account) => getAddress(account));
             }
