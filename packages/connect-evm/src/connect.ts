@@ -85,6 +85,9 @@ export class MetamaskConnectEVM {
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
+  /** Cleanup function for the transport notification listener */
+  #transportNotificationListenerCleanup: (() => void) | undefined;
+
   /**
    * Creates a new MetamaskConnectEVM instance.
    *
@@ -295,23 +298,32 @@ export class MetamaskConnectEVM {
       accounts: initialAccounts.result as Address[],
     });
 
-    this.#core.transport.onNotification((notification) => {
-      // @ts-expect-error TODO: address this
-      if (notification?.method === 'metamask_accountsChanged') {
-        // @ts-expect-error TODO: address this
-        const accounts = notification?.params;
-        logger('transport-event: accountsChanged', accounts);
-        this.#onAccountsChanged(accounts);
-      }
+    // Remove previous notification listener if it exists to prevent duplicates
+    if (this.#transportNotificationListenerCleanup) {
+      this.#transportNotificationListenerCleanup();
+      this.#transportNotificationListenerCleanup = undefined;
+    }
 
-      // @ts-expect-error TODO: address this
-      if (notification?.method === 'metamask_chainChanged') {
+    // Set up notification listener for accountsChanged and chainChanged events
+    // And returns a clean up function to remove the callback, which we set into `transportNotificationListenerCleanup`
+    this.#transportNotificationListenerCleanup =
+      this.#core.transport.onNotification((notification) => {
         // @ts-expect-error TODO: address this
-        const notificationChainId = Number(notification?.params?.chainId);
-        logger('transport-event: chainChanged', notificationChainId);
-        this.#onChainChanged(notificationChainId);
-      }
-    });
+        if (notification?.method === 'metamask_accountsChanged') {
+          // @ts-expect-error TODO: address this
+          const accounts = notification?.params;
+          logger('transport-event: accountsChanged', accounts);
+          this.#onAccountsChanged(accounts);
+        }
+
+        // @ts-expect-error TODO: address this
+        if (notification?.method === 'metamask_chainChanged') {
+          // @ts-expect-error TODO: address this
+          const notificationChainId = Number(notification?.params?.chainId);
+          logger('transport-event: chainChanged', notificationChainId);
+          this.#onChainChanged(notificationChainId);
+        }
+      });
 
     logger('fulfilled-request: connect', {
       chainId,
@@ -411,6 +423,11 @@ export class MetamaskConnectEVM {
     this.#clearConnectionState();
 
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
+
+    if (this.#transportNotificationListenerCleanup) {
+      this.#transportNotificationListenerCleanup();
+      this.#transportNotificationListenerCleanup = undefined;
+    }
 
     logger('fulfilled-request: disconnect');
   }

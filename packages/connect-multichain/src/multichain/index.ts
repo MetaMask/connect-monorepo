@@ -511,6 +511,7 @@ export class MultichainSDK extends MultichainCore {
           reject(error);
         })
         .finally(() => {
+          this.dappClient.off('message', dappClientMessageHandler);
           if (timeout) {
             clearTimeout(timeout);
           }

@@ -327,6 +327,9 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     let timeout: NodeJS.Timeout;
+    let initialConnectionMessageHandler:
+      | ((message: unknown) => Promise<void>)
+      | undefined;
     const connectionPromise = new Promise<void>((resolve, reject) => {
       let connection: Promise<void>;
       if (session) {
@@ -358,7 +361,9 @@ export class MWPTransport implements ExtendedTransport {
             };
 
             // just used for initial connection
-            this.dappClient.on('message', async (message: unknown) => {
+            initialConnectionMessageHandler = async (
+              message: unknown,
+            ): Promise<void> => {
               if (typeof message === 'object' && message !== null) {
                 if ('data' in message) {
                   const messagePayload = message.data as Record<
@@ -369,6 +374,12 @@ export class MWPTransport implements ExtendedTransport {
                     messagePayload.method === 'wallet_createSession' ||
                     messagePayload.method === 'wallet_sessionChanged'
                   ) {
+                    if (initialConnectionMessageHandler) {
+                      this.dappClient.off(
+                        'message',
+                        initialConnectionMessageHandler,
+                      );
+                    }
                     if (messagePayload.error) {
                       return rejectConnection(messagePayload.error);
                     }
@@ -381,7 +392,9 @@ export class MWPTransport implements ExtendedTransport {
                   }
                 }
               }
-            });
+            };
+
+            this.dappClient.on('message', initialConnectionMessageHandler);
 
             dappClient
               .connect({
@@ -391,12 +404,23 @@ export class MWPTransport implements ExtendedTransport {
                   data: request,
                 },
               })
-              .catch(rejectConnection);
+              .catch((error) => {
+                if (initialConnectionMessageHandler) {
+                  this.dappClient.off(
+                    'message',
+                    initialConnectionMessageHandler,
+                  );
+                }
+                rejectConnection(error);
+              });
           },
         );
       }
 
       timeout = setTimeout(() => {
+        if (initialConnectionMessageHandler) {
+          this.dappClient.off('message', initialConnectionMessageHandler);
+        }
         reject(new TransportTimeoutError());
       }, this.options.connectionTimeout);
 
@@ -406,6 +430,10 @@ export class MWPTransport implements ExtendedTransport {
     return connectionPromise.finally(() => {
       if (timeout) {
         clearTimeout(timeout);
+      }
+      if (initialConnectionMessageHandler) {
+        this.dappClient.off('message', initialConnectionMessageHandler);
+        initialConnectionMessageHandler = undefined;
       }
     });
   }
