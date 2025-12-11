@@ -463,12 +463,12 @@ export class MetamaskConnectEVM {
       // so we force it into the catch block here.
       const resultWithError = result as { error?: { message: string } };
       if (resultWithError?.error) {
-        throw resultWithError.error;
+        throw new Error(resultWithError.error.message);
       }
 
       await this.#trackWalletActionSucceeded(method, scope, params);
 
-      if ((result as unknown as { result: unknown }).result === null) {
+      if ((result as { result: unknown }).result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         this.#onChainChanged(hexChainId);
       }
@@ -599,10 +599,15 @@ export class MetamaskConnectEVM {
     await this.#trackWalletActionRequested(method, scope, params);
 
     try {
-      await this.#request({
+      const result = await this.#request({
         method: 'wallet_addEthereumChain',
         params,
       });
+
+      if ((result as { result: unknown }).result === null) {
+        // if result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
+        this.#onChainChanged(chainId);
+      }
       await this.#trackWalletActionSucceeded(method, scope, params);
     } catch (error) {
       await this.#trackWalletActionFailed(method, scope, params, error);
