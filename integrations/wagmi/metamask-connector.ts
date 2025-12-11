@@ -129,10 +129,10 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           if (!accounts?.length) {
             if (parameters.connectAndSign || parameters.connectWith) {
               if (parameters.connectAndSign) {
-                signResponse = await instance.connectAndSign(
-                  parameters.connectAndSign,
+                signResponse = await instance.connectAndSign({
+                  message: parameters.connectAndSign,
                   chainIds,
-                );
+                });
               } else if (parameters.connectWith) {
                 connectWithResponse = await instance.connectWith({
                   method: parameters.connectWith.method,
