@@ -374,13 +374,13 @@ export class MWPTransport implements ExtendedTransport {
                     messagePayload.method === 'wallet_createSession' ||
                     messagePayload.method === 'wallet_sessionChanged'
                   ) {
-                    if (initialConnectionMessageHandler) {
-                      this.dappClient.off(
-                        'message',
-                        initialConnectionMessageHandler,
-                      );
-                    }
                     if (messagePayload.error) {
+                      if (initialConnectionMessageHandler) {
+                        this.dappClient.off(
+                          'message',
+                          initialConnectionMessageHandler,
+                        );
+                      }
                       return rejectConnection(messagePayload.error);
                     }
                     await this.storeWalletSession(
@@ -427,15 +427,18 @@ export class MWPTransport implements ExtendedTransport {
       connection.then(resolve).catch(reject);
     });
 
-    return connectionPromise.finally(() => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-      if (initialConnectionMessageHandler) {
-        this.dappClient.off('message', initialConnectionMessageHandler);
-        initialConnectionMessageHandler = undefined;
-      }
-    });
+    return connectionPromise
+      .catch(() => {
+        if (initialConnectionMessageHandler) {
+          this.dappClient.off('message', initialConnectionMessageHandler);
+          initialConnectionMessageHandler = undefined;
+        }
+      })
+      .finally(() => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+      });
   }
 
   /**
@@ -543,7 +546,7 @@ export class MWPTransport implements ExtendedTransport {
     request: TransportRequest,
     response: TransportResponse,
   ): Promise<void> {
-    if(response.error) {
+    if (response.error) {
       return;
     }
     if (CACHED_METHOD_LIST.includes(request.method)) {
@@ -621,7 +624,7 @@ export class MWPTransport implements ExtendedTransport {
     try {
       const [activeSession] = await sessionStore.list();
       return activeSession;
-    } catch (error){
+    } catch (error) {
       // TODO: verify if this try catch is necessary
       logger('error getting active session', error);
       return undefined;

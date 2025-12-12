@@ -508,10 +508,10 @@ export class MultichainSDK extends MultichainCore {
         .then(resolve)
         .catch((error) => {
           this.storage.removeTransport();
+          this.dappClient.off('message', dappClientMessageHandler);
           reject(error);
         })
         .finally(() => {
-          this.dappClient.off('message', dappClientMessageHandler);
           if (timeout) {
             clearTimeout(timeout);
           }
