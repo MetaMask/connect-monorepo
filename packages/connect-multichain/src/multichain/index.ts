@@ -519,6 +519,7 @@ export class MultichainSDK extends MultichainCore {
         .then(resolve)
         .catch(async (error) => {
           await this.storage.removeTransport();
+          this.dappClient.off('message', dappClientMessageHandler);
           reject(error instanceof Error ? error : new Error(String(error)));
         })
         .finally(() => {
