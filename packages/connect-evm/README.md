@@ -127,7 +127,7 @@ yarn workspace @metamask/connect-evm run test
 
 ## Contributing
 
-This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/metamask-connect-monorepo#readme).
+This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/connect-monorepo#readme).
 
 ## License
 

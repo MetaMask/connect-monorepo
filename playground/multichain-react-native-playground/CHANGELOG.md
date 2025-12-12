@@ -14,4 +14,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `react` from 19.1.0 to ^18.3.1 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 - Bump `react-dom` from 19.1.0 to ^18.3.1 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/

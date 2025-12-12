@@ -97,7 +97,10 @@ export const App = () => {
 
   const connectAndSign = async () => {
     try {
-      const signResult = await sdk?.connectAndSign('Connect + Sign message');
+      const signResult = await sdk?.connectAndSign({
+        message: 'Connect + Sign message',
+        chainIds: [1, 137],
+      });
       setResponse(signResult);
     } catch (err) {
       console.warn(`failed to connect...`, err);
@@ -311,7 +314,7 @@ export const App = () => {
           <button
             className={'Button-Normal'}
             style={{ padding: 10, margin: 10 }}
-            onClick={connect}
+            onClick={requestPermissions}
             id="request-accounts-button"
           >
             wallet_requestPermissions

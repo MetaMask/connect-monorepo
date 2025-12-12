@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **BREAKING** Replace `chainId` property on `connect` method with `chainIds` to support for connecting to multiple chains ([#77](https://github.com/MetaMask/connect-monorepo/pull/77))
+
+### Changed
+
+- **BREAKING** Change `connectWithMessage()` to expect param object with `message` and optional `chainIds` property ([#82](https://github.com/MetaMask/connect-monorepo/pull/82))
+  - `message` should be the value that the user will prompted to sign with their selected account after connecting. `message` is required.
+  - `chainIds` should be an array of chainIds that the wallet will prompt the user to grant permisson for. `chainIds` is optional.
+
 ### Fixed
 
 - Fix duplicate `onNotification` listener ([#81](https://github.com/MetaMask/connect-monorepo/pull/81))
+- Fixed `addEthereumChain` not being prompted on mobile native browsers after a switch chain failure ([#79](https://github.com/MetaMask/connect-monorepo/pull/79))
 
 ## [0.1.1]
 
@@ -25,6 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-evm@0.1.1...HEAD
-[0.1.1]: https://github.com/MetaMask/metamask-connect-monorepo/compare/@metamask/connect-evm@0.1.0...@metamask/connect-evm@0.1.1
-[0.1.0]: https://github.com/MetaMask/metamask-connect-monorepo/releases/tag/@metamask/connect-evm@0.1.0
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.1.1...HEAD
+[0.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.1.0...@metamask/connect-evm@0.1.1
+[0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/connect-evm@0.1.0

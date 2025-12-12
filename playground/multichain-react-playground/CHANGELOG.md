@@ -24,4 +24,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Make sure TailwindCSS configs look at package's local config instead of a parent monorepo config ([#25](https://github.com/MetaMask/connect-monorepo/pull/25))
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect-monorepo/
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/

@@ -1,21 +1,6 @@
-/* eslint-disable consistent-return */
-/* eslint-disable no-else-return */
-/* eslint-disable promise/no-return-wrap */
-/* eslint-disable promise/always-return */
-/* eslint-disable promise/catch-or-return */
-/* eslint-disable no-async-promise-executor */
-/* eslint-disable no-negated-condition */
-/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
-/* eslint-disable promise/param-names */
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/promise-function-async */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable no-restricted-globals */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable no-restricted-syntax */
-/** biome-ignore-all lint/suspicious/noAsyncPromiseExecutor: <explanation> */
-
+/* eslint-disable no-restricted-globals */
 import { analytics } from '@metamask/analytics';
 import {
   ErrorCode,
@@ -80,24 +65,24 @@ export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 const logger = createLogger('metamask-sdk:core');
 
 export class MultichainSDK extends MultichainCore {
-  private __provider: MultichainApiClient<RPCAPI> | undefined = undefined;
+  #provider: MultichainApiClient<RPCAPI> | undefined = undefined;
 
-  private __transport: ExtendedTransport | undefined = undefined;
+  #transport: ExtendedTransport | undefined = undefined;
 
-  private __dappClient: DappClient | undefined = undefined;
+  #dappClient: DappClient | undefined = undefined;
 
-  private __beforeUnloadListener: (() => void) | undefined;
+  #beforeUnloadListener: (() => void) | undefined;
 
-  public __state: SDKState = 'pending';
+  public _state: SDKState = 'pending';
 
-  private listener: (() => void | Promise<void>) | undefined;
+  #listener: (() => void | Promise<void>) | undefined;
 
   get state(): SDKState {
-    return this.__state;
+    return this._state;
   }
 
   set state(value: SDKState) {
-    this.__state = value;
+    this._state = value;
     this.options.transport?.onNotification?.({
       method: 'stateChanged',
       params: value,
@@ -105,30 +90,30 @@ export class MultichainSDK extends MultichainCore {
   }
 
   get provider(): MultichainApiClient<RPCAPI> {
-    if (!this.__provider && this.__transport) {
-      this.__provider = getMultichainClient({ transport: this.__transport });
-      return this.__provider;
+    if (!this.#provider && this.#transport) {
+      this.#provider = getMultichainClient({ transport: this.#transport });
+      return this.#provider;
     }
 
-    if (!this.__provider) {
+    if (!this.#provider) {
       throw new Error('Provider not initialized, establish connection first');
     }
 
-    return this.__provider;
+    return this.#provider;
   }
 
   get transport(): ExtendedTransport {
-    if (!this.__transport) {
+    if (!this.#transport) {
       throw new Error('Transport not initialized, establish connection first');
     }
-    return this.__transport;
+    return this.#transport;
   }
 
   get dappClient(): DappClient {
-    if (!this.__dappClient) {
+    if (!this.#dappClient) {
       throw new Error('DappClient not initialized, establish connection first');
     }
-    return this.__dappClient;
+    return this.#dappClient;
   }
 
   get storage(): StoreClient {
@@ -136,16 +121,14 @@ export class MultichainSDK extends MultichainCore {
   }
 
   get transportType(): TransportType {
-    return this.__transport instanceof MWPTransport
+    return this.#transport instanceof MWPTransport
       ? TransportType.MWP
       : TransportType.Browser;
   }
 
-  private get sdkInfo(): string {
-    return `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
-  }
+  readonly #sdkInfo = `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
 
-  private constructor(options: MultichainOptions) {
+  constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
     const integrationType = options.analytics?.enabled
       ? options.analytics.integrationType
@@ -177,11 +160,11 @@ export class MultichainSDK extends MultichainCore {
     if (isEnabled) {
       enableDebug('metamask-sdk:core');
     }
-    await instance.init();
+    await instance.#init();
     return instance;
   }
 
-  private async setupAnalytics(): Promise<void> {
+  async #setupAnalytics(): Promise<void> {
     if (!this.options.analytics?.enabled) {
       return;
     }
@@ -213,7 +196,7 @@ export class MultichainSDK extends MultichainCore {
     analytics.enable();
   }
 
-  private async onTransportNotification(payload: any): Promise<void> {
+  async #onTransportNotification(payload: any): Promise<void> {
     if (
       typeof payload === 'object' &&
       payload !== null &&
@@ -223,7 +206,7 @@ export class MultichainSDK extends MultichainCore {
     }
   }
 
-  private async getStoredTransport(): Promise<
+  async #getStoredTransport(): Promise<
     DefaultTransport | MWPTransport | undefined
   > {
     const transportType = await this.storage.getTransport();
@@ -232,20 +215,20 @@ export class MultichainSDK extends MultichainCore {
       if (transportType === TransportType.Browser) {
         if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
-          this.__transport = apiTransport;
-          this.listener = apiTransport.onNotification(
-            this.onTransportNotification.bind(this),
+          this.#transport = apiTransport;
+          this.#listener = apiTransport.onNotification(
+            this.#onTransportNotification.bind(this),
           );
           return apiTransport;
         }
       } else if (transportType === TransportType.MWP) {
         const { adapter: kvstore } = this.options.storage;
-        const dappClient = await this.createDappClient();
+        const dappClient = await this.#createDappClient();
         const apiTransport = new MWPTransport(dappClient, kvstore);
-        this.__dappClient = dappClient;
-        this.__transport = apiTransport;
-        this.listener = apiTransport.onNotification(
-          this.onTransportNotification.bind(this),
+        this.#dappClient = dappClient;
+        this.#transport = apiTransport;
+        this.#listener = apiTransport.onNotification(
+          this.#onTransportNotification.bind(this),
         );
         return apiTransport;
       }
@@ -256,8 +239,8 @@ export class MultichainSDK extends MultichainCore {
     return undefined;
   }
 
-  private async setupTransport(): Promise<void> {
-    const transport = await this.getStoredTransport();
+  async #setupTransport(): Promise<void> {
+    const transport = await this.#getStoredTransport();
     if (transport) {
       if (!this.transport.isConnected()) {
         this.state = 'connecting';
@@ -274,14 +257,14 @@ export class MultichainSDK extends MultichainCore {
     }
   }
 
-  private async init(): Promise<void> {
+  async #init(): Promise<void> {
     try {
       // @ts-expect-error mmsdk should be accessible
       if (typeof window !== 'undefined' && window.mmsdk?.isInitialized) {
         logger('MetaMaskSDK: init already initialized');
       } else {
-        await this.setupAnalytics();
-        await this.setupTransport();
+        await this.#setupAnalytics();
+        await this.#setupTransport();
         if (this.options.analytics?.enabled) {
           try {
             const baseProps = await getBaseAnalyticsProperties(
@@ -305,7 +288,7 @@ export class MultichainSDK extends MultichainCore {
     }
   }
 
-  private async createDappClient(): Promise<DappClient> {
+  async #createDappClient(): Promise<DappClient> {
     const { adapter: kvstore } = this.options.storage;
     const sessionstore = new SessionStore(kvstore);
     const websocket =
@@ -322,35 +305,35 @@ export class MultichainSDK extends MultichainCore {
     return dappClient;
   }
 
-  private async setupMWP(): Promise<void> {
-    if (this.__transport instanceof MWPTransport) {
+  async #setupMWP(): Promise<void> {
+    if (this.#transport instanceof MWPTransport) {
       return;
     }
     // Only setup MWP if it is not already mwp
     const { adapter: kvstore } = this.options.storage;
-    const dappClient = await this.createDappClient();
-    this.__dappClient = dappClient;
+    const dappClient = await this.#createDappClient();
+    this.#dappClient = dappClient;
     const apiTransport = new MWPTransport(dappClient, kvstore);
-    this.__transport = apiTransport;
-    this.listener = this.transport.onNotification(
-      this.onTransportNotification.bind(this),
+    this.#transport = apiTransport;
+    this.#listener = this.transport.onNotification(
+      this.#onTransportNotification.bind(this),
     );
     await this.storage.setTransport(TransportType.MWP);
   }
 
-  private async onBeforeUnload(): Promise<void> {
+  async #onBeforeUnload(): Promise<void> {
     // Fixes glitch with "connecting" state when modal is still visible and we close screen or refresh
     if (this.options.ui.factory.modal?.isMounted) {
       await this.storage.removeTransport();
     }
   }
 
-  private createBeforeUnloadListener() {
+  #createBeforeUnloadListener(): () => void {
     if (
       typeof window !== 'undefined' &&
       typeof window.addEventListener !== 'undefined'
     ) {
-      window.addEventListener('beforeunload', this.onBeforeUnload.bind(this));
+      window.addEventListener('beforeunload', this.#onBeforeUnload.bind(this));
     }
     return () => {
       if (
@@ -359,115 +342,139 @@ export class MultichainSDK extends MultichainCore {
       ) {
         window.removeEventListener(
           'beforeunload',
-          this.onBeforeUnload.bind(this),
+          this.#onBeforeUnload.bind(this),
         );
       }
     };
   }
 
-  private async showInstallModal(
+  async #renderInstallModalAsync(
     desktopPreferred: boolean,
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
-  ) {
-    // create the listener only once to avoid memory leaks
-    this.__beforeUnloadListener ??= this.createBeforeUnloadListener();
+  ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       // Use Connection Modal
-      this.options.ui.factory.renderInstallModal(
-        desktopPreferred,
-        async () => {
-          if (
-            this.dappClient.state === 'CONNECTED' ||
-            this.dappClient.state === 'CONNECTING'
-          ) {
-            await this.dappClient.disconnect();
-          }
-          return new Promise<ConnectionRequest>((resolveConnectionRequest) => {
-            this.dappClient.on(
-              'session_request',
-              (sessionRequest: SessionRequest) => {
-                resolveConnectionRequest({
-                  sessionRequest,
-                  metadata: {
-                    dapp: this.options.dapp,
-                    sdk: {
-                      version: getVersion(),
-                      platform: getPlatformType(),
+      this.options.ui.factory
+        .renderInstallModal(
+          desktopPreferred,
+          async () => {
+            if (
+              this.dappClient.state === 'CONNECTED' ||
+              this.dappClient.state === 'CONNECTING'
+            ) {
+              await this.dappClient.disconnect();
+            }
+            return new Promise<ConnectionRequest>((_resolve) => {
+              this.dappClient.on(
+                'session_request',
+                (sessionRequest: SessionRequest) => {
+                  _resolve({
+                    sessionRequest,
+                    metadata: {
+                      dapp: this.options.dapp,
+                      sdk: {
+                        version: getVersion(),
+                        platform: getPlatformType(),
+                      },
                     },
-                  },
-                });
-              },
-            );
+                  });
+                },
+              );
 
-            this.transport
-              .connect({ scopes, caipAccountIds })
-              .then(() => {
-                this.options.ui.factory.unload();
-                this.options.ui.factory.modal?.unmount();
-                this.state = 'connected';
-                return this.storage.setTransport(TransportType.MWP);
-              })
-              .catch((error) => {
-                if (error instanceof ProtocolError) {
-                  // Ignore Request expired errors to allow modal to regenerate expired qr codes
-                  if (error.code !== ErrorCode.REQUEST_EXPIRED) {
+              (async (): Promise<void> => {
+                try {
+                  await this.transport.connect({ scopes, caipAccountIds });
+                  await this.options.ui.factory.unload();
+                  this.options.ui.factory.modal?.unmount();
+                  this.state = 'connected';
+                  await this.storage.setTransport(TransportType.MWP);
+                } catch (error) {
+                  if (error instanceof ProtocolError) {
+                    // Ignore Request expired errors to allow modal to regenerate expired qr codes
+                    if (error.code !== ErrorCode.REQUEST_EXPIRED) {
+                      this.state = 'disconnected';
+                      reject(error);
+                    }
+                    // If request is expires, the QRCode will automatically be regenerated we can ignore this case
+                  } else {
                     this.state = 'disconnected';
-                    reject(error);
+                    reject(
+                      error instanceof Error ? error : new Error(String(error)),
+                    );
                   }
-                  // If request is expires, the QRCode will automatically be regenerated we can ignore this case
-                } else {
-                  this.state = 'disconnected';
-                  reject(error);
                 }
+              })().catch(() => {
+                // Error already handled in the async function
               });
-          });
-        },
-        async (error?: Error) => {
-          if (!error) {
-            await this.storage.setTransport(TransportType.MWP);
-            resolve();
-          } else {
-            await this.storage.removeTransport();
-            reject(error);
-          }
-        },
-      );
+            });
+          },
+          async (error?: Error) => {
+            if (error) {
+              await this.storage.removeTransport();
+              reject(error);
+            } else {
+              await this.storage.setTransport(TransportType.MWP);
+              resolve();
+            }
+          },
+        )
+        .catch((error) => {
+          reject(error instanceof Error ? error : new Error(String(error)));
+        });
     });
   }
 
-  private async setupDefaultTransport() {
+  async #showInstallModal(
+    desktopPreferred: boolean,
+    scopes: Scope[],
+    caipAccountIds: CaipAccountId[],
+  ): Promise<void> {
+    // create the listener only once to avoid memory leaks
+    this.#beforeUnloadListener ??= this.#createBeforeUnloadListener();
+    await this.#renderInstallModalAsync(
+      desktopPreferred,
+      scopes,
+      caipAccountIds,
+    );
+  }
+
+  async #setupDefaultTransport(): Promise<DefaultTransport> {
     this.state = 'connecting';
     await this.storage.setTransport(TransportType.Browser);
     const transport = new DefaultTransport();
-    this.listener = transport.onNotification(
-      this.onTransportNotification.bind(this),
+    this.#listener = transport.onNotification(
+      this.#onTransportNotification.bind(this),
     );
-    this.__transport = transport;
+    this.#transport = transport;
     return transport;
   }
 
-  private async deeplinkConnect(
+  async #deeplinkConnect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
-  ) {
-    return new Promise<void>(async (resolve, reject) => {
+  ): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       // Handle the response to the initial wallet_createSession request
-      const dappClientMessageHandler = (payload: unknown) => {
-        if (typeof payload !== 'object' || payload === null || !('data' in payload)) {
+      const dappClientMessageHandler = (payload: unknown): void => {
+        if (
+          typeof payload !== 'object' ||
+          payload === null ||
+          !('data' in payload)
+        ) {
           return;
         }
-        const data = payload.data as { result?: SessionData , error?: unknown };
+        const data = payload.data as { result?: SessionData; error?: unknown };
         if (typeof data === 'object' && data !== null) {
           // optimistically assume any error is due to the initial wallet_createSession request failure
           if (data.error) {
             this.dappClient.off('message', dappClientMessageHandler);
-            return reject(data.error);
+            reject(data.error as Error);
           }
           // if sessionScopes is set in the result, then this is a response to wallet_createSession
           if (data?.result?.sessionScopes) {
             this.dappClient.off('message', dappClientMessageHandler);
-            return; // unsure if we need to call resolve here like we do above for reject()
+            // unsure if we need to call resolve here like we do above for reject()
           }
         }
       };
@@ -475,7 +482,11 @@ export class MultichainSDK extends MultichainCore {
 
       let timeout: NodeJS.Timeout | undefined;
 
-      if (!this.transport.isConnected()) {
+      if (this.transport.isConnected()) {
+        timeout = setTimeout(() => {
+          this.openDeeplinkIfNeeded();
+        }, 250);
+      } else {
         this.dappClient.once(
           'session_request',
           (sessionRequest: SessionRequest) => {
@@ -487,9 +498,13 @@ export class MultichainSDK extends MultichainCore {
               },
             };
             const deeplink =
-              this.options.ui.factory.createConnectionDeeplink(connectionRequest);
+              this.options.ui.factory.createConnectionDeeplink(
+                connectionRequest,
+              );
             const universalLink =
-              this.options.ui.factory.createConnectionUniversalLink(connectionRequest);
+              this.options.ui.factory.createConnectionUniversalLink(
+                connectionRequest,
+              );
             if (this.options.mobile?.preferredOpenLink) {
               this.options.mobile.preferredOpenLink(deeplink, '_self');
             } else {
@@ -497,19 +512,15 @@ export class MultichainSDK extends MultichainCore {
             }
           },
         );
-      } else {
-        timeout = setTimeout(() => {
-          this.openDeeplinkIfNeeded();
-        }, 250);
       }
 
-      this.transport
+      return this.transport
         .connect({ scopes, caipAccountIds })
         .then(resolve)
-        .catch((error) => {
-          this.storage.removeTransport();
+        .catch(async (error) => {
+          await this.storage.removeTransport();
           this.dappClient.off('message', dappClientMessageHandler);
-          reject(error);
+          reject(error instanceof Error ? error : new Error(String(error)));
         })
         .finally(() => {
           if (timeout) {
@@ -519,11 +530,11 @@ export class MultichainSDK extends MultichainCore {
     });
   }
 
-  private async handleConnection(
+  async #handleConnection(
     promise: Promise<void>,
     scopes: Scope[],
     transportType: TransportType,
-  ) {
+  ): Promise<void> {
     this.state = 'connecting';
     return promise
       .then(async () => {
@@ -544,6 +555,7 @@ export class MultichainSDK extends MultichainCore {
             logger('Error tracking connection_established event', error);
           }
         }
+        return undefined; // explicitly return `undefined` to avoid eslintpromise/always-return
       })
       .catch(async (error) => {
         this.state = 'disconnected';
@@ -570,7 +582,7 @@ export class MultichainSDK extends MultichainCore {
             logger('Error tracking connection failed/rejected event', error);
           }
         }
-        return Promise.reject(error);
+        throw error instanceof Error ? error : new Error(String(error));
       });
   }
 
@@ -619,16 +631,15 @@ export class MultichainSDK extends MultichainCore {
       }
     }
 
-    if (this.__transport?.isConnected() && !secure) {
-      return this.handleConnection(
-        this.__transport
+    if (this.#transport?.isConnected() && !secure) {
+      return this.#handleConnection(
+        this.#transport
           .connect({ scopes, caipAccountIds, forceRequest })
-          .then(() => {
-            if (this.__transport instanceof MWPTransport) {
+          .then(async () => {
+            if (this.#transport instanceof MWPTransport) {
               return this.storage.setTransport(TransportType.MWP);
-            } else {
-              return this.storage.setTransport(TransportType.Browser);
             }
+            return this.storage.setTransport(TransportType.Browser);
           }),
         scopes,
         transportType,
@@ -637,8 +648,8 @@ export class MultichainSDK extends MultichainCore {
 
     // In MetaMask Mobile In App Browser, window.ethereum is available directly
     if (platformType === PlatformType.MetaMaskMobileWebview) {
-      const defaultTransport = await this.setupDefaultTransport();
-      return this.handleConnection(
+      const defaultTransport = await this.#setupDefaultTransport();
+      return this.#handleConnection(
         defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
         scopes,
         transportType,
@@ -647,9 +658,9 @@ export class MultichainSDK extends MultichainCore {
 
     if (isWeb && hasExtensionInstalled && preferExtension) {
       // If metamask extension is available, connect to it
-      const defaultTransport = await this.setupDefaultTransport();
+      const defaultTransport = await this.#setupDefaultTransport();
       // Web transport has no initial payload
-      return this.handleConnection(
+      return this.#handleConnection(
         defaultTransport.connect({ scopes, caipAccountIds, forceRequest }),
         scopes,
         transportType,
@@ -657,7 +668,7 @@ export class MultichainSDK extends MultichainCore {
     }
 
     // Connection will now be InstallModal + QRCodes or Deeplinks, both require mwp
-    await this.setupMWP();
+    await this.#setupMWP();
 
     // Determine preferred option for install modal
     const shouldShowInstallModal = hasExtensionInstalled
@@ -666,16 +677,16 @@ export class MultichainSDK extends MultichainCore {
 
     if (secure && !shouldShowInstallModal) {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
-      return this.handleConnection(
-        this.deeplinkConnect(scopes, caipAccountIds),
+      return this.#handleConnection(
+        this.#deeplinkConnect(scopes, caipAccountIds),
         scopes,
         transportType,
       );
     }
 
     // Show install modal for RN, Web + Node
-    return this.handleConnection(
-      this.showInstallModal(shouldShowInstallModal, scopes, caipAccountIds),
+    return this.#handleConnection(
+      this.#showInstallModal(shouldShowInstallModal, scopes, caipAccountIds),
       scopes,
       transportType,
     );
@@ -687,27 +698,27 @@ export class MultichainSDK extends MultichainCore {
   }
 
   async disconnect(): Promise<void> {
-    this.listener?.();
-    this.__beforeUnloadListener?.();
+    await this.#listener?.();
+    this.#beforeUnloadListener?.();
 
-    await this.__transport?.disconnect();
+    await this.#transport?.disconnect();
     await this.storage.removeTransport();
 
     this.emit('stateChanged', 'disconnected');
 
-    this.listener = undefined;
-    this.__beforeUnloadListener = undefined;
-    this.__transport = undefined;
-    this.__provider = undefined;
-    this.__dappClient = undefined;
+    this.#listener = undefined;
+    this.#beforeUnloadListener = undefined;
+    this.#transport = undefined;
+    this.#provider = undefined;
+    this.#dappClient = undefined;
   }
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
-    const { sdkInfo, transport, options } = this;
+    const { transport, options } = this;
 
-    this.__provider ??= getMultichainClient({ transport });
+    this.#provider ??= getMultichainClient({ transport });
 
-    const rpcClient = new RpcClient(options, sdkInfo);
+    const rpcClient = new RpcClient(options, this.#sdkInfo);
     const requestRouter = new RequestRouter(transport, rpcClient, options);
     return requestRouter.invokeMethod(request);
   }
@@ -730,11 +741,7 @@ export class MultichainSDK extends MultichainCore {
         if (mobile?.preferredOpenLink) {
           mobile.preferredOpenLink(url, '_self');
         } else {
-          openDeeplink(
-            this.options,
-            url,
-            METAMASK_CONNECT_BASE_URL,
-          );
+          openDeeplink(this.options, url, METAMASK_CONNECT_BASE_URL);
         }
       }, 10); // small delay to ensure the message encryption and dispatch completes
     }
