@@ -428,11 +428,12 @@ export class MWPTransport implements ExtendedTransport {
     });
 
     return connectionPromise
-      .catch(() => {
+      .catch((error) => {
         if (initialConnectionMessageHandler) {
           this.dappClient.off('message', initialConnectionMessageHandler);
           initialConnectionMessageHandler = undefined;
         }
+        throw error;
       })
       .finally(() => {
         if (timeout) {
