@@ -85,6 +85,16 @@ export class MWPTransport implements ExtendedTransport {
 
   private windowFocusHandler: (() => void) | undefined;
 
+  /**
+   * Tracks the current connection promise to prevent concurrent connection attempts
+   */
+  private connectionPromise: Promise<void> | undefined;
+
+  /**
+   * Cleanup function for the message handler registered during fresh connections
+   */
+  private connectionMessageHandler: ((message: unknown) => void) | undefined;
+
   get pendingRequests() {
     return this.__pendingRequests;
   }
@@ -319,6 +329,12 @@ export class MWPTransport implements ExtendedTransport {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
   }): Promise<void> {
+    // Guard against concurrent connection attempts - return existing promise if one is in progress
+    if (this.connectionPromise) {
+      logger('connection already in progress, waiting for existing promise');
+      return this.connectionPromise;
+    }
+
     const { dappClient } = this;
 
     const session = await this.getActiveSession();
@@ -327,17 +343,29 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     let timeout: NodeJS.Timeout;
-    const connectionPromise = new Promise<void>((resolve, reject) => {
+    this.connectionPromise = new Promise<void>((resolve, reject) => {
       let connection: Promise<void>;
       if (session) {
         connection = new Promise<void>((resumeResolve, resumeReject) => {
           if (this.dappClient.state === 'CONNECTED') {
-            this.onResumeSuccess(resumeResolve, resumeReject, options);
+            // Await onResumeSuccess to ensure proper error handling
+            this.onResumeSuccess(resumeResolve, resumeReject, options).catch(
+              resumeReject,
+            );
           } else {
-            this.dappClient.once('connected', async () => {
-              this.onResumeSuccess(resumeResolve, resumeReject, options);
+            // Set up the connected event handler before calling resume
+            const onConnected = (): void => {
+              this.onResumeSuccess(resumeResolve, resumeReject, options).catch(
+                resumeReject,
+              );
+            };
+            this.dappClient.once('connected', onConnected);
+
+            // Handle resume failure - if resume throws, clean up and reject
+            dappClient.resume(session?.id ?? '').catch((err: Error) => {
+              this.dappClient.off('connected', onConnected);
+              resumeReject(err);
             });
-            dappClient.resume(session?.id ?? '');
           }
         });
       } else {
@@ -357,8 +385,16 @@ export class MWPTransport implements ExtendedTransport {
               params: sessionRequest,
             };
 
-            // just used for initial connection
-            this.dappClient.on('message', async (message: unknown) => {
+            // Clean up any existing message handler from a previous connection attempt
+            if (this.connectionMessageHandler) {
+              this.dappClient.off('message', this.connectionMessageHandler);
+              this.connectionMessageHandler = undefined;
+            }
+
+            // Create and track the message handler for cleanup
+            this.connectionMessageHandler = async (
+              message: unknown,
+            ): Promise<void> => {
               if (typeof message === 'object' && message !== null) {
                 if ('data' in message) {
                   const messagePayload = message.data as Record<
@@ -369,6 +405,15 @@ export class MWPTransport implements ExtendedTransport {
                     messagePayload.method === 'wallet_createSession' ||
                     messagePayload.method === 'wallet_sessionChanged'
                   ) {
+                    // Clean up this handler once we get the response
+                    if (this.connectionMessageHandler) {
+                      this.dappClient.off(
+                        'message',
+                        this.connectionMessageHandler,
+                      );
+                      this.connectionMessageHandler = undefined;
+                    }
+
                     if (messagePayload.error) {
                       return rejectConnection(messagePayload.error);
                     }
@@ -381,7 +426,9 @@ export class MWPTransport implements ExtendedTransport {
                   }
                 }
               }
-            });
+            };
+
+            this.dappClient.on('message', this.connectionMessageHandler);
 
             dappClient
               .connect({
@@ -391,22 +438,39 @@ export class MWPTransport implements ExtendedTransport {
                   data: request,
                 },
               })
-              .catch(rejectConnection);
+              .catch((err: Error) => {
+                // Clean up handler on connection failure
+                if (this.connectionMessageHandler) {
+                  this.dappClient.off(
+                    'message',
+                    this.connectionMessageHandler,
+                  );
+                  this.connectionMessageHandler = undefined;
+                }
+                rejectConnection(err);
+              });
           },
         );
       }
 
       timeout = setTimeout(() => {
+        // Clean up message handler on timeout
+        if (this.connectionMessageHandler) {
+          this.dappClient.off('message', this.connectionMessageHandler);
+          this.connectionMessageHandler = undefined;
+        }
         reject(new TransportTimeoutError());
       }, this.options.connectionTimeout);
 
       connection.then(resolve).catch(reject);
     });
 
-    return connectionPromise.finally(() => {
+    return this.connectionPromise.finally(() => {
       if (timeout) {
         clearTimeout(timeout);
       }
+      // Clear the connection promise so future connect() calls can proceed
+      this.connectionPromise = undefined;
     });
   }
 
@@ -425,6 +489,16 @@ export class MWPTransport implements ExtendedTransport {
       window.removeEventListener('focus', this.windowFocusHandler);
       this.windowFocusHandler = undefined;
     }
+
+    // Clean up any pending connection message handler
+    if (this.connectionMessageHandler) {
+      this.dappClient.off('message', this.connectionMessageHandler);
+      this.connectionMessageHandler = undefined;
+    }
+
+    // Clear the connection promise to allow fresh connection attempts
+    this.connectionPromise = undefined;
+
     this.kvstore.delete(SESSION_STORE_KEY);
     this.kvstore.delete(ACCOUNTS_STORE_KEY);
     this.kvstore.delete(CHAIN_STORE_KEY);
