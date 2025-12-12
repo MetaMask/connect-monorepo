@@ -590,6 +590,9 @@ export class MultichainSDK extends MultichainCore {
     caipAccountIds: CaipAccountId[],
     forceRequest?: boolean,
   ): Promise<void> {
+    if (this.state !== 'connected') {
+      await this.disconnect();
+    }
     const { ui } = this.options;
     const platformType = getPlatformType();
     const isWeb =
