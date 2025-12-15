@@ -36,8 +36,10 @@
     "dist/"
   ],
   "scripts": {
+    "attw": "attw --pack .",
     "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts --format esm,cjs",
     "build:docs": "typedoc",
+    "publint": "publint",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/analytics",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/analytics",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/analytics",

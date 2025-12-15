@@ -38,8 +38,10 @@
     "dist/"
   ],
   "scripts": {
+    "attw": "attw --pack .",
     "build": "yarn tsup ",
     "build:docs": "typedoc",
+    "publint": "publint",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-evm",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-evm",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-evm",

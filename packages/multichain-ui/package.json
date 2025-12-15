@@ -47,8 +47,10 @@
   ],
   "collection": "dist/collection/collection-manifest.json",
   "scripts": {
+    "attw": "attw --pack .",
     "build:docs": "typedoc",
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly --outDir dist/types",
+    "publint": "publint",
     "build:clean": "yarn clean && yarn build",
     "build": "stencil build --prod",
     "build:dev": "NODE_ENV=development stencil build --debug --dev",
