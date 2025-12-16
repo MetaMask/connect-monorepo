@@ -418,9 +418,6 @@ export class MWPTransport implements ExtendedTransport {
       }
 
       timeout = setTimeout(() => {
-        if (initialConnectionMessageHandler) {
-          this.dappClient.off('message', initialConnectionMessageHandler);
-        }
         reject(new TransportTimeoutError());
       }, this.options.connectionTimeout);
 
@@ -429,15 +426,15 @@ export class MWPTransport implements ExtendedTransport {
 
     return connectionPromise
       .catch((error) => {
-        if (initialConnectionMessageHandler) {
-          this.dappClient.off('message', initialConnectionMessageHandler);
-          initialConnectionMessageHandler = undefined;
-        }
         throw error;
       })
       .finally(() => {
         if (timeout) {
           clearTimeout(timeout);
+        }
+        if (initialConnectionMessageHandler) {
+          this.dappClient.off('message', initialConnectionMessageHandler);
+          initialConnectionMessageHandler = undefined;
         }
       });
   }
