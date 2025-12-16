@@ -581,7 +581,7 @@ export class MultichainSDK extends MultichainCore {
             logger('Error tracking connection failed/rejected event', error);
           }
         }
-        throw error instanceof Error ? error : new Error(String(error));
+        throw error;
       });
   }
 
