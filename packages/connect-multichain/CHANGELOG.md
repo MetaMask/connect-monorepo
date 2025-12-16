@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix potential listener leak on `MultichainCore.deeplinkConnect` and duplicate `dappClient.on('message')` on `MWPTransport` ([#81](https://github.com/MetaMask/connect-monorepo/pull/81))
 - Reverted: Fix mobile deeplink bug that occurred when `MultichainSDK.connect()` was called and the transport was already connected ([#74](https://github.com/MetaMask/connect-monorepo/pull/74))
 - Fix rejections of the initial permission approval for deeplink connections not correctly updating the connection status to disconnected ([#75](https://github.com/MetaMask/connect-monorepo/pull/75))
 - Fix `connect()` not working for mobile deeplink and QR connections when a previous connection attempt gets stuck ([#85](https://github.com/MetaMask/connect-monorepo/pull/85))
