@@ -302,7 +302,7 @@ export class MetamaskConnectEVM {
     );
 
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
-    const initialChainId = hexPermittedChainIds[0];
+    const initialChainId = hexPermittedChainIds[0] ?? numberToHex(DEFAULT_CHAIN_ID);
 
     const initialAccounts = await this.#core.transport.sendEip1193Message<
       { method: 'eth_accounts'; params: [] },
