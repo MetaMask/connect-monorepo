@@ -75,7 +75,10 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           );
 
           metamaskPromise = createMetamaskConnectEVM({
-            dapp: parameters.dapp ?? { name: window.location.hostname },
+            dapp: {
+              name: 'metamask',
+              url: 'metamask',
+            },
             eventHandlers: {
               accountsChanged: connector.onAccountsChanged.bind(connector),
               chainChanged: connector.onChainChanged.bind(connector),

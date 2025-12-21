@@ -128,7 +128,7 @@ export function setupDappMetadata(
   if (isBrowser) {
     options.dapp = {
       ...options.dapp,
-      url: `${window.location.protocol}//${window.location.host}`,
+      // url: `${window.location.protocol}//${window.location.host}`,
     };
   }
   if (!options.dapp?.url) {
