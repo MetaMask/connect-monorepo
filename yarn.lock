@@ -4504,7 +4504,7 @@ __metadata:
     "@react-navigation/elements": "npm:^2.3.8"
     "@react-navigation/native": "npm:^7.1.6"
     "@solana/web3.js": "npm:^1.98.0"
-    "@types/react": "npm:18.3.27"
+    "@types/react": "npm:^18.3.1"
     "@types/react-native-get-random-values": "npm:^1.8.2"
     buffer: "npm:^6.0.3"
     cross-env: "npm:^10.1.0"
@@ -4524,8 +4524,8 @@ __metadata:
     expo-symbols: "npm:~1.0.7"
     expo-system-ui: "npm:~6.0.7"
     expo-web-browser: "npm:~15.0.7"
-    react: "npm:18.3.1"
-    react-dom: "npm:18.3.1"
+    react: "npm:^18.3.1"
+    react-dom: "npm:^18.3.1"
     react-native: "npm:0.81.4"
     react-native-gesture-handler: "npm:~2.28.0"
     react-native-get-random-values: "npm:^1.11.0"
@@ -8435,7 +8435,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.27, @types/react@npm:^18.3.1":
+"@types/react@npm:^18.3.1":
   version: 18.3.27
   resolution: "@types/react@npm:18.3.27"
   dependencies:
@@ -24821,7 +24821,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:18.3.1, react-dom@npm:^18.3.1":
+"react-dom@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:
@@ -25189,7 +25189,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:18.3.1, react@npm:^18.3.1":
+"react@npm:^18.3.1":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:
