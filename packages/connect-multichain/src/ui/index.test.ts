@@ -11,7 +11,7 @@ import {
   PlatformType,
   type QRLink,
 } from '../domain';
-import { ModalFactory, preload } from './index';
+import { ModalFactory } from './index';
 import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type { FactoryModals } from './modals/types';
 import { v4 } from 'uuid';
@@ -553,7 +553,7 @@ t.describe('ModalFactory', () => {
         });
 
         t.vi.resetModules();
-        const { preload: TestPreload } = await import('./index');
+        const { preload: TestPreload } = await import('./preload.web');
         await TestPreload();
 
         // Verify that the error was logged
@@ -577,7 +577,7 @@ t.describe('ModalFactory', () => {
       });
 
       t.vi.resetModules();
-      const { preload: TestPreload } = await import('./index');
+      const { preload: TestPreload } = await import('./preload.web');
       await TestPreload();
 
       // Verify the exact format: first argument should be the message string,
