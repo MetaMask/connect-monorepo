@@ -22,18 +22,8 @@ import {
 import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
 import type { FactoryModals, ModalTypes } from './modals/types';
 import { compressString } from '../multichain/utils';
-import { defineCustomElements } from '@metamask/multichain-ui/loader';
+import { preload } from './preload.web';
 
-/**
- * Preload install modal custom elements only once
- */
-export async function preload() {
-  try {
-    await defineCustomElements();
-  } catch (error) {
-    console.error('Failed to load customElements:', error);
-  }
-}
 
 export class ModalFactory<T extends FactoryModals = FactoryModals> {
   public modal!: Modal<any>;
