@@ -75,7 +75,7 @@ function Account() {
       </div>
 
       {account.status !== 'disconnected' && (
-        <button type="button" onClick={() => disconnect()}>
+        <button id="disconnect-button" type="button" onClick={() => disconnect()}>
           Disconnect
         </button>
       )}
@@ -92,6 +92,7 @@ function Connect() {
       <h2>Connect</h2>
       {connectors.map((connector) => (
         <button
+          id={`connect-${connector.name}`}
           key={connector.uid}
           onClick={async () => {
             connectAsync({
@@ -125,6 +126,7 @@ function SwitchAccount() {
 
       {connectors.map((connector) => (
         <button
+          id={`switch-account-${connector.name}`}
           disabled={account.connector?.uid === connector.uid}
           key={connector.uid}
           onClick={() => switchAccount({ connector })}
@@ -147,6 +149,7 @@ function SwitchChain() {
 
       {chains.map((chain) => (
         <button
+          id={`switch-chain-${chain.id}`}
           disabled={chainId === chain.id}
           key={chain.id}
           onClick={() => switchChain({ chainId: chain.id })}
@@ -177,7 +180,7 @@ function SignMessage() {
         }}
       >
         <input name="message" />
-        <button type="submit">Sign Message</button>
+        <button id="sign-message-button" type="submit">Sign Message</button>
       </form>
 
       {data}
@@ -299,7 +302,7 @@ function SendTransaction() {
           step="0.000000001"
           required
         />
-        <button disabled={isPending} type="submit">
+        <button id="send-transaction-button" disabled={isPending} type="submit">
           {isPending ? 'Confirming...' : 'Send'}
         </button>
       </form>
@@ -385,7 +388,7 @@ function WriteContract() {
       <h2>Write Contract</h2>
       <form onSubmit={submit}>
         <input name="tokenId" placeholder="Token ID" required />
-        <button disabled={isPending} type="submit">
+        <button id="mint-button" disabled={isPending} type="submit">
           {isPending ? 'Confirming...' : 'Mint'}
         </button>
       </form>
