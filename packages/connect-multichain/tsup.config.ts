@@ -1,6 +1,5 @@
 import { defineConfig, type Options } from 'tsup';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
-import path from 'path';
 import packageJson from './package.json';
 const pkg: any = packageJson as any;
 
@@ -148,17 +147,6 @@ export default defineConfig([
     format: 'esm',
     platform: 'neutral', // React Native is neither pure browser nor pure node
     external: rnExternalDeps,
-    esbuildPlugins: [
-      // Swap web preload (with Stencil) for native preload (no-op) in React Native builds
-      {
-        name: 'replace-preload-web',
-        setup(build) {
-          build.onResolve({ filter: /preload\.web$/ }, (args) => {
-            return { path: path.resolve(args.resolveDir, './preload.native.ts') };
-          });
-        },
-      },
-    ],
     esbuildOptions: (options) => {
       options.metafile = true;
       options.mainFields = ['react-native', 'node', 'browser'];

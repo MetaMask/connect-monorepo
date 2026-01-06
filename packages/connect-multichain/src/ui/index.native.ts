@@ -1,15 +1,15 @@
 /**
- * Browser/Web UI module entry point
+ * React Native UI module entry point
  */
 import { BaseModalFactory } from './ModalFactory';
-import { preload } from './preload';
+import { preload } from './preload.native';
 import type { FactoryModals } from './modals/types';
 
 export { preload };
 
 /**
- * ModalFactory for browser/web environments.
- * Loads Stencil web components via dynamic import.
+ * ModalFactory for React Native environments.
+ * No-op preload since Stencil web components are not used.
  */
 export class ModalFactory<T extends FactoryModals = FactoryModals> extends BaseModalFactory<T> {
   protected async preload(): Promise<void> {
