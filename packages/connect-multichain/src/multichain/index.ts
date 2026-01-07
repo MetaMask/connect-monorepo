@@ -257,6 +257,7 @@ export class MultichainSDK extends MultichainCore {
         logger('MetaMaskSDK: init already initialized');
       } else {
         await this.#setupAnalytics();
+        await this.#setupTransport();
         try {
           const baseProps = await getBaseAnalyticsProperties(
             this.options,
@@ -270,12 +271,10 @@ export class MultichainSDK extends MultichainCore {
           // @ts-expect-error mmsdk should be accessible
           window.mmsdk = this;
         }
-        this.#setupTransport().catch(async () => {
-          await this.storage.removeTransport();
-          this.state = 'pending';
-        });
       }
     } catch (error) {
+      await this.storage.removeTransport();
+      this.state = 'pending';
       logger('MetaMaskSDK error during initialization', error);
     }
 
