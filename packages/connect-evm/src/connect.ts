@@ -183,10 +183,6 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
-    if (!coreOptions.analytics?.enabled) {
-      return;
-    }
-
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -213,10 +209,6 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
-    if (!coreOptions.analytics?.enabled) {
-      return;
-    }
-
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -245,10 +237,6 @@ export class MetamaskConnectEVM {
     error: unknown,
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
-    if (!coreOptions.analytics?.enabled) {
-      return;
-    }
-
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
