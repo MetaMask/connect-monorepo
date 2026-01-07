@@ -67,11 +67,11 @@ function Account() {
       <h2>Account</h2>
 
       <div>
-        account: {account.address} {ensName}
+        <span id="connected-account">account: {account.address} {ensName}</span>
         <br />
-        chainId: {account.chainId}
+        <span id="connected-chain">chainId: {account.chainId}</span>
         <br />
-        status: {account.status}
+        <span id="connected-status">status: {account.status}</span>
       </div>
 
       {account.status !== 'disconnected' && (
@@ -183,7 +183,7 @@ function SignMessage() {
         <button id="sign-message-button" type="submit">Sign Message</button>
       </form>
 
-      {data}
+      <span id="sign-message-response">{data}</span>
     </div>
   );
 }
