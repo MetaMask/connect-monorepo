@@ -88,27 +88,21 @@ export class RequestRouter {
 		options: InvokeMethodOptions,
 		execute: () => Promise<Json>,
 	): Promise<Json> {
-		if (this.config.analytics?.enabled) {
-			await this.#trackWalletActionRequested(options);
-		}
+		await this.#trackWalletActionRequested(options);
 
 		try {
 			const result = await execute();
 
-			if (this.config.analytics?.enabled) {
-				await this.#trackWalletActionSucceeded(options);
-			}
+			await this.#trackWalletActionSucceeded(options);
 
 			return result;
 		} catch (error) {
-			if (this.config.analytics?.enabled) {
-				const isRejection = isRejectionError(error);
+			const isRejection = isRejectionError(error);
 
-				if (isRejection) {
-					await this.#trackWalletActionRejected(options);
-				} else {
-					await this.#trackWalletActionFailed(options);
-				}
+			if (isRejection) {
+				await this.#trackWalletActionRejected(options);
+			} else {
+				await this.#trackWalletActionFailed(options);
 			}
 			throw new RPCInvokeMethodErr(error.message);
 		}

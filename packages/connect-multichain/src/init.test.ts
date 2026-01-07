@@ -65,22 +65,21 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
-      `${platform} should enable analytics by default if platform is not nodejs`,
+      `${platform} should enable analytics when explicitly configured for web/web-mobile platforms`,
       async () => {
         // Spy on analytics methods BEFORE creating SDK
         const enableSpy = t.vi.spyOn(analytics, 'enable');
         const trackSpy = t.vi.spyOn(analytics, 'track');
-        
+
         // Reset call history to ensure clean state
         enableSpy.mockClear();
         trackSpy.mockClear();
-        
+
         sdk = await createSDK(testOptions);
-        
+
         // Verify analytics setup through observable effects
         if (platform !== 'web' && platform !== 'web-mobile') {
           t.expect(enableSpy).not.toHaveBeenCalled();
-          t.expect(trackSpy).not.toHaveBeenCalled();
         } else {
           // For web and web-mobile platforms, analytics should be enabled
           t.expect(enableSpy.mock.calls.length).toBeGreaterThan(0);
@@ -95,26 +94,7 @@ function testSuite<T extends MultichainOptions>({
             }),
           );
         }
-        
-        enableSpy.mockRestore();
-        trackSpy.mockRestore();
-      },
-    );
 
-    t.it(
-      `${platform} should NOT call analytics.enable if analytics is DISABLED and should NOT trigger event`,
-      async () => {
-        // Spy on analytics methods
-        const enableSpy = t.vi.spyOn(analytics, 'enable');
-        const trackSpy = t.vi.spyOn(analytics, 'track');
-        
-        (testOptions.analytics as any).enabled = false;
-        sdk = await createSDK(testOptions);
-        t.expect(sdk).toBeDefined();
-        // Verify analytics was not enabled through observable effects
-        t.expect(enableSpy).not.toHaveBeenCalled();
-        t.expect(trackSpy).not.toHaveBeenCalled();
-        
         enableSpy.mockRestore();
         trackSpy.mockRestore();
       },
@@ -219,14 +199,14 @@ function testSuite<T extends MultichainOptions>({
 
         // Clear storage to ensure getItem/setItem is called
         mockedData.nativeStorageStub.data.clear();
-        
+
         // Mock storage methods to throw errors
         // For node platform: mock getItem to throw on TRANSPORT (in #setupTransport)
         // For RN/web-mobile: mock setItem to throw when setting anonId (after getItem returns null)
         // For web: mock getItem to throw on anonId (in #setupAnalytics)
         const getItemSpy = t.vi.spyOn(mockedData.nativeStorageStub, 'getItem');
         const setItemSpy = t.vi.spyOn(mockedData.nativeStorageStub, 'setItem');
-        
+
         if (platform === 'node') {
           // Node: set multichain-transport in storage first, then throw when reading it
           // getTransport() calls adapter.get('multichain-transport') which calls getItem
@@ -283,7 +263,7 @@ function testSuite<T extends MultichainOptions>({
         t.expect(loggedError).toBeDefined();
         const errorMessage = loggedError?.message || String(loggedError);
         t.expect(errorMessage).toContain('Test error');
-        
+
         // Restore spies
         getItemSpy.mockRestore();
         setItemSpy.mockRestore();

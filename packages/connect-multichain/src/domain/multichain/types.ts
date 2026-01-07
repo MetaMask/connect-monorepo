@@ -50,7 +50,7 @@ export type MultichainOptions = {
     supportedNetworks: RpcUrlsMap;
   };
   /** Analytics configuration */
-  analytics?: { enabled: false } | { enabled: true; integrationType: string };
+  analytics?: { integrationType: string };
   /** Storage client for persisting SDK data */
   storage: StoreClient;
   /** UI configuration options */

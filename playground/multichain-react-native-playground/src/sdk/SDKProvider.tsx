@@ -41,9 +41,6 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 						Linking.openURL(deeplink);
 					},
 				},
-				analytics: {
-					enabled: false,
-				},
 				transport: {
 					extensionId: METAMASK_PROD_CHROME_ID,
 					onNotification: (notification: unknown) => {

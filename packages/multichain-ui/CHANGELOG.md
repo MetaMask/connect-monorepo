@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0]
+
 ### Changed
 
 - **BREAKING** Change stencil loader export path to `./loader` for previous paths `./dist/loader/index.js` and `./dist/loader/index.cjs.js` ([#73](https://github.com/MetaMask/connect-monorepo/pull/73))
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.3.0...HEAD
+[0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.2.0...@metamask/multichain-ui@0.3.0
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.1.0...@metamask/multichain-ui@0.2.0
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/multichain-ui@0.1.0

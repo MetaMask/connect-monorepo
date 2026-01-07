@@ -54,9 +54,6 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
         api: {
           supportedNetworks: getInfuraRpcUrls(process.env.INFURA_API_KEY || ''),
         },
-        analytics: {
-          enabled: false,
-        },
         transport: {
           extensionId: METAMASK_PROD_CHROME_ID,
           onNotification: (notification: unknown) => {
