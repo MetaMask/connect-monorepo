@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING** Remove opt-out of analytics from `connect-multichain`. `MultichainOptions` removes the `enable` flag from `analytics` config object ([#92](https://github.com/MetaMask/connect-monorepo/pull/92))
+
 ### Fixed
 
 - Fix potential listener leak on `MultichainCore.deeplinkConnect` and duplicate `dappClient.on('message')` on `MWPTransport` ([#81](https://github.com/MetaMask/connect-monorepo/pull/81))
@@ -14,10 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix rejections of the initial permission approval for deeplink connections not correctly updating the connection status to disconnected ([#75](https://github.com/MetaMask/connect-monorepo/pull/75))
 - Fix `connect()` not working for mobile deeplink and QR connections when a previous connection attempt gets stuck ([#85](https://github.com/MetaMask/connect-monorepo/pull/85))
 - Fix `connect()` improperly wrapping errors resulting in them being serialized to `[object Object]` ([#86](https://github.com/MetaMask/connect-monorepo/pull/86))
-
-### Changed
-
-- **BREAKING** Remove opt-out of analytics from `connect-multichain`. `MultichainOptions` removes the `enable` flag from `analytics` config object ([#92](https://github.com/MetaMask/connect-monorepo/pull/92))
 
 ## [0.3.2]
 
