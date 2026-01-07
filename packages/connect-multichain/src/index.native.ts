@@ -1,7 +1,7 @@
 import type { CreateMultichainFN, StoreClient } from './domain';
 import { MultichainSDK } from './multichain';
 import { Store } from './store';
-import { ModalFactory } from './ui';
+import { ModalFactory } from './ui/index.native';
 
 export * from './domain';
 

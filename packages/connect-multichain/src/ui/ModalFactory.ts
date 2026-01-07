@@ -1,0 +1,202 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable no-restricted-globals */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/parameter-properties */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable promise/no-return-wrap */
+/* eslint-disable require-atomic-updates */
+/* eslint-disable @typescript-eslint/naming-convention */
+import MetaMaskOnboarding from '@metamask/onboarding';
+
+import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from '../config';
+import {
+  type ConnectionRequest,
+  getPlatformType,
+  getVersion,
+  type Modal,
+  type OTPCode,
+  PlatformType,
+} from '../domain';
+import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
+import type { FactoryModals, ModalTypes } from './modals/types';
+import { compressString } from '../multichain/utils';
+
+/**
+ * Preload function type for loading UI dependencies
+ */
+export type PreloadFn = () => Promise<void>;
+
+/**
+ * Base ModalFactory class that accepts a preload function.
+ * Platform-specific implementations should extend this class.
+ */
+export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> {
+  public modal!: Modal<any>;
+
+  private readonly platform: PlatformType = getPlatformType();
+
+  private successCallback!: (error?: Error) => Promise<void>;
+
+  /**
+   * Creates a new modal factory instance.
+   *
+   * @param options - The modals configuration object
+   */
+  constructor(protected readonly options: T) {
+    this.validateModals();
+  }
+
+  /**
+   * Platform-specific preload function to be implemented by subclasses.
+   */
+  protected abstract preload(): Promise<void>;
+
+  private validateModals() {
+    const requiredModals = ['InstallModal', 'OTPCodeModal'];
+    const missingModals = requiredModals.filter(
+      (modal) => !this.options[modal as ModalTypes],
+    );
+    if (missingModals.length > 0) {
+      throw new Error(`Missing required modals: ${missingModals.join(', ')}`);
+    }
+  }
+
+  async unload(error?: Error) {
+    this.modal?.unmount();
+    await this.successCallback?.(error);
+  }
+
+  /**
+   * Determines if the current platform is a mobile native environment.
+   * Currently only includes React Native.
+   */
+  get isMobile() {
+    return this.platform === PlatformType.ReactNative;
+  }
+
+  /**
+   * Determines if the current platform is a Node.js environment.
+   * Used for server-side or non-browser environments.
+   */
+  get isNode() {
+    return this.platform === PlatformType.NonBrowser;
+  }
+
+  /**
+   * Determines if the current platform is a web environment.
+   * Includes desktop web, MetaMask mobile webview, and mobile web.
+   */
+  get isWeb() {
+    return (
+      this.platform === PlatformType.DesktopWeb ||
+      this.platform === PlatformType.MetaMaskMobileWebview ||
+      this.platform === PlatformType.MobileWeb
+    );
+  }
+
+  private getContainer() {
+    return typeof document === 'undefined'
+      ? undefined
+      : document.createElement('div');
+  }
+
+  private getMountedContainer() {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+    const container = this.getContainer();
+    if (container) {
+      document.body.appendChild(container);
+    }
+    return container;
+  }
+
+  createConnectionDeeplink(connectionRequest?: ConnectionRequest) {
+    if (!connectionRequest) {
+      throw new Error('createConnectionDeeplink can only be called with a connection request');
+    }
+    const json = JSON.stringify(connectionRequest);
+    const compressed = compressString(json);
+    const urlEncoded = encodeURIComponent(compressed);
+    return `${METAMASK_DEEPLINK_BASE}/mwp?p=${urlEncoded}&c=1`;
+  }
+
+  createConnectionUniversalLink(connectionRequest?: ConnectionRequest) {
+    if (!connectionRequest) {
+      return `${METAMASK_CONNECT_BASE_URL}`;
+    }
+    const json = JSON.stringify(connectionRequest);
+    const compressed = compressString(json);
+    const urlEncoded = encodeURIComponent(compressed);
+    return `${METAMASK_CONNECT_BASE_URL}/mwp?p=${urlEncoded}&c=1`;
+  }
+
+  private async onCloseModal(shouldTerminate = true) {
+    return this.unload(
+      shouldTerminate ? new Error('User closed modal') : undefined,
+    );
+  }
+
+  private onStartDesktopOnboarding() {
+    new MetaMaskOnboarding().startOnboarding();
+  }
+
+  public async renderInstallModal(
+    showInstallModal: boolean,
+    createConnectionRequest: () => Promise<ConnectionRequest>,
+    successCallback: (error?: Error) => Promise<void>,
+  ) {
+    this.modal?.unmount();
+    await this.preload();
+    this.successCallback = successCallback;
+
+    const parentElement = this.getMountedContainer();
+    const connectionRequest = await createConnectionRequest();
+    const qrCodeLink = this.createConnectionDeeplink(connectionRequest);
+
+    const modal: Modal<any> = new this.options.InstallModal({
+      expiresIn:
+        (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000,
+      connectionRequest,
+      parentElement,
+      showInstallModal,
+      link: qrCodeLink,
+      sdkVersion: getVersion(),
+      generateQRCode: async (request: ConnectionRequest) =>
+        this.createConnectionDeeplink(request),
+      onClose: this.onCloseModal.bind(this),
+      startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
+      createConnectionRequest,
+    });
+
+    this.modal = modal;
+    modal.mount();
+  }
+
+  public async renderOTPCodeModal(
+    createOTPCode: () => Promise<OTPCode>,
+    successCallback: (error?: Error) => Promise<void>,
+    updateOTPCode: (otpCode: OTPCode, modal: AbstractOTPCodeModal) => void,
+  ) {
+    this.modal?.unmount();
+    await this.preload();
+    this.successCallback = successCallback;
+
+    const container = this.getMountedContainer();
+    const otpCode = await createOTPCode();
+
+    const modal: AbstractOTPCodeModal = new this.options.OTPCodeModal({
+      parentElement: container,
+      sdkVersion: getVersion(),
+      otpCode,
+      onClose: this.onCloseModal.bind(this),
+      createOTPCode,
+      updateOTPCode: (otpCode: OTPCode) => updateOTPCode(otpCode, modal),
+    });
+
+    this.modal = modal;
+    modal.mount();
+  }
+}

@@ -553,7 +553,7 @@ t.describe('ModalFactory', () => {
         });
 
         t.vi.resetModules();
-        const { preload: TestPreload } = await import('./preload.web');
+        const { preload: TestPreload } = await import('./index');
         await TestPreload();
 
         // Verify that the error was logged
@@ -577,7 +577,7 @@ t.describe('ModalFactory', () => {
       });
 
       t.vi.resetModules();
-      const { preload: TestPreload } = await import('./preload.web');
+      const { preload: TestPreload } = await import('./index');
       await TestPreload();
 
       // Verify the exact format: first argument should be the message string,
