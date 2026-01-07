@@ -9,14 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.0]
 
-### Uncategorized
-
-- chore: fix package consistency across monorepo ([#94](https://github.com/MetaMask/connect-monorepo/pull/94))
-- fix: Exclude multichain-ui from React Native builds ([#89](https://github.com/MetaMask/connect-monorepo/pull/89))
-- refactor: fix multiple `MultichainSDK` typing and remove some eslint ignore comments from module ([#76](https://github.com/MetaMask/connect-monorepo/pull/76))
-- fix: changelog repo url ([#78](https://github.com/MetaMask/connect-monorepo/pull/78))
-- feat: inline multichain-ui loading and QR code package import ([#73](https://github.com/MetaMask/connect-monorepo/pull/73))
-
 ### Changed
 
 - **BREAKING** Remove opt-out of analytics from `connect-multichain`. `MultichainOptions` removes the `enable` flag from `analytics` config object ([#92](https://github.com/MetaMask/connect-monorepo/pull/92))

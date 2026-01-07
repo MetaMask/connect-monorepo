@@ -9,11 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2]
 
-### Uncategorized
-
-- chore: fix package consistency across monorepo ([#94](https://github.com/MetaMask/connect-monorepo/pull/94))
-- fix: changelog repo url ([#78](https://github.com/MetaMask/connect-monorepo/pull/78))
-
 ### Added
 
 - **BREAKING** Replace `chainId` property on `connect` method with `chainIds` to support for connecting to multiple chains ([#77](https://github.com/MetaMask/connect-monorepo/pull/77))

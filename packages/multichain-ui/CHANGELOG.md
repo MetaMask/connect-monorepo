@@ -9,11 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0]
 
-### Uncategorized
-
-- chore: fix package consistency across monorepo ([#94](https://github.com/MetaMask/connect-monorepo/pull/94))
-- fix: changelog repo url ([#78](https://github.com/MetaMask/connect-monorepo/pull/78))
-
 ### Changed
 
 - **BREAKING** Change stencil loader export path to `./loader` for previous paths `./dist/loader/index.js` and `./dist/loader/index.cjs.js` ([#73](https://github.com/MetaMask/connect-monorepo/pull/73))
