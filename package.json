@@ -84,7 +84,7 @@
     "semver": "^7.6.3",
     "simple-git-hooks": "^2.8.0",
     "tsx": "^4.19.3",
-    "typescript": "~5.9.2",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.10.0",
     "yargs": "^17.7.2"
   },

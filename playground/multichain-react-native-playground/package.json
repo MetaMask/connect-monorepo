@@ -82,10 +82,10 @@
     "cross-env": "^10.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
-    "typescript": "~5.9.2"
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": "^18.18 || >=20"
+    "node": ">=20.19.0"
   },
   "publishConfig": {
     "access": "restricted",
