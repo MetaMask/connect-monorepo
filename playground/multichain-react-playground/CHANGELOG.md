@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Remove `enable` flag from `analytics` config object for `createMetamaskConnect` constructor ([#92](https://github.com/MetaMask/connect-monorepo/pull/92))
 - Bump `@types/jest` from ^28.1.6 to ^29.5.14 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 - Bump `@types/node` from ^18.18 to ^22.9.0 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 - Bump `@types/react` from ^19.1.8 to ~19.1.10 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))

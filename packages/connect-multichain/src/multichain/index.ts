@@ -130,9 +130,7 @@ export class MultichainSDK extends MultichainCore {
 
   constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
-    const integrationType = options.analytics?.enabled
-      ? options.analytics.integrationType
-      : 'direct';
+    const integrationType = options.analytics?.integrationType ?? 'direct';
     const allOptions = {
       ...withDappMetadata,
       ui: {
@@ -143,7 +141,6 @@ export class MultichainSDK extends MultichainCore {
       },
       analytics: {
         ...(options.analytics ?? {}),
-        enabled: options.analytics?.enabled ?? true,
         integrationType,
       },
     };
@@ -165,10 +162,6 @@ export class MultichainSDK extends MultichainCore {
   }
 
   async #setupAnalytics(): Promise<void> {
-    if (!this.options.analytics?.enabled) {
-      return;
-    }
-
     const platform = getPlatformType();
     const isBrowser =
       platform === PlatformType.MetaMaskMobileWebview ||
@@ -265,16 +258,14 @@ export class MultichainSDK extends MultichainCore {
       } else {
         await this.#setupAnalytics();
         await this.#setupTransport();
-        if (this.options.analytics?.enabled) {
-          try {
-            const baseProps = await getBaseAnalyticsProperties(
-              this.options,
-              this.storage,
-            );
-            analytics.track('mmconnect_initialized', baseProps);
-          } catch (error) {
-            logger('Error tracking initialized event', error);
-          }
+        try {
+          const baseProps = await getBaseAnalyticsProperties(
+            this.options,
+            this.storage,
+          );
+          analytics.track('mmconnect_initialized', baseProps);
+        } catch (error) {
+          logger('Error tracking initialized event', error);
         }
         if (typeof window !== 'undefined') {
           // @ts-expect-error mmsdk should be accessible
@@ -539,48 +530,44 @@ export class MultichainSDK extends MultichainCore {
     return promise
       .then(async () => {
         this.state = 'connected';
-        if (this.options.analytics?.enabled) {
-          try {
-            const baseProps = await getBaseAnalyticsProperties(
-              this.options,
-              this.storage,
-            );
+        try {
+          const baseProps = await getBaseAnalyticsProperties(
+            this.options,
+            this.storage,
+          );
 
-            analytics.track('mmconnect_connection_established', {
-              ...baseProps,
-              transport_type: transportType,
-              user_permissioned_chains: scopes,
-            });
-          } catch (error) {
-            logger('Error tracking connection_established event', error);
-          }
+          analytics.track('mmconnect_connection_established', {
+            ...baseProps,
+            transport_type: transportType,
+            user_permissioned_chains: scopes,
+          });
+        } catch (error) {
+          logger('Error tracking connection_established event', error);
         }
         return undefined; // explicitly return `undefined` to avoid eslintpromise/always-return
       })
       .catch(async (error) => {
         this.state = 'disconnected';
-        if (this.options.analytics?.enabled) {
-          try {
-            const baseProps = await getBaseAnalyticsProperties(
-              this.options,
-              this.storage,
-            );
-            const isRejection = isRejectionError(error);
+        try {
+          const baseProps = await getBaseAnalyticsProperties(
+            this.options,
+            this.storage,
+          );
+          const isRejection = isRejectionError(error);
 
-            if (isRejection) {
-              analytics.track('mmconnect_connection_rejected', {
-                ...baseProps,
-                transport_type: transportType,
-              });
-            } else {
-              analytics.track('mmconnect_connection_failed', {
-                ...baseProps,
-                transport_type: transportType,
-              });
-            }
-          } catch {
-            logger('Error tracking connection failed/rejected event', error);
+          if (isRejection) {
+            analytics.track('mmconnect_connection_rejected', {
+              ...baseProps,
+              transport_type: transportType,
+            });
+          } else {
+            analytics.track('mmconnect_connection_failed', {
+              ...baseProps,
+              transport_type: transportType,
+            });
           }
+        } catch {
+          logger('Error tracking connection failed/rejected event', error);
         }
         throw error;
       });
@@ -613,25 +600,23 @@ export class MultichainSDK extends MultichainCore {
       transportType = TransportType.MWP;
     }
 
-    if (this.options.analytics?.enabled) {
-      try {
-        const baseProps = await getBaseAnalyticsProperties(
-          this.options,
-          this.storage,
-        );
-        const dappConfiguredChains = Object.keys(
-          this.options.api.supportedNetworks,
-        );
+    try {
+      const baseProps = await getBaseAnalyticsProperties(
+        this.options,
+        this.storage,
+      );
+      const dappConfiguredChains = Object.keys(
+        this.options.api.supportedNetworks,
+      );
 
-        analytics.track('mmconnect_connection_initiated', {
-          ...baseProps,
-          transport_type: transportType,
-          dapp_configured_chains: dappConfiguredChains,
-          dapp_requested_chains: scopes,
-        });
-      } catch (error) {
-        logger('Error tracking connection_initiated event', error);
-      }
+      analytics.track('mmconnect_connection_initiated', {
+        ...baseProps,
+        transport_type: transportType,
+        dapp_configured_chains: dappConfiguredChains,
+        dapp_requested_chains: scopes,
+      });
+    } catch (error) {
+      logger('Error tracking connection_initiated event', error);
     }
 
     if (this.#transport?.isConnected() && !secure) {
