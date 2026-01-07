@@ -14,7 +14,7 @@ This React Native application is a complete port of the multichain-react web tes
 
 ## Prerequisites
 
-- Node.js (^18.18 || >=20)
+- Node.js (>=20.19.0)
 - Yarn (v4.1.1+)
 - Expo CLI
 - iOS Simulator (for iOS development) or Android Studio (for Android development)
