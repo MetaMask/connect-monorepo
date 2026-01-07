@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `connect()` not working for mobile deeplink and QR connections when a previous connection attempt gets stuck ([#85](https://github.com/MetaMask/connect-monorepo/pull/85))
 - Fix `connect()` improperly wrapping errors resulting in them being serialized to `[object Object]` ([#86](https://github.com/MetaMask/connect-monorepo/pull/86))
 
+### Changed
+
+- **BREAKING** Remove opt-out of analytics from `connect-multichain`. `MultichainOptions` removes the `enable` flag from `analytics` config object ([#92](https://github.com/MetaMask/connect-monorepo/pull/92))
+
 ## [0.3.2]
 
 ### Added
