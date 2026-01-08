@@ -1,13 +1,13 @@
 {
-  "name": "@metamask/multichain-node-playground",
+  "name": "@metamask/node-playground",
   "version": "0.0.0",
   "private": true,
-  "description": "multichain-node-playground",
+  "description": "A Node.js test dapp for multichain api",
   "keywords": [
     "MetaMask",
     "Ethereum"
   ],
-  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/packages/multichain-node-playground#readme",
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/node-playground#readme",
   "bugs": {
     "url": "https://github.com/MetaMask/connect-monorepo/issues"
   },
@@ -20,9 +20,9 @@
   "main": "index.js",
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm",
-    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-node-playground",
-    "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-node-playground",
-    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-node-playground",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/node-playground",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/node-playground",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/node-playground",
     "clean": "rm -rf dist .sdk-comm",
     "start": "node -r ts-node/register -r tsconfig-paths/register src/index.ts",
     "test": "echo \"No test specified\""

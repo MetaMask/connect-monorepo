@@ -1,13 +1,13 @@
 {
-  "name": "@metamask/multichain-react-native-playground",
+  "name": "@metamask/react-native-playground",
   "version": "0.0.0",
   "private": true,
-  "description": "A native test dapp for multichain api",
+  "description": "A React Native test dapp for multichain api",
   "keywords": [
     "MetaMask",
     "Ethereum"
   ],
-  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/packages/multichain-react-native-playground#readme",
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/react-native-playground#readme",
   "bugs": {
     "url": "https://github.com/MetaMask/connect-monorepo/issues"
   },
@@ -25,9 +25,9 @@
     "allow-scripts": "",
     "android": "expo start --android",
     "build": "echo 'builds via expo'",
-    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-react-native-playground",
-    "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-react-native-playground",
-    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-react-native-playground",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/react-native-playground",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/react-native-playground",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/react-native-playground",
     "ios": "expo start --ios",
     "start": "expo start --tunnel",
     "test": "echo \"No test specified\"",

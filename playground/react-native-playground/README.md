@@ -37,7 +37,7 @@ From the project root:
 yarn install
 
 # Navigate to the React Native playground
-cd playground/multichain-react-native
+cd playground/react-native-playground
 
 # Start the development server
 yarn start
