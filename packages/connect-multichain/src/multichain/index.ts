@@ -277,6 +277,11 @@ export class MultichainSDK extends MultichainCore {
       this.state = 'pending';
       logger('MetaMaskSDK error during initialization', error);
     }
+
+    this.#setupTransport().catch(async () => {
+      await this.storage.removeTransport();
+      this.state = 'pending';
+    });
   }
 
   async #createDappClient(): Promise<DappClient> {

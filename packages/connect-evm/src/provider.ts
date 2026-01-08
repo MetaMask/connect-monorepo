@@ -8,6 +8,9 @@ import type {
   Address,
   EIP1193ProviderEvents,
   Hex,
+  JsonRpcCallback,
+  JsonRpcRequest,
+  JsonRpcResponse,
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
@@ -32,6 +35,21 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     super();
     this.#core = core;
     this.#requestInterceptor = interceptor;
+
+    // Bind all public methods to ensure `this` context is preserved
+    // when methods are extracted or passed as callbacks.
+    // This eliminates the need for Proxy wrappers in consumers.
+    this.request = this.request.bind(this);
+    this.sendAsync = this.sendAsync.bind(this);
+    this.send = this.send.bind(this);
+
+    // Bind inherited EventEmitter methods
+    this.on = this.on.bind(this);
+    this.off = this.off.bind(this);
+    this.emit = this.emit.bind(this);
+    this.once = this.once.bind(this);
+    this.removeListener = this.removeListener.bind(this);
+    this.listenerCount = this.listenerCount.bind(this);
   }
 
   /**
@@ -107,5 +125,84 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     }
 
     this.#selectedChainId = hexChainId as Hex;
+  }
+
+  // ==========================================
+  // Legacy compatibility methods
+  // ==========================================
+
+  /**
+   * Alias for selectedChainId for legacy compatibility.
+   * Many dApps expect a `chainId` property on the provider.
+   */
+  public get chainId(): Hex | undefined {
+    return this.selectedChainId;
+  }
+
+  /**
+   * Legacy method for sending JSON-RPC requests.
+   * @deprecated Use `request` instead. This method is provided for backwards compatibility.
+   * @param request - The JSON-RPC request object
+   * @param callback - Optional callback function. If provided, the method returns void.
+   * @returns A promise resolving to the JSON-RPC response, or void if a callback is provided.
+   */
+  async sendAsync<TParams = unknown, TResult = unknown>(
+    request: JsonRpcRequest<TParams>,
+    callback?: JsonRpcCallback<TResult>,
+  ): Promise<JsonRpcResponse<TResult> | void> {
+    const id = request.id ?? 1;
+
+    const promise = this.request({
+      method: request.method,
+      params: request.params as unknown,
+    })
+      .then(
+        (result): JsonRpcResponse<TResult> => ({
+          id,
+          jsonrpc: '2.0',
+          result: result as TResult,
+        }),
+      )
+      .catch(
+        (error): JsonRpcResponse<TResult> => ({
+          id,
+          jsonrpc: '2.0',
+          error: {
+            code: error.code ?? -32603,
+            message: error.message ?? 'Internal error',
+            data: error.data,
+          },
+        }),
+      );
+
+    if (callback) {
+      promise
+        .then((response) => {
+          if (response.error) {
+            callback(new Error(response.error.message), response);
+          } else {
+            callback(null, response);
+          }
+        })
+        .catch((error) => {
+          callback(error, null);
+        });
+      return;
+    }
+
+    return promise;
+  }
+
+  /**
+   * Legacy method for sending JSON-RPC requests synchronously (callback-based).
+   * @deprecated Use `request` instead. This method is provided for backwards compatibility.
+   * @param request - The JSON-RPC request object
+   * @param callback - The callback function to receive the response
+   */
+  send<TParams = unknown, TResult = unknown>(
+    request: JsonRpcRequest<TParams>,
+    callback: JsonRpcCallback<TResult>,
+  ): void {
+    this.sendAsync(request, callback);
   }
 }
