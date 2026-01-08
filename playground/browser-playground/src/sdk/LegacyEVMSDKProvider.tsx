@@ -23,7 +23,7 @@ const LegacyEVMSDKContext = createContext<
       provider: EIP1193Provider | undefined;
       chainId: string | undefined;
       accounts: string[];
-      connect: () => Promise<void>;
+      connect: (chainIds: number[]) => Promise<void>;
       disconnect: () => Promise<void>;
     }
   | undefined
@@ -96,13 +96,15 @@ export const LegacyEVMSDKProvider = ({
     }
   }, []);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (chainIds: number[]) => {
     try {
       if (!sdkRef.current) {
         throw new Error('SDK not initialized');
       }
       const sdkInstance = await sdkRef.current;
-      await sdkInstance.connect({ chainIds: [1] });
+      // Ensure at least one chain ID is provided, default to mainnet if empty
+      const chainIdsToUse = chainIds.length > 0 ? chainIds : [1];
+      await sdkInstance.connect({ chainIds: chainIdsToUse });
     } catch (error) {
       console.error('Failed to connect:', error);
     }

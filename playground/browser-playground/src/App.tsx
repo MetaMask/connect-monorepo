@@ -7,6 +7,10 @@ import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
+import {
+  convertCaipChainIdsToHex,
+  convertHexChainIdsToNumbers,
+} from './helpers/ChainIdHelpers';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -84,6 +88,15 @@ function App() {
     );
   }, [customScopes, caipAccountIds, sdkConnect]);
 
+  const connectLegacyEVM = useCallback(async () => {
+    const selectedScopesArray = customScopes.filter((scope) => scope.length);
+    // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
+    const hexChainIds = convertCaipChainIdsToHex(selectedScopesArray);
+    // Convert hex chain IDs to numbers for the connect method
+    const chainIds = convertHexChainIdsToNumbers(hexChainIds);
+    await legacyConnect(chainIds);
+  }, [customScopes, legacyConnect]);
+
   const isConnected = state === 'connected';
   const isDisconnected =
     state === 'disconnected' || state === 'pending' || state === 'loaded';
@@ -148,7 +161,7 @@ function App() {
             {!legacyConnected && (
               <button
                 type="button"
-                onClick={legacyConnect}
+                onClick={connectLegacyEVM}
                 className="bg-green-500 text-white px-5 py-2 rounded text-base hover:bg-green-600 transition-colors"
               >
                 Connect (Legacy EVM)
