@@ -4009,6 +4009,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "npm:^2.0.0"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.4"
+    "@metamask/chain-agnostic-permission": "npm:^1.2.2"
     "@metamask/connect": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
