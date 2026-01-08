@@ -197,6 +197,24 @@ export class MWPTransport implements ExtendedTransport {
               ),
             );
           }
+
+          // Ensure session changes are always persisted to the store
+          if (
+            (message.data as { method: string }).method ===
+            'wallet_sessionChanged'
+          ) {
+            const notification = message.data as {
+              method: string;
+              params: SessionData;
+            };
+
+            const response = {
+              result: notification.params,
+            };
+
+            this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
+          }
+
           this.notifyCallbacks(message.data);
         }
       }
