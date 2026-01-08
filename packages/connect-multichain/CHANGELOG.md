@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Fixed
+### Fixed
 
 - Fix `wallet_sessionChanged` events subsequent to the initial connection not being persisted ([#100](https://github.com/MetaMask/connect-monorepo/pull/100))
 
