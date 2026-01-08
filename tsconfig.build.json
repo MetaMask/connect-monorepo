@@ -3,11 +3,11 @@
   "references": [
     { "path": "./packages/analytics/tsconfig.build.json" },
     { "path": "./packages/connect/tsconfig.build.json" },
-    { "path": "./packages/multichain-node-playground/tsconfig.build.json" },
+    { "path": "./playground/node-playground/tsconfig.build.json" },
     {
-      "path": "./packages/multichain-react-native-playground/tsconfig.build.json"
+      "path": "./playground/react-native-playground/tsconfig.build.json"
     },
-    { "path": "./packages/multichain-react-playground/tsconfig.build.json" },
+    { "path": "./playground/browser-playground/tsconfig.build.json" },
     { "path": "./packages/multichain-ui/tsconfig.build.json" },
     { "path": "./packages/connect-multichain/tsconfig.build.json" }
   ],

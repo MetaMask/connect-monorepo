@@ -1,7 +1,7 @@
 {
-  "name": "@metamask/multichain-react-playground",
+  "name": "@metamask/browser-playground",
   "version": "0.0.0",
-  "description": "A test dapp for multichain api",
+  "description": "A browser test dapp for multichain api",
   "keywords": [
     "MetaMask",
     "Ethereum"
@@ -26,9 +26,9 @@
   "scripts": {
     "build": "DISABLE_ESLINT_PLUGIN=true craco build",
     "build:docs": "typedoc",
-    "changelog:format": "../../scripts/format-changelog.sh @metamask/multichain-react-playground",
-    "changelog:update": "../../scripts/update-changelog.sh @metamask/multichain-react-playground",
-    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/multichain-react-playground",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/browser-playground",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/browser-playground",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/browser-playground",
     "deploy": "serve -s build",
     "prepack": "./scripts/prepack.sh",
     "start": "DISABLE_ESLINT_PLUGIN=true craco start",

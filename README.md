@@ -19,9 +19,9 @@ See the [Contributor Guide](./docs/contributing.md) for help on:
 - [`@metamask/analytics`](packages/analytics)
 - [`@metamask/connect`](packages/connect)
 - [`@metamask/connect-multichain`](packages/connect-multichain)
-- [`@metamask/connect-multichain-node-playground`](playground/multichain-node-playground)
-- [`@metamask/connect-multichain-react-playground`](playground/multichain-react-playground)
-- [`@metamask/connect-multichain-react-native-playground`](packages/multichain-react-native-playground)
+- [`@metamask/node-playground`](playground/node-playground)
+- [`@metamask/browser-playground`](playground/browser-playground)
+- [`@metamask/react-native-playground`](playground/react-native-playground)
 - [`@metamask/multichain-ui`](packages/multichain-ui)
 
 <!-- end package list -->
@@ -35,13 +35,13 @@ linkStyle default opacity:0.5
   analytics(["@metamask/analytics"]);
   connect(["@metamask/connect"]);
   connect_multichain(["@metamask/connect-multichain"]);
-  multichain_react_native_playground(["@metamask/connect-multichain-react-native-playground"]);
+  react_native_playground(["@metamask/react-native-playground"]);
   multichain_ui(["@metamask/multichain-ui"]);
-  multichain_react_playground(["@metamask/connect-multichain-react-playground"]);
-  multichain_node_playground(["@metamask/connect-multichain-node-playground"]);
+  browser_playground(["@metamask/browser-playground"]);
+  node_playground(["@metamask/node-playground"]);
   connect_multichain --> analytics;
   connect_multichain --> multichain_ui;
-  multichain_react_playground --> connect_multichain;
+  browser_playground --> connect_multichain;
 ```
 
 <!-- end dependency graph -->

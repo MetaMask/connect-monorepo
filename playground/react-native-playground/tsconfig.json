@@ -1,6 +1,8 @@
 {
 	"extends": "expo/tsconfig.base",
   "compilerOptions": {
+		"composite": true,
+		"noEmit": false,
 		"strict": true,
 		"jsx": "react-native",
     "paths": {
