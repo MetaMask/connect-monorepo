@@ -634,6 +634,14 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  // This method checks if an existing CAIP session response is cached or waits for one
+  // to be received from the wallet if not cached. This is necessary because there is an edge
+  // case during the initial connection flow where after the user has accepted the permission approval
+  // and returned back to the dapp from the wallet, the dapp page may have gotten unloaded and refreshed.
+  // When it is unloaded and refreshed, it will try to resume the session by making a request for wallet_getSession
+  // which should resolve from cache, but because a race condition makes it possible for the response from the wallet
+  // for the initial wallet_createSession connection request to not have been handled and cached yet. This results
+  // in the wallet_getSession request never resolving unless we wait for it explicitly as done in this method.
   private async waitForWalletSessionIfNotCached() {
     const cachedWalletGetSessionResponse = await this.kvstore.get(SESSION_STORE_KEY);
     if (cachedWalletGetSessionResponse) {
