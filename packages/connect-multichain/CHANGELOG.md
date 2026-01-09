@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix hanging when attempting to resume a previous connection initialization in which the wallet does not send any response at all ([#103](https://github.com/MetaMask/connect-monorepo/pull/103))
+
 ## [0.4.0]
 
 ### Changed
