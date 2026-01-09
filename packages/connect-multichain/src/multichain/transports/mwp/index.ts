@@ -215,6 +215,7 @@ export class MWPTransport implements ExtendedTransport {
       const sessionRequest = await this.request({
         method: 'wallet_getSession',
       });
+      // TODO: verify if this branching logic can ever be hit
       if (sessionRequest.error) {
         return resumeReject(new Error(sessionRequest.error.message));
       }
@@ -252,6 +253,7 @@ export class MWPTransport implements ExtendedTransport {
           walletSession = response.result as SessionData;
         }
       } else if (!walletSession) {
+      // TODO: verify if this branching logic can ever be hit
         const optionalScopes = addValidAccounts(
           getOptionalScopes(options?.scopes ?? []),
           getValidAccounts(options?.caipAccountIds ?? []),
