@@ -1,16 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
-import type { CaipAccountId } from '@metamask/utils';
+import { hexToNumber, type CaipAccountId } from '@metamask/utils';
 import { useSDK } from './sdk';
 import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
-import {
-  convertCaipChainIdsToHex,
-  convertHexChainIdsToNumbers,
-} from './helpers/ChainIdHelpers';
+import { convertCaipChainIdsToHex } from './helpers/ChainIdHelpers';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -91,9 +88,8 @@ function App() {
   const connectLegacyEVM = useCallback(async () => {
     const selectedScopesArray = customScopes.filter((scope) => scope.length);
     // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
-    const hexChainIds = convertCaipChainIdsToHex(selectedScopesArray);
-    // Convert hex chain IDs to numbers for the connect method
-    const chainIds = convertHexChainIdsToNumbers(hexChainIds);
+    // Then convert hex chain IDs to numbers for the connect method
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
     await legacyConnect(chainIds);
   }, [customScopes, legacyConnect]);
 

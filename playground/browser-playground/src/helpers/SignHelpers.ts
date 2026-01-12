@@ -7,8 +7,8 @@ export const send_eth_signTypedData_v4 = async (
 ) => {
   const msgParams = JSON.stringify({
     domain: {
-      // Defining the chain aka Rinkeby testnet or Ethereum Main Net
-      chainId: chainId,
+      // Defining the chain aka Sepolia testnet or Ethereum Main Net
+      chainId,
       // Give a user-friendly name to the specific contract you are signing for.
       name: 'Ether Mail',
       // If name isn't enough add verifying contract to make sure you are establishing contracts with the proper entity

@@ -25,21 +25,3 @@ export const convertCaipChainIdsToHex = (scopes: string[]): Hex[] => {
 
   return ethChainIds;
 };
-
-/**
- * Converts hex chain IDs to numeric chain IDs for EVM networks
- * Used when calling the connect method which expects number[]
- *
- * @param hexChainIds - Array of hex chain IDs (e.g., ["0x1", "0x89"])
- * @returns Array of numeric chain IDs (e.g., [1, 137])
- */
-export const convertHexChainIdsToNumbers = (hexChainIds: Hex[]): number[] => {
-  return hexChainIds.map((hexChainId) => {
-    // Remove '0x' prefix and parse as integer
-    const chainIdNumber = parseInt(hexChainId.slice(2), 16);
-    if (isNaN(chainIdNumber)) {
-      throw new Error(`Invalid hex chain ID: ${hexChainId}`);
-    }
-    return chainIdNumber;
-  });
-};
