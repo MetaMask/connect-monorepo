@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add legacy compatibility methods to `EIP1193Provider` for broader ecosystem compatibility ([#102](https://github.com/MetaMask/connect-monorepo/pull/102))
+  - `chainId` getter (alias for `selectedChainId`)
+  - `sendAsync()` for callback/promise-based JSON-RPC requests
+  - `send()` for callback-based JSON-RPC requests
+
+### Fixed
+
+- Bind all public methods in `EIP1193Provider` constructor to ensure stable `this` context when methods are extracted or passed as callbacks ([#102](https://github.com/MetaMask/connect-monorepo/pull/102))
+
 ## [0.1.2]
 
 ### Added

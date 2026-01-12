@@ -102,6 +102,19 @@ function testSuite<T extends MultichainOptions>({
         'multichain-transport',
         transportString,
       );
+
+      // this should be cached already
+      if (platform !== 'web') {
+        mockedData.nativeStorageStub.setItem(
+          'cache_wallet_getSession',
+          JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'wallet_sessionChanged',
+            result: mockSessionData
+          }),
+        );
+      }
+
       mockedData.mockWalletGetSession.mockImplementation(
         async () => mockSessionData,
       );
