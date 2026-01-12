@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
-import type { CaipAccountId } from '@metamask/utils';
+import { hexToNumber, type CaipAccountId } from '@metamask/utils';
 import { useSDK } from './sdk';
+import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { ScopeCard } from './components/ScopeCard';
+import { LegacyEVMCard } from './components/LegacyEVMCard';
+import { convertCaipChainIdsToHex } from './helpers/ChainIdHelpers';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -19,6 +22,15 @@ function App() {
     connect: sdkConnect,
     disconnect: sdkDisconnect,
   } = useSDK();
+  const {
+    connected: legacyConnected,
+    provider: legacyProvider,
+    chainId: legacyChainId,
+    accounts: legacyAccounts,
+    sdk: legacySDK,
+    connect: legacyConnect,
+    disconnect: legacyDisconnect,
+  } = useLegacyEVMSDK();
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -73,9 +85,27 @@ function App() {
     );
   }, [customScopes, caipAccountIds, sdkConnect]);
 
+  const connectLegacyEVM = useCallback(async () => {
+    const selectedScopesArray = customScopes.filter((scope) => scope.length);
+    // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
+    // Then convert hex chain IDs to numbers for the connect method
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+    await legacyConnect(chainIds);
+  }, [customScopes, legacyConnect]);
+
+  const isConnected = state === 'connected';
+  const isDisconnected =
+    state === 'disconnected' || state === 'pending' || state === 'loaded';
+
   const disconnect = useCallback(async () => {
-    await sdkDisconnect();
-  }, [sdkDisconnect]);
+    // Disconnect both multichain and legacy EVM if connected
+    if (isConnected) {
+      await sdkDisconnect();
+    }
+    if (legacyConnected) {
+      await legacyDisconnect();
+    }
+  }, [sdkDisconnect, legacyDisconnect, isConnected, legacyConnected]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -86,9 +116,6 @@ function App() {
     return all;
   }, []);
 
-  const isDisconnected =
-    state === 'disconnected' || state === 'pending' || state === 'loaded';
-  const isConnected = state === 'connected';
   const isConnecting = state === 'connecting';
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center">
@@ -106,37 +133,59 @@ function App() {
             />
           </div>
 
-          {isConnecting && (
-            <button
-              type="button"
-              onClick={connect}
-              className="bg-blue-500 text-white px-5 py-2 rounded text-base mr-2 hover:bg-blue-600 transition-colors"
-            >
-              Connecting
-            </button>
-          )}
+          <div className="flex gap-2 flex-wrap">
+            {isConnecting && (
+              <button
+                type="button"
+                onClick={connect}
+                className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
+              >
+                Connecting
+              </button>
+            )}
 
-          {isDisconnected && (
-            <button
-              type="button"
-              onClick={connect}
-              className="bg-blue-500 text-white px-5 py-2 rounded text-base mr-2 hover:bg-blue-600 transition-colors"
-            >
-              Connect
-            </button>
-          )}
+            {isDisconnected && (
+              <button
+                type="button"
+                onClick={connect}
+                className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
+              >
+                Connect
+              </button>
+            )}
 
-          {isConnected && (
-            <button
-              type="button"
-              onClick={scopesHaveChanged() ? connect : disconnect}
-              className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
-            >
-              {scopesHaveChanged()
-                ? `Re Establishing Connection`
-                : `Disconnect`}
-            </button>
-          )}
+            {!legacyConnected && (
+              <button
+                type="button"
+                onClick={connectLegacyEVM}
+                className="bg-green-500 text-white px-5 py-2 rounded text-base hover:bg-green-600 transition-colors"
+              >
+                Connect (Legacy EVM)
+              </button>
+            )}
+
+            {isConnected && (
+              <button
+                type="button"
+                onClick={scopesHaveChanged() ? connect : disconnect}
+                className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
+              >
+                {scopesHaveChanged()
+                  ? `Re Establishing Connection`
+                  : `Disconnect`}
+              </button>
+            )}
+
+            {(isConnected || legacyConnected) && (
+              <button
+                type="button"
+                onClick={disconnect}
+                className="bg-red-500 text-white px-5 py-2 rounded text-base hover:bg-red-600 transition-colors"
+              >
+                Disconnect
+              </button>
+            )}
+          </div>
         </section>
         {error && (
           <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
@@ -162,6 +211,21 @@ function App() {
                     );
                   },
                 )}
+              </div>
+            </section>
+          )}
+          {legacyConnected && legacyProvider && legacySDK && (
+            <section className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Legacy EVM Connection
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <LegacyEVMCard
+                  provider={legacyProvider}
+                  chainId={legacyChainId}
+                  accounts={legacyAccounts}
+                  sdk={legacySDK}
+                />
               </div>
             </section>
           )}

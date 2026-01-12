@@ -51,6 +51,7 @@
     "@metamask/utils": "^11.8.1"
   },
   "dependencies": {
+    "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect": "workspace:^",
     "@metamask/utils": "^11.8.1",
     "react": "19.1.0",

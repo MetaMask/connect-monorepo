@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { SDKProvider } from './sdk/SDKProvider';
+import { LegacyEVMSDKProvider } from './sdk/LegacyEVMSDKProvider';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -11,7 +12,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <SDKProvider>
-      <App />
+      <LegacyEVMSDKProvider>
+        <App />
+      </LegacyEVMSDKProvider>
     </SDKProvider>
   </React.StrictMode>,
 );
