@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix duplicate `onNotification` listener ([#81](https://github.com/MetaMask/connect-monorepo/pull/81))
 - Fixed `addEthereumChain` not being prompted on mobile native browsers after a switch chain failure ([#79](https://github.com/MetaMask/connect-monorepo/pull/79))
+- Fix local state not correctly being reset when establishing a new connection when there is an existing active session ([#88](https://github.com/MetaMask/connect-monorepo/pull/88))
 
 ## [0.1.1]
 
