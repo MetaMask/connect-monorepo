@@ -1,0 +1,45 @@
+name: Node Playground Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check-node-playground:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build project
+        run: yarn build
+
+      - name: Verify node playground starts
+        working-directory: playground/node-playground
+        run: |
+          # Start the playground and capture any immediate errors
+          # We'll timeout after 10 seconds to ensure we catch compilation errors
+          # Exit code 124 means timeout (expected for interactive app), any other non-zero exit code is an error
+          timeout 10 yarn start connect
+          exit_code=$?
+          if [ $exit_code -eq 124 ]; then
+            echo "Node playground started successfully (timeout expected for interactive app)"
+          elif [ $exit_code -ne 0 ]; then
+            echo "Node playground failed to start with exit code: $exit_code"
+            exit $exit_code
+          else
+            echo "Node playground started successfully"
+          fi
