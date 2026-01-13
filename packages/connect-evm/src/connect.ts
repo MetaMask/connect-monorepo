@@ -269,6 +269,10 @@ export class MetamaskConnectEVM {
       chainIds: [DEFAULT_CHAIN_ID],
     },
   ): Promise<{ accounts: Address[]; chainId: number }> {
+    if (this.#core.state !== 'connected') {
+      await this.disconnect();
+    }
+
     logger('request: connect', { account });
 
     if (!chainIds || chainIds.length === 0) {
