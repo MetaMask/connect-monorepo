@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Remove Buffer polyfill requirement for browser environments by using native `TextEncoder`/`TextDecoder` and `btoa`/`atob` APIs with Buffer fallback for Node.js and React Native ([#106](https://github.com/MetaMask/connect-monorepo/pull/106))
 - Fix `wallet_sessionChanged` events subsequent to the initial connection not being persisted ([#100](https://github.com/MetaMask/connect-monorepo/pull/100))
 - Fix hanging when attempting to resume a previous connection initialization in which the wallet does not send any response at all ([#103](https://github.com/MetaMask/connect-monorepo/pull/103))
 
