@@ -17,6 +17,9 @@
     "lib": ["DOM", "ES2020"],
     "skipLibCheck": true,
     "types": ["node"],
+    "paths": {
+      "@metamask/multichain-ui/loader": ["../multichain-ui/dist/loader"]
+    }
   },
   "references": [
     { "path": "../multichain-ui" },

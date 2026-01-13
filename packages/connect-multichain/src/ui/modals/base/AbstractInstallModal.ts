@@ -100,11 +100,6 @@ export abstract class AbstractInstallModal extends Modal<
             `[UI: InstallModal-nodejs()] ❌ Error generating new QR code: ${error}`,
           );
         }
-      } else {
-        const generateQRCode = await this.options.generateQRCode(
-          currentConnectionRequest,
-        );
-        this.renderQRCode(generateQRCode, currentConnectionRequest);
       }
     }, 1000);
   }

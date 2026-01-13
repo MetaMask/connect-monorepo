@@ -4566,6 +4566,7 @@ __metadata:
   resolution: "@metamask/node-playground@workspace:playground/node-playground"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.4"
+    "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
     "@types/inquirer": "npm:^8.2.1"
     "@types/jest": "npm:^29.5.14"

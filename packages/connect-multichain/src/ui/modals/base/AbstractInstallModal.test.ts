@@ -160,12 +160,10 @@ t.describe('AbstractInstallModal', () => {
         // Fast-forward time to just before expiration
         await t.vi.advanceTimersByTimeAsync((expireInSeconds - 1) * 1000);
         t.expect(createConnectionRequestMock).not.toHaveBeenCalled();
-        t.expect(generateQRCodeMock).toHaveBeenCalledTimes(1);
 
         // Fast-forward time to after expiration
         await t.vi.advanceTimersByTimeAsync(1000);
         t.expect(createConnectionRequestMock).toHaveBeenCalledTimes(1);
-        t.expect(generateQRCodeMock).toHaveBeenCalledTimes(2);
         t.expect(renderQRCodeMock).toHaveBeenCalledWith(
           'new-link',
           t.expect.any(Object),
