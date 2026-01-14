@@ -101,7 +101,7 @@ const result = await provider.request({
 
 ## Examples
 
-Check out the [playground examples](../../playground/legacy-evm-react-vite-playground) for a complete React implementation.
+Check out the [playground examples](../../playground/browser-playground) for a complete React implementation.
 
 ## TypeScript
 
