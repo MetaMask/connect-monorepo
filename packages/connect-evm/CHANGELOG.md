@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Update `#attemptSessionRecovery()` to check to state before attempting recovery ([#107](https://github.com/MetaMask/connect-monorepo/pull/107))
 - Bind all public methods in `EIP1193Provider` constructor to ensure stable `this` context when methods are extracted or passed as callbacks ([#102](https://github.com/MetaMask/connect-monorepo/pull/102))
 
 ## [0.1.2]
