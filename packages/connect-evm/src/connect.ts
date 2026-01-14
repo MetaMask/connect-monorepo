@@ -745,6 +745,12 @@ export class MetamaskConnectEVM {
    * and trigger an accountsChanged event if the results are valid accounts.
    */
   async #attemptSessionRecovery(): Promise<void> {
+    // Skip session recovery if transport is not initialized yet.
+    // Transport is only initialized when there's a stored session or after connect() is called.
+    // Only attempt recovery if we're in a state where transport should be available.
+    if (this.#core.state !== 'connected' && this.#core.state !== 'connecting') {
+      return;
+    }
     try {
       const response = await this.#core.transport.request<
         { method: 'wallet_getSession' },
