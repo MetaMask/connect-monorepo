@@ -256,6 +256,32 @@ export class MetamaskConnectEVM {
   }
 
   /**
+   * Gets the currently selected chainId from the wallet, or falls back to the first permitted chain.
+   *
+   * @param permittedChainIds - Array of permitted chain IDs in hex format
+   * @returns The selected chainId (hex string)
+   */
+  async #getSelectedChainId(permittedChainIds: Hex[]): Promise<Hex> {
+    // Query the wallet for the currently selected chainId instead of assuming the first permitted chain
+    try {
+      const chainIdResponse = await this.#core.transport.sendEip1193Message<
+        { method: 'eth_chainId'; params: [] },
+        { result: string; id: number; jsonrpc: '2.0' }
+      >({ method: 'eth_chainId', params: [] });
+      const walletChainId = chainIdResponse.result as Hex;
+      // Validate that the returned chainId is in the permitted chains list
+      if (permittedChainIds.includes(walletChainId)) {
+        return walletChainId;
+      }
+    } catch (error) {
+      logger('Error querying eth_chainId', error);
+    }
+
+    // Fallback to the first permitted chain if eth_chainId failed or returned an invalid chain
+    return permittedChainIds[0];
+  }
+
+  /**
    * Connects to the wallet with the specified chain ID and optional account.
    *
    * @param options - The connection options
@@ -294,15 +320,16 @@ export class MetamaskConnectEVM {
     );
 
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
-    const initialChainId = hexPermittedChainIds[0];
 
     const initialAccounts = await this.#core.transport.sendEip1193Message<
       { method: 'eth_accounts'; params: [] },
       { result: string[]; id: number; jsonrpc: '2.0' }
     >({ method: 'eth_accounts', params: [] });
 
+    const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
+
     this.#onConnect({
-      chainId: initialChainId,
+      chainId,
       accounts: initialAccounts.result as Address[],
     });
 
@@ -337,7 +364,7 @@ export class MetamaskConnectEVM {
     // TODO: update required here since accounts and chainId are now promises
     return {
       accounts: this.#provider.accounts,
-      chainId: hexToNumber(initialChainId),
+      chainId: hexToNumber(chainId),
     };
   }
 
@@ -771,14 +798,16 @@ export class MetamaskConnectEVM {
       // Instead of using the accounts we get back from calling `wallet_getSession`
       // we get permitted accounts from `eth_accounts` to make sure we have them ordered by last selected account
       // and correctly set the currently selected account for the dapp
-      const permittedAccounts = await this.#core.transport.sendEip1193Message({
-        method: 'eth_accounts',
-        params: [],
-      });
+      const permittedAccounts = await this.#core.transport.sendEip1193Message<
+        { method: 'eth_accounts'; params: [] },
+        { result: string[]; id: number; jsonrpc: '2.0' }
+      >({ method: 'eth_accounts', params: [] });
+
+      const chainId = await this.#getSelectedChainId(permittedChainIds);
 
       if (permittedChainIds.length && permittedAccounts.result) {
         this.#onConnect({
-          chainId: permittedChainIds[0],
+          chainId,
           accounts: permittedAccounts.result as Address[],
         });
       }
