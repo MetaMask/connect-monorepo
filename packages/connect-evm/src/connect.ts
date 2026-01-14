@@ -800,7 +800,7 @@ export class MetamaskConnectEVM {
       // and correctly set the currently selected account for the dapp
       const permittedAccounts = await this.#core.transport.sendEip1193Message<
         { method: 'eth_accounts'; params: [] },
-        { result: string[]; id: number; jsonrpc: '2.0' }
+        { result: Address[]; id: number; jsonrpc: '2.0' }
       >({ method: 'eth_accounts', params: [] });
 
       const chainId = await this.#getSelectedChainId(permittedChainIds);
@@ -808,7 +808,7 @@ export class MetamaskConnectEVM {
       if (permittedChainIds.length && permittedAccounts.result) {
         this.#onConnect({
           chainId,
-          accounts: permittedAccounts.result as Address[],
+          accounts: permittedAccounts.result,
         });
       }
     } catch (error) {
