@@ -20,11 +20,11 @@
   "exports": {
     ".": {
       "browser": {
-        "types": "./dist/types/index.d.mts",
+        "types": "./dist/types/index.d.ts",
         "import": "./dist/browser/es/connect-evm.mjs"
       },
       "import": {
-        "types": "./dist/types/index.d.mts",
+        "types": "./dist/types/index.d.ts",
         "default": "./dist/browser/es/connect-evm.mjs"
       },
       "require": {
@@ -43,7 +43,7 @@
   ],
   "scripts": {
     "attw": "attw --pack .",
-    "build": "yarn tsup && cp dist/types/index.d.ts dist/types/index.d.mts && cp dist/types/index.d.ts dist/types/index.d.cts",
+    "build": "yarn tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-evm",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-evm",

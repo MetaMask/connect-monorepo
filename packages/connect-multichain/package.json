@@ -20,15 +20,15 @@
   "exports": {
     ".": {
       "browser": {
-        "types": "./dist/browser/es/connect-multichain.d.mts",
+        "types": "./dist/types/connect-multichain.d.ts",
         "import": "./dist/browser/es/connect-multichain.mjs"
       },
       "react-native": {
-        "types": "./dist/react-native/es/connect-multichain.d.mts",
+        "types": "./dist/types/connect-multichain.d.ts",
         "import": "./dist/react-native/es/connect-multichain.mjs"
       },
       "import": {
-        "types": "./dist/node/es/connect-multichain.d.mts",
+        "types": "./dist/types/connect-multichain.d.ts",
         "default": "./dist/node/es/connect-multichain.mjs"
       },
       "require": {

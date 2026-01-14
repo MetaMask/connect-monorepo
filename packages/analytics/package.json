@@ -20,7 +20,7 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/index.d.mts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/index.mjs"
       },
       "require": {
@@ -38,7 +38,7 @@
   ],
   "scripts": {
     "attw": "attw --pack .",
-    "build": "yarn clean && npx tsup && cp dist/index.d.ts dist/index.d.mts && cp dist/index.d.ts dist/index.d.cts",
+    "build": "yarn clean && npx tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/analytics",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/analytics",

@@ -30,7 +30,7 @@
     "lint:exports": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run publint",
     "lint:fix": "yarn lint:eslint --fix && echo && yarn lint:misc --write && yarn constraints --fix && yarn lint:dependencies:fix",
     "lint:misc": "prettier --no-error-on-unmatched-pattern '**/*.json' '**/*.md' '**/*.yml' '!.yarnrc.yml' '!merged-packages/**' --ignore-path .gitignore",
-    "lint:package-config": "yarn lint:exports && yarn lint:types",
+    "lint:package-config": "yarn lint:exports; yarn lint:types",
     "lint:types": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run attw",
     "prepare-preview-builds": "./scripts/prepare-preview-builds.sh",
     "publish-previews": "yarn workspaces foreach --all --no-private --parallel --verbose run publish:preview",

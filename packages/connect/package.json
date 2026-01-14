@@ -20,15 +20,15 @@
   "exports": {
     ".": {
       "browser": {
-        "types": "./dist/multichain/index.d.mts",
+        "types": "./dist/multichain/index.d.ts",
         "import": "./dist/multichain/index.mjs"
       },
       "react-native": {
-        "types": "./dist/multichain/index.d.mts",
+        "types": "./dist/multichain/index.d.ts",
         "import": "./dist/multichain/index.mjs"
       },
       "import": {
-        "types": "./dist/multichain/index.d.mts",
+        "types": "./dist/multichain/index.d.ts",
         "default": "./dist/multichain/index.mjs"
       },
       "require": {
@@ -39,7 +39,7 @@
     },
     "./evm": {
       "import": {
-        "types": "./dist/evm/index.d.mts",
+        "types": "./dist/evm/index.d.ts",
         "default": "./dist/evm/index.mjs"
       },
       "require": {
@@ -50,15 +50,15 @@
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/multichain/index.js",
+  "module": "./dist/multichain/index.mjs",
+  "types": "./dist/multichain/index.d.ts",
   "files": [
     "dist/"
   ],
   "scripts": {
     "attw": "attw --pack .",
-    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts src/evm/index.ts --format esm,cjs --external @metamask/connect-multichain --external @metamask/connect-evm && cp dist/multichain/index.d.ts dist/multichain/index.d.mts && cp dist/multichain/index.d.ts dist/multichain/index.d.cts && cp dist/evm/index.d.ts dist/evm/index.d.mts && cp dist/evm/index.d.ts dist/evm/index.d.cts",
+    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts src/evm/index.ts --format esm,cjs --external @metamask/connect-multichain --external @metamask/connect-evm",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect",
