@@ -266,9 +266,9 @@ export class MetamaskConnectEVM {
     try {
       const chainIdResponse = await this.#core.transport.sendEip1193Message<
         { method: 'eth_chainId'; params: [] },
-        { result: string; id: number; jsonrpc: '2.0' }
+        { result: Hex; id: number; jsonrpc: '2.0' }
       >({ method: 'eth_chainId', params: [] });
-      const walletChainId = chainIdResponse.result as Hex;
+      const walletChainId = chainIdResponse.result;
       // Validate that the returned chainId is in the permitted chains list
       if (permittedChainIds.includes(walletChainId)) {
         return walletChainId;
