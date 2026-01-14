@@ -12,19 +12,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
+  "type": "commonjs",
   "license": "MIT",
   "sideEffects": false,
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/index.mjs"
+        "default": "./dist/index.js"
       },
       "require": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/index.cjs"
+        "default": "./dist/index.cjs.js"
       }
     },
     "./loader": {

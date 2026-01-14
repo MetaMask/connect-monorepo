@@ -12,14 +12,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "commonjs",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/index.d.ts",
+        "types": "./dist/index.d.mts",
         "default": "./dist/index.mjs"
       },
       "require": {
@@ -37,14 +38,14 @@
   ],
   "scripts": {
     "attw": "attw --pack .",
-    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts --format esm,cjs",
+    "build": "yarn clean && npx tsup && cp dist/index.d.ts dist/index.d.mts && cp dist/index.d.ts dist/index.d.cts",
     "build:docs": "typedoc",
-    "publint": "publint",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/analytics",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/analytics",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/analytics",
     "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest",

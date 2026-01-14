@@ -12,22 +12,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "commonjs",
   "exports": {
     ".": {
       "browser": {
-        "types": "./dist/multichain/index.d.ts",
+        "types": "./dist/multichain/index.d.mts",
         "import": "./dist/multichain/index.mjs"
       },
       "react-native": {
-        "types": "./dist/multichain/index.d.ts",
+        "types": "./dist/multichain/index.d.mts",
         "import": "./dist/multichain/index.mjs"
       },
       "import": {
-        "types": "./dist/multichain/index.d.ts",
+        "types": "./dist/multichain/index.d.mts",
         "default": "./dist/multichain/index.mjs"
       },
       "require": {
@@ -38,7 +39,7 @@
     },
     "./evm": {
       "import": {
-        "types": "./dist/evm/index.d.ts",
+        "types": "./dist/evm/index.d.mts",
         "default": "./dist/evm/index.mjs"
       },
       "require": {
@@ -57,14 +58,14 @@
   ],
   "scripts": {
     "attw": "attw --pack .",
-    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts src/evm/index.ts --format esm,cjs --external @metamask/connect-multichain --external @metamask/connect-evm",
+    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts src/evm/index.ts --format esm,cjs --external @metamask/connect-multichain --external @metamask/connect-evm && cp dist/multichain/index.d.ts dist/multichain/index.d.mts && cp dist/multichain/index.d.ts dist/multichain/index.d.cts && cp dist/evm/index.d.ts dist/evm/index.d.mts && cp dist/evm/index.d.ts dist/evm/index.d.cts",
     "build:docs": "typedoc",
-    "publint": "publint",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect",
     "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "echo \"No test specified\"",

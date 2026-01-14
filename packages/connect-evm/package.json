@@ -12,41 +12,45 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "commonjs",
   "exports": {
     ".": {
+      "browser": {
+        "types": "./dist/types/index.d.mts",
+        "import": "./dist/browser/es/connect-evm.mjs"
+      },
       "import": {
-        "types": "./dist/types/index.d.ts",
+        "types": "./dist/types/index.d.mts",
         "default": "./dist/browser/es/connect-evm.mjs"
       },
       "require": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/browser/es/connect-evm.mjs"
+        "default": "./dist/node/cjs/connect-evm.js"
       },
-      "default": "./dist/browser/es/connect-evm.mjs"
+      "default": "./dist/node/cjs/connect-evm.js"
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/browser/es/connect-evm.mjs",
+  "main": "./dist/node/cjs/connect-evm.js",
   "module": "./dist/browser/es/connect-evm.mjs",
-  "browser": "./dist/browser/es/connect-evm.mjs",
   "types": "./dist/types/index.d.ts",
   "files": [
     "dist/"
   ],
   "scripts": {
     "attw": "attw --pack .",
-    "build": "yarn tsup ",
+    "build": "yarn tsup && cp dist/types/index.d.ts dist/types/index.d.mts && cp dist/types/index.d.ts dist/types/index.d.cts",
     "build:docs": "typedoc",
-    "publint": "publint",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-evm",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-evm",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-evm",
     "clean": "npx rimraf ./dist",
     "dev": "tsup --watch ",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",

@@ -26,6 +26,23 @@ export default defineConfig([
     },
   },
   {
+    entry: { [entryName]: 'src/index.ts' },
+    outDir: 'dist/node/cjs',
+    format: 'cjs',
+    platform: 'node',
+    bundle: true,
+    splitting: false,
+    sourcemap: true,
+    external,
+    tsconfig: './tsconfig.json',
+    esbuildOptions: (o) => {
+      o.platform = 'node';
+      o.mainFields = ['module', 'main'];
+      o.conditions = ['node'];
+      o.outExtension = { '.js': '.js' };
+    },
+  },
+  {
     entry: { index: 'src/index.ts' },
     outDir: 'dist/types',
     tsconfig: './tsconfig.types.json',

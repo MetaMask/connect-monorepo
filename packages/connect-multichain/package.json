@@ -12,22 +12,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "commonjs",
   "exports": {
     ".": {
       "browser": {
-        "types": "./dist/types/connect-multichain.d.ts",
+        "types": "./dist/browser/es/connect-multichain.d.mts",
         "import": "./dist/browser/es/connect-multichain.mjs"
       },
       "react-native": {
-        "types": "./dist/types/connect-multichain.d.ts",
+        "types": "./dist/react-native/es/connect-multichain.d.mts",
         "import": "./dist/react-native/es/connect-multichain.mjs"
       },
       "import": {
-        "types": "./dist/types/connect-multichain.d.ts",
+        "types": "./dist/node/es/connect-multichain.d.mts",
         "default": "./dist/node/es/connect-multichain.mjs"
       },
       "require": {
@@ -40,7 +41,6 @@
   },
   "main": "./dist/node/cjs/connect-multichain.js",
   "module": "./dist/browser/es/connect-multichain.mjs",
-  "browser": "./dist/browser/es/connect-multichain.mjs",
   "react-native": "./dist/react-native/es/connect-multichain.mjs",
   "types": "./dist/types/connect-multichain.d.ts",
   "files": [
@@ -50,13 +50,13 @@
     "attw": "attw --pack .",
     "build": "yarn clean && tsc -b tsconfig.build.json && npx tsup",
     "build:docs": "typedoc",
-    "publint": "publint",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-multichain",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-multichain",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-multichain",
     "clean": "npx rimraf ./dist",
     "dev": "tsup --watch",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "pretest": "yarn workspace @metamask/analytics run build && yarn workspace @metamask/multichain-ui run build",
