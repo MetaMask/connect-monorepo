@@ -8,7 +8,7 @@ import type {
 import type { CaipAccountId } from '@metamask/utils';
 
 import type { MultichainCore } from '.';
-import type { ModalFactory } from '../../ui';
+import type { BaseModalFactory } from '../../ui/ModalFactory';
 import type { PlatformType } from '../platform';
 import type { StoreClient } from '../store';
 import type { RpcUrlsMap, Scope } from './api/types';
@@ -51,12 +51,12 @@ export type MultichainOptions = {
     supportedNetworks: RpcUrlsMap;
   };
   /** Analytics configuration */
-  analytics?: { enabled: false } | { enabled: true; integrationType: string };
+  analytics?: { integrationType: string };
   /** Storage client for persisting SDK data */
   storage: StoreClient;
   /** UI configuration options */
   ui: {
-    factory: ModalFactory;
+    factory: BaseModalFactory;
     headless?: boolean;
     preferExtension?: boolean;
     showInstallModal?: boolean;

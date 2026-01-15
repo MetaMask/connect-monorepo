@@ -1,0 +1,18 @@
+{
+	"extends": "expo/tsconfig.base",
+  "compilerOptions": {
+		"composite": true,
+		"noEmit": false,
+		"strict": true,
+		"jsx": "react-native",
+    "paths": {
+			"@/*": ["./*"],
+      "@metamask/connect-multichain": ["../../packages/connect-multichain/src/index.native.ts"],
+      "@metamask/*": ["../../*/src"]
+    }
+	},
+  "references": [
+    { "path": "../../packages/connect-multichain" }
+  ],
+	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+}

@@ -1,11 +1,11 @@
 {
-  "name": "@metamask/metamask-connect-monorepo",
-  "version": "7.0.0",
+  "name": "@metamask/connect-monorepo",
+  "version": "8.0.0",
   "private": true,
   "description": "MetaMask Connect Monorepo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
+    "url": "https://github.com/MetaMask/connect-monorepo.git"
   },
   "files": [],
   "workspaces": [
@@ -14,7 +14,7 @@
     "integrations/*"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach --all --parallel --topological-dev --verbose --no-private run build",
+    "build": "yarn workspaces foreach --all --parallel --topological-dev --verbose run build",
     "build:clean": "yarn build:only-clean && yarn build",
     "build:docs": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run build:docs",
     "build:only-clean": "rimraf -g 'packages/*/dist' 'packages/*/*.tsbuildinfo'",
@@ -84,13 +84,13 @@
     "semver": "^7.6.3",
     "simple-git-hooks": "^2.8.0",
     "tsx": "^4.19.3",
-    "typescript": "~5.9.2",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.10.0",
     "yargs": "^17.7.2"
   },
   "packageManager": "yarn@4.9.2",
   "engines": {
-    "node": "^18.18 || >=20"
+    "node": ">=20.19.0"
   },
   "lavamoat": {
     "allowScripts": {

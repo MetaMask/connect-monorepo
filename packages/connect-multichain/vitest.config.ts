@@ -10,5 +10,7 @@ export default defineConfig({
 			"**/fixtures.test.ts", // Exclude fixtures helper file
 		],
 		include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+		// Use setup file to handle unhandled rejections gracefully
+		setupFiles: ["./tests/setup.ts"],
 	},
 });

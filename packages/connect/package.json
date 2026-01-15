@@ -6,13 +6,13 @@
     "MetaMask",
     "Ethereum"
   ],
-  "homepage": "https://github.com/MetaMask/metamask-connect-monorepo/tree/main/packages/connect#readme",
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/packages/connect#readme",
   "bugs": {
-    "url": "https://github.com/MetaMask/metamask-connect-monorepo/issues"
+    "url": "https://github.com/MetaMask/connect-monorepo/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/metamask-connect-monorepo.git"
+    "url": "https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
@@ -80,10 +80,10 @@
     "tsup": "^8.4.0",
     "typedoc": "^0.28.14",
     "typedoc-plugin-missing-exports": "^4.1.2",
-    "typescript": "~5.9.2"
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": "^18.18 || >=20"
+    "node": ">=20.19.0"
   },
   "publishConfig": {
     "access": "public",

@@ -1,9 +1,6 @@
 import * as t from 'vitest';
 
-import {
-  SessionRequest,
-  SessionStore,
-} from '@metamask/mobile-wallet-protocol-core';
+import { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import { Transport, SessionData } from '@metamask/multichain-api-client';
 import { MultichainOptions, MultichainCore } from '../src/domain';
@@ -23,8 +20,8 @@ export type NativeStorageStub = {
 };
 
 export type MockedData = {
-  initSpy: t.MockInstance<MultichainSDK['init']>;
-  setupAnalyticsSpy: t.MockInstance<MultichainSDK['setupAnalytics']>;
+  initSpy: t.MockInstance<any>;
+  setupAnalyticsSpy: t.MockInstance<any>;
   emitSpy: t.MockInstance<MultichainSDK['emit']>;
   showInstallModalSpy: t.MockInstance<any>;
   nativeStorageStub: NativeStorageStub;

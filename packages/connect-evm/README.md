@@ -24,10 +24,10 @@ npm install @metamask/connect-evm
 ## Quick Start
 
 ```typescript
-import { createMetamaskConnectEVM } from '@metamask/connect-evm';
+import { createEVMClient } from '@metamask/connect-evm';
 
 // Create an SDK instance
-const sdk = await createMetamaskConnectEVM({
+const sdk = await createEVMClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
@@ -51,9 +51,9 @@ const accounts = await provider.request({
 ### Basic Connection
 
 ```typescript
-import { createMetamaskConnectEVM } from '@metamask/connect-evm';
+import { createEVMClient } from '@metamask/connect-evm';
 
-const sdk = await createMetamaskConnectEVM({
+const sdk = await createEVMClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
@@ -101,7 +101,7 @@ const result = await provider.request({
 
 ## Examples
 
-Check out the [playground examples](../../playground/legacy-evm-react-vite-playground) for a complete React implementation.
+Check out the [playground examples](../../playground/browser-playground) for a complete React implementation.
 
 ## TypeScript
 
@@ -127,7 +127,7 @@ yarn workspace @metamask/connect-evm run test
 
 ## Contributing
 
-This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/metamask-connect-monorepo#readme).
+This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/connect-monorepo#readme).
 
 ## License
 

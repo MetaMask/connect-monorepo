@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.packages.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "composite": true,
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2020", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noErrorTruncation": true,
+    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": false,
+    "strict": true,
+    "target": "es2020",
+    "jsx": "react-jsx"
+  },
+  "references": [{ "path": "../../packages/connect-multichain" }],
+  "include": ["./src"],
+  "exclude": ["./build", "**/node_modules"]
+}

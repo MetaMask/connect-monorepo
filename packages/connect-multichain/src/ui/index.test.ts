@@ -11,7 +11,7 @@ import {
   PlatformType,
   type QRLink,
 } from '../domain';
-import { ModalFactory, preload } from './index';
+import { ModalFactory } from './index';
 import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type { FactoryModals } from './modals/types';
 import { v4 } from 'uuid';

@@ -113,3 +113,27 @@ export type ProviderRequest =
 export type ProviderRequestInterceptor = (
   req: ProviderRequest,
 ) => Promise<unknown>;
+
+// JSON-RPC types for legacy compatibility (sendAsync/send)
+export type JsonRpcRequest<T = unknown> = {
+  id?: number | string;
+  jsonrpc?: '2.0';
+  method: string;
+  params?: T;
+};
+
+export type JsonRpcResponse<T = unknown> = {
+  id: number | string;
+  jsonrpc: '2.0';
+  result?: T;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
+};
+
+export type JsonRpcCallback<T = unknown> = (
+  error: Error | null,
+  response: JsonRpcResponse<T> | null,
+) => void;

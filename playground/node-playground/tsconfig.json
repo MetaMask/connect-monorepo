@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "rootDir": "./",
+    "composite": true,
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "@metamask/connect-multichain": ["../../packages/connect-multichain/src/index.node.ts"],
+      "@metamask/multichain-ui/loader": ["../../packages/multichain-ui/dist/loader"],
+      "@metamask/*": ["../../*/src"],
+      "src/*": ["../../packages/connect-multichain/src/*"]
+    }
+  },
+  "references": [
+    { "path": "../../packages/connect-multichain" },
+  ],
+  "include": ["./src"]
+}

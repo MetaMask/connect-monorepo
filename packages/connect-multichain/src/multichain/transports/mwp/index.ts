@@ -47,6 +47,7 @@ const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 const CONNECTION_GRACE_PERIOD = 60 * 1000;
 const DEFAULT_CONNECTION_TIMEOUT =
   DEFAULT_REQUEST_TIMEOUT + CONNECTION_GRACE_PERIOD;
+const DEFAULT_RESUME_TIMEOUT = 10 * 1000;
 const SESSION_STORE_KEY = 'cache_wallet_getSession';
 const ACCOUNTS_STORE_KEY = 'cache_eth_accounts';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -101,9 +102,10 @@ export class MWPTransport implements ExtendedTransport {
   constructor(
     private dappClient: DappClient,
     private kvstore: StoreAdapter,
-    private options: { requestTimeout: number; connectionTimeout: number } = {
+    private options: { requestTimeout: number; connectionTimeout: number; resumeTimeout: number } = {
       requestTimeout: DEFAULT_REQUEST_TIMEOUT,
       connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
+      resumeTimeout: DEFAULT_RESUME_TIMEOUT,
     },
   ) {
     this.dappClient.on('message', this.handleMessage.bind(this));
@@ -198,6 +200,24 @@ export class MWPTransport implements ExtendedTransport {
               ),
             );
           }
+
+          // Ensure session changes are always persisted to the store
+          if (
+            (message.data as { method: string }).method ===
+            'wallet_sessionChanged'
+          ) {
+            const notification = message.data as {
+              method: string;
+              params: SessionData;
+            };
+
+            const response = {
+              result: notification.params,
+            };
+
+            this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
+          }
+
           this.notifyCallbacks(message.data);
         }
       }
@@ -210,9 +230,11 @@ export class MWPTransport implements ExtendedTransport {
     options?: { scopes: Scope[]; caipAccountIds: CaipAccountId[] },
   ): Promise<void> {
     try {
+      await this.waitForWalletSessionIfNotCached();
       const sessionRequest = await this.request({
         method: 'wallet_getSession',
       });
+      // TODO: verify if this branching logic can ever be hit
       if (sessionRequest.error) {
         return resumeReject(new Error(sessionRequest.error.message));
       }
@@ -250,6 +272,7 @@ export class MWPTransport implements ExtendedTransport {
           walletSession = response.result as SessionData;
         }
       } else if (!walletSession) {
+      // TODO: verify if this branching logic can ever be hit
         const optionalScopes = addValidAccounts(
           getOptionalScopes(options?.scopes ?? []),
           getValidAccounts(options?.caipAccountIds ?? []),
@@ -329,7 +352,10 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     let timeout: NodeJS.Timeout;
-    const connectionPromise = new Promise<void>((resolve, reject) => {
+    let initialConnectionMessageHandler:
+      | ((message: unknown) => Promise<void>)
+      | undefined;
+    const connectionPromise = new Promise<void>(async (resolve, reject) => {
       let connection: Promise<void>;
       if (session) {
         connection = new Promise<void>((resumeResolve, resumeReject) => {
@@ -361,7 +387,9 @@ export class MWPTransport implements ExtendedTransport {
             };
 
             // just used for initial connection
-            this.dappClient.on('message', async (message: unknown) => {
+            initialConnectionMessageHandler = async (
+              message: unknown,
+            ): Promise<void> => {
               if (typeof message === 'object' && message !== null) {
                 if ('data' in message) {
                   const messagePayload = message.data as Record<
@@ -373,6 +401,12 @@ export class MWPTransport implements ExtendedTransport {
                     messagePayload.method === 'wallet_sessionChanged'
                   ) {
                     if (messagePayload.error) {
+                      if (initialConnectionMessageHandler) {
+                        this.dappClient.off(
+                          'message',
+                          initialConnectionMessageHandler,
+                        );
+                      }
                       return rejectConnection(messagePayload.error);
                     }
                     await this.storeWalletSession(
@@ -384,7 +418,9 @@ export class MWPTransport implements ExtendedTransport {
                   }
                 }
               }
-            });
+            };
+
+            this.dappClient.on('message', initialConnectionMessageHandler);
 
             dappClient
               .connect({
@@ -394,7 +430,15 @@ export class MWPTransport implements ExtendedTransport {
                   data: request,
                 },
               })
-              .catch(rejectConnection);
+              .catch((error) => {
+                if (initialConnectionMessageHandler) {
+                  this.dappClient.off(
+                    'message',
+                    initialConnectionMessageHandler,
+                  );
+                }
+                rejectConnection(error);
+              });
           },
         );
       }
@@ -406,11 +450,19 @@ export class MWPTransport implements ExtendedTransport {
       connection.then(resolve).catch(reject);
     });
 
-    return connectionPromise.finally(() => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    });
+    return connectionPromise
+      .catch((error) => {
+        throw error;
+      })
+      .finally(() => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        if (initialConnectionMessageHandler) {
+          this.dappClient.off('message', initialConnectionMessageHandler);
+          initialConnectionMessageHandler = undefined;
+        }
+      });
   }
 
   /**
@@ -518,7 +570,7 @@ export class MWPTransport implements ExtendedTransport {
     request: TransportRequest,
     response: TransportResponse,
   ): Promise<void> {
-    if(response.error) {
+    if (response.error) {
       return;
     }
     if (CACHED_METHOD_LIST.includes(request.method)) {
@@ -596,10 +648,48 @@ export class MWPTransport implements ExtendedTransport {
     try {
       const [activeSession] = await sessionStore.list();
       return activeSession;
-    } catch (error){
+    } catch (error) {
       // TODO: verify if this try catch is necessary
       logger('error getting active session', error);
       return undefined;
     }
+  }
+
+  // This method checks if an existing CAIP session response is cached or waits for one
+  // to be received from the wallet if not cached. This is necessary because there is an edge
+  // case during the initial connection flow where after the user has accepted the permission approval
+  // and returned back to the dapp from the wallet, the dapp page may have gotten unloaded and refreshed.
+  // When it is unloaded and refreshed, it will try to resume the session by making a request for wallet_getSession
+  // which should resolve from cache, but because a race condition makes it possible for the response from the wallet
+  // for the initial wallet_createSession connection request to not have been handled and cached yet. This results
+  // in the wallet_getSession request never resolving unless we wait for it explicitly as done in this method.
+  private async waitForWalletSessionIfNotCached() {
+    const cachedWalletGetSessionResponse = await this.kvstore.get(SESSION_STORE_KEY);
+    if (cachedWalletGetSessionResponse) {
+      return;
+    }
+    let unsubscribe: () => void;
+    const responsePromise = new Promise<void>((resolve) => {
+      unsubscribe = this.onNotification((message) => {
+        if (typeof message === 'object' && message !== null) {
+          if ('data' in message) {
+            const messagePayload = message.data as Record<string, unknown>;
+            if (messagePayload.method === 'wallet_getSession' || messagePayload.method === 'wallet_sessionChanged') {
+              unsubscribe();
+              resolve();
+            }
+          }
+        }
+      });
+    });
+
+    const timeoutPromise = new Promise<void>((_resolve, reject) => {
+      setTimeout(() => {
+        unsubscribe();
+        reject(new TransportTimeoutError());
+      }, this.options.resumeTimeout);
+    });
+
+    return Promise.race([responsePromise, timeoutPromise]);
   }
 }

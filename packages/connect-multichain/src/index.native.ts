@@ -1,11 +1,11 @@
 import type { CreateMultichainFN, StoreClient } from './domain';
 import { MultichainSDK } from './multichain';
 import { Store } from './store';
-import { ModalFactory } from './ui';
+import { ModalFactory } from './ui/index.native';
 
 export * from './domain';
 
-export const createMetamaskConnect: CreateMultichainFN = async (options) => {
+export const createMultichainClient: CreateMultichainFN = async (options) => {
   const uiModules = await import('./ui/modals/rn');
   let storage: StoreClient;
   if (!options.storage) {

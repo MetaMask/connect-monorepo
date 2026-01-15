@@ -1,4 +1,5 @@
 import * as t from 'vitest';
+import { analytics } from '@metamask/analytics';
 import { type InvokeMethodOptions, RPCInvokeMethodErr, type Scope } from '../../domain';
 import type { RequestRouter } from './requestRouter';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
@@ -9,6 +10,7 @@ t.describe('RequestRouter', () => {
 	let mockRpcClient: any;
 	let requestRouter: RequestRouter;
 	let baseOptions: any;
+	let mockStorage: any;
 
 	t.beforeEach(async () => {
 		const requestRouterModule = await import('./requestRouter');
@@ -25,7 +27,24 @@ t.describe('RequestRouter', () => {
 		mockRpcClient = {
 			request: t.vi.fn(),
 		};
-		mockConfig = {};
+		mockStorage = {
+			getAnonId: t.vi.fn().mockResolvedValue('test-anon-id'),
+		};
+		mockConfig = {
+			dapp: {
+				name: 'Test Dapp',
+				url: 'https://test-dapp.com',
+			},
+			storage: mockStorage,
+			analytics: {
+				integrationType: 'test',
+			},
+			ui: {
+				factory: t.vi.fn(),
+			},
+		};
+		// Mock analytics.track to prevent actual analytics calls
+		t.vi.spyOn(analytics, 'track').mockImplementation(() => {});
 		requestRouter = new requestRouterModule.RequestRouter(mockTransport, mockRpcClient, mockConfig);
 		// Reset mocks
 		mockTransport.request.mockClear();
