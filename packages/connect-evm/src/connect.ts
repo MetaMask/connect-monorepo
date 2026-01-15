@@ -41,6 +41,7 @@ import {
 } from './utils/type-guards';
 
 const DEFAULT_CHAIN_ID = 1;
+const CHAIN_STORE_KEY = 'cache_eth_chainId';
 
 /** The options for the connect method */
 type ConnectOptions = {
@@ -256,28 +257,36 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Gets the currently selected chainId from the wallet, or falls back to the first permitted chain.
+   * Gets the currently selected chainId from cache, or falls back to the first permitted chain.
    *
    * @param permittedChainIds - Array of permitted chain IDs in hex format
    * @returns The selected chainId (hex string)
    */
   async #getSelectedChainId(permittedChainIds: Hex[]): Promise<Hex> {
-    // Query the wallet for the currently selected chainId instead of assuming the first permitted chain
     try {
-      const chainIdResponse = await this.#core.transport.sendEip1193Message<
-        { method: 'eth_chainId'; params: [] },
-        { result: Hex; id: number; jsonrpc: '2.0' }
-      >({ method: 'eth_chainId', params: [] });
-      const walletChainId = chainIdResponse.result;
-      // Validate that the returned chainId is in the permitted chains list
-      if (permittedChainIds.includes(walletChainId)) {
-        return walletChainId;
+      const cachedChainId =
+        await this.#core.storage.adapter.get(CHAIN_STORE_KEY);
+      if (cachedChainId) {
+        // The cached value might be stored as a number (from metamask_chainChanged) or hex string (from eth_chainId)
+        let chainId: Hex;
+        try {
+          const parsed = JSON.parse(cachedChainId);
+          chainId =
+            typeof parsed === 'number' ? numberToHex(parsed) : (parsed as Hex);
+        } catch {
+          // If parsing fails, try treating it as a direct hex string
+          chainId = cachedChainId as Hex;
+        }
+        // Validate that the cached chainId is in the permitted chains list
+        if (permittedChainIds.includes(chainId)) {
+          return chainId;
+        }
       }
     } catch (error) {
-      logger('Error querying eth_chainId', error);
+      logger('Error retrieving cached chainId', error);
     }
 
-    // Fallback to the first permitted chain if eth_chainId failed or returned an invalid chain
+    // Fallback to the first permitted chain if cache retrieval failed or returned an invalid chain
     return permittedChainIds[0];
   }
 
@@ -351,6 +360,10 @@ export class MetamaskConnectEVM {
           // @ts-expect-error TODO: address this
           const notificationChainId = Number(notification?.params?.chainId);
           logger('transport-event: chainChanged', notificationChainId);
+          // Cache the chainId for persistence across page refreshes
+          this.#cacheChainId(notificationChainId).catch((error) => {
+            logger('Error caching chainId in notification handler', error);
+          });
           this.#onChainChanged(notificationChainId);
         }
       },
@@ -506,6 +519,7 @@ export class MetamaskConnectEVM {
       permittedChainIds.includes(hexChainId) &&
       this.#core.transportType === TransportType.MWP
     ) {
+      await this.#cacheChainId(hexChainId);
       this.#onChainChanged(hexChainId);
       await this.#trackWalletActionSucceeded(method, scope, params);
       return Promise.resolve();
@@ -527,6 +541,7 @@ export class MetamaskConnectEVM {
       await this.#trackWalletActionSucceeded(method, scope, params);
       if ((result as { result: unknown }).result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
+        await this.#cacheChainId(hexChainId);
         this.#onChainChanged(hexChainId);
       }
       return result;
@@ -663,6 +678,7 @@ export class MetamaskConnectEVM {
 
       if ((result as { result: unknown }).result === null) {
         // if result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
+        await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
       }
       await this.#trackWalletActionSucceeded(method, scope, params);
@@ -693,6 +709,23 @@ export class MetamaskConnectEVM {
       this.#core.openDeeplinkIfNeeded();
     }
     return result;
+  }
+
+  /**
+   * Caches the chainId to storage for persistence across page refreshes.
+   *
+   * @param chainId - The chain ID (can be hex string or number)
+   */
+  async #cacheChainId(chainId: Hex | number): Promise<void> {
+    try {
+      const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
+      await this.#core.storage.adapter.set(
+        CHAIN_STORE_KEY,
+        JSON.stringify(hexChainId),
+      );
+    } catch (error) {
+      logger('Error caching chainId', error);
+    }
   }
 
   /**
