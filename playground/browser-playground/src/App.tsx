@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
 import { hexToNumber, type CaipAccountId } from '@metamask/utils';
+import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
 import { useSDK } from './sdk';
 import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
+import { WagmiCard } from './components/WagmiCard';
 import { convertCaipChainIdsToHex } from './helpers/ChainIdHelpers';
 import { Buffer } from 'buffer';
 
@@ -31,6 +33,10 @@ function App() {
     connect: legacyConnect,
     disconnect: legacyDisconnect,
   } = useLegacyEVMSDK();
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+  const wagmiChainId = useChainId();
+  const { connectors, connectAsync: wagmiConnectAsync, status: wagmiStatus } = useConnect();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -93,19 +99,43 @@ function App() {
     await legacyConnect(chainIds);
   }, [customScopes, legacyConnect]);
 
+  const connectWagmi = useCallback(async () => {
+    const selectedScopesArray = customScopes.filter((scope) => scope.length);
+    // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
+    // Then convert hex chain IDs to numbers for the connect method
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+    // Use first chain or default to mainnet (1), ensuring it's a valid wagmi chain
+    const chainId = (chainIds[0] || 1) as 1 | 10 | 11155111 | 42220;
+
+    const metaMaskConnector = connectors.find((c) => c.id === 'metaMaskSDK');
+    if (metaMaskConnector) {
+      try {
+        await wagmiConnectAsync({
+          connector: metaMaskConnector,
+          chainId,
+        });
+      } catch (error) {
+        console.error('Wagmi connection error:', error);
+      }
+    }
+  }, [customScopes, connectors, wagmiConnectAsync]);
+
   const isConnected = state === 'connected';
   const isDisconnected =
     state === 'disconnected' || state === 'pending' || state === 'loaded';
 
   const disconnect = useCallback(async () => {
-    // Disconnect both multichain and legacy EVM if connected
+    // Disconnect all connections if connected
     if (isConnected) {
       await sdkDisconnect();
     }
     if (legacyConnected) {
       await legacyDisconnect();
     }
-  }, [sdkDisconnect, legacyDisconnect, isConnected, legacyConnected]);
+    if (wagmiConnected) {
+      wagmiDisconnect();
+    }
+  }, [sdkDisconnect, legacyDisconnect, wagmiDisconnect, isConnected, legacyConnected, wagmiConnected]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -164,6 +194,17 @@ function App() {
               </button>
             )}
 
+            {!wagmiConnected && (
+              <button
+                type="button"
+                onClick={connectWagmi}
+                disabled={wagmiStatus === 'pending'}
+                className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {wagmiStatus === 'pending' ? 'Connecting...' : 'Connect (Wagmi)'}
+              </button>
+            )}
+
             {isConnected && (
               <button
                 type="button"
@@ -176,7 +217,7 @@ function App() {
               </button>
             )}
 
-            {(isConnected || legacyConnected) && (
+            {(isConnected || legacyConnected || wagmiConnected) && (
               <button
                 type="button"
                 onClick={disconnect}
@@ -226,6 +267,16 @@ function App() {
                   accounts={legacyAccounts}
                   sdk={legacySDK}
                 />
+              </div>
+            </section>
+          )}
+          {wagmiConnected && wagmiAddress && (
+            <section className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Wagmi Connection
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <WagmiCard />
               </div>
             </section>
           )}
