@@ -267,16 +267,8 @@ export class MetamaskConnectEVM {
       const cachedChainId =
         await this.#core.storage.adapter.get(CHAIN_STORE_KEY);
       if (cachedChainId) {
-        // The cached value might be stored as a number (from metamask_chainChanged) or hex string (from eth_chainId)
-        let chainId: Hex;
-        try {
-          const parsed = JSON.parse(cachedChainId);
-          chainId =
-            typeof parsed === 'number' ? numberToHex(parsed) : (parsed as Hex);
-        } catch {
-          // If parsing fails, try treating it as a direct hex string
-          chainId = cachedChainId as Hex;
-        }
+        const chainId: Hex = JSON.parse(cachedChainId);
+
         // Validate that the cached chainId is in the permitted chains list
         if (permittedChainIds.includes(chainId)) {
           return chainId;
