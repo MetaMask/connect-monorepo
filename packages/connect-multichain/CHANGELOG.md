@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING** Rename `createMetamaskConnect` to `createMultichainClient` for a cleaner naming convention
+- **BREAKING** Rename `createMetamaskConnect` to `createMultichainClient` for a cleaner naming convention ([#114](https://github.com/MetaMask/connect-monorepo/pull/114))
 
 ### Fixed
 
