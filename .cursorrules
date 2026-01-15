@@ -1,0 +1,25 @@
+# Cursor Rules for MetaMask Connect Monorepo
+
+## Auto-Generated Files
+
+### wagmi/metamask-connector.ts in Playgrounds
+
+**IMPORTANT**: The file `playground/*/src/wagmi/metamask-connector.ts` is **AUTO-GENERATED** and should **NEVER** be edited manually.
+
+**Why?**
+- The file is automatically copied from `integrations/wagmi/metamask-connector.ts` during build
+- Any manual edits will be overwritten on the next build
+- CRA restrictions prevent importing from outside `src/` directory
+- NPM package isolation means files outside package boundary aren't available when published
+
+**What to do instead:**
+- Edit the **original** file: `integrations/wagmi/metamask-connector.ts`
+- Run `yarn copy-wagmi-connector` (or let build/start scripts handle it)
+- The copied file includes `@ts-nocheck` to avoid TypeScript errors
+
+**Documentation**: See `playground/browser-playground/scripts/README.md` for details
+
+**When editing `playground/*/src/wagmi/metamask-connector.ts`:**
+- STOP: This file is auto-generated
+- Edit `integrations/wagmi/metamask-connector.ts` instead
+- The build process will copy your changes automatically
