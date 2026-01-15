@@ -311,10 +311,12 @@ const main = async (): Promise<void> => {
           console.log('------------------------------------');
         }
 
-        if (state.spinner && state.app === 'CONNECTING') {
+        if (state.spinner) {
           state.spinner.stop();
           state.spinner = null;
         }
+
+        state.connectorType = 'evm';
 
         // Group accounts by chain ID for EVM connector
         // chainId is a hex string, convert to number for CAIP format
