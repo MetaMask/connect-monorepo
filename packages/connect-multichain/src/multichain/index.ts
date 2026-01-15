@@ -714,7 +714,7 @@ export class MultichainSDK extends MultichainCore {
 
     const rpcClient = new RpcClient(options, this.#sdkInfo);
     const requestRouter = new RequestRouter(transport, rpcClient, options);
-    // need read only methods for solana
+    // TODO: need read only method support for solana
     return requestRouter.invokeMethod(request);
   }
 
