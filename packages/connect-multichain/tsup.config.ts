@@ -8,16 +8,9 @@ const peerDependencies = Object.keys(pkg.peerDependencies || {});
 const optionalDependencies = Object.keys(pkg.optionalDependencies || {});
 
 // Dependencies that should be bundled
-const bundledDeps = ['readable-stream'];
+const bundledDeps = [ 'readable-stream'];
 // Shared dependencies that should be deduplicated
-const sharedDeps = [
-  'eventemitter2',
-  'socket.io-client',
-  'debug',
-  'uuid',
-  'cross-fetch',
-  '@metamask/sdk-analytics',
-];
+const sharedDeps = ['eventemitter2', 'socket.io-client', 'debug', 'uuid', 'cross-fetch', '@metamask/sdk-analytics'];
 
 // Filter function to exclude bundled dependencies
 const excludeBundledDeps = (dep: string) => !bundledDeps.includes(dep);
@@ -31,7 +24,7 @@ const baseExternalDeps = [
   'extension-port-stream',
   '@metamask/utils',
   '@metamask/rpc-errors',
-  'ws',
+  'ws'
 ];
 
 // Platform-specific externals
@@ -49,6 +42,7 @@ const baseConfig: Partial<Options> = {
   dts: true, // Emit .d.ts alongside each env build
   splitting: false, // Keep bundle as single file to match rollup,
 };
+
 
 const entryName = packageJson.name.replace('@metamask/', '');
 
@@ -70,7 +64,7 @@ export default defineConfig([
     },
     banner: {
       js: '/* Browser ES build */',
-    },
+    }
   },
   {
     ...baseConfig,
@@ -78,10 +72,12 @@ export default defineConfig([
     outDir: 'dist/browser/umd',
     platform: 'browser',
     external: [...baseExternalDeps, ...peerDependencies],
-    esbuildPlugins: [umdWrapper({}) as any],
+    esbuildPlugins: [
+      umdWrapper({}) as any,
+    ],
     esbuildOptions: (options) => {
       options.metafile = true;
-      options.outExtension = { '.js': '.js' };
+      options.outExtension = { ".js": '.js' };
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
@@ -100,7 +96,7 @@ export default defineConfig([
     globalName: 'MetaMaskSDK', // Matches rollup IIFE config
     esbuildOptions: (options) => {
       options.metafile = true;
-      options.outExtension = { '.js': '.js' };
+      options.outExtension = { ".js": '.js' };
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
@@ -167,5 +163,5 @@ export default defineConfig([
     entry: { [entryName]: 'src/index.browser.ts' },
     outDir: 'dist/types',
     dts: { only: true },
-  },
+  }
 ]);
