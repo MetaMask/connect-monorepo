@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import {
-  createMetamaskConnect,
+  createMultichainClient,
   getInfuraRpcUrls,
   type InvokeMethodOptions,
   type MultichainCore,
@@ -46,7 +46,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!sdkRef.current) {
-      sdkRef.current = createMetamaskConnect({
+      sdkRef.current = createMultichainClient({
         dapp: {
           name: 'playground',
           url: 'https://playground.metamask.io',

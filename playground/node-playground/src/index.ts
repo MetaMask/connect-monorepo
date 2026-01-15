@@ -1,10 +1,10 @@
 import {
-  createMetamaskConnect,
+  createMultichainClient,
   getInfuraRpcUrls,
   type SessionData,
 } from '@metamask/connect-multichain';
 import {
-  createMetamaskConnectEVM,
+  createEVMClient,
   type MetamaskConnectEVM,
 } from '@metamask/connect-evm';
 import { hexToNumber } from '@metamask/utils';
@@ -30,7 +30,7 @@ const AVAILABLE_CHAINS = [
 const state: {
   app: AppState;
   connectorType: ConnectorType | null;
-  multichainSdk: Awaited<ReturnType<typeof createMetamaskConnect>> | null;
+  multichainSdk: Awaited<ReturnType<typeof createMultichainClient>> | null;
   evmSdk: MetamaskConnectEVM | null;
   accounts: { [chainId: string]: string[] }; // Group accounts by chain
   spinner: Ora | null;
@@ -367,7 +367,7 @@ const main = async (): Promise<void> => {
   const supportedNetworks = getInfuraRpcUrls(infuraApiKey);
 
   // Initialize Multichain SDK
-  state.multichainSdk = await createMetamaskConnect({
+  state.multichainSdk = await createMultichainClient({
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',
@@ -378,7 +378,7 @@ const main = async (): Promise<void> => {
   });
 
   // Initialize EVM SDK
-  state.evmSdk = await createMetamaskConnectEVM({
+  state.evmSdk = await createEVMClient({
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',

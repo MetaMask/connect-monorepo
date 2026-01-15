@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { createMetamaskConnect, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
+import { createMultichainClient, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -28,7 +28,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 
 	useEffect(() => {
 		if (!sdkRef.current) {
-			sdkRef.current = createMetamaskConnect({
+			sdkRef.current = createMultichainClient({
 				dapp: {
 					name: 'playground',
 					url: 'https://playground.metamask.io',
