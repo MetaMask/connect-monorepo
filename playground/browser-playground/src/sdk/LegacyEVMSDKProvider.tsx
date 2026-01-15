@@ -1,7 +1,4 @@
-import {
-  MetamaskConnectEVM,
-  createEVMClient,
-} from '@metamask/connect/evm';
+import { MetamaskConnectEVM, createEVMClient } from '@metamask/connect/evm';
 import type { EIP1193Provider } from '@metamask/connect/evm';
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 import type React from 'react';
@@ -143,7 +140,9 @@ export const LegacyEVMSDKProvider = ({
 export const useLegacyEVMSDK = () => {
   const context = useContext(LegacyEVMSDKContext);
   if (context === undefined) {
-    throw new Error('useLegacyEVMSDK must be used within a LegacyEVMSDKProvider');
+    throw new Error(
+      'useLegacyEVMSDK must be used within a LegacyEVMSDKProvider',
+    );
   }
   return context;
 };

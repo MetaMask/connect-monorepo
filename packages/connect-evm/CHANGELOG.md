@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING** Rename `createMetamaskConnectEVM` to `createEVMClient` for a cleaner naming convention
+
 ### Added
 
 - Add legacy compatibility methods to `EIP1193Provider` for broader ecosystem compatibility ([#102](https://github.com/MetaMask/connect-monorepo/pull/102))
