@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix selected chainId incorrectly reverting to Ethereum Mainnet after page refresh by querying `eth_chainId` from the wallet instead of assuming the first permitted chain is selected ([#108](https://github.com/MetaMask/connect-monorepo/pull/108))
+- Fix selected chainId incorrectly reverting to Ethereum Mainnet after page refresh by caching the selected chainId and retrieving it from storage instead of assuming the first permitted chain is selected ([#113](https://github.com/MetaMask/connect-monorepo/pull/113))
 - Update `#attemptSessionRecovery()` to check to state before attempting recovery ([#107](https://github.com/MetaMask/connect-monorepo/pull/107))
 - Bind all public methods in `EIP1193Provider` constructor to ensure stable `this` context when methods are extracted or passed as callbacks ([#102](https://github.com/MetaMask/connect-monorepo/pull/102))
 
