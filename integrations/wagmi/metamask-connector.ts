@@ -30,9 +30,7 @@ import {
   withTimeout,
 } from 'viem';
 
-type CreateEVMClientParameters = Parameters<
-  typeof createEVMClient
->[0];
+type CreateEVMClientParameters = Parameters<typeof createEVMClient>[0];
 
 const DEFAULT_CHAIN_ID = 1;
 
