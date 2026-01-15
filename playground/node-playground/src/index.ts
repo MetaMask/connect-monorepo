@@ -19,6 +19,13 @@ dotenv.config();
 type AppState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SIGNING';
 type ConnectorType = 'multichain' | 'evm';
 
+const AVAILABLE_CHAINS = [
+  { id: 1, name: 'Ethereum Mainnet', caip: 'eip155:1' },
+  { id: 137, name: 'Polygon', caip: 'eip155:137' },
+  { id: 59144, name: 'Linea', caip: 'eip155:59144' },
+  { id: 11155111, name: 'Sepolia Testnet', caip: 'eip155:11155111' },
+] as const;
+
 // Store our application state in a simple object
 const state: {
   app: AppState;
@@ -69,6 +76,20 @@ const showMenu = async () => {
     }
   } else if (state.app === 'CONNECTED') {
     console.log(chalk.green('✓ Connected!'));
+
+    // Display current chain for EVM connector
+    if (state.connectorType === 'evm' && state.evmSdk?.selectedChainId) {
+      const currentChainId = parseInt(state.evmSdk.selectedChainId, 16);
+      const currentChain = AVAILABLE_CHAINS.find(
+        (chain) => chain.id === currentChainId,
+      );
+      if (currentChain) {
+        console.log(
+          chalk.bold(`Current Chain: ${chalk.cyan(currentChain.name)}`),
+        );
+      }
+    }
+
     console.log(chalk.bold('Accounts:'));
     for (const chainId in state.accounts) {
       console.log(
@@ -81,6 +102,11 @@ const showMenu = async () => {
     // Only show Solana signing option for multichain connector
     if (state.connectorType === 'multichain') {
       choices.splice(1, 0, 'Sign Solana Message');
+    }
+
+    // Only show Switch Chain option for EVM connector
+    if (state.connectorType === 'evm') {
+      choices.splice(1, 0, 'Switch Chain');
     }
 
     const { action } = await inquirer.prompt([
@@ -96,6 +122,8 @@ const showMenu = async () => {
       await handleEthereumSign();
     } else if (action === 'Sign Solana Message') {
       await handleSolanaSign();
+    } else if (action === 'Switch Chain') {
+      await handleSwitchChain();
     } else if (action === 'Disconnect') {
       await handleDisconnect();
     }
@@ -214,6 +242,60 @@ const handleEthereumSign = async () => {
   }
 };
 
+const handleSwitchChain = async () => {
+  if (state.connectorType !== 'evm' || !state.evmSdk) {
+    console.log(
+      chalk.red('Switch chain is only available with Legacy EVM Connector.'),
+    );
+    return;
+  }
+
+  const currentChainId = state.evmSdk.selectedChainId
+    ? parseInt(state.evmSdk.selectedChainId, 16)
+    : null;
+
+  // Filter out current chain from choices
+  const availableChains = AVAILABLE_CHAINS.filter(
+    (chain) => chain.id !== currentChainId,
+  );
+
+  if (availableChains.length === 0) {
+    console.log(chalk.yellow('No other chains available to switch to.'));
+    return;
+  }
+
+  const { chain } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'chain',
+      message: 'Select a chain to switch to:',
+      choices: availableChains.map((chainOption) => ({
+        name: chainOption.name,
+        value: chainOption.id,
+      })),
+    },
+  ]);
+
+  state.spinner = ora(
+    'Switching chain... Please check your MetaMask Mobile app.',
+  ).start();
+
+  try {
+    await state.evmSdk.switchChain({ chainId: chain });
+    const chainName =
+      AVAILABLE_CHAINS.find((chainOption) => chainOption.id === chain)?.name ||
+      'chain';
+    state.spinner.succeed(`Successfully switched to ${chainName}.`);
+  } catch (error: unknown) {
+    state.spinner.fail('Failed to switch chain.');
+    console.error(
+      chalk.red(error instanceof Error ? error.message : String(error)),
+    );
+  } finally {
+    state.spinner = null;
+  }
+};
+
 const handleSolanaSign = async () => {
   const chain = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
   if (!state.accounts[chain] || state.accounts[chain].length === 0) {
@@ -281,7 +363,8 @@ const main = async (): Promise<void> => {
   console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
   console.log('------------------------------------');
 
-  const supportedNetworks = getInfuraRpcUrls(process.env.INFURA_API_KEY || '');
+  const infuraApiKey = process.env.INFURA_API_KEY || 'demo';
+  const supportedNetworks = getInfuraRpcUrls(infuraApiKey);
 
   // Initialize Multichain SDK
   state.multichainSdk = await createMetamaskConnect({
