@@ -1,7 +1,4 @@
-import {
-  MetamaskConnectEVM,
-  createMetamaskConnectEVM,
-} from '@metamask/connect/evm';
+import { MetamaskConnectEVM, createEVMClient } from '@metamask/connect/evm';
 import type { EIP1193Provider } from '@metamask/connect/evm';
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 import type React from 'react';
@@ -53,7 +50,7 @@ export const LegacyEVMSDKProvider = ({
               'eip155:137': 'https://polygon-rpc.com',
             };
 
-        const clientSDK = await createMetamaskConnectEVM({
+        const clientSDK = await createEVMClient({
           dapp: {
             name: 'playground',
             url: 'https://playground.metamask.io',
@@ -143,7 +140,9 @@ export const LegacyEVMSDKProvider = ({
 export const useLegacyEVMSDK = () => {
   const context = useContext(LegacyEVMSDKContext);
   if (context === undefined) {
-    throw new Error('useLegacyEVMSDK must be used within a LegacyEVMSDKProvider');
+    throw new Error(
+      'useLegacyEVMSDK must be used within a LegacyEVMSDKProvider',
+    );
   }
   return context;
 };

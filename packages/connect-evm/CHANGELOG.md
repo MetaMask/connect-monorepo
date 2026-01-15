@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `sendAsync()` for callback/promise-based JSON-RPC requests
   - `send()` for callback-based JSON-RPC requests
 
+### Changed
+
+- **BREAKING** Rename `createMetamaskConnectEVM` to `createEVMClient` for a cleaner naming convention ([#114](https://github.com/MetaMask/connect-monorepo/pull/114))
+
 ### Fixed
 
 - Fix selected chainId incorrectly reverting to Ethereum Mainnet after page refresh by querying `eth_chainId` from the wallet instead of assuming the first permitted chain is selected ([#108](https://github.com/MetaMask/connect-monorepo/pull/108))

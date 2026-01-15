@@ -7,7 +7,7 @@ import type {
   SessionData,
 } from '@metamask/connect-multichain';
 import {
-  createMetamaskConnect,
+  createMultichainClient,
   getWalletActionAnalyticsProperties,
   isRejectionError,
   TransportType,
@@ -70,7 +70,7 @@ type ConnectOptions = {
  *
  * @example
  * ```typescript
- * const sdk = await createMetamaskConnectEVM({
+ * const sdk = await createEVMClient({
  *   dapp: { name: 'My DApp', url: 'https://mydapp.com' }
  * });
  *
@@ -883,7 +883,7 @@ export class MetamaskConnectEVM {
  * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
  * @returns The Metamask Connect/EVM layer instance
  */
-export async function createMetamaskConnectEVM(
+export async function createEVMClient(
   options: Pick<MultichainOptions, 'dapp' | 'api'> & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
@@ -906,7 +906,7 @@ export async function createMetamaskConnectEVM(
   validSupportedChainsUrls(options.api.supportedNetworks, 'supportedNetworks');
 
   try {
-    const core = await createMetamaskConnect({
+    const core = await createMultichainClient({
       ...options,
       api: {
         supportedNetworks: options.api.supportedNetworks,

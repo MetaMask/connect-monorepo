@@ -1,5 +1,5 @@
 import {
-  createMetamaskConnectEVM,
+  createEVMClient,
   type EIP1193Provider,
   type MetamaskConnectEVM,
 } from '@metamask/connect-evm';
@@ -30,14 +30,12 @@ import {
   withTimeout,
 } from 'viem';
 
-type CreateMetamaskConnectEVMParameters = Parameters<
-  typeof createMetamaskConnectEVM
->[0];
+type CreateEVMClientParameters = Parameters<typeof createEVMClient>[0];
 
 const DEFAULT_CHAIN_ID = 1;
 
 export type MetaMaskParameters = Partial<
-  Pick<CreateMetamaskConnectEVMParameters, 'dapp' | 'debug'>
+  Pick<CreateEVMClientParameters, 'dapp' | 'debug'>
 > &
   OneOf<
     | {
@@ -74,7 +72,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
             ]),
           );
 
-          metamaskPromise = createMetamaskConnectEVM({
+          metamaskPromise = createEVMClient({
             dapp: parameters.dapp ?? { name: window.location.hostname },
             eventHandlers: {
               accountsChanged: connector.onAccountsChanged.bind(connector),

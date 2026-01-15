@@ -24,10 +24,10 @@ npm install @metamask/connect-evm
 ## Quick Start
 
 ```typescript
-import { createMetamaskConnectEVM } from '@metamask/connect-evm';
+import { createEVMClient } from '@metamask/connect-evm';
 
 // Create an SDK instance
-const sdk = await createMetamaskConnectEVM({
+const sdk = await createEVMClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
@@ -51,9 +51,9 @@ const accounts = await provider.request({
 ### Basic Connection
 
 ```typescript
-import { createMetamaskConnectEVM } from '@metamask/connect-evm';
+import { createEVMClient } from '@metamask/connect-evm';
 
-const sdk = await createMetamaskConnectEVM({
+const sdk = await createEVMClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
