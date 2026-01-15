@@ -6,6 +6,13 @@
  *
  * Any changes made to this file will be overwritten during the build process.
  * To make changes, edit the original file in integrations/wagmi/metamask-connector.ts
+ *
+ * Why auto-generation?
+ * - CRA restrictions prevent importing from outside src/ directory
+ * - NPM package isolation: files outside package boundary aren't available when published
+ * - Ensures consistency across all playgrounds using the wagmi connector
+ *
+ * See playground/browser-playground/scripts/README.md for more details.
  */
 
 // @ts-nocheck
