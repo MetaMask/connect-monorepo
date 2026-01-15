@@ -24,14 +24,15 @@
     "build/"
   ],
   "scripts": {
-    "build": "DISABLE_ESLINT_PLUGIN=true craco build",
+    "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
+    "build": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco build",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/browser-playground",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/browser-playground",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/browser-playground",
     "deploy": "serve -s build",
     "prepack": "./scripts/prepack.sh",
-    "start": "DISABLE_ESLINT_PLUGIN=true craco start",
+    "start": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco start",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test"
   },
@@ -54,8 +55,14 @@
     "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect": "workspace:^",
     "@metamask/utils": "^11.8.1",
+    "@tanstack/query-sync-storage-persister": "5.0.5",
+    "@tanstack/react-query": ">=5.45.1",
+    "@tanstack/react-query-persist-client": "5.0.5",
+    "@wagmi/core": "^2.22.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "viem": "2.*",
+    "wagmi": "^2.19.2"
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
@@ -67,6 +74,7 @@
     "@open-rpc/schema-utils-js": "^2.0.5",
     "@solana/web3.js": "^1.98.0",
     "@tailwindcss/postcss": "^4.0.0",
+    "@tanstack/react-query-devtools": "5.0.5",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@types/chrome": "^0.0.279",
