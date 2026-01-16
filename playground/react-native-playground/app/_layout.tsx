@@ -1,5 +1,6 @@
 import 'react-native-get-random-values';
 import { SDKProvider } from '../src/sdk/SDKProvider';
+import { LegacyEVMSDKProvider } from '../src/sdk/LegacyEVMSDKProvider';
 import { Slot, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -30,7 +31,9 @@ export default function RootLayout() {
 
   return (
     <SDKProvider>
-      <Slot />
+      <LegacyEVMSDKProvider>
+        <Slot />
+      </LegacyEVMSDKProvider>
     </SDKProvider>
   );
 }
