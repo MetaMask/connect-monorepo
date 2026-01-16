@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING** Rename `createMetamaskConnectEVM` to `createEVMClient` for a cleaner naming convention ([#114](https://github.com/MetaMask/connect-monorepo/pull/114))
 
+### Removed
+
+- Revert: Fix local state not correctly being reset when establishing a new connection when there is an existing active session ([#119](https://github.com/MetaMask/connect-monorepo/pull/119))
+
 ### Fixed
 
 - Fix selected chainId incorrectly reverting to Ethereum Mainnet after page refresh by caching the selected chainId and retrieving it from storage instead of assuming the first permitted chain is selected ([#113](https://github.com/MetaMask/connect-monorepo/pull/113))
