@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add support for `sessionProperties` parameter in `connect()` via `@metamask/connect-multichain` update([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
 - Add legacy compatibility methods to `EIP1193Provider` for broader ecosystem compatibility ([#102](https://github.com/MetaMask/connect-monorepo/pull/102))
   - `chainId` getter (alias for `selectedChainId`)
   - `sendAsync()` for callback/promise-based JSON-RPC requests
