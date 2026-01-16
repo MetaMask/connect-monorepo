@@ -3,13 +3,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
-import type { CaipAccountId } from '@metamask/utils';
+import { hexToNumber, type CaipAccountId } from '@metamask/utils';
 import { Buffer } from 'buffer';
 
 import { useSDK } from '../src/sdk';
+import { useLegacyEVMSDK } from '../src/sdk';
 import DynamicInputs, { INPUT_LABEL_TYPE } from '../src/components/DynamicInputs';
 import { FEATURED_NETWORKS } from '../src/constants/networks';
 import { ScopeCard } from '../src/components/ScopeCard';
+import { LegacyEVMCard } from '../src/components/LegacyEVMCard';
+import { convertCaipChainIdsToHex } from '../src/helpers/ChainIdHelpers';
 import { colors, sharedStyles } from '../src/styles/shared';
 
 // Configure Buffer polyfill for React Native
@@ -19,6 +22,15 @@ export default function Page() {
 	const [customScopes, setCustomScopes] = useState<Scope[]>(['eip155:1' as Scope]);
 	const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
 	const { error, state, session, connect: sdkConnect, disconnect: sdkDisconnect } = useSDK();
+	const {
+		connected: legacyConnected,
+		provider: legacyProvider,
+		chainId: legacyChainId,
+		accounts: legacyAccounts,
+		sdk: legacySDK,
+		connect: legacyConnect,
+		disconnect: legacyDisconnect,
+	} = useLegacyEVMSDK();
 
 	const handleCheckboxChange = useCallback(
 		(value: string, isChecked: boolean) => {
@@ -62,9 +74,26 @@ export default function Page() {
 		return sdkConnect(selectedScopesArray, filteredAccountIds as CaipAccountId[]);
 	}, [customScopes, caipAccountIds, sdkConnect]);
 
+	const connectLegacyEVM = useCallback(async () => {
+		const selectedScopesArray = customScopes.filter((scope) => scope.length);
+		// Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
+		// Then convert hex chain IDs to numbers for the connect method
+		const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+		await legacyConnect(chainIds);
+	}, [customScopes, legacyConnect]);
+
+	const isConnected = state === 'connected';
+	const isDisconnected = state === 'disconnected' || state === 'pending' || state === 'loaded';
+
 	const disconnect = useCallback(async () => {
-		await sdkDisconnect();
-	}, [sdkDisconnect]);
+		// Disconnect both multichain and legacy EVM if connected
+		if (isConnected) {
+			await sdkDisconnect();
+		}
+		if (legacyConnected) {
+			await legacyDisconnect();
+		}
+	}, [sdkDisconnect, legacyDisconnect, isConnected, legacyConnected]);
 
 	const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<{ name: string; value: string }[]>((all, networkName) => {
 		const networkCaipValue = FEATURED_NETWORKS[networkName as keyof typeof FEATURED_NETWORKS];
@@ -72,8 +101,6 @@ export default function Page() {
 		return all;
 	}, []);
 
-	const isDisconnected = state === 'disconnected' || state === 'pending' || state === 'loaded';
-	const isConnected = state === 'connected';
 	const isConnecting = state === 'connecting';
 
 	return (
@@ -104,9 +131,21 @@ export default function Page() {
 						</TouchableOpacity>
 					)}
 
+					{!legacyConnected && (
+						<TouchableOpacity onPress={connectLegacyEVM} style={[sharedStyles.button, styles.legacyButton]}>
+							<Text style={sharedStyles.buttonText}>Connect (Legacy EVM)</Text>
+						</TouchableOpacity>
+					)}
+
 					{isConnected && (
 						<TouchableOpacity onPress={scopesHaveChanged() ? connect : disconnect} style={sharedStyles.button}>
 							<Text style={sharedStyles.buttonText}>{scopesHaveChanged() ? 'Re Establishing Connection' : 'Disconnect'}</Text>
+						</TouchableOpacity>
+					)}
+
+					{(isConnected || legacyConnected) && (
+						<TouchableOpacity onPress={disconnect} style={sharedStyles.buttonCancel}>
+							<Text style={sharedStyles.buttonText}>Disconnect</Text>
 						</TouchableOpacity>
 					)}
 				</View>
@@ -124,6 +163,18 @@ export default function Page() {
 						{Object.entries(session?.sessionScopes ?? {}).map(([scope, details]) => {
 							return <ScopeCard key={scope} scope={scope as Scope} details={details as SessionData['sessionScopes'][Scope]} />;
 						})}
+					</View>
+				)}
+
+				{legacyConnected && legacyProvider && legacySDK && (
+					<View style={sharedStyles.card}>
+						<Text style={sharedStyles.heading2}>Legacy EVM Connection</Text>
+						<LegacyEVMCard
+							provider={legacyProvider}
+							chainId={legacyChainId}
+							accounts={legacyAccounts}
+							sdk={legacySDK}
+						/>
 					</View>
 				)}
 			</ScrollView>
@@ -145,5 +196,9 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 		color: colors.red600,
 		marginBottom: 8,
+	},
+	legacyButton: {
+		backgroundColor: colors.green600,
+		marginTop: 8,
 	},
 });
