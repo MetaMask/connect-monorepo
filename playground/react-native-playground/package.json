@@ -36,6 +36,8 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@metamask/chain-agnostic-permission": "^1.2.2",
+    "@metamask/connect-evm": "workspace:^",
     "@metamask/connect-multichain": "workspace:^",
     "@metamask/mobile-wallet-protocol-core": "^0.3.0",
     "@metamask/mobile-wallet-protocol-wallet-client": "0.2.1",

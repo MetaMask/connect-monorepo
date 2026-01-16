@@ -4728,6 +4728,8 @@ __metadata:
     "@expo/vector-icons": "npm:^15.0.2"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.4"
+    "@metamask/chain-agnostic-permission": "npm:^1.2.2"
+    "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
     "@metamask/mobile-wallet-protocol-core": "npm:^0.3.0"
     "@metamask/mobile-wallet-protocol-wallet-client": "npm:0.2.1"
