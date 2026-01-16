@@ -58,7 +58,9 @@ Since React Native doesn't have a `window` object, a polyfill has been added in 
 
 **Window Object Properties:**
 - `window.location.hostname` - Default value: `'react-native-playground'`
-- `window.location.href` - Getter/setter that uses React Native's `Linking.openURL()` when a deeplink URL is set (e.g., `metamask://`, `ethereum://`). This allows `connect-multichain` to properly open the native wallet app when connecting via wagmi.
+- `window.location.href` - Default value: `'react-native-playground://'`
+
+**Note:** Deeplinks in React Native are handled via the `mobile.preferredOpenLink` option passed to the wagmi connector, not through `window.location.href`. This is configured in `src/wagmi/config.ts` using React Native's `Linking.openURL()`.
 
 **Window Object Methods:**
 - `window.addEventListener()` - No-op function (browser events don't exist in React Native)

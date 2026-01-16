@@ -1,6 +1,7 @@
 // Ensure polyfills are loaded first (especially window.addEventListener)
 import '../../polyfills';
 
+import { Linking } from 'react-native';
 import { createConfig, http } from 'wagmi';
 import { mainnet, sepolia, optimism, celo } from 'wagmi/chains';
 
@@ -19,6 +20,14 @@ export const wagmiConfig = createConfig({
       dapp: {
         name: windowHostname,
         url: windowHref,
+      },
+      // React Native: use Linking.openURL for deeplinks instead of window.location.href
+      mobile: {
+        preferredOpenLink: (deeplink: string) => {
+          Linking.openURL(deeplink).catch((err) => {
+            console.error('Failed to open deeplink:', err);
+          });
+        },
       },
     }),
   ],
