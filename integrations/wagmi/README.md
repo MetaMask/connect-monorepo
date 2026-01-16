@@ -50,5 +50,3 @@ export const wagmiConfig = createConfig({
 ### How It Works
 
 When the wagmi connector initiates a connection to MetaMask, `connect-multichain` needs to open a deeplink to the MetaMask mobile app. The `mobile.preferredOpenLink` function is called with the deeplink URL, allowing you to use React Native's `Linking.openURL()` instead of the browser's `window.location.href`.
-
-> **Note:** This feature was added in PR #118.

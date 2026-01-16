@@ -94,7 +94,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
             debug: parameters.debug,
             // Pass mobile options for React Native deeplink support
             ...(parameters.mobile && { mobile: parameters.mobile }),
-          } as any);
+          });
         }
         metamask = await metamaskPromise;
       }
