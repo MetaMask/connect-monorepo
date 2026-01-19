@@ -8,6 +8,7 @@
 
 - **EIP-1193 Provider Interface** - Seamless integration with existing dapp code using the standard Ethereum provider interface
 - **Cross-Platform Support** - Works with browser extensions and mobile applications
+- **React Native Support** - Native mobile deeplink handling via `preferredOpenLink` option
 
 ## Installation
 
@@ -69,6 +70,37 @@ await sdk.connect({ chainId: 137 }); // Polygon
 // Connect to a specific chain and account
 await sdk.connect({ chainId: 1, account: '0x...' });
 ```
+
+### React Native Support
+
+When using `@metamask/connect-evm` in React Native, the standard browser deeplink mechanism (`window.location.href`) doesn't work. Instead, you can provide a custom `preferredOpenLink` function via the `mobile` option to handle deeplinks using React Native's `Linking` API.
+
+```typescript
+import { Linking } from 'react-native';
+import { createEVMClient } from '@metamask/connect-evm';
+
+const sdk = await createEVMClient({
+  dapp: {
+    name: 'My React Native DApp',
+    url: 'https://mydapp.com',
+  },
+  api: {
+    supportedNetworks: {
+      'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
+    },
+  },
+  // React Native: use Linking.openURL for deeplinks
+  mobile: {
+    preferredOpenLink: (deeplink: string) => {
+      Linking.openURL(deeplink).catch((err) => {
+        console.error('Failed to open deeplink:', err);
+      });
+    },
+  },
+} as any); // Note: mobile option is passed through to connect-multichain
+```
+
+The `mobile.preferredOpenLink` option is checked before falling back to browser-based deeplink methods, making it the recommended approach for React Native applications.
 
 ### Using the Provider Directly
 
