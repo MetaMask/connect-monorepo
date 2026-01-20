@@ -1,5 +1,5 @@
 import type { CreateMultichainFN, StoreClient } from './domain';
-import { MultichainSDK } from './multichain';
+import { MetaMaskConnectMultichain } from './multichain';
 import { Store } from './store';
 import { ModalFactory } from './ui/index.native';
 
@@ -16,7 +16,7 @@ export const createMultichainClient: CreateMultichainFN = async (options) => {
     storage = options.storage;
   }
   const factory = new ModalFactory(uiModules);
-  return MultichainSDK.create({
+  return MetaMaskConnectMultichain.create({
     ...options,
     storage,
     ui: {

@@ -66,7 +66,7 @@ export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
 
-export class MultichainSDK extends MultichainCore {
+export class MetaMaskConnectMultichain extends MultichainCore {
   #provider: MultichainApiClient<RPCAPI>;
 
   #providerTransportWrapper: MultichainApiClientWrapperTransport;
@@ -146,8 +146,8 @@ export class MultichainSDK extends MultichainCore {
     this.#provider = getMultichainClient({ transport: this.#providerTransportWrapper });
   }
 
-  static async create(options: MultichainOptions): Promise<MultichainSDK> {
-    const instance = new MultichainSDK(options);
+  static async create(options: MultichainOptions): Promise<MetaMaskConnectMultichain> {
+    const instance = new MetaMaskConnectMultichain(options);
     const isEnabled = await isLoggerEnabled(
       'metamask-sdk:core',
       instance.options.storage,

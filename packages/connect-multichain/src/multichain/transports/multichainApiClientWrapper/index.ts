@@ -7,7 +7,7 @@ import type {
 import { providerErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
 import type { InvokeMethodOptions, RPCAPI, Scope } from 'src/domain';
-import type { MultichainSDK } from 'src/multichain';
+import type { MetaMaskConnectMultichain } from 'src/multichain';
 
 // uint32 (two's complement) max
 // more conservative than Number.MAX_SAFE_INTEGER
@@ -26,7 +26,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
 
   private readonly notificationCallbacks = new Set<(data: unknown) => void>();
 
-  constructor(private readonly multichainSDK: MultichainSDK) {}
+  constructor(private readonly multichainSDK: MetaMaskConnectMultichain) {}
 
   isTransportDefined(): boolean {
     try {
