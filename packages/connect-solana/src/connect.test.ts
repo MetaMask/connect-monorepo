@@ -1,18 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-// Mock dependencies - these must be hoisted before any imports
-vi.mock('@metamask/connect-multichain', () => ({
-  createMultichainClient: vi.fn(),
-}));
-
-vi.mock('@metamask/solana-wallet-standard', () => ({
-  getWalletStandard: vi.fn(),
-  registerSolanaWalletStandard: vi.fn(),
-}));
-
-// Import after mocks are set up
 import { createSolanaClient } from './connect';
 import type { SolanaConnectOptions } from './types';
+// These imports resolve to mocks via vitest.config.ts aliases
 import { createMultichainClient } from '@metamask/connect-multichain';
 import {
   getWalletStandard,

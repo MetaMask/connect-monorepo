@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
   test: {
@@ -11,10 +12,11 @@ export default defineConfig({
       '**/fixtures.test.ts',
     ],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    server: {
-      deps: {
-        inline: ['@metamask/connect-multichain', '@metamask/solana-wallet-standard'],
-      },
+  },
+  resolve: {
+    alias: {
+      '@metamask/connect-multichain': path.resolve(__dirname, 'src/mocks/connect-multichain.ts'),
+      '@metamask/solana-wallet-standard': path.resolve(__dirname, 'src/mocks/solana-wallet-standard.ts'),
     },
   },
 });
