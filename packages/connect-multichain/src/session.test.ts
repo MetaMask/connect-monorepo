@@ -133,7 +133,7 @@ function testSuite<T extends MultichainOptions>({
 
       sdk = await createSDK(testOptions);
 
-      t.expect(sdk.state).toBe('connected');
+      t.expect(sdk.status).toBe('connected');
       t.expect(sdk.transport).toBeDefined();
       t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.storage).toBeDefined();
@@ -218,7 +218,7 @@ function testSuite<T extends MultichainOptions>({
         );
 
         sdk = await createSDK(testOptions);
-        t.expect(sdk.state).toBe('connected');
+        t.expect(sdk.status).toBe('connected');
 
         t.expect(sdk).toBeDefined();
         t.expect(sdk.transport).toBeDefined();
@@ -284,7 +284,7 @@ function testSuite<T extends MultichainOptions>({
         sdk = await createSDK(testOptions);
 
         t.expect(sdk).toBeDefined();
-        t.expect(sdk.state === 'loaded').toBe(true);
+        t.expect(sdk.status === 'loaded').toBe(true);
 
         // For web-mobile, connect might hang waiting for deeplink
         // Use a shorter timeout and handle both success and timeout cases
@@ -328,11 +328,11 @@ function testSuite<T extends MultichainOptions>({
         // Verify state is disconnected after error (or timeout)
         // For web-mobile, if it timed out, the state might still be 'loaded' or 'connecting'
         if (!timedOut) {
-          t.expect(sdk.state === 'disconnected').toBe(true);
+          t.expect(sdk.status === 'disconnected').toBe(true);
           t.expect(connectError).toBeDefined();
         } else {
           // If timed out, at least verify it's not connected
-          t.expect(['loaded', 'disconnected', 'connecting']).toContain(sdk.state);
+          t.expect(['loaded', 'disconnected', 'connecting']).toContain(sdk.status);
         }
         
         // Ensure both promises are fully handled to prevent unhandled rejections
@@ -341,7 +341,7 @@ function testSuite<T extends MultichainOptions>({
         
         // Disconnect SDK to clean up any ongoing async operations
         try {
-          if (sdk.state !== 'disconnected' && sdk.state !== 'pending') {
+          if (sdk.status !== 'disconnected' && sdk.status !== 'pending') {
             await sdk.disconnect().catch(() => {
               // Ignore disconnect errors
             });

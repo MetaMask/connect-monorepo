@@ -18,7 +18,7 @@ function App() {
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
   const {
     error,
-    state,
+    status,
     session,
     connect: sdkConnect,
     disconnect: sdkDisconnect,
@@ -119,9 +119,9 @@ function App() {
     }
   }, [customScopes, connectors, wagmiConnectAsync]);
 
-  const isConnected = state === 'connected';
+  const isConnected = status === 'connected';
   const isDisconnected =
-    state === 'disconnected' || state === 'pending' || state === 'loaded';
+    status === 'disconnected' || status === 'pending' || status === 'loaded';
 
   const disconnect = useCallback(async () => {
     // Disconnect all connections if connected
@@ -145,7 +145,7 @@ function App() {
     return all;
   }, []);
 
-  const isConnecting = state === 'connecting';
+  const isConnecting = status === 'connecting';
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center">
       <div className="max-w-6xl w-full p-8">

@@ -797,7 +797,7 @@ export class MetamaskConnectEVM {
     // Skip session recovery if transport is not initialized yet.
     // Transport is only initialized when there's a stored session or after connect() is called.
     // Only attempt recovery if we're in a state where transport should be available.
-    if (this.#core.state !== 'connected' && this.#core.state !== 'connecting') {
+    if (this.#core.status !== 'connected' && this.#core.status !== 'connecting') {
       return;
     }
     try {
