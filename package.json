@@ -88,6 +88,10 @@
     "typescript-eslint": "^8.10.0",
     "yargs": "^17.7.2"
   },
+  "resolutions": {
+    "@metamask/utils": "^11.8.1",
+    "bs58": "^4.0.1"
+  },
   "packageManager": "yarn@4.9.2",
   "engines": {
     "node": ">=20.19.0"
