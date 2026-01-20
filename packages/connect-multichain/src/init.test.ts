@@ -60,7 +60,7 @@ function testSuite<T extends MultichainOptions>({
         sdk = await createSDK(testOptions);
         // Verify initialization through observable state - SDK should be in a valid state
         t.expect(sdk).toBeDefined();
-        t.expect(['pending', 'loaded', 'connected']).toContain(sdk.state);
+        t.expect(['pending', 'loaded', 'connected']).toContain(sdk.status);
       },
     );
 
@@ -110,7 +110,7 @@ function testSuite<T extends MultichainOptions>({
         t.expect(mockLogger).not.toHaveBeenCalled();
 
         // Verify initialization and analytics setup through observable effects
-        t.expect(sdk.state).toBe('loaded');
+        t.expect(sdk.status).toBe('loaded');
         t.expect(loggerModule.enableDebug).toHaveBeenCalledWith(
           'metamask-sdk:core',
         );
@@ -121,7 +121,7 @@ function testSuite<T extends MultichainOptions>({
       `${platform} should properly initialize if no transport is found during init`,
       async () => {
         sdk = await createSDK(testOptions);
-        t.expect(sdk.state).toBe('loaded');
+        t.expect(sdk.status).toBe('loaded');
         t.expect(() => sdk.transport).toThrow();
       },
     );
@@ -147,7 +147,7 @@ function testSuite<T extends MultichainOptions>({
 
         sdk = await createSDK(testOptions);
 
-        t.expect(sdk.state).toBe('connected');
+        t.expect(sdk.status).toBe('connected');
 
         t.expect(sdk.transport).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
@@ -184,7 +184,7 @@ function testSuite<T extends MultichainOptions>({
 
         t.expect(sdk).toBeDefined();
 
-        t.expect(sdk.state).toBe('connected');
+        t.expect(sdk.status).toBe('connected');
         t.expect(onNotification).toHaveBeenCalledWith({
           method: 'stateChanged',
           params: 'connected',
@@ -248,7 +248,7 @@ function testSuite<T extends MultichainOptions>({
         sdk = await createSDK(testOptions);
 
         t.expect(sdk).toBeDefined();
-        t.expect(sdk.state).toBe('pending');
+        t.expect(sdk.status).toBe('pending');
 
         // Access the mock logger from the module
         const mockLogger = (loggerModule as any).__mockLogger;

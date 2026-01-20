@@ -45,7 +45,7 @@ import {
   type ConnectionRequest,
   type ExtendedTransport,
   MultichainCore,
-  type SDKState,
+  type ConnectionStatus,
 } from '../domain/multichain';
 import {
   getPlatformType,
@@ -77,16 +77,16 @@ export class MultichainSDK extends MultichainCore {
 
   #beforeUnloadListener: (() => void) | undefined;
 
-  public _state: SDKState = 'pending';
+  public _status: ConnectionStatus = 'pending';
 
   #listener: (() => void | Promise<void>) | undefined;
 
-  get state(): SDKState {
-    return this._state;
+  get status(): ConnectionStatus {
+    return this._status;
   }
 
-  set state(value: SDKState) {
-    this._state = value;
+  set status(value: ConnectionStatus) {
+    this._status = value;
     this.options.transport?.onNotification?.({
       method: 'stateChanged',
       params: value,
@@ -236,17 +236,17 @@ export class MultichainSDK extends MultichainCore {
     const transport = await this.#getStoredTransport();
     if (transport) {
       if (!this.transport.isConnected()) {
-        this.state = 'connecting';
+        this.status = 'connecting';
         await this.transport.connect();
       }
-      this.state = 'connected';
+      this.status = 'connected';
       if (this.transport instanceof MWPTransport) {
         await this.storage.setTransport(TransportType.MWP);
       } else {
         await this.storage.setTransport(TransportType.Browser);
       }
     } else {
-      this.state = 'loaded';
+      this.status = 'loaded';
     }
   }
 
@@ -274,7 +274,7 @@ export class MultichainSDK extends MultichainCore {
       }
     } catch (error) {
       await this.storage.removeTransport();
-      this.state = 'pending';
+      this.status = 'pending';
       logger('MetaMaskSDK error during initialization', error);
     }
   }
@@ -380,18 +380,18 @@ export class MultichainSDK extends MultichainCore {
                   await this.transport.connect({ scopes, caipAccountIds, sessionProperties });
                   await this.options.ui.factory.unload();
                   this.options.ui.factory.modal?.unmount();
-                  this.state = 'connected';
+                  this.status = 'connected';
                   await this.storage.setTransport(TransportType.MWP);
                 } catch (error) {
                   if (error instanceof ProtocolError) {
                     // Ignore Request expired errors to allow modal to regenerate expired qr codes
                     if (error.code !== ErrorCode.REQUEST_EXPIRED) {
-                      this.state = 'disconnected';
+                      this.status = 'disconnected';
                       reject(error);
                     }
                     // If request is expires, the QRCode will automatically be regenerated we can ignore this case
                   } else {
-                    this.state = 'disconnected';
+                    this.status = 'disconnected';
                     reject(
                       error instanceof Error ? error : new Error(String(error)),
                     );
@@ -435,7 +435,7 @@ export class MultichainSDK extends MultichainCore {
   }
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {
-    this.state = 'connecting';
+    this.status = 'connecting';
     await this.storage.setTransport(TransportType.Browser);
     const transport = new DefaultTransport();
     this.#listener = transport.onNotification(
@@ -532,10 +532,10 @@ export class MultichainSDK extends MultichainCore {
     scopes: Scope[],
     transportType: TransportType,
   ): Promise<void> {
-    this.state = 'connecting';
+    this.status = 'connecting';
     return promise
       .then(async () => {
-        this.state = 'connected';
+        this.status = 'connected';
         try {
           const baseProps = await getBaseAnalyticsProperties(
             this.options,
@@ -553,7 +553,7 @@ export class MultichainSDK extends MultichainCore {
         return undefined; // explicitly return `undefined` to avoid eslintpromise/always-return
       })
       .catch(async (error) => {
-        this.state = 'disconnected';
+        this.status = 'disconnected';
         try {
           const baseProps = await getBaseAnalyticsProperties(
             this.options,
@@ -586,7 +586,7 @@ export class MultichainSDK extends MultichainCore {
     sessionProperties?: SessionProperties,
     forceRequest?: boolean,
   ): Promise<void> {
-    if (this.state !== 'connected') {
+    if (this.status !== 'connected') {
       await this.disconnect();
     }
     const { ui } = this.options;

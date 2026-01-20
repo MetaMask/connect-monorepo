@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING** Rename `state` property to `status` on `MultichainCore` for improved clarity ([#125](https://github.com/MetaMask/connect-monorepo/pull/125))
 - **BREAKING** Rename `createMetamaskConnect` to `createMultichainClient` for a cleaner naming convention ([#114](https://github.com/MetaMask/connect-monorepo/pull/114))
 - Provider is now always available via `sdk.provider` regardless of connection state (wrapper handles disconnected state internally)([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
 

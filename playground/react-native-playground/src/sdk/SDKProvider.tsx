@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { createMultichainClient, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
+import { createMultichainClient, type ConnectionStatus, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
 import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
@@ -10,7 +10,7 @@ import { Linking } from 'react-native';
 const SDKContext = createContext<
 	| {
 		session: SessionData | undefined;
-		state: SDKState;
+		status: ConnectionStatus;
 		error: Error | null;
 		connect: (scopes: Scope[], caipAccountIds: CaipAccountId[]) => Promise<void>;
 		disconnect: () => Promise<void>;
@@ -20,7 +20,7 @@ const SDKContext = createContext<
 >(undefined);
 
 export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
-	const [state, setState] = useState<SDKState>('pending');
+	const [status, setStatus] = useState<ConnectionStatus>('pending');
 	const [session, setSession] = useState<SessionData | undefined>(undefined);
 	const [error, setError] = useState<Error | null>(null);
 
@@ -48,7 +48,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 						if (payload.method === 'wallet_sessionChanged' || payload.method === 'wallet_createSession' || payload.method === 'wallet_getSession') {
 							setSession(payload.params as SessionData);
 						} else if (payload.method === 'stateChanged') {
-							setState(payload.params as SDKState);
+							setStatus(payload.params as ConnectionStatus);
 						}
 					},
 				},
@@ -102,7 +102,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 		<SDKContext.Provider
 			value={{
 				session,
-				state,
+				status,
 				error,
 				connect,
 				disconnect,
