@@ -71,7 +71,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     ReturnType extends TransportResponse,
   >(
     params: ParamsType,
-    options: { timeout?: number } = {},
+    _options: { timeout?: number } = {},
   ): Promise<ReturnType> {
     const id = this.requestId++;
     const requestPayload = {
@@ -80,14 +80,17 @@ export class MultichainApiClientWrapperTransport implements Transport {
       ...params,
     };
 
-    if (requestPayload.method === 'wallet_createSession') {
-      return this.#walletCreateSession(requestPayload) as Promise<ReturnType>;
-    } else if (requestPayload.method === 'wallet_getSession') {
-      return this.#walletGetSession(requestPayload) as Promise<ReturnType>;
-    } else if (requestPayload.method === 'wallet_revokeSession') {
-      return this.#walletRevokeSession(requestPayload) as Promise<ReturnType>;
-    } else if (requestPayload.method === 'wallet_invokeMethod') {
-      return this.#walletInvokeMethod(requestPayload) as Promise<ReturnType>;
+    switch (requestPayload.method) {
+      case 'wallet_createSession':
+        return this.#walletCreateSession(requestPayload) as Promise<ReturnType>;
+      case 'wallet_getSession':
+        return this.#walletGetSession(requestPayload) as Promise<ReturnType>;
+      case 'wallet_revokeSession':
+        return this.#walletRevokeSession(requestPayload) as Promise<ReturnType>;
+      case 'wallet_invokeMethod':
+        return this.#walletInvokeMethod(requestPayload) as Promise<ReturnType>;
+      default:
+        throw new Error(`Unsupported method: ${requestPayload.method}`);
     }
 
     throw new Error(`Unknown method: ${requestPayload.method}`);
