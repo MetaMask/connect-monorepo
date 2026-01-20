@@ -1,6 +1,5 @@
+import { WINDOW_POST_MESSAGE_ID } from '@metamask/playground-ui';
 import type { MouseEventHandler } from 'react';
-
-import { WINDOW_POST_MESSAGE_ID } from '../constants';
 
 export type WalletMapEntry = {
   params: {

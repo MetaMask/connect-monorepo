@@ -2,14 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
 import { hexToNumber, type CaipAccountId } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
+import { FEATURED_NETWORKS, convertCaipChainIdsToHex } from '@metamask/playground-ui';
 import { useSDK } from './sdk';
 import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
-import { FEATURED_NETWORKS } from './constants/networks';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
-import { convertCaipChainIdsToHex } from './helpers/ChainIdHelpers';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;

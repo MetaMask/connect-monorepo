@@ -8,6 +8,8 @@
     "paths": {
 			"@/*": ["./*"],
       "@metamask/connect-multichain": ["../../packages/connect-multichain/src/index.native.ts"],
+      "@metamask/playground-ui": ["../playground-ui/dist/es/playground-ui.d.mts"],
+      "@metamask/playground-ui/*": ["../playground-ui/dist/es/*.d.mts"],
       "@metamask/*": ["../../*/src"]
     }
 	},

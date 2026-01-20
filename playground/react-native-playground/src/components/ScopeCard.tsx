@@ -1,16 +1,23 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: ok */
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
+import {
+	METHODS_REQUIRING_PARAM_INJECTION,
+	injectParams,
+	getNetworkName,
+	openRPCExampleToJSON,
+	truncateJSON,
+	extractRequestForStorage,
+	extractRequestParams,
+	normalizeMethodParams,
+	updateInvokeMethodResults,
+} from '@metamask/playground-ui';
 import { type CaipAccountId, type CaipChainId, type CaipAccountAddress, parseCaipAccountId, type Json } from '@metamask/utils';
 import type { OpenrpcDocument, MethodObject } from '@open-rpc/meta-schema';
 import { useState, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { METHODS_REQUIRING_PARAM_INJECTION, injectParams } from '../constants/methods';
-import { getNetworkName } from '../constants/networks';
-import { openRPCExampleToJSON, truncateJSON } from '../helpers/JsonHelpers';
 import { generateSolanaMethodExamples } from '../helpers/solana-method-signatures';
-import { extractRequestForStorage, extractRequestParams, normalizeMethodParams, updateInvokeMethodResults } from '../helpers/MethodInvocationHelpers';
 import { useSDK } from '../sdk';
 import { colors, sharedStyles } from '../styles/shared';
 
