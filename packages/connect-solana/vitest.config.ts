@@ -11,5 +11,10 @@ export default defineConfig({
       '**/fixtures.test.ts',
     ],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    server: {
+      deps: {
+        inline: ['@metamask/connect-multichain', '@metamask/solana-wallet-standard'],
+      },
+    },
   },
 });
