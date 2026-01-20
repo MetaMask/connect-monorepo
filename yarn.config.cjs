@@ -83,8 +83,10 @@ module.exports = defineConfig({
         // All non-root packages must have a description that ends in a period.
         expectWorkspaceDescription(workspace);
 
-        // All non-root packages must have the same set of NPM keywords.
-        expectWorkspaceField(workspace, 'keywords', ['MetaMask', 'Ethereum']);
+        // All non-root packages must have valid NPM keywords.
+        // Keywords must contain "MetaMask", at least one supported network keyword,
+        // and may contain any other keywords.
+        expectWorkspaceKeywords(workspace);
 
         // All non-root packages must have a homepage URL.
         expectWorkspaceField(workspace, 'homepage');
@@ -460,6 +462,42 @@ async function expectWorkspaceLicense(workspace) {
     workspace.manifest.license === undefined
   ) {
     expectWorkspaceField(workspace, 'license', 'MIT');
+  }
+}
+
+/**
+ * Expect that the workspace has valid NPM keywords.
+ * Keywords must contain "MetaMask", at least one supported network keyword,
+ * and may contain any other keywords.
+ *
+ * @param {Workspace} workspace - The workspace to check.
+ */
+function expectWorkspaceKeywords(workspace) {
+  const keywords = get(workspace.manifest, 'keywords');
+  const supportedNetworks = ['Ethereum', 'Solana'];
+
+  if (!keywords || !Array.isArray(keywords)) {
+    workspace.error('Keywords must be an array.');
+    return;
+  }
+
+  const hasMetaMask = keywords.includes('MetaMask');
+  const hasSupportedNetwork = supportedNetworks.some((network) =>
+    keywords.includes(network),
+  );
+
+  if (!hasMetaMask) {
+    workspace.error(
+      `Keywords must include "MetaMask". Got: ${JSON.stringify(keywords)}`,
+    );
+    return;
+  }
+
+  if (!hasSupportedNetwork) {
+    workspace.error(
+      `Keywords must include at least one supported network (${supportedNetworks.join(', ')}). Got: ${JSON.stringify(keywords)}`,
+    );
+    return;
   }
 }
 
