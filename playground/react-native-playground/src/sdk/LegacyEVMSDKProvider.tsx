@@ -1,6 +1,7 @@
 import { MetamaskConnectEVM, createEVMClient } from '@metamask/connect-evm';
 import type { EIP1193Provider } from '@metamask/connect-evm';
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
+import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import type React from 'react';
 import {
   createContext,
@@ -11,7 +12,6 @@ import {
   useState,
 } from 'react';
 import { Linking } from 'react-native';
-import { METAMASK_PROD_CHROME_ID } from '../constants';
 
 const LegacyEVMSDKContext = createContext<
   | {

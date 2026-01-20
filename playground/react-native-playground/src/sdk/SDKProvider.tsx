@@ -1,10 +1,10 @@
 /* eslint-disable */
 
 import { createMultichainClient, type SDKState, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
+import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { METAMASK_PROD_CHROME_ID } from '../constants';
 import { Linking } from 'react-native';
 
 const SDKContext = createContext<

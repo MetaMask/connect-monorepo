@@ -1,9 +1,8 @@
 /* eslint-disable */
 import type { Scope } from '@metamask/connect';
-// biome-ignore lint/style/useImportType: ok
+import { FEATURED_NETWORKS } from '@metamask/playground-ui';
 import React from 'react';
 
-import { FEATURED_NETWORKS } from '../constants/networks';
 import { escapeHtmlId } from '../helpers/IdHelpers';
 
 type FeaturedNetworksProps = {

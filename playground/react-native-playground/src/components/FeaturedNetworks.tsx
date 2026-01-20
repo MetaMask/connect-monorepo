@@ -1,9 +1,9 @@
 /* eslint-disable */
 import type { Scope } from '@metamask/connect-multichain';
+import { FEATURED_NETWORKS } from '@metamask/playground-ui';
 import type React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-import { FEATURED_NETWORKS } from '../constants/networks';
 import { colors } from '../styles/shared';
 
 type FeaturedNetworksProps = {

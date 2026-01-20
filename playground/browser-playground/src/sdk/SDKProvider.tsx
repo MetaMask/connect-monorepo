@@ -9,6 +9,7 @@ import {
   type SDKState,
   type SessionData,
 } from '@metamask/connect';
+import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
 import {
@@ -20,7 +21,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { METAMASK_PROD_CHROME_ID } from '../constants';
 
 const SDKContext = createContext<
   | {

@@ -1,6 +1,17 @@
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
 import type { Scope, SessionData } from '@metamask/connect';
 import {
+  injectParams,
+  METHODS_REQUIRING_PARAM_INJECTION,
+  getNetworkName,
+  openRPCExampleToJSON,
+  truncateJSON,
+  extractRequestForStorage,
+  extractRequestParams,
+  normalizeMethodParams,
+  updateInvokeMethodResults,
+} from '@metamask/playground-ui';
+import {
   type CaipAccountAddress,
   type CaipAccountId,
   type CaipChainId,
@@ -9,19 +20,7 @@ import {
 } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  injectParams,
-  METHODS_REQUIRING_PARAM_INJECTION,
-} from '../constants/methods';
-import { getNetworkName } from '../constants/networks';
 import { escapeHtmlId } from '../helpers/IdHelpers';
-import { openRPCExampleToJSON, truncateJSON } from '../helpers/JsonHelpers';
-import {
-  extractRequestForStorage,
-  extractRequestParams,
-  normalizeMethodParams,
-  updateInvokeMethodResults,
-} from '../helpers/MethodInvocationHelpers';
 import { generateSolanaMethodExamples } from '../helpers/solana-method-signatures';
 import { useSDK } from '../sdk';
 
