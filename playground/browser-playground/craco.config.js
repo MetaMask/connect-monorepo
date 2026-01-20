@@ -10,10 +10,11 @@ module.exports = {
   webpack: {
     configure: (webpackConfig) => {
       // Control export conditions (for packages with conditional exports)
+      // Put 'require' before 'import' to prefer CommonJS for better compatibility
       webpackConfig.resolve.conditionNames = [
         'browser',
-        'import',
         'require',
+        'import',
         'default',
       ];
 
@@ -23,6 +24,18 @@ module.exports = {
         buffer: require.resolve('buffer'),
         process: require.resolve('process/browser.js'),
       };
+
+      // === ALIASES ===
+      // No aliases needed - using resolutions in package.json instead
+
+      // === MODULE RULES ===
+      // Handle ESM modules from node_modules that have issues
+      webpackConfig.module.rules.push({
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
+      });
 
       // === SUPPRESS SOURCE MAP WARNINGS ===
       // Ignore source map warnings from node_modules dependencies

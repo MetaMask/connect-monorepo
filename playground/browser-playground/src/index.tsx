@@ -9,6 +9,7 @@ import './index.css';
 import App from './App';
 import { SDKProvider } from './sdk/SDKProvider';
 import { LegacyEVMSDKProvider } from './sdk/LegacyEVMSDKProvider';
+import { SolanaWalletProvider } from './sdk/SolanaProvider';
 import { wagmiConfig } from './wagmi/config';
 
 const queryClient = new QueryClient({
@@ -42,7 +43,9 @@ root.render(
       >
         <SDKProvider>
           <LegacyEVMSDKProvider>
-            <App />
+            <SolanaWalletProvider>
+              <App />
+            </SolanaWalletProvider>
           </LegacyEVMSDKProvider>
         </SDKProvider>
       </PersistQueryClientProvider>

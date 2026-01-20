@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
 import { hexToNumber, type CaipAccountId } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { FEATURED_NETWORKS, convertCaipChainIdsToHex } from '@metamask/playground-ui';
 import { useSDK } from './sdk';
 import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
@@ -9,6 +10,7 @@ import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
+import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -36,6 +38,7 @@ function App() {
   const wagmiChainId = useChainId();
   const { connectors, connectAsync: wagmiConnectAsync, status: wagmiStatus } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { connected: solanaConnected, publicKey: solanaPublicKey } = useWallet();
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -279,6 +282,17 @@ function App() {
               </div>
             </section>
           )}
+        </section>
+        <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            Solana Wallet Standard
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Connect using the Solana wallet adapter. MetaMask is automatically registered as a wallet-standard compatible wallet.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <SolanaWalletCard />
+          </div>
         </section>
       </div>
     </div>
