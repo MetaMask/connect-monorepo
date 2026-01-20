@@ -4162,6 +4162,7 @@ __metadata:
     "@types/ws": "npm:^8.18.1"
     "@vitest/coverage-v8": "npm:^3.2.4"
     bowser: "npm:^2.11.0"
+    buffer: "npm:^6.0.3"
     cross-fetch: "npm:^4.1.0"
     deepmerge: "npm:^4.2.2"
     eciesjs: "npm:^0.4.15"

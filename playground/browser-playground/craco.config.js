@@ -20,7 +20,6 @@ module.exports = {
       // === NODE.JS POLYFILLS ===
       webpackConfig.resolve.fallback = {
         ...webpackConfig.resolve.fallback,
-        buffer: require.resolve('buffer'),
         process: require.resolve('process/browser.js'),
       };
 
@@ -33,7 +32,6 @@ module.exports = {
       // === PROVIDE PLUGINS ===
       webpackConfig.plugins.push(
         new webpack.ProvidePlugin({
-          Buffer: ['buffer', 'Buffer'],
           process: 'process/browser.js',
         }),
         new webpack.DefinePlugin({
