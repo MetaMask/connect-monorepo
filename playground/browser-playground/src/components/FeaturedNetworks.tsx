@@ -1,7 +1,6 @@
 /* eslint-disable */
 import type { Scope } from '@metamask/connect';
 import { FEATURED_NETWORKS } from '@metamask/playground-ui';
-// biome-ignore lint/style/useImportType: ok
 import React from 'react';
 
 import { escapeHtmlId } from '../helpers/IdHelpers';

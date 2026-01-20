@@ -2,7 +2,6 @@
 export { getCaip25FormattedAddresses } from './address';
 
 export { convertCaipChainIdsToHex } from './chainId';
-export type { Hex } from './chainId';
 
 export { openRPCExampleToJSON, truncateJSON } from './json';
 

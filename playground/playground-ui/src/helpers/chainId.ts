@@ -1,10 +1,5 @@
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
-import { numberToHex } from '@metamask/utils';
-
-/**
- * Hex string type (e.g., "0x1")
- */
-export type Hex = `0x${string}`;
+import { type Hex, numberToHex } from '@metamask/utils';
 
 /**
  * Converts CAIP-2 chain IDs to hex chain IDs for EVM networks.
@@ -28,7 +23,7 @@ export const convertCaipChainIdsToHex = (scopes: string[]): Hex[] => {
       // Convert reference (string) to number, then to hex
       const chainIdNumber = parseInt(reference, 10);
       if (!isNaN(chainIdNumber)) {
-        ethChainIds.push(numberToHex(chainIdNumber) as Hex);
+        ethChainIds.push(numberToHex(chainIdNumber));
       }
     }
   });
