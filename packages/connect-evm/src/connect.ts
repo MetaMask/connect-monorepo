@@ -4,6 +4,7 @@ import type {
   MultichainCore,
   MultichainOptions,
   Scope,
+  SDKState,
   SessionData,
 } from '@metamask/connect-multichain';
 import {
@@ -899,6 +900,10 @@ export class MetamaskConnectEVM {
    */
   get selectedChainId(): Hex | undefined {
     return this.#provider.selectedChainId;
+  }
+
+  get state(): SDKState {
+    return this.#core.state;
   }
 }
 
