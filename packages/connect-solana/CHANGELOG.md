@@ -7,11 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0]
-
 ### Added
 
 - Initial release ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.1.0...HEAD
-[0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/connect-solana@0.1.0
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/
