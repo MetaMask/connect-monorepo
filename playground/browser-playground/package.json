@@ -54,6 +54,7 @@
   "dependencies": {
     "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect": "workspace:^",
+    "@metamask/playground-ui": "workspace:^",
     "@metamask/utils": "^11.8.1",
     "@tanstack/query-sync-storage-persister": "5.0.5",
     "@tanstack/react-query": ">=5.45.1",
