@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release ([#TBD](https://github.com/MetaMask/connect-monorepo/pull/TBD))
+- Initial release ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
 
 
 [Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.1.0...HEAD

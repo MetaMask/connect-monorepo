@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Solana wallet standard integration  ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
+
 ### Changed
 
 - Update to use renamed API functions: `createMetamaskConnect` → `createMultichainClient` and `createMetamaskConnectEVM` → `createEVMClient` ([#114](https://github.com/MetaMask/connect-monorepo/pull/114))
