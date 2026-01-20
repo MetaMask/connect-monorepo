@@ -2,6 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type {
   MultichainApiClient,
+  SessionProperties,
   Transport,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
@@ -49,6 +50,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    sessionProperties?: SessionProperties,
     forceRequest?: boolean,
   ): Promise<void>;
 

@@ -1,5 +1,6 @@
 import type { Session, SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type {
+  SessionProperties,
   Transport,
   TransportRequest,
   TransportResponse,
@@ -97,6 +98,7 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   connect: (props?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
+    sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }) => Promise<void>;
 

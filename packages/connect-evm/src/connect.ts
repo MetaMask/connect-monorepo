@@ -313,6 +313,7 @@ export class MetamaskConnectEVM {
     await this.#core.connect(
       caipChainIds as Scope[],
       caipAccountIds as CaipAccountId[],
+      {},
       forceRequest,
     );
 

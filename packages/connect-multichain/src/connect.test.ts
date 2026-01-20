@@ -135,7 +135,8 @@ function testSuite<T extends MultichainOptions>({
       sdk = await createSDK(testOptions);
 
       t.expect(sdk.state).toBe('loaded');
-      t.expect(() => sdk.provider).toThrow();
+      // Provider is always available via wrapper transport (handles connection state internally)
+      t.expect(sdk.provider).toBeDefined();
       t.expect(() => sdk.transport).toThrow();
 
       // Expect sdk.connect to reject if transport cannot connect
@@ -226,7 +227,8 @@ function testSuite<T extends MultichainOptions>({
         sdk = await createSDK(testOptions);
 
         t.expect(sdk.state).toBe('loaded');
-        t.expect(() => sdk.provider).toThrow();
+        // Provider is always available via wrapper transport (handles connection state internally)
+        t.expect(sdk.provider).toBeDefined();
         t.expect(() => sdk.transport).toThrow();
 
         await sdk.connect(scopes, caipAccountIds);
