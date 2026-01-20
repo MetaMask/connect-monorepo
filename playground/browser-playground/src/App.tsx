@@ -38,7 +38,7 @@ function App() {
   const wagmiChainId = useChainId();
   const { connectors, connectAsync: wagmiConnectAsync, status: wagmiStatus } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
-  const { connected: solanaConnected, publicKey: solanaPublicKey } = useWallet();
+  const { connected: solanaConnected, publicKey: solanaPublicKey, wallets, select, connect: solanaConnect, disconnect: solanaDisconnect } = useWallet();
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -122,6 +122,23 @@ function App() {
     }
   }, [customScopes, connectors, wagmiConnectAsync]);
 
+  const connectSolana = useCallback(async () => {
+    // Find the MetaMask wallet in registered wallets
+    const metamaskWallet = wallets.find((w) => 
+      w.adapter.name.toLowerCase().includes('metamask')
+    );
+    if (metamaskWallet) {
+      try {
+        select(metamaskWallet.adapter.name);
+        await solanaConnect();
+      } catch (error) {
+        console.error('Solana connection error:', error);
+      }
+    } else {
+      console.error('MetaMask wallet not found in registered wallets');
+    }
+  }, [wallets, select, solanaConnect]);
+
   const isConnected = state === 'connected';
   const isDisconnected =
     state === 'disconnected' || state === 'pending' || state === 'loaded';
@@ -137,7 +154,10 @@ function App() {
     if (wagmiConnected) {
       wagmiDisconnect();
     }
-  }, [sdkDisconnect, legacyDisconnect, wagmiDisconnect, isConnected, legacyConnected, wagmiConnected]);
+    if (solanaConnected) {
+      await solanaDisconnect();
+    }
+  }, [sdkDisconnect, legacyDisconnect, wagmiDisconnect, solanaDisconnect, isConnected, legacyConnected, wagmiConnected, solanaConnected]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -201,9 +221,19 @@ function App() {
                 type="button"
                 onClick={connectWagmi}
                 disabled={wagmiStatus === 'pending'}
-                className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-yellow-500 text-white px-5 py-2 rounded text-base hover:bg-yellow-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {wagmiStatus === 'pending' ? 'Connecting...' : 'Connect (Wagmi)'}
+              </button>
+            )}
+
+            {!solanaConnected && (
+              <button
+                type="button"
+                onClick={connectSolana}
+                className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors"
+              >
+                Connect (Solana)
               </button>
             )}
 
@@ -219,7 +249,7 @@ function App() {
               </button>
             )}
 
-            {(isConnected || legacyConnected || wagmiConnected) && (
+            {(isConnected || legacyConnected || wagmiConnected || solanaConnected) && (
               <button
                 type="button"
                 onClick={disconnect}
@@ -283,17 +313,16 @@ function App() {
             </section>
           )}
         </section>
-        <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Solana Wallet Standard
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Connect using the Solana wallet adapter. MetaMask is automatically registered as a wallet-standard compatible wallet.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <SolanaWalletCard />
-          </div>
-        </section>
+        {solanaConnected && solanaPublicKey && (
+          <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Solana Wallet Standard
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <SolanaWalletCard />
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
