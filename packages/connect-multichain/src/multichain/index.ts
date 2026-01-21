@@ -58,7 +58,7 @@ import { RequestRouter } from './rpc/requestRouter';
 import { DefaultTransport } from './transports/default';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
-import { getDappId, openDeeplink, setupDappMetadata } from './utils';
+import { compressString, getDappId, openDeeplink, setupDappMetadata } from './utils';
 import { MultichainApiClientWrapperTransport } from './transports/multichainApiClientWrapper';
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
@@ -340,6 +340,84 @@ export class MultichainSDK extends MultichainCore {
     };
   }
 
+  async #getQrCodeLink(
+    scopes: Scope[],
+    caipAccountIds: CaipAccountId[],
+    sessionProperties?: SessionProperties,
+  ): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+      if (
+        this.dappClient.state === 'CONNECTED' ||
+        this.dappClient.state === 'CONNECTING'
+      ) {
+        await this.dappClient.disconnect();
+      }
+      const connectionRequest = new Promise<ConnectionRequest>((_resolve) => {
+        this.dappClient.on(
+          'session_request',
+          (sessionRequest: SessionRequest) => {
+            _resolve({
+              sessionRequest,
+              metadata: {
+                dapp: this.options.dapp,
+                sdk: {
+                  version: getVersion(),
+                  platform: getPlatformType(),
+                },
+              },
+            });
+          },
+        );
+
+        (async (): Promise<void> => {
+          try {
+            await this.transport.connect({ scopes, caipAccountIds, sessionProperties });
+            await this.storage.setTransport(TransportType.MWP);
+            this.status = 'connected';
+            await this.storage.setTransport(TransportType.MWP);
+          } catch (error) {
+            if (error instanceof ProtocolError) {
+              // Ignore Request expired errors to allow modal to regenerate expired qr codes
+              if (error.code !== ErrorCode.REQUEST_EXPIRED) {
+                this.status = 'disconnected';
+                reject(error);
+              }
+              // If request is expires, the QRCode will automatically be regenerated we can ignore this case
+            } else {
+              this.status = 'disconnected';
+              reject(
+                error instanceof Error ? error : new Error(String(error)),
+              );
+            }
+          }
+        })().catch(() => {
+          // Error already handled in the async function
+        });
+      });
+
+      // TODO: DRY THIS
+      const json = JSON.stringify(connectionRequest);
+      const compressed = compressString(json);
+      const urlEncoded = encodeURIComponent(compressed);
+      const qrCodeLink = `${METAMASK_DEEPLINK_BASE}/mwp?p=${urlEncoded}&c=1`;
+
+      return resolve(qrCodeLink);
+
+      // async (error?: Error) => {
+      //   if (error) {
+      //     await this.storage.removeTransport();
+      //     reject(error);
+      //   } else {
+      //     await this.storage.setTransport(TransportType.MWP);
+      //     resolve();
+      //   }
+      // },
+        // .catch((error) => {
+        //   reject(error instanceof Error ? error : new Error(String(error)));
+        // });
+    });
+  }
+
   async #renderInstallModalAsync(
     desktopPreferred: boolean,
     scopes: Scope[],
@@ -378,7 +456,7 @@ export class MultichainSDK extends MultichainCore {
               (async (): Promise<void> => {
                 try {
                   await this.transport.connect({ scopes, caipAccountIds, sessionProperties });
-                  await this.options.ui.factory.unload();
+                  await this.options.ui.factory.unload(); // this causes the successCallback below to fire
                   this.options.ui.factory.modal?.unmount();
                   this.status = 'connected';
                   await this.storage.setTransport(TransportType.MWP);
@@ -425,13 +503,18 @@ export class MultichainSDK extends MultichainCore {
     sessionProperties?: SessionProperties,
   ): Promise<void> {
     // create the listener only once to avoid memory leaks
-    this.#beforeUnloadListener ??= this.#createBeforeUnloadListener();
-    await this.#renderInstallModalAsync(
-      desktopPreferred,
-      scopes,
-      caipAccountIds,
-      sessionProperties,
-    );
+    if (this.options.ui.displayUri) {
+      const qrCodeLink = await this.#getQrCodeLink(scopes, caipAccountIds, sessionProperties);
+      this.options.ui.displayUri(qrCodeLink);
+    } else {
+      this.#beforeUnloadListener ??= this.#createBeforeUnloadListener();
+      await this.#renderInstallModalAsync(
+        desktopPreferred,
+        scopes,
+        caipAccountIds,
+        sessionProperties,
+      );
+    }
   }
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {

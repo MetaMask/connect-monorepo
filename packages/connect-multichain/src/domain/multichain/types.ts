@@ -60,6 +60,7 @@ export type MultichainOptions = {
     headless?: boolean;
     preferExtension?: boolean;
     showInstallModal?: boolean;
+    displayUri?: (uri: string) => void;
   };
   mobile?: {
     preferredOpenLink?: (deeplink: string, target?: string) => void;
