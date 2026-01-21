@@ -28,10 +28,8 @@ export const browserSelectors = {
 
   // Convenience methods for common patterns
   scopeCard: (scope: string) => `[data-testid="${TEST_IDS.scopeCard.card(scope)}"]`,
-  connectBtn: () => `[data-testid="${TEST_IDS.app.btnConnect}"]`,
+  connectBtn: (type?: string) => `[data-testid="${TEST_IDS.app.btnConnect(type)}"]`,
   disconnectBtn: () => `[data-testid="${TEST_IDS.app.btnDisconnect}"]`,
-  legacyConnectBtn: () => `[data-testid="${TEST_IDS.app.btnConnectLegacy}"]`,
-  wagmiConnectBtn: () => `[data-testid="${TEST_IDS.app.btnConnectWagmi}"]`,
 };
 
 /**
@@ -48,8 +46,6 @@ export const rnSelectors = {
 
   // Convenience methods
   scopeCard: (scope: string) => TEST_IDS.scopeCard.card(scope),
-  connectBtn: () => TEST_IDS.app.btnConnect,
+  connectBtn: (type?: string) => TEST_IDS.app.btnConnect(type),
   disconnectBtn: () => TEST_IDS.app.btnDisconnect,
-  legacyConnectBtn: () => TEST_IDS.app.btnConnectLegacy,
-  wagmiConnectBtn: () => TEST_IDS.app.btnConnectWagmi,
 };

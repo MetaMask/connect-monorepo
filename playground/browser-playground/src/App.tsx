@@ -166,7 +166,7 @@ function App() {
             {isConnecting && (
               <button
                 type="button"
-                data-testid={TEST_IDS.app.btnConnect}
+                data-testid={TEST_IDS.app.btnConnect()}
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
@@ -177,7 +177,7 @@ function App() {
             {isDisconnected && (
               <button
                 type="button"
-                data-testid={TEST_IDS.app.btnConnect}
+                data-testid={TEST_IDS.app.btnConnect()}
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
@@ -188,7 +188,7 @@ function App() {
             {!legacyConnected && (
               <button
                 type="button"
-                data-testid={TEST_IDS.app.btnConnectLegacy}
+                data-testid={TEST_IDS.app.btnConnect('legacy')}
                 onClick={connectLegacyEVM}
                 className="bg-green-500 text-white px-5 py-2 rounded text-base hover:bg-green-600 transition-colors"
               >
@@ -199,7 +199,7 @@ function App() {
             {!wagmiConnected && (
               <button
                 type="button"
-                data-testid={TEST_IDS.app.btnConnectWagmi}
+                data-testid={TEST_IDS.app.btnConnect('wagmi')}
                 onClick={connectWagmi}
                 disabled={wagmiStatus === 'pending'}
                 className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"

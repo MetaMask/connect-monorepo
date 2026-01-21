@@ -144,7 +144,7 @@ export default function Page() {
 
 					{isConnecting && (
 						<>
-							<TouchableOpacity testID={TEST_IDS.app.btnConnect} onPress={connect} style={sharedStyles.button} disabled>
+							<TouchableOpacity testID={TEST_IDS.app.btnConnect()} onPress={connect} style={sharedStyles.button} disabled>
 								<Text style={sharedStyles.buttonText}>Connecting...</Text>
 							</TouchableOpacity>
 							<TouchableOpacity testID={TEST_IDS.app.btnCancel} onPress={disconnect} style={sharedStyles.buttonCancel}>
@@ -154,20 +154,20 @@ export default function Page() {
 					)}
 
 					{isDisconnected && (
-						<TouchableOpacity testID={TEST_IDS.app.btnConnect} onPress={connect} style={sharedStyles.button}>
+						<TouchableOpacity testID={TEST_IDS.app.btnConnect()} onPress={connect} style={sharedStyles.button}>
 							<Text style={sharedStyles.buttonText}>Connect</Text>
 						</TouchableOpacity>
 					)}
 
 					{!legacyConnected && (
-						<TouchableOpacity testID={TEST_IDS.app.btnConnectLegacy} onPress={connectLegacyEVM} style={[sharedStyles.button, styles.legacyButton]}>
+						<TouchableOpacity testID={TEST_IDS.app.btnConnect('legacy')} onPress={connectLegacyEVM} style={[sharedStyles.button, styles.legacyButton]}>
 							<Text style={sharedStyles.buttonText}>Connect (Legacy EVM)</Text>
 						</TouchableOpacity>
 					)}
 
 					{!wagmiConnected && (
 						<TouchableOpacity
-							testID={TEST_IDS.app.btnConnectWagmi}
+							testID={TEST_IDS.app.btnConnect('wagmi')}
 							onPress={connectWagmi}
 							disabled={wagmiStatus === 'pending'}
 							style={[

@@ -37,9 +37,8 @@ export const TEST_IDS = {
     title: 'app-title',
 
     // Connection buttons
-    btnConnect: 'app-btn-connect',
-    btnConnectLegacy: 'app-btn-connect-legacy',
-    btnConnectWagmi: 'app-btn-connect-wagmi',
+    btnConnect: (type?: string) =>
+      type ? createTestId('app', 'btn', 'connect', type) : 'app-btn-connect',
     btnDisconnect: 'app-btn-disconnect',
     btnReconnect: 'app-btn-reconnect',
     btnCancel: 'app-btn-cancel',
