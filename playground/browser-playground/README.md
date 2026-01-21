@@ -1,6 +1,6 @@
 # Browser Playground
 
-A browser-based test dapp for the MetaMask Connect, demonstrating Multichain API capabilities, legacy EVM connections, and wagmi integration.
+A browser-based test dapp for the MetaMask Connect
 
 ## Overview
 
