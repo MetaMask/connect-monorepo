@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { EIP1193Provider } from '@metamask/connect/evm';
+import { TEST_IDS } from '@metamask/playground-ui';
 import { send_eth_signTypedData_v4, send_personal_sign } from '../helpers/SignHelpers';
 
 interface LegacyEVMCardProps {
@@ -167,32 +168,32 @@ export function LegacyEVMCard({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div data-testid={TEST_IDS.legacyEvm.card} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 truncate">
+        <h3 data-testid={TEST_IDS.legacyEvm.title} className="text-lg font-semibold text-gray-800 truncate">
           Legacy EVM Connection
         </h3>
       </div>
 
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium text-gray-600">
+          <span data-testid={TEST_IDS.legacyEvm.chainIdLabel} className="text-sm font-medium text-gray-600">
             Connected Chain:
           </span>
-          <span className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+          <span data-testid={TEST_IDS.legacyEvm.chainIdValue} className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
             {chainId || 'Not available'}
           </span>
         </div>
 
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium text-gray-600">Accounts:</span>
-          <span className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+          <span data-testid={TEST_IDS.legacyEvm.accountsLabel} className="text-sm font-medium text-gray-600">Accounts:</span>
+          <span data-testid={TEST_IDS.legacyEvm.accountsValue} className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
             {accounts.length} available
           </span>
         </div>
 
         {accounts.length > 0 && (
-          <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+          <div data-testid={TEST_IDS.legacyEvm.activeAccount} className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-green-800 font-medium">Active Account:</p>
             <p className="text-sm text-green-700 font-mono break-all">
               {accounts[0]}
@@ -202,11 +203,11 @@ export function LegacyEVMCard({
       </div>
 
       {response && (
-        <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
-          <p className="text-sm font-medium text-gray-600 mb-1">
+        <div data-testid={TEST_IDS.legacyEvm.responseContainer} className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+          <p data-testid={TEST_IDS.legacyEvm.responseLabel} className="text-sm font-medium text-gray-600 mb-1">
             Last Response:
           </p>
-          <p className="text-sm text-gray-700 font-mono break-all">
+          <p data-testid={TEST_IDS.legacyEvm.responseText} className="text-sm text-gray-700 font-mono break-all">
             {String(response)}
           </p>
         </div>
@@ -215,6 +216,7 @@ export function LegacyEVMCard({
       <div className="space-y-2">
         <button
           type="button"
+          data-testid={TEST_IDS.legacyEvm.btnRequestPermissions}
           onClick={requestPermissions}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
         >
@@ -223,6 +225,7 @@ export function LegacyEVMCard({
 
         <button
           type="button"
+          data-testid={TEST_IDS.legacyEvm.btnSignTypedDataV4}
           onClick={eth_signTypedData_v4}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
         >
@@ -231,6 +234,7 @@ export function LegacyEVMCard({
 
         <button
           type="button"
+          data-testid={TEST_IDS.legacyEvm.btnPersonalSign}
           onClick={eth_personal_sign}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
         >
@@ -239,6 +243,7 @@ export function LegacyEVMCard({
 
         <button
           type="button"
+          data-testid={TEST_IDS.legacyEvm.btnSendTransaction}
           onClick={sendTransaction}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
         >
@@ -248,6 +253,7 @@ export function LegacyEVMCard({
         {chainId === '0x1' ? (
           <button
             type="button"
+            data-testid={TEST_IDS.legacyEvm.btnSwitchToGoerli}
             onClick={() => changeNetwork('0x5')}
             className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
           >
@@ -256,6 +262,7 @@ export function LegacyEVMCard({
         ) : (
           <button
             type="button"
+            data-testid={TEST_IDS.legacyEvm.btnSwitchToMainnet}
             onClick={() => changeNetwork('0x1')}
             className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
           >
@@ -265,6 +272,7 @@ export function LegacyEVMCard({
 
         <button
           type="button"
+          data-testid={TEST_IDS.legacyEvm.btnSwitchToPolygon}
           onClick={() => changeNetwork('0x89')}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
         >
@@ -273,19 +281,21 @@ export function LegacyEVMCard({
 
         <button
           type="button"
+          data-testid={TEST_IDS.legacyEvm.btnAddPolygonChain}
           onClick={addEthereumChain}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
         >
           Add Polygon Chain
         </button>
 
-        <div className="mt-4 pt-4 border-t border-gray-200">
+        <div data-testid={TEST_IDS.legacyEvm.readOnlySection} className="mt-4 pt-4 border-t border-gray-200">
           <h4 className="text-sm font-medium text-gray-700 mb-2">
             Read-Only RPC Calls
           </h4>
           <div className="space-y-2">
             <button
               type="button"
+              data-testid={TEST_IDS.legacyEvm.btnGetBalance}
               onClick={eth_getBalance}
               className="w-full bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 transition-colors"
             >
@@ -293,6 +303,7 @@ export function LegacyEVMCard({
             </button>
             <button
               type="button"
+              data-testid={TEST_IDS.legacyEvm.btnBlockNumber}
               onClick={eth_blockNumber}
               className="w-full bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 transition-colors"
             >
@@ -300,6 +311,7 @@ export function LegacyEVMCard({
             </button>
             <button
               type="button"
+              data-testid={TEST_IDS.legacyEvm.btnGasPrice}
               onClick={eth_gasPrice}
               className="w-full bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 transition-colors"
             >

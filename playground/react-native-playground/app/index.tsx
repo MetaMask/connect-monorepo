@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -6,6 +5,7 @@ import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId } from '@metamask/utils';
 import { Buffer } from 'buffer';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { TEST_IDS } from '@metamask/playground-ui';
 
 import { useSDK, useLegacyEVMSDK } from '../src/sdk';
 import DynamicInputs, { INPUT_LABEL_TYPE } from '../src/components/DynamicInputs';
@@ -132,10 +132,10 @@ export default function Page() {
 	const isConnecting = state === 'connecting';
 
 	return (
-		<SafeAreaView style={sharedStyles.safeArea}>
+		<SafeAreaView testID={TEST_IDS.app.container} style={sharedStyles.safeArea}>
 			<StatusBar style="auto" />
 			<ScrollView style={sharedStyles.container} contentContainerStyle={sharedStyles.scrollContainer}>
-				<Text style={sharedStyles.heading1}>MetaMask MultiChain API Test Dapp</Text>
+				<Text testID={TEST_IDS.app.title} style={sharedStyles.heading1}>MetaMask MultiChain API Test Dapp</Text>
 
 				<View style={sharedStyles.card}>
 					<View style={styles.scopeSelection}>
@@ -144,29 +144,30 @@ export default function Page() {
 
 					{isConnecting && (
 						<>
-							<TouchableOpacity onPress={connect} style={sharedStyles.button} disabled>
+							<TouchableOpacity testID={TEST_IDS.app.btnConnect} onPress={connect} style={sharedStyles.button} disabled>
 								<Text style={sharedStyles.buttonText}>Connecting...</Text>
 							</TouchableOpacity>
-							<TouchableOpacity onPress={disconnect} style={sharedStyles.buttonCancel}>
+							<TouchableOpacity testID={TEST_IDS.app.btnCancel} onPress={disconnect} style={sharedStyles.buttonCancel}>
 								<Text style={sharedStyles.buttonText}>Cancel</Text>
 							</TouchableOpacity>
 						</>
 					)}
 
 					{isDisconnected && (
-						<TouchableOpacity onPress={connect} style={sharedStyles.button}>
+						<TouchableOpacity testID={TEST_IDS.app.btnConnect} onPress={connect} style={sharedStyles.button}>
 							<Text style={sharedStyles.buttonText}>Connect</Text>
 						</TouchableOpacity>
 					)}
 
 					{!legacyConnected && (
-						<TouchableOpacity onPress={connectLegacyEVM} style={[sharedStyles.button, styles.legacyButton]}>
+						<TouchableOpacity testID={TEST_IDS.app.btnConnectLegacy} onPress={connectLegacyEVM} style={[sharedStyles.button, styles.legacyButton]}>
 							<Text style={sharedStyles.buttonText}>Connect (Legacy EVM)</Text>
 						</TouchableOpacity>
 					)}
 
 					{!wagmiConnected && (
 						<TouchableOpacity
+							testID={TEST_IDS.app.btnConnectWagmi}
 							onPress={connectWagmi}
 							disabled={wagmiStatus === 'pending'}
 							style={[
@@ -185,27 +186,27 @@ export default function Page() {
 					)}
 
 					{isConnected && (
-						<TouchableOpacity onPress={scopesHaveChanged() ? connect : disconnect} style={sharedStyles.button}>
+						<TouchableOpacity testID={scopesHaveChanged() ? TEST_IDS.app.btnReconnect : TEST_IDS.app.btnDisconnect} onPress={scopesHaveChanged() ? connect : disconnect} style={sharedStyles.button}>
 							<Text style={sharedStyles.buttonText}>{scopesHaveChanged() ? 'Re Establishing Connection' : 'Disconnect'}</Text>
 						</TouchableOpacity>
 					)}
 
 					{(isConnected || legacyConnected || wagmiConnected) && (
-						<TouchableOpacity onPress={disconnect} style={sharedStyles.buttonCancel}>
+						<TouchableOpacity testID={TEST_IDS.app.btnDisconnect} onPress={disconnect} style={sharedStyles.buttonCancel}>
 							<Text style={sharedStyles.buttonText}>Disconnect</Text>
 						</TouchableOpacity>
 					)}
 				</View>
 
 				{error && (
-					<View style={[sharedStyles.card, styles.errorCard]}>
+					<View testID={TEST_IDS.app.sectionError} style={[sharedStyles.card, styles.errorCard]}>
 						<Text style={styles.errorTitle}>Error</Text>
 						<Text style={sharedStyles.text}>{error.message.toString()}</Text>
 					</View>
 				)}
 
 				{Object.keys(session?.sessionScopes ?? {}).length > 0 && (
-					<View style={sharedStyles.card}>
+					<View testID={TEST_IDS.app.sectionScopes} style={sharedStyles.card}>
 						<Text style={sharedStyles.heading2}>Connected Networks</Text>
 						{Object.entries(session?.sessionScopes ?? {}).map(([scope, details]) => {
 							return <ScopeCard key={scope} scope={scope as Scope} details={details as SessionData['sessionScopes'][Scope]} />;
@@ -214,7 +215,7 @@ export default function Page() {
 				)}
 
 				{legacyConnected && legacyProvider && legacySDK && (
-					<View style={sharedStyles.card}>
+					<View testID={TEST_IDS.app.sectionConnected} style={sharedStyles.card}>
 						<Text style={sharedStyles.heading2}>Legacy EVM Connection</Text>
 						<LegacyEVMCard
 							provider={legacyProvider}

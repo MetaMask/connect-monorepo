@@ -11,6 +11,7 @@ import {
 	extractRequestParams,
 	normalizeMethodParams,
 	updateInvokeMethodResults,
+	TEST_IDS,
 } from '@metamask/playground-ui';
 import { type CaipAccountId, type CaipChainId, type CaipAccountAddress, parseCaipAccountId, type Json } from '@metamask/utils';
 import type { OpenrpcDocument, MethodObject } from '@open-rpc/meta-schema';
@@ -195,23 +196,24 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 	};
 
 	return (
-		<View style={styles.card}>
+		<View testID={TEST_IDS.scopeCard.card(scope)} style={styles.card}>
 			<View style={styles.header}>
-				<Text style={styles.networkName} numberOfLines={1}>
+				<Text testID={TEST_IDS.scopeCard.networkName(scope)} style={styles.networkName} numberOfLines={1}>
 					{networkName}
 				</Text>
 			</View>
 
 			<View style={styles.section}>
 				<View style={sharedStyles.row}>
-					<Text style={styles.sectionLabel}>Accounts:</Text>
-					<View style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginLeft: 8 }]}>
+					<Text testID={TEST_IDS.scopeCard.accountsLabel(scope)} style={styles.sectionLabel}>Accounts:</Text>
+					<View testID={TEST_IDS.scopeCard.accountsBadge(scope)} style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginLeft: 8 }]}>
 						<Text style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>{accountCount} available</Text>
 					</View>
 				</View>
 
 				<View style={sharedStyles.pickerContainer}>
 					<Picker
+						testID={TEST_IDS.scopeCard.accountSelect(scope)}
 						selectedValue={selectedAccount}
 						onValueChange={async (itemValue) => {
 							const selectedAccountValue = itemValue as CaipAccountId;
@@ -233,7 +235,7 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 			</View>
 
 			{selectedAccount && (
-				<View style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginBottom: 12, alignSelf: 'stretch' }]}>
+				<View testID={TEST_IDS.scopeCard.activeAccount(scope)} style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginBottom: 12, alignSelf: 'stretch' }]}>
 					<Text style={[sharedStyles.badgeText, sharedStyles.badgeTextGreen]}>Active Account:</Text>
 					<Text style={[sharedStyles.textMono, sharedStyles.badgeTextGreen, { marginTop: 4 }]}>{parseCaipAccountId(selectedAccount).address}</Text>
 				</View>
@@ -241,14 +243,15 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 
 			<View style={styles.section}>
 				<View style={sharedStyles.row}>
-					<Text style={styles.sectionLabel}>Available Methods:</Text>
-					<View style={[sharedStyles.badge, sharedStyles.badgePurple, { marginLeft: 8 }]}>
+					<Text testID={TEST_IDS.scopeCard.methodsLabel(scope)} style={styles.sectionLabel}>Available Methods:</Text>
+					<View testID={TEST_IDS.scopeCard.methodsBadge(scope)} style={[sharedStyles.badge, sharedStyles.badgePurple, { marginLeft: 8 }]}>
 						<Text style={[sharedStyles.badgeText, sharedStyles.badgeTextPurple]}>{details.methods?.length ?? 0} available</Text>
 					</View>
 				</View>
 
 				<View style={sharedStyles.pickerContainer}>
 					<Picker
+						testID={TEST_IDS.scopeCard.methodSelect(scope)}
 						selectedValue={selectedMethods[scope] ?? ''}
 						onValueChange={async (itemValue) => {
 							await handleMethodSelect(itemValue, scope);
@@ -264,13 +267,14 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 			</View>
 
 			{selectedMethods[scope] && (
-				<View style={[sharedStyles.badge, sharedStyles.badgePurple, { marginBottom: 12, alignSelf: 'stretch' }]}>
+				<View testID={TEST_IDS.scopeCard.selectedMethod(scope)} style={[sharedStyles.badge, sharedStyles.badgePurple, { marginBottom: 12, alignSelf: 'stretch' }]}>
 					<Text style={[sharedStyles.badgeText, sharedStyles.badgeTextPurple]}>Selected Method:</Text>
 					<Text style={[sharedStyles.textMono, sharedStyles.badgeTextPurple, { marginTop: 4 }]}>{selectedMethods[scope]}</Text>
 				</View>
 			)}
 
 			<TouchableOpacity
+				testID={TEST_IDS.scopeCard.invokeCollapsible(scope)}
 				style={[sharedStyles.collapsibleHeader, { marginTop: 12 }]}
 				onPress={() => setIsRequestExpanded(!isRequestExpanded)}
 				activeOpacity={0.7}
@@ -283,6 +287,7 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 				<View style={sharedStyles.collapsibleContent}>
 					<Text style={[styles.sectionLabel, { marginBottom: 8 }]}>JSON Request:</Text>
 					<TextInput
+						testID={TEST_IDS.scopeCard.invokeTextarea(scope)}
 						value={invokeMethodRequests[scope] ?? ''}
 						onChangeText={(text) => setInvokeMethodRequests((prev) => ({ ...prev, [scope]: text }))}
 						multiline
@@ -295,6 +300,7 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 			)}
 
 			<TouchableOpacity
+				testID={TEST_IDS.scopeCard.invokeBtn(scope)}
 				onPress={async () => {
 					const method = selectedMethods[scope];
 					if (method) {
@@ -312,11 +318,11 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 					const { text, truncated } = truncateJSON(result, 150);
 					const isError = result instanceof Error;
 					return (
-						<View key={`${method}-${index}`} style={[sharedStyles.resultContainer, { marginTop: 12 }]}>
+						<View key={`${method}-${index}`} testID={TEST_IDS.scopeCard.resultContainer(scope, method, index)} style={[sharedStyles.resultContainer, { marginTop: 12 }]}>
 							<View style={[sharedStyles.resultHeader, isError && sharedStyles.resultHeaderError]}>
 								<View style={sharedStyles.row}>
-									<Text style={[sharedStyles.textMono, { fontWeight: '600', color: isError ? colors.red700 : colors.purple700 }]}>{method}</Text>
-									<View style={[sharedStyles.badge, isError ? sharedStyles.badgeRed : sharedStyles.badgeGreen, { marginLeft: 8 }]}>
+									<Text testID={TEST_IDS.scopeCard.resultMethod(scope, method, index)} style={[sharedStyles.textMono, { fontWeight: '600', color: isError ? colors.red700 : colors.purple700 }]}>{method}</Text>
+									<View testID={TEST_IDS.scopeCard.resultStatus(scope, method, index)} style={[sharedStyles.badge, isError ? sharedStyles.badgeRed : sharedStyles.badgeGreen, { marginLeft: 8 }]}>
 										<Text style={[sharedStyles.badgeText, isError ? sharedStyles.badgeTextRed : sharedStyles.badgeTextGreen]}>{isError ? 'Error' : 'Success'}</Text>
 									</View>
 								</View>
@@ -327,7 +333,7 @@ export function ScopeCard({ scope, details }: { scope: Scope; details: SessionDa
 							</View>
 							<View style={sharedStyles.resultContent}>
 								<View style={sharedStyles.resultCode}>
-									<Text style={[sharedStyles.resultCodeText, isError && sharedStyles.resultCodeTextError]}>{truncated ? JSON.stringify(result, null, 2) : text}</Text>
+									<Text testID={TEST_IDS.scopeCard.resultCode(scope, method, index)} style={[sharedStyles.resultCodeText, isError && sharedStyles.resultCodeTextError]}>{truncated ? JSON.stringify(result, null, 2) : text}</Text>
 								</View>
 							</View>
 						</View>

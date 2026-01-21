@@ -70,6 +70,16 @@
         "default": "./dist/cjs/config.cjs"
       }
     },
+    "./testIds": {
+      "import": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/es/testIds.mjs"
+      },
+      "require": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/cjs/testIds.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/cjs/playground-ui.cjs",
