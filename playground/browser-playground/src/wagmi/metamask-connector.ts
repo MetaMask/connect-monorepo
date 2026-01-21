@@ -54,7 +54,15 @@ const DEFAULT_CHAIN_ID = 1;
 
 export type MetaMaskParameters = Partial<
   Pick<CreateEVMClientParameters, 'dapp' | 'debug'>
-> &
+> & {
+  /** Mobile-specific options, including preferredOpenLink for React Native deeplinks */
+  mobile?: {
+    /** Whether to use deeplink (default: true) or universal link */
+    useDeeplink?: boolean;
+    /** Custom function to open deeplinks - required for React Native since window.location.href doesn't work */
+    preferredOpenLink?: (deeplink: string, target?: string) => void;
+  };
+} &
   OneOf<
     | {
         /* Shortcut to connect and sign a message */
@@ -102,6 +110,8 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               supportedNetworks,
             },
             debug: parameters.debug,
+            // Pass mobile options for React Native deeplink support
+            ...(parameters.mobile && { mobile: parameters.mobile }),
           });
         }
         metamask = await metamaskPromise;

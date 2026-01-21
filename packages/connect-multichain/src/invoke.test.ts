@@ -115,13 +115,14 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 
 			sdk = await createSDK(testOptions);
 
-			t.expect(sdk.state).toBe('loaded');
-			t.expect(() => sdk.provider).toThrow();
+			t.expect(sdk.status).toBe('loaded');
+			// Provider is always available via wrapper transport (handles connection state internally)
+			t.expect(sdk.provider).toBeDefined();
 			t.expect(() => sdk.transport).toThrow();
 
 			await sdk.connect(scopes, caipAccountIds);
 
-			t.expect(sdk.state).toBe('connected');
+			t.expect(sdk.status).toBe('connected');
 			t.expect(sdk.storage).toBeDefined();
 			t.expect(sdk.transport).toBeDefined();
 			if (platform === 'web-mobile') {
@@ -156,7 +157,7 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 
 				sdk = await createSDK(testOptions);
 				await sdk.connect(scopes, caipAccountIds);
-				t.expect(sdk.state).toBe('connected');
+				t.expect(sdk.status).toBe('connected');
 
 				if (platform === 'web-mobile') {
 					sdk.transport.getActiveSession = t.vi.fn().mockResolvedValue({id: 'mock-session-id'});
@@ -200,13 +201,13 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 				},
 			});
 
-			t.expect(sdk.state).toBe('loaded');
+			t.expect(sdk.status).toBe('loaded');
 			t.expect(() => sdk.provider).toThrow();
 			t.expect(() => sdk.transport).toThrow();
 
 			await sdk.connect(scopes, caipAccountIds);
 
-			t.expect(sdk.state).toBe('connected');
+			t.expect(sdk.status).toBe('connected');
 
 			const options = { scope: 'eip155:1', request: { method: 'eth_accounts', params: [] } } as InvokeMethodOptions;
 			const result = await sdk.invokeMethod(options);
@@ -233,7 +234,7 @@ function testSuite<T extends MultichainOptions>({ platform, createSDK, options: 
 					params: [],
 				},
 			} as InvokeMethodOptions;
-			t.expect(sdk.state).toBe('connected');
+			t.expect(sdk.status).toBe('connected');
 			t.expect(sdk.provider).toBeDefined();;
 
 			if (platform === 'web-mobile') {

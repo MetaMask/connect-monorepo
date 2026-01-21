@@ -2,6 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type {
   MultichainApiClient,
+  SessionProperties,
   Transport,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
@@ -11,7 +12,7 @@ import type { StoreClient } from '../store/client';
 import type { InvokeMethodOptions, RPCAPI, Scope } from './api/types';
 import type { MultichainOptions, ExtendedTransport } from './types';
 
-export type SDKState =
+export type ConnectionStatus =
   | 'pending'
   | 'loaded'
   | 'disconnected'
@@ -33,7 +34,7 @@ export enum TransportType {
 export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract storage: StoreClient;
 
-  abstract state: SDKState;
+  abstract status: ConnectionStatus;
 
   abstract provider: MultichainApiClient<RPCAPI>;
 
@@ -49,6 +50,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract connect(
     scopes: Scope[],
     caipAccountIds: CaipAccountId[],
+    sessionProperties?: SessionProperties,
     forceRequest?: boolean,
   ): Promise<void>;
 

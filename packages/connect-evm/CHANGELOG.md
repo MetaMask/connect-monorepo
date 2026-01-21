@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `mobile.preferredOpenLink` option support for React Native deeplink handling in wagmi connector ([#118](https://github.com/MetaMask/connect-monorepo/pull/118))
+  - Allows React Native apps to use `Linking.openURL()` instead of `window.location.href` for opening MetaMask deeplinks
+  - Required for wagmi connector usage in React Native environments
 - Add legacy compatibility methods to `EIP1193Provider` for broader ecosystem compatibility ([#102](https://github.com/MetaMask/connect-monorepo/pull/102))
   - `chainId` getter (alias for `selectedChainId`)
   - `sendAsync()` for callback/promise-based JSON-RPC requests
@@ -17,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **BREAKING** Rename `createMetamaskConnectEVM` to `createEVMClient` for a cleaner naming convention ([#114](https://github.com/MetaMask/connect-monorepo/pull/114))
+
+### Removed
+
+- Revert: Fix local state not correctly being reset when establishing a new connection when there is an existing active session ([#119](https://github.com/MetaMask/connect-monorepo/pull/119))
 
 ### Fixed
 

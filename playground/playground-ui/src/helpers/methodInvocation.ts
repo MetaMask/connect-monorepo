@@ -1,7 +1,8 @@
-import type { SessionData } from '@metamask/multichain-api-client';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject } from '@open-rpc/meta-schema';
 import type { Dispatch, SetStateAction } from 'react';
+
+import type { SessionData, InvokeMethodResults } from '../types/sdk';
 
 /**
  * Normalizes parameters for method invocation.
@@ -72,15 +73,12 @@ export const normalizeMethodParams = (
  * @returns Updated results state.
  */
 export const updateInvokeMethodResults = (
-  previousResults: Record<
-    string,
-    Record<string, { result: Json | Error; request: Json }[]>
-  >,
+  previousResults: InvokeMethodResults,
   scope: CaipChainId,
   method: string,
   result: Json | Error,
   request: Json,
-) => {
+): InvokeMethodResults => {
   const scopeResults = previousResults[scope] ?? {};
   const methodResults = scopeResults[method] ?? [];
   const newResults = {
@@ -94,12 +92,24 @@ export const updateInvokeMethodResults = (
   return newResults;
 };
 
+/**
+ * Extracts the params from a wallet_invokeMethod request object.
+ *
+ * @param finalRequestObject - The full request object
+ * @returns The params from the nested request
+ */
 export const extractRequestParams = (finalRequestObject: {
   params: { request: { params: Json } };
 }): Json => {
   return finalRequestObject.params.request.params;
 };
 
+/**
+ * Extracts the request object for storage from a wallet_invokeMethod request.
+ *
+ * @param finalRequestObject - The full request object
+ * @returns The nested request object
+ */
 export const extractRequestForStorage = (finalRequestObject: {
   params: { request: Json };
 }): Json => {
@@ -157,25 +167,24 @@ export const autoSelectAccountForScope = (
  * @param caipChainId - The CAIP chain ID.
  * @param selectedAccount - The selected account for this scope.
  * @param metamaskOpenrpcDocument - The MetaMask OpenRPC document.
- * @param injectParams - Function to inject parameters for specific methods.
- * @param openRPCExampleToJSON - Function to convert OpenRPC examples to JSON.
- * @param METHODS_REQUIRING_PARAM_INJECTION - Object containing methods that require parameter injection.
+ * @param injectParamsFn - Function to inject parameters for specific methods.
+ * @param openRPCExampleToJSONFn - Function to convert OpenRPC examples to JSON.
+ * @param methodsRequiringInjection - Object containing methods that require parameter injection.
  * @returns The prepared request object or null if method not found.
  */
 export const prepareMethodRequest = (
   method: string,
   caipChainId: CaipChainId,
   selectedAccount: CaipAccountId | null,
-  // biome-ignore lint/suspicious/noExplicitAny: Needed
-  metamaskOpenrpcDocument: any,
-  injectParams: (
+  metamaskOpenrpcDocument: { methods: MethodObject[] },
+  injectParamsFn: (
     method: string,
     params: Json,
     account: CaipAccountId,
     scope: CaipChainId,
   ) => Json,
-  openRPCExampleToJSON: (methodObj: MethodObject) => Json,
-  METHODS_REQUIRING_PARAM_INJECTION: Record<string, boolean>,
+  openRPCExampleToJSONFn: (methodObj: MethodObject) => Json,
+  methodsRequiringInjection: Record<string, boolean>,
 ): Json | null => {
   const example = metamaskOpenrpcDocument?.methods.find(
     (methodObj: MethodObject) => methodObj.name === method,
@@ -186,10 +195,10 @@ export const prepareMethodRequest = (
     return null;
   }
 
-  let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
+  let exampleParams: Json = openRPCExampleToJSONFn(example as MethodObject);
 
-  if (method in METHODS_REQUIRING_PARAM_INJECTION && selectedAccount) {
-    exampleParams = injectParams(
+  if (method in methodsRequiringInjection && selectedAccount) {
+    exampleParams = injectParamsFn(
       method,
       exampleParams,
       selectedAccount,

@@ -298,10 +298,6 @@ export class MetamaskConnectEVM {
       chainIds: [DEFAULT_CHAIN_ID],
     },
   ): Promise<{ accounts: Address[]; chainId: number }> {
-    if (this.#core.state !== 'connected') {
-      await this.disconnect();
-    }
-
     logger('request: connect', { account });
 
     if (!chainIds || chainIds.length === 0) {
@@ -319,6 +315,7 @@ export class MetamaskConnectEVM {
     await this.#core.connect(
       caipChainIds as Scope[],
       caipAccountIds as CaipAccountId[],
+      {},
       forceRequest,
     );
 
@@ -806,7 +803,7 @@ export class MetamaskConnectEVM {
     // Skip session recovery if transport is not initialized yet.
     // Transport is only initialized when there's a stored session or after connect() is called.
     // Only attempt recovery if we're in a state where transport should be available.
-    if (this.#core.state !== 'connected' && this.#core.state !== 'connecting') {
+    if (this.#core.status !== 'connected' && this.#core.status !== 'connecting') {
       return;
     }
     try {

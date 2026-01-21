@@ -1,4 +1,4 @@
-import MetaMaskOpenRPCDocument from '@metamask/api-specs';
+import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
 import {
   parseCaipAccountId,
   parseCaipChainId,
@@ -7,7 +7,7 @@ import {
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 
 /**
- * Methods that require an account parameter.
+ * Methods that require an account parameter to be injected.
  */
 export const METHODS_REQUIRING_PARAM_INJECTION = {
   eth_sendTransaction: true,
@@ -190,7 +190,6 @@ const Eip1193OnlyMethods = [
  * All MetaMask methods, except for ones we have specified in the constants above.
  */
 export const Eip155Methods = MetaMaskOpenRPCDocument.methods
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   .map(({ name }: { name: string }) => name)
   .filter((method: string) => !WalletEip155Methods.includes(method))
   .filter((method: string) => !KnownWalletRpcMethods.includes(method))

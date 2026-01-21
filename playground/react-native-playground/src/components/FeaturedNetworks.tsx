@@ -1,9 +1,9 @@
 /* eslint-disable */
 import type { Scope } from '@metamask/connect-multichain';
+import { FEATURED_NETWORKS, TEST_IDS } from '@metamask/playground-ui';
 import type React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-import { FEATURED_NETWORKS } from '../constants/networks';
 import { colors } from '../styles/shared';
 
 type FeaturedNetworksProps = {
@@ -15,7 +15,7 @@ type FeaturedNetworksProps = {
 export const FeaturedNetworks: React.FC<FeaturedNetworksProps> = ({ selectedScopes, setSelectedScopes, isExternallyConnectableConnected }) => {
 	const featuredNetworks = Object.entries(FEATURED_NETWORKS);
 	return (
-		<View style={styles.container}>
+		<View testID={TEST_IDS.featuredNetworks.container} style={styles.container}>
 			{featuredNetworks.map(([networkName, chainId]) => {
 				const isChecked = selectedScopes[chainId as Scope] ?? false;
 				const isDisabled = !isExternallyConnectableConnected;
@@ -23,6 +23,7 @@ export const FeaturedNetworks: React.FC<FeaturedNetworksProps> = ({ selectedScop
 				return (
 					<TouchableOpacity
 						key={chainId}
+						testID={TEST_IDS.featuredNetworks.networkItem(chainId)}
 						style={[styles.networkItem, isChecked && styles.networkItemChecked, isDisabled && styles.networkItemDisabled]}
 						onPress={() => {
 							if (!isDisabled) {
@@ -35,10 +36,10 @@ export const FeaturedNetworks: React.FC<FeaturedNetworksProps> = ({ selectedScop
 						disabled={isDisabled}
 						activeOpacity={0.7}
 					>
-						<View style={[styles.checkbox, isChecked && styles.checkboxChecked, isDisabled && styles.checkboxDisabled]}>
+						<View testID={TEST_IDS.featuredNetworks.networkCheckbox(chainId)} style={[styles.checkbox, isChecked && styles.checkboxChecked, isDisabled && styles.checkboxDisabled]}>
 							{isChecked && <View style={styles.checkboxInner} />}
 						</View>
-						<Text style={[styles.networkLabel, isDisabled && styles.networkLabelDisabled]}>{networkName}</Text>
+						<Text testID={TEST_IDS.featuredNetworks.networkLabel(chainId)} style={[styles.networkLabel, isDisabled && styles.networkLabelDisabled]}>{networkName}</Text>
 					</TouchableOpacity>
 				);
 			})}

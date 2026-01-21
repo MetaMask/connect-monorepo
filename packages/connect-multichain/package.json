@@ -63,7 +63,8 @@
     "test:ci": "yarn pretest:ci && vitest run --coverage --coverage.reporter=text --silent",
     "test:unit": "vitest run",
     "test:verbose": "vitest run --reporter=verbose",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "allow-scripts": ""
   },
   "dependencies": {
     "@metamask/analytics": "workspace:^",
@@ -72,6 +73,7 @@
     "@metamask/multichain-api-client": "^0.10.1",
     "@metamask/multichain-ui": "workspace:^",
     "@metamask/onboarding": "^1.0.1",
+    "@metamask/rpc-errors": "^7.0.3",
     "@metamask/utils": "^11.8.1",
     "@paulmillr/qr": "^0.2.1",
     "bowser": "^2.11.0",

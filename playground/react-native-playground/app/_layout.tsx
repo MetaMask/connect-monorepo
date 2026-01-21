@@ -1,12 +1,50 @@
 import 'react-native-get-random-values';
+import '../polyfills';
 import { SDKProvider } from '../src/sdk/SDKProvider';
 import { LegacyEVMSDKProvider } from '../src/sdk/LegacyEVMSDKProvider';
 import { Slot, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { deserialize, serialize, WagmiProvider } from 'wagmi';
+import { wagmiConfig } from '../src/wagmi/config';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Create AsyncStorage adapter for tanstack query persister
+const asyncStorageAdapter = {
+  getItem: async (key: string): Promise<string | null> => {
+    return await AsyncStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    await AsyncStorage.setItem(key, value);
+  },
+  removeItem: async (key: string): Promise<void> => {
+    await AsyncStorage.removeItem(key);
+  },
+};
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1_000 * 60 * 60 * 24, // 24 hours
+      networkMode: 'offlineFirst',
+      refetchOnWindowFocus: false,
+      retry: 0,
+    },
+    mutations: { networkMode: 'offlineFirst' },
+  },
+});
+
+const persister = createSyncStoragePersister({
+  key: 'react-native-playground.cache',
+  serialize,
+  storage: asyncStorageAdapter as any,
+  deserialize,
+});
 
 export default function RootLayout() {
   useEffect(() => {
@@ -30,10 +68,17 @@ export default function RootLayout() {
   }, []); // The empty dependency array ensures this effect runs only once on mount.
 
   return (
-    <SDKProvider>
-      <LegacyEVMSDKProvider>
-        <Slot />
-      </LegacyEVMSDKProvider>
-    </SDKProvider>
+    <WagmiProvider config={wagmiConfig}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister }}
+      >
+        <SDKProvider>
+          <LegacyEVMSDKProvider>
+            <Slot />
+          </LegacyEVMSDKProvider>
+        </SDKProvider>
+      </PersistQueryClientProvider>
+    </WagmiProvider>
   );
 }

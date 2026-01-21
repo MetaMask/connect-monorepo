@@ -1,5 +1,6 @@
 import type { Session, SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type {
+  SessionProperties,
   Transport,
   TransportRequest,
   TransportResponse,
@@ -59,6 +60,7 @@ export type MultichainOptions = {
     headless?: boolean;
     preferExtension?: boolean;
     showInstallModal?: boolean;
+    displayUri?: (uri: string) => void;
   };
   mobile?: {
     preferredOpenLink?: (deeplink: string, target?: string) => void;
@@ -97,6 +99,7 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   connect: (props?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
+    sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }) => Promise<void>;
 
