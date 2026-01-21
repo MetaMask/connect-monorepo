@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { TEST_IDS } from '@metamask/playground-ui';
 import { colors, sharedStyles } from '../styles/shared';
 
 export enum INPUT_LABEL_TYPE {
@@ -19,14 +20,15 @@ type DynamicInputsProps = {
 
 const DynamicInputs: React.FC<DynamicInputsProps> = ({ inputArray, handleCheckboxChange, label, availableOptions }) => {
 	return (
-		<View style={styles.container}>
-			<Text style={sharedStyles.heading3}>{label}s:</Text>
+		<View testID={TEST_IDS.dynamicInputs.container(label)} style={styles.container}>
+			<Text testID={TEST_IDS.dynamicInputs.heading(label)} style={sharedStyles.heading3}>{label}s:</Text>
 			<View style={sharedStyles.rowWrap}>
 				{availableOptions.map((option) => {
 					const isChecked = inputArray.includes(option.value);
 					return (
 						<TouchableOpacity
 							key={`checkbox-${option.value}`}
+							testID={TEST_IDS.dynamicInputs.checkbox(option.value)}
 							style={[styles.checkboxItem, isChecked && styles.checkboxItemChecked]}
 							onPress={() => handleCheckboxChange(option.value, !isChecked)}
 							activeOpacity={0.7}
@@ -34,7 +36,7 @@ const DynamicInputs: React.FC<DynamicInputsProps> = ({ inputArray, handleCheckbo
 							<View style={[styles.checkbox, isChecked && styles.checkboxChecked]}>
 								{isChecked && <View style={styles.checkboxInner} />}
 							</View>
-							<Text style={styles.checkboxLabel}>{option.name}</Text>
+							<Text testID={TEST_IDS.dynamicInputs.checkboxLabel(option.value)} style={styles.checkboxLabel}>{option.name}</Text>
 						</TouchableOpacity>
 					);
 				})}

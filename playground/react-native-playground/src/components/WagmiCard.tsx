@@ -13,6 +13,7 @@ import {
   useSwitchChain,
   useWaitForTransactionReceipt,
 } from 'wagmi';
+import { TEST_IDS } from '@metamask/playground-ui';
 import { colors, sharedStyles } from '../styles/shared';
 
 export function WagmiCard() {
@@ -54,32 +55,32 @@ export function WagmiCard() {
   };
 
   return (
-    <View style={styles.card}>
+    <View testID={TEST_IDS.wagmi.card} style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.title}>Wagmi Connection</Text>
+        <Text testID={TEST_IDS.wagmi.title} style={styles.title}>Wagmi Connection</Text>
       </View>
 
       <View style={styles.section}>
         <View style={sharedStyles.row}>
-          <Text style={styles.sectionLabel}>Connected Chain:</Text>
+          <Text testID={TEST_IDS.wagmi.chainIdLabel} style={styles.sectionLabel}>Connected Chain:</Text>
           <View style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginLeft: 8 }]}>
-            <Text style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
+            <Text testID={TEST_IDS.wagmi.chainIdValue} style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
               {chainId || 'Not available'}
             </Text>
           </View>
         </View>
 
         <View style={[sharedStyles.row, { marginTop: 8 }]}>
-          <Text style={styles.sectionLabel}>Account:</Text>
+          <Text testID={TEST_IDS.wagmi.accountLabel} style={styles.sectionLabel}>Account:</Text>
           <View style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginLeft: 8 }]}>
-            <Text style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
+            <Text testID={TEST_IDS.wagmi.accountValue} style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
               {account.address ? 'Connected' : 'Not connected'}
             </Text>
           </View>
         </View>
 
         {account.address && (
-          <View style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginTop: 12, alignSelf: 'stretch' }]}>
+          <View testID={TEST_IDS.wagmi.activeAccount} style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginTop: 12, alignSelf: 'stretch' }]}>
             <Text style={[sharedStyles.badgeText, sharedStyles.badgeTextGreen]}>Active Account:</Text>
             <Text style={[sharedStyles.textMono, sharedStyles.badgeTextGreen, { marginTop: 4 }]}>
               {account.address}
@@ -88,18 +89,18 @@ export function WagmiCard() {
         )}
 
         {balance && (
-          <View style={[sharedStyles.badge, sharedStyles.badgePurple, { marginTop: 12, alignSelf: 'stretch' }]}>
+          <View testID={TEST_IDS.wagmi.balanceContainer} style={[sharedStyles.badge, sharedStyles.badgePurple, { marginTop: 12, alignSelf: 'stretch' }]}>
             <Text style={[sharedStyles.badgeText, sharedStyles.badgeTextPurple]}>Balance:</Text>
-            <Text style={[sharedStyles.textMono, sharedStyles.badgeTextPurple, { marginTop: 4 }]}>
+            <Text testID={TEST_IDS.wagmi.balanceValue} style={[sharedStyles.textMono, sharedStyles.badgeTextPurple, { marginTop: 4 }]}>
               {formatEther(balance.value)} {balance.symbol}
             </Text>
           </View>
         )}
 
         {blockNumber && (
-          <View style={[sharedStyles.badge, { backgroundColor: colors.gray50, marginTop: 12, alignSelf: 'stretch' }]}>
+          <View testID={TEST_IDS.wagmi.blockNumberContainer} style={[sharedStyles.badge, { backgroundColor: colors.gray50, marginTop: 12, alignSelf: 'stretch' }]}>
             <Text style={[sharedStyles.badgeText, { color: colors.gray800 }]}>Block Number:</Text>
-            <Text style={[sharedStyles.textMono, { color: colors.gray700, marginTop: 4 }]}>
+            <Text testID={TEST_IDS.wagmi.blockNumberValue} style={[sharedStyles.textMono, { color: colors.gray700, marginTop: 4 }]}>
               {blockNumber.toString()}
             </Text>
           </View>
@@ -107,11 +108,12 @@ export function WagmiCard() {
       </View>
 
       <ScrollView style={styles.buttonsContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionDivider}>
+        <View testID={TEST_IDS.wagmi.switchChainSection} style={styles.sectionDivider}>
           <Text style={styles.sectionTitle}>Switch Chain</Text>
           {chains.map((chain) => (
             <TouchableOpacity
               key={chain.id}
+              testID={TEST_IDS.wagmi.btnSwitchChain(chain.id)}
               disabled={chainId === chain.id}
               onPress={() => switchChain({ chainId: chain.id })}
               style={[
@@ -129,9 +131,10 @@ export function WagmiCard() {
           ))}
         </View>
 
-        <View style={styles.sectionDivider}>
+        <View testID={TEST_IDS.wagmi.signMessageSection} style={styles.sectionDivider}>
           <Text style={styles.sectionTitle}>Sign Message</Text>
           <TextInput
+            testID={TEST_IDS.wagmi.inputMessage}
             style={sharedStyles.input}
             value={message}
             onChangeText={setMessage}
@@ -139,6 +142,7 @@ export function WagmiCard() {
             placeholderTextColor={colors.gray400}
           />
           <TouchableOpacity
+            testID={TEST_IDS.wagmi.btnSignMessage}
             onPress={handleSignMessage}
             disabled={!message}
             style={[
@@ -155,7 +159,7 @@ export function WagmiCard() {
             </Text>
           </TouchableOpacity>
           {signData && (
-            <View style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginTop: 8, alignSelf: 'stretch' }]}>
+            <View testID={TEST_IDS.wagmi.signatureResult} style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginTop: 8, alignSelf: 'stretch' }]}>
               <Text style={[sharedStyles.textMono, sharedStyles.badgeTextGreen]}>
                 Signature: {signData}
               </Text>
@@ -163,9 +167,10 @@ export function WagmiCard() {
           )}
         </View>
 
-        <View style={styles.sectionDivider}>
+        <View testID={TEST_IDS.wagmi.sendTxSection} style={styles.sectionDivider}>
           <Text style={styles.sectionTitle}>Send Transaction</Text>
           <TextInput
+            testID={TEST_IDS.wagmi.inputToAddress}
             style={sharedStyles.input}
             value={sendToAddress}
             onChangeText={setSendToAddress}
@@ -173,6 +178,7 @@ export function WagmiCard() {
             placeholderTextColor={colors.gray400}
           />
           <TextInput
+            testID={TEST_IDS.wagmi.inputAmount}
             style={[sharedStyles.input, { marginTop: 8 }]}
             value={sendValue}
             onChangeText={setSendValue}
@@ -181,6 +187,7 @@ export function WagmiCard() {
             keyboardType="numeric"
           />
           <TouchableOpacity
+            testID={TEST_IDS.wagmi.btnSendTransaction}
             onPress={handleSendTransaction}
             disabled={isSending || !sendToAddress || !sendValue}
             style={[
@@ -197,24 +204,24 @@ export function WagmiCard() {
             </Text>
           </TouchableOpacity>
           {hash && (
-            <View style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginTop: 8, alignSelf: 'stretch' }]}>
+            <View testID={TEST_IDS.wagmi.txHashResult} style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginTop: 8, alignSelf: 'stretch' }]}>
               <Text style={[sharedStyles.textMono, sharedStyles.badgeTextBlue]}>
                 Transaction Hash: {hash}
               </Text>
             </View>
           )}
           {isConfirming && (
-            <Text style={[sharedStyles.textSmall, { marginTop: 8, color: colors.blue600 }]}>
+            <Text testID={TEST_IDS.wagmi.txConfirmingText} style={[sharedStyles.textSmall, { marginTop: 8, color: colors.blue600 }]}>
               Waiting for confirmation...
             </Text>
           )}
           {isConfirmed && (
-            <Text style={[sharedStyles.textSmall, { marginTop: 8, color: colors.green600 }]}>
+            <Text testID={TEST_IDS.wagmi.txConfirmedText} style={[sharedStyles.textSmall, { marginTop: 8, color: colors.green600 }]}>
               Transaction confirmed!
             </Text>
           )}
           {sendError && (
-            <View style={[sharedStyles.badge, sharedStyles.badgeRed, { marginTop: 8, alignSelf: 'stretch' }]}>
+            <View testID={TEST_IDS.wagmi.txErrorText} style={[sharedStyles.badge, sharedStyles.badgeRed, { marginTop: 8, alignSelf: 'stretch' }]}>
               <Text style={[sharedStyles.textMono, sharedStyles.badgeTextRed]}>
                 Error: {(sendError as BaseError).shortMessage || sendError.message}
               </Text>
@@ -223,13 +230,13 @@ export function WagmiCard() {
         </View>
 
         {connectorClient && (
-          <View style={styles.sectionDivider}>
+          <View testID={TEST_IDS.wagmi.connectorSection} style={styles.sectionDivider}>
             <Text style={styles.sectionTitle}>Connector Client Info</Text>
             <View style={[sharedStyles.badge, { backgroundColor: colors.gray50, alignSelf: 'stretch' }]}>
-              <Text style={[sharedStyles.textMono, { color: colors.gray800 }]}>
+              <Text testID={TEST_IDS.wagmi.connectorAccount} style={[sharedStyles.textMono, { color: colors.gray800 }]}>
                 Account: {connectorClient.account?.address}
               </Text>
-              <Text style={[sharedStyles.textMono, { color: colors.gray800, marginTop: 4 }]}>
+              <Text testID={TEST_IDS.wagmi.connectorChainId} style={[sharedStyles.textMono, { color: colors.gray800, marginTop: 4 }]}>
                 Chain ID: {connectorClient.chain?.id}
               </Text>
             </View>
