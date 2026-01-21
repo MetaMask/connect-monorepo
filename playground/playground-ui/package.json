@@ -8,7 +8,7 @@
     "playground",
     "UI"
   ],
-  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/packages/playground-ui#readme",
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/playground-ui#readme",
   "bugs": {
     "url": ""
   },
