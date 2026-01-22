@@ -19,7 +19,7 @@ import './mocks';
 import * as t from 'vitest';
 import { vi } from 'vitest';
 import type { MultichainOptions } from '../src/domain';
-import { MultichainSDK } from '../src/multichain';
+import { MetaMaskConnectMultichain } from '../src/multichain';
 
 // Import createSDK functions for convenience
 import { createMultichainClient as createMetamaskSDKWeb } from '../src/index.browser';
@@ -142,7 +142,7 @@ export const createTest: CreateTestFN = ({
   };
   let setupAnalyticsSpy!: t.MockInstance<any>;
   let initSpy!: t.MockInstance<any>;
-  let emitSpy!: t.MockInstance<MultichainSDK['emit']>;
+  let emitSpy!: t.MockInstance<MetaMaskConnectMultichain['emit']>;
   let showInstallModalSpy!: t.MockInstance<any>;
   let mockLogger!: t.MockInstance<debug.Debugger>;
   let mockDefaultTransport!: t.Mocked<any>;
@@ -260,7 +260,7 @@ export const createTest: CreateTestFN = ({
       // We'll spy on public methods or verify behavior through the public API instead
       initSpy = t.vi.fn() as any; // Placeholder - tests should verify behavior through public API
       setupAnalyticsSpy = t.vi.fn() as any; // Placeholder - tests should verify behavior through public API
-      emitSpy = t.vi.spyOn(MultichainSDK.prototype as any, 'emit');
+      emitSpy = t.vi.spyOn(MetaMaskConnectMultichain.prototype as any, 'emit');
       showInstallModalSpy = t.vi.fn() as any; // Placeholder - tests should verify behavior through public API
 
       mwpCoreActual.__mockStorage = nativeStorageStub.data;

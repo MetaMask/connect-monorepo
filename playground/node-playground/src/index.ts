@@ -30,14 +30,14 @@ const AVAILABLE_CHAINS = [
 const state: {
   app: AppState;
   connectorType: ConnectorType | null;
-  multichainSdk: Awaited<ReturnType<typeof createMultichainClient>> | null;
+  metamaskConnectMultichain: Awaited<ReturnType<typeof createMultichainClient>> | null;
   evmSdk: MetamaskConnectEVM | null;
   accounts: { [chainId: string]: string[] }; // Group accounts by chain
   spinner: Ora | null;
 } = {
   app: 'DISCONNECTED',
   connectorType: null,
-  multichainSdk: null,
+  metamaskConnectMultichain: null,
   evmSdk: null,
   accounts: {}, // Initialize as an empty object
   spinner: null,
@@ -141,7 +141,7 @@ const handleConnect = async () => {
   try {
     if (state.connectorType === 'multichain') {
       // Requesting accounts for Ethereum Mainnet and Solana Mainnet
-      await state.multichainSdk?.connect(
+      await state.metamaskConnectMultichain?.connect(
         ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
         [],
       );
@@ -168,7 +168,7 @@ const handleDisconnect = async () => {
   state.spinner = ora('Disconnecting...').start();
   try {
     if (state.connectorType === 'multichain') {
-      await state.multichainSdk?.disconnect();
+      await state.metamaskConnectMultichain?.disconnect();
     } else if (state.connectorType === 'evm') {
       await state.evmSdk?.disconnect();
     }
@@ -210,7 +210,7 @@ const handleEthereumSign = async () => {
 
   try {
     if (state.connectorType === 'multichain') {
-      const result = await state.multichainSdk?.invokeMethod({
+      const result = await state.metamaskConnectMultichain?.invokeMethod({
         scope: chain,
         request: {
           method: 'personal_sign',
@@ -332,7 +332,7 @@ const handleSolanaSign = async () => {
   ).start();
 
   try {
-    const result = await state.multichainSdk?.invokeMethod({
+    const result = await state.metamaskConnectMultichain?.invokeMethod({
       scope: chain,
       request: {
         method: 'signMessage',
@@ -367,7 +367,7 @@ const main = async (): Promise<void> => {
   const supportedNetworks = getInfuraRpcUrls(infuraApiKey);
 
   // Initialize Multichain SDK
-  state.multichainSdk = await createMultichainClient({
+  state.metamaskConnectMultichain = await createMultichainClient({
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',
@@ -452,7 +452,7 @@ const main = async (): Promise<void> => {
   });
 
   // --- Multichain SDK Event Handler ---
-  state.multichainSdk.on('wallet_sessionChanged', (session?: SessionData) => {
+  state.metamaskConnectMultichain.on('wallet_sessionChanged', (session?: SessionData) => {
     if (state.app !== 'CONNECTING') {
       // Only clear the console if we are not in the middle of a connection flow
       console.clear();
