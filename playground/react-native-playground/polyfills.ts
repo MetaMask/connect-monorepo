@@ -1,5 +1,7 @@
-import { Buffer } from "buffer";
+import { Buffer } from 'buffer';
 
+// NOTE: Buffer polyfill is now handled by @metamask/connect-multichain
+// We still need to set it here for other libraries that may need it before connect-multichain loads
 global.Buffer = Buffer;
 
 // Polyfill for window object (used by wagmi connector and connect-multichain)
