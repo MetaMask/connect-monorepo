@@ -1,6 +1,7 @@
 import { analytics } from '@metamask/analytics';
 import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
+  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -98,6 +99,9 @@ export class MetamaskConnectEVM {
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
+  /** The handler for the display_uri event */
+  readonly #displayUriHandler: (uri: string) => void;
+
   /** The clean-up function for the notification handler */
   #removeNotificationHandler?: () => void;
 
@@ -132,6 +136,13 @@ export class MetamaskConnectEVM {
       'wallet_sessionChanged',
       this.#sessionChangedHandler.bind(this),
     );
+
+    /**
+     * Handles the display_uri event.
+     * Forwards the QR code URI to the provider for custom UI implementations.
+     */
+    this.#displayUriHandler = this.#onDisplayUri.bind(this);
+    this.#core.on('display_uri', this.#displayUriHandler);
 
     // Attempt to set the permitted accounts if there's a valid previous session.
     // TODO (wenfix): does it make sense to catch here?
@@ -468,6 +479,7 @@ export class MetamaskConnectEVM {
     this.#clearConnectionState();
 
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
+    this.#core.off('display_uri', this.#displayUriHandler);
 
     if (this.#removeNotificationHandler) {
       this.#removeNotificationHandler();
@@ -788,6 +800,18 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.disconnect?.();
 
     this.#onAccountsChanged([]);
+  }
+
+  /**
+   * Handles display_uri events and emits them to the provider.
+   * This allows consumers to display their own custom QR code UI.
+   *
+   * @param uri - The deeplink URI to be displayed as a QR code
+   */
+  #onDisplayUri(uri: string): void {
+    logger('handler: display_uri', uri);
+    this.#provider.emit('display_uri', uri);
+    this.#eventHandlers?.displayUri?.(uri);
   }
 
   /**

@@ -1,3 +1,6 @@
+// Buffer polyfill must be imported first to set up global.Buffer
+import './polyfills/buffer-shim';
+
 import type { CreateMultichainFN, StoreClient } from './domain';
 import { MultichainSDK } from './multichain';
 import { Store } from './store';

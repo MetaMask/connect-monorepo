@@ -3,7 +3,6 @@ import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet } fr
 import { StatusBar } from 'expo-status-bar';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId } from '@metamask/utils';
-import { Buffer } from 'buffer';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { TEST_IDS } from '@metamask/playground-ui';
 
@@ -15,9 +14,6 @@ import { LegacyEVMCard } from '../src/components/LegacyEVMCard';
 import { WagmiCard } from '../src/components/WagmiCard';
 import { convertCaipChainIdsToHex } from '../src/helpers/ChainIdHelpers';
 import { colors, sharedStyles } from '../src/styles/shared';
-
-// Configure Buffer polyfill for React Native
-global.Buffer = Buffer;
 
 export default function Page() {
 	const [customScopes, setCustomScopes] = useState<Scope[]>(['eip155:1' as Scope]);

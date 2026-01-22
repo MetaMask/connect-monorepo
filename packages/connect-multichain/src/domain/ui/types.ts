@@ -12,6 +12,13 @@ export type InstallWidgetProps = Components.MmInstallModal & {
   startDesktopOnboarding: () => void;
   createConnectionRequest: () => Promise<ConnectionRequest>;
   generateQRCode: (connectionRequest: ConnectionRequest) => Promise<QRLink>;
+  /**
+   * Callback invoked when a QR code link is generated or regenerated.
+   * This allows consumers to display their own custom QR code UI.
+   *
+   * @param uri - The deeplink URI to be displayed as a QR code
+   */
+  onDisplayUri?: (uri: QRLink) => void;
 };
 
 export type OTPCodeWidgetProps = Components.MmOtpModal & {
