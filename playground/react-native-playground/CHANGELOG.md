@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- fix: Resolve Buffer polyfill requirement for browser/React Native consumers ([#121](https://github.com/MetaMask/connect-monorepo/pull/121))
-
 ### Changed
 
 - Bump `@metamask/auto-changelog` from ^3.1.0 to ^3.4.3 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
