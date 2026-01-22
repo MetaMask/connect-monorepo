@@ -1,6 +1,7 @@
 import { analytics } from '@metamask/analytics';
 import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
+  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -914,6 +915,15 @@ export class MetamaskConnectEVM {
    */
   get selectedChainId(): Hex | undefined {
     return this.#provider.selectedChainId;
+  }
+
+  /**
+   * Gets the current connection status
+   *
+   * @returns The current connection status
+   */
+  get status(): ConnectionStatus {
+    return this.#core.status;
   }
 }
 
