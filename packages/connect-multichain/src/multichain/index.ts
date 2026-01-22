@@ -708,10 +708,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       logger('Error tracking connection_initiated event', error);
     }
 
+    // Needed because empty object will cause wallet_createSession to return an error
+    const nonEmptySessionProperites = Object.keys(sessionProperties ?? {}).length > 0 ? sessionProperties : undefined;
+
     if (this.#transport?.isConnected() && !secure) {
       return this.#handleConnection(
         this.#transport
-          .connect({ scopes, caipAccountIds, sessionProperties, forceRequest })
+          .connect({ scopes, caipAccountIds, sessionProperties: nonEmptySessionProperites, forceRequest })
           .then(async () => {
             if (this.#transport instanceof MWPTransport) {
               return this.storage.setTransport(TransportType.MWP);
@@ -727,7 +730,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (platformType === PlatformType.MetaMaskMobileWebview) {
       const defaultTransport = await this.#setupDefaultTransport();
       return this.#handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties, forceRequest }),
+        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties: nonEmptySessionProperites, forceRequest }),
         scopes,
         transportType,
       );
@@ -738,7 +741,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       const defaultTransport = await this.#setupDefaultTransport();
       // Web transport has no initial payload
       return this.#handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties, forceRequest }),
+        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties: nonEmptySessionProperites, forceRequest }),
         scopes,
         transportType,
       );
@@ -755,7 +758,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (secure && !shouldShowInstallModal) {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
       return this.#handleConnection(
-        this.#deeplinkConnect(scopes, caipAccountIds, sessionProperties),
+        this.#deeplinkConnect(scopes, caipAccountIds, nonEmptySessionProperites),
         scopes,
         transportType,
       );
@@ -763,7 +766,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     // Show install modal for RN, Web + Node
     return this.#handleConnection(
-      this.#showInstallModal(shouldShowInstallModal, scopes, caipAccountIds, sessionProperties),
+      this.#showInstallModal(shouldShowInstallModal, scopes, caipAccountIds, nonEmptySessionProperites),
       scopes,
       transportType,
     );
