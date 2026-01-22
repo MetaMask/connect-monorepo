@@ -8,7 +8,7 @@ const peerDependencies = Object.keys(pkg.peerDependencies || {});
 const optionalDependencies = Object.keys(pkg.optionalDependencies || {});
 
 // Dependencies that should be bundled
-const bundledDeps = [ 'readable-stream'];
+const bundledDeps = ['readable-stream'];
 // Shared dependencies that should be deduplicated
 const sharedDeps = ['eventemitter2', 'socket.io-client', 'debug', 'uuid', 'cross-fetch', '@metamask/sdk-analytics'];
 
@@ -24,7 +24,8 @@ const baseExternalDeps = [
   'extension-port-stream',
   '@metamask/utils',
   '@metamask/rpc-errors',
-  'ws'
+  'ws',
+  'buffer',
 ];
 
 // Platform-specific externals
