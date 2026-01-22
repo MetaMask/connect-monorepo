@@ -39,6 +39,8 @@ export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> 
 
   private successCallback!: (error?: Error) => Promise<void>;
 
+  private displayUriCallback?: (uri: string) => void;
+
   /**
    * Creates a new modal factory instance.
    *
@@ -147,14 +149,18 @@ export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> 
     showInstallModal: boolean,
     createConnectionRequest: () => Promise<ConnectionRequest>,
     successCallback: (error?: Error) => Promise<void>,
+    onDisplayUri?: (uri: string) => void,
   ) {
     this.modal?.unmount();
     await this.preload();
     this.successCallback = successCallback;
+    this.displayUriCallback = onDisplayUri;
 
     const parentElement = this.getMountedContainer();
     const connectionRequest = await createConnectionRequest();
     const qrCodeLink = this.createConnectionDeeplink(connectionRequest);
+
+    this.displayUriCallback?.(qrCodeLink);
 
     const modal: Modal<any> = new this.options.InstallModal({
       expiresIn:
@@ -164,11 +170,15 @@ export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> 
       showInstallModal,
       link: qrCodeLink,
       sdkVersion: getVersion(),
-      generateQRCode: async (request: ConnectionRequest) =>
-        this.createConnectionDeeplink(request),
+      generateQRCode: async (request: ConnectionRequest) => {
+        const newLink = this.createConnectionDeeplink(request);
+        this.displayUriCallback?.(newLink);
+        return newLink;
+      },
       onClose: this.onCloseModal.bind(this),
       startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
       createConnectionRequest,
+      onDisplayUri: this.displayUriCallback,
     });
 
     this.modal = modal;

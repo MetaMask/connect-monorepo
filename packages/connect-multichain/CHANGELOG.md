@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `display_uri` event emission for QR code links to support custom UI implementations ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
+  - Emitted when QR code link is generated during connection
+  - Emitted when QR code is regenerated on expiration
+  - Emitted for deeplink connections on mobile web
+- Add `onDisplayUri` callback to `InstallWidgetProps` for notifying when QR codes are generated/regenerated ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
+- Add headless mode support that emits `display_uri` without rendering modal UI ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
 - Add `sessionProperties` parameter to `connect()` method for passing custom session configuration to wallets([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
 - Introduce `MultichainApiClientWrapperTransport` to provide the provider interface before connection is established([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
 
