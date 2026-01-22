@@ -28735,7 +28735,6 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.3.3"
     "@wagmi/cli": "npm:^2.3.2"
     "@wagmi/core": "npm:^2.22.1"
-    buffer: "npm:^6.0.3"
     idb-keyval: "npm:^6.2.1"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"
