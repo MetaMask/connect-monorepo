@@ -9,9 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.1]
 
-### Uncategorized
+### Fixed
 
-- chore: rename MultichainSDK to MetaMaskConnectMultichain ([#128](https://github.com/MetaMask/connect-monorepo/pull/128))
 - fix: Resolve Buffer polyfill requirement for browser/React Native consumers ([#121](https://github.com/MetaMask/connect-monorepo/pull/121))
 
 ## [0.5.0]
