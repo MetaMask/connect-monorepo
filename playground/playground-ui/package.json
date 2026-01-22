@@ -1,6 +1,6 @@
 {
   "name": "@metamask/playground-ui",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Shared UI logic and utilities for MetaMask playground applications",
   "keywords": [
     "MetaMask",
