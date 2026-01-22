@@ -411,6 +411,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
               resolve();
             }
           },
+          (uri: string) => {
+            this.emit('display_uri', uri);
+          },
         )
         .catch((error) => {
           reject(error instanceof Error ? error : new Error(String(error)));
@@ -426,12 +429,86 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   ): Promise<void> {
     // create the listener only once to avoid memory leaks
     this.#beforeUnloadListener ??= this.#createBeforeUnloadListener();
-    await this.#renderInstallModalAsync(
-      desktopPreferred,
-      scopes,
-      caipAccountIds,
-      sessionProperties,
-    );
+
+    // In headless mode, don't render UI but still emit display_uri events
+    if (this.options.ui.headless) {
+      await this.#headlessConnect(scopes, caipAccountIds, sessionProperties);
+    } else {
+      await this.#renderInstallModalAsync(
+        desktopPreferred,
+        scopes,
+        caipAccountIds,
+        sessionProperties,
+      );
+    }
+  }
+
+  /**
+   * Handles connection in headless mode without rendering any UI.
+   * Emits display_uri events to allow consumers to build custom QR code UI.
+   *
+   * @param scopes - The requested permission scopes
+   * @param caipAccountIds - The requested account IDs
+   * @param sessionProperties - Optional session properties
+   */
+  async #headlessConnect(
+    scopes: Scope[],
+    caipAccountIds: CaipAccountId[],
+    sessionProperties?: SessionProperties,
+  ): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (
+        this.dappClient.state === 'CONNECTED' ||
+        this.dappClient.state === 'CONNECTING'
+      ) {
+        this.dappClient.disconnect().catch(() => {
+          // Ignore disconnect errors
+        });
+      }
+
+      // Listen for session_request to generate and emit the QR code link
+      this.dappClient.on(
+        'session_request',
+        (sessionRequest: SessionRequest) => {
+          const connectionRequest: ConnectionRequest = {
+            sessionRequest,
+            metadata: {
+              dapp: this.options.dapp,
+              sdk: {
+                version: getVersion(),
+                platform: getPlatformType(),
+              },
+            },
+          };
+
+          // Generate and emit the QR code link
+          const deeplink = this.options.ui.factory.createConnectionDeeplink(connectionRequest);
+          this.emit('display_uri', deeplink);
+        },
+      );
+
+      // Start the connection
+      this.transport
+        .connect({ scopes, caipAccountIds, sessionProperties })
+        .then(async () => {
+          this.status = 'connected';
+          await this.storage.setTransport(TransportType.MWP);
+          resolve();
+        })
+        .catch(async (error) => {
+          if (error instanceof ProtocolError) {
+            // In headless mode, we don't auto-regenerate QR codes
+            // since there's no modal to display them
+            this.status = 'disconnected';
+            await this.storage.removeTransport();
+            reject(error);
+          } else {
+            this.status = 'disconnected';
+            await this.storage.removeTransport();
+            reject(error instanceof Error ? error : new Error(String(error)));
+          }
+        });
+    });
   }
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {
@@ -502,6 +579,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
               this.options.ui.factory.createConnectionUniversalLink(
                 connectionRequest,
               );
+
+            // Emit display_uri event for deeplink connections
+            this.emit('display_uri', deeplink);
+
             if (this.options.mobile?.preferredOpenLink) {
               this.options.mobile.preferredOpenLink(deeplink, '_self');
             } else {

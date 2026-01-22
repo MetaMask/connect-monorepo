@@ -1,6 +1,6 @@
 {
   "name": "@metamask/playground-ui",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Shared UI logic and utilities for MetaMask playground applications",
   "keywords": [
     "MetaMask",
@@ -8,7 +8,7 @@
     "playground",
     "UI"
   ],
-  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/packages/playground-ui#readme",
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/playground-ui#readme",
   "bugs": {
     "url": ""
   },
@@ -68,6 +68,16 @@
       "require": {
         "types": "./dist/es/config.d.mts",
         "default": "./dist/cjs/config.cjs"
+      }
+    },
+    "./testIds": {
+      "import": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/es/testIds.mjs"
+      },
+      "require": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/cjs/testIds.cjs"
       }
     },
     "./package.json": "./package.json"

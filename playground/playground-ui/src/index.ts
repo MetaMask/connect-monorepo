@@ -11,3 +11,5 @@ export * from './constants';
 export * from './helpers';
 export * from './types';
 export * from './config';
+export * from './testIds';
+export { escapeTestId, createTestId } from './utils/testId';

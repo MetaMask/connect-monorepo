@@ -1,16 +1,15 @@
-# MetaMask Multichain React Native Test Dapp
+# React Native Playground
 
-A test dapp for the MetaMask Multichain API built with React Native and Expo.
+A React Native test dapp for the MetaMask Connect SDK built with Expo, demonstrating multichain API, legacy EVM, and wagmi connector capabilities on mobile devices.
 
 ## Overview
 
-This React Native application is a complete port of the multichain-react web test dapp, providing the same functionality on mobile devices. It demonstrates the capabilities of the MetaMask Multichain SDK including:
+This playground provides a mobile testing environment for MetaMask connections. It supports:
 
-- Multi-chain network support (Ethereum, Linea, Arbitrum, Polygon, Solana, etc.)
-- Account management across different chains
-- Method invocation with customizable parameters
-- Real-time session management
-- Support for both EVM and non-EVM chains (Solana)
+- **Multichain API**: Connect to multiple chains simultaneously (Ethereum, Linea, Polygon, Solana, etc.)
+- **Legacy EVM Connector**: Backwards-compatible connection for EVM chains
+- **Wagmi Integration**: Test the wagmi connector in a React Native context
+- **Cross-platform**: Runs on iOS, Android, and Web
 
 ## Prerequisites
 
@@ -19,35 +18,29 @@ This React Native application is a complete port of the multichain-react web tes
 - Expo CLI
 - iOS Simulator (for iOS development) or Android Studio (for Android development)
 
-## Building from local
-
-From the project root:
-
-```bash
-# Build dependencies
-yarn ibuild
-```
-
 ## Installation
 
-From the project root:
+From the **monorepo root**:
 
 ```bash
-# Install dependencies
+# Install all dependencies
 yarn install
 
-# Navigate to the React Native playground
-cd playground/react-native-playground
-
-# Start the development server
-yarn start
+# Build workspace packages
+yarn build
 ```
 
 ## Configuration
 
-`cp .env.example .env`
+```bash
+cp .env.example .env
+```
 
-Then fill out the resulting `.env` file.
+Then fill out the resulting `.env` file:
+
+```env
+EXPO_PUBLIC_INFURA_API_KEY=your_infura_api_key
+```
 
 ## Running the App
 
@@ -63,100 +56,96 @@ yarn ios
 yarn android
 ```
 
-### Web (for testing)
+### Web
 
 ```bash
 yarn web
 ```
 
+## Features
+
+### Multichain Connection
+
+Connect to multiple blockchain networks in a single session:
+- Ethereum Mainnet & Testnets
+- Layer 2 networks (Linea, Arbitrum, Polygon, etc.)
+- Solana
+
+### Legacy EVM Connector
+
+Toggle between multichain and legacy EVM modes to test backwards compatibility with existing dapps.
+
+### Wagmi Connector
+
+Test the wagmi integration for React Native applications with MetaMask Mobile deeplink support.
+
+### Method Invocation
+
+- Dropdown selector for available RPC methods per network
+- Editable JSON request editor with collapsible UI
+- Parameter injection for methods requiring addresses/chainIds
+- Support for EVM methods (`eth_*`, `personal_sign`, etc.)
+- Support for Solana methods (`signMessage`, `signTransaction`, etc.)
+
 ## Project Structure
 
 ```
-multichain-react-native/
-├── App.tsx                    # Main application component
-├── index.ts                   # Entry point with SDK provider
+react-native-playground/
+├── app/                           # Expo Router pages
+│   ├── _layout.tsx                # Root layout
+│   └── index.tsx                  # Main screen
 ├── src/
 │   ├── components/
 │   │   ├── DynamicInputs.tsx      # Checkbox selection UI
 │   │   ├── FeaturedNetworks.tsx   # Network selection component
-│   │   └── ScopeCard.tsx          # Network scope card with method invocation
-│   ├── constants/
-│   │   ├── index.ts               # App constants
-│   │   ├── methods.ts             # RPC method configurations
-│   │   └── networks.ts            # Network definitions
+│   │   ├── LegacyEVMCard.tsx      # Legacy EVM connector card
+│   │   ├── ScopeCard.tsx          # Network scope with method invocation
+│   │   └── WagmiCard.tsx          # Wagmi connector card
 │   ├── helpers/
-│   │   ├── AddressHelpers.ts           # CAIP address formatting
-│   │   ├── JsonHelpers.ts              # JSON parsing utilities
-│   │   ├── MethodInvocationHelpers.ts  # Method invocation utilities
+│   │   ├── SignHelpers.ts         # Signing utilities
 │   │   └── solana-method-signatures.ts # Solana transaction generation
 │   ├── sdk/
-│   │   ├── SDKProvider.tsx        # SDK context provider
-│   │   └── index.ts               # SDK exports
-│   └── styles/
-│       └── shared.ts              # Shared StyleSheet styles
-├── assets/                    # App icons and splash screens
-├── package.json
-└── tsconfig.json
+│   │   ├── SDKProvider.tsx        # Multichain SDK context
+│   │   ├── LegacyEVMSDKProvider.tsx # Legacy EVM SDK context
+│   │   └── index.ts
+│   ├── styles/
+│   │   └── shared.ts              # Shared StyleSheet styles
+│   └── wagmi/
+│       ├── config.ts              # Wagmi configuration
+│       └── metamask-connector.ts  # Auto-generated connector
+├── scripts/
+│   ├── copy-wagmi-connector.js    # Copies wagmi connector from integrations/
+│   └── README.md                  # Script documentation
+├── polyfills.ts                   # React Native polyfills (window, Event, etc.)
+├── assets/                        # App icons and splash screens
+└── app.json                       # Expo configuration
 ```
 
-## Key Features
+## Shared Code
 
-### 1. **Network Selection**
-- Support for 10+ networks including Ethereum mainnet, L2s, and Solana
-- Checkbox-based selection UI with visual feedback
-- Multi-network connections in a single session
+This playground uses `@metamask/playground-ui` for shared constants, helpers, and types. See the [playground-ui README](../playground-ui/README.md) for details.
 
-### 2. **Account Management**
-- Dropdown selector for accounts per network
-- Display of active account addresses
-- Support for CAIP-10 formatted addresses
+## Auto-Generated Files
 
-### 3. **Method Invocation**
-- Dropdown selector for available RPC methods per network
-- Editable JSON request editor with collapsible UI
-- Parameter injection for methods requiring addresses/chainIds
-- Real-time result display with success/error indicators
-- Support for EVM methods (eth_*, personal_sign, etc.)
-- Support for Solana methods (signMessage, signTransaction, etc.)
+The `src/wagmi/metamask-connector.ts` file is **auto-generated** from `integrations/wagmi/metamask-connector.ts`. See [scripts/README.md](./scripts/README.md) for details.
 
-### 4. **React Native Optimizations**
-- Native UI components (Picker, TextInput, TouchableOpacity)
-- Proper SafeAreaView implementation for device notches
-- ScrollView for content overflow handling
-- StyleSheet-based styling for performance
-- Buffer polyfill for Solana web3.js compatibility
+**Important**: Never edit `src/wagmi/metamask-connector.ts` directly. Edit `integrations/wagmi/metamask-connector.ts` instead.
 
-## Architecture Differences from Web Version
+## Polyfills
 
-### UI Components
-- **Web**: HTML elements (`<div>`, `<button>`, `<select>`) with Tailwind CSS
-- **React Native**: Native components (`View`, `TouchableOpacity`, `Picker`) with StyleSheet
+React Native doesn't have browser globals, so `polyfills.ts` provides:
 
-### Styling Approach
-- **Web**: Tailwind utility classes
-- **React Native**: StyleSheet API with shared color palette and styles
+- `window.location` - For SDK initialization
+- `window.addEventListener/removeEventListener` - No-op functions for browser event APIs
+- `Event` / `CustomEvent` classes - For wagmi and other libraries
 
-### Collapsibles
-- **Web**: HTML `<details>` element
-- **React Native**: Custom implementation with state management
-
-### Text Encoding
-- **Web**: Native `TextEncoder` API
-- **React Native**: Buffer polyfill for base64 encoding
-
-### Polyfills
-- **Web**: Webpack node polyfills
-- **React Native**: Buffer global polyfill configured at app initialization
+See [scripts/README.md](./scripts/README.md) for detailed polyfill documentation.
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
-
-```env
-# Optional: Helius RPC API key for enhanced Solana RPC performance
-# If not provided, falls back to public Solana RPC endpoints
-REACT_APP_HELIUS_API_KEY=your_helius_api_key_here
-```
+| Variable | Description |
+|----------|-------------|
+| `EXPO_PUBLIC_INFURA_API_KEY` | Infura API key for RPC access |
 
 ## Troubleshooting
 
@@ -164,51 +153,18 @@ REACT_APP_HELIUS_API_KEY=your_helius_api_key_here
 
 1. **Module not found errors**
    - Run `yarn install` from the workspace root
-   - Ensure all workspace dependencies are linked
+   - Run `yarn build` to build workspace dependencies
 
 2. **Buffer is not defined**
-   - The Buffer polyfill is configured in `App.tsx`
-   - Ensure imports are in the correct order
+   - The Buffer polyfill is configured in `polyfills.ts`
+   - Ensure polyfills are imported before other modules
 
 3. **Picker not working**
-   - Install `@react-native-picker/picker` if not already installed
    - For iOS, run `npx pod-install` after installation
 
-4. **Solana transactions failing**
-   - Check RPC endpoint connectivity
-   - Verify Helius API key if using one
-   - App falls back to public endpoints if Helius fails
-
-## Development
-
-### Adding New Networks
-
-Edit `src/constants/networks.ts`:
-
-```typescript
-export const FEATURED_NETWORKS = {
-  'Your Network': 'caip:chainId',
-  // ...existing networks
-};
-```
-
-### Adding Custom Methods
-
-Methods are automatically populated from `@metamask/api-specs`. For methods requiring parameter injection, update `src/constants/methods.ts`:
-
-```typescript
-export const METHODS_REQUIRING_PARAM_INJECTION = {
-  your_method: true,
-  // ...existing methods
-};
-```
-
-## Testing
-
-```bash
-# Currently no tests configured
-yarn test
-```
+4. **Wagmi connector issues**
+   - Ensure `yarn copy-wagmi-connector` has run (automatic with `yarn start`)
+   - Check polyfills are properly configured
 
 ## Building for Production
 
@@ -224,14 +180,6 @@ expo build:ios
 expo build:android
 ```
 
-## License
-
-See the main project LICENSE file.
-
 ## Contributing
 
-This is part of the MetaMask SDK monorepo. Please refer to the main repository for contribution guidelines.
-
-## Support
-
-For issues and questions, please file an issue in the main MetaMask SDK repository.
+See the [main repository contributing guide](../../docs/contributing.md) for development setup and guidelines.
