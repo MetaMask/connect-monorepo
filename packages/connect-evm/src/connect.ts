@@ -36,6 +36,7 @@ import { getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
+  isChainIdRequest,
   isConnectRequest,
   isSwitchChainRequest,
   validSupportedChainsUrls,
@@ -631,6 +632,10 @@ export class MetamaskConnectEVM {
       await this.#trackWalletActionSucceeded(method, scope, params);
 
       return this.#provider.accounts;
+    }
+
+    if (isChainIdRequest(request)) {
+      return this.#provider.selectedChainId;
     }
 
     logger('Request not intercepted, forwarding to default handler', request);

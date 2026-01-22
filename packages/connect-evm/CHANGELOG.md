@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `ConnectEvm.status` property which exposes the current `ConnectionStatus` ([#136](https://github.com/MetaMask/connect-monorepo/pull/136))
 
+### Fixed
+
+- Fix `eth_chainId` requests not being resolved from local cached state when using the EIP-1193 Provider `request()` method over the `MwpTransport` ([#124](https://github.com/MetaMask/connect-monorepo/pull/124))
+
 ## [0.2.0]
 
 ### Added
