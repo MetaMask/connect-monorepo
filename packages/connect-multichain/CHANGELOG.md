@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0]
+
 ### Added
 
 - Add `display_uri` event emission for QR code links to support custom UI implementations ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
@@ -108,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.0...HEAD
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.4.0...@metamask/connect-multichain@0.5.0
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.3.2...@metamask/connect-multichain@0.4.0
 [0.3.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.3.1...@metamask/connect-multichain@0.3.2
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.3.0...@metamask/connect-multichain@0.3.1
