@@ -5,7 +5,6 @@ import type {
   MultichainCore,
   MultichainOptions,
   Scope,
-  ConnectionStatus,
   SessionData,
 } from '@metamask/connect-multichain';
 import {
