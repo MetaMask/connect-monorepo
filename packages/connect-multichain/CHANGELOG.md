@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `ConnectMultichain.connect()` will send `sessionProperties` as undefined when called with an empty object `{}` in order to ensure that the initial `wallet_createSession` request does not fail immediately ([#138](https://github.com/MetaMask/connect-monorepo/pull/138))
+
 ## [0.5.1]
 
 ### Fixed
