@@ -4,7 +4,7 @@ import type {
   MultichainCore,
   MultichainOptions,
   Scope,
-  SDKState,
+  ConnectionStatus,
   SessionData,
 } from '@metamask/connect-multichain';
 import {
@@ -899,8 +899,13 @@ export class MetamaskConnectEVM {
     return this.#provider.selectedChainId;
   }
 
-  get state(): SDKState {
-    return this.#core.state;
+  /**
+   * Gets the current connection status
+   *
+   * @returns The current connection status
+   */
+  get status(): ConnectionStatus {
+    return this.#core.status;
   }
 }
 
