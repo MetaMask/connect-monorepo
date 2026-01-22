@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `eth_chainId` requests not being resolved from local cached state when using the EIP-1193 Provider `request()` method over the `MwpTransport` ([#124](https://github.com/MetaMask/connect-monorepo/pull/124))
+
 ### Added
 
 - Add `mobile.preferredOpenLink` option support for React Native deeplink handling in wagmi connector ([#118](https://github.com/MetaMask/connect-monorepo/pull/118))
