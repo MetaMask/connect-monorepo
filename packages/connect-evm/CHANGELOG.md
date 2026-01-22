@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `display_uri` event support for custom QR code UI implementations ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
+  - `display_uri` event on `EIP1193Provider` emitted when QR code link is available
+  - `displayUri` callback in `EventHandlers` for event-based subscriptions
+  - Forwarded from `@metamask/connect-multichain` core to EIP-1193 provider layer
 - Add `mobile.preferredOpenLink` option support for React Native deeplink handling in wagmi connector ([#118](https://github.com/MetaMask/connect-monorepo/pull/118))
   - Allows React Native apps to use `Linking.openURL()` instead of `window.location.href` for opening MetaMask deeplinks
   - Required for wagmi connector usage in React Native environments

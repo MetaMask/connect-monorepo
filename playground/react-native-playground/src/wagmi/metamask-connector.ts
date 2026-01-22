@@ -301,6 +301,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               chainChanged: this.onChainChanged.bind(this),
               connect: this.onConnect.bind(this),
               disconnect: this.onDisconnect.bind(this),
+              displayUri: this.onDisplayUri.bind(this),
             },
             ...(parameters.mobile && { mobile: parameters.mobile }),
           });
