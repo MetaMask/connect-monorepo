@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- build: revert playground-ui versioning (not published yet, so should be 0.0.0) ([#133](https://github.com/MetaMask/connect-monorepo/pull/133))
+- docs: update the existing playground documentation to reflect the new playground structure and usage instructions ([#127](https://github.com/MetaMask/connect-monorepo/pull/127))
+- refactor: implement playground testing alignment specification across both the browser and react native playgrounds ([#126](https://github.com/MetaMask/connect-monorepo/pull/126))
+- fix: properly import MetaMaskOpenRPCDocument from api-specs in playground ui package ([#122](https://github.com/MetaMask/connect-monorepo/pull/122))
+- refactor: create shared ui component package for playgrounds ([#120](https://github.com/MetaMask/connect-monorepo/pull/120))
+
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications

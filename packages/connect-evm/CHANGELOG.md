@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- Revert "Release/9.0.0 (#132)" ([#132](https://github.com/MetaMask/connect-monorepo/pull/132))
+- Release/9.0.0 ([#132](https://github.com/MetaMask/connect-monorepo/pull/132))
+- chore: rename ConnectMultichain class variable state to status + type SDKState to ConnectionStatus ([#125](https://github.com/MetaMask/connect-monorepo/pull/125))
+- feat: Expose `MultichainApiClient` provider with a transport adapter without needing to connect first ([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
+- fix: incorrect chainId on page refresh ([#108](https://github.com/MetaMask/connect-monorepo/pull/108))
+- feat: remove deprecated `legacy-evm-react-vite-playground` ([#109](https://github.com/MetaMask/connect-monorepo/pull/109))
+
 ### Added
 
 - Add `display_uri` event support for custom QR code UI implementations ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))

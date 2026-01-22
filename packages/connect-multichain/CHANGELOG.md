@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- Revert "Release/9.0.0 (#132)" ([#132](https://github.com/MetaMask/connect-monorepo/pull/132))
+- Release/9.0.0 ([#132](https://github.com/MetaMask/connect-monorepo/pull/132))
+- feat: add legacy evm connector to node playground ([#104](https://github.com/MetaMask/connect-monorepo/pull/104))
+- chore: Refactor to use platform-specific index files for UI module ([#91](https://github.com/MetaMask/connect-monorepo/pull/91))
+
 ### Added
 
 - Add `display_uri` event emission for QR code links to support custom UI implementations ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
