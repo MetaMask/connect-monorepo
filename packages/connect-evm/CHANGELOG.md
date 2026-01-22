@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `ConnectEvm.status` property which exposes the current `ConnectionStatus` ([#136](https://github.com/MetaMask/connect-monorepo/pull/136))
+
 ## [0.2.0]
 
 ### Added
