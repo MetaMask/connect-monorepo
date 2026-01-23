@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added:
+- `createEVMClient` now accepts `ui` in its param options. See `@metamask/connect-multichain` for usage ([#140](https://github.com/MetaMask/connect-monorepo/pull/140))
+
 ### Fixed
 
 - Fix `ConnectEvm.connect()` not being able to establish an initial connection due to empty object `sessionProperties` ([#138](https://github.com/MetaMask/connect-monorepo/pull/138))
