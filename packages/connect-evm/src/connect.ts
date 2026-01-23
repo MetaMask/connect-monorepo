@@ -939,12 +939,17 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of CAIP chain IDs to RPC URLs for read-only requests
+ * @param options.ui - UI configuration options
+ * @param options.ui.headless - Whether to run without UI
+ * @param options.ui.preferExtension - Whether to prefer browser extension
+ * @param options.ui.showInstallModal - Whether to render installation modal for desktop extension
  * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
  * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp' | 'api'> & {
+  options: Pick<MultichainOptions, 'dapp' | 'api'> &
+  { ui?: Omit<MultichainOptions['ui'], 'factory'>; } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
   },
