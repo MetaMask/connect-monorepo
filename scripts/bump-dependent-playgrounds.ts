@@ -29,20 +29,25 @@ type ReleasedPackage = {
 /**
  * Main entry point for the script.
  *
- * This script detects which workspace packages have been released and
- * automatically bumps the patch version of playground packages that
- * depend on them.
+ * This script detects which workspace packages are being released (have version
+ * bumps without corresponding git tags) and automatically bumps the patch version
+ * of playground packages that depend on them.
+ *
+ * This is intended to be run on a release branch after `yarn create-release-branch -i`
+ * has been used to bump package versions.
  */
 async function main(): Promise<void> {
-  const releasedPackages = await getReleasedPackages();
+  const packagesToRelease = await getPackagesToRelease();
 
-  if (releasedPackages.length === 0) {
-    console.log('No released packages detected. Skipping playground bumps.');
+  if (packagesToRelease.length === 0) {
+    console.log(
+      'No packages pending release detected. Make sure you have run `yarn create-release-branch -i` first.',
+    );
     return;
   }
 
-  console.log('Released packages detected:');
-  for (const pkg of releasedPackages) {
+  console.log('Packages pending release detected:');
+  for (const pkg of packagesToRelease) {
     console.log(`  - ${pkg.name}@${pkg.version}`);
   }
 
@@ -51,7 +56,7 @@ async function main(): Promise<void> {
   for (const playgroundPath of AUTO_BUMP_PLAYGROUNDS) {
     const wasBumped = await bumpPlaygroundIfNeeded(
       playgroundPath,
-      releasedPackages,
+      packagesToRelease,
     );
     if (wasBumped) {
       bumpedPlaygrounds.push(playgroundPath);
@@ -63,8 +68,11 @@ async function main(): Promise<void> {
     for (const playground of bumpedPlaygrounds) {
       console.log(`  - ${playground}`);
     }
+    console.log(
+      '\nDone! Review the changes and commit them to include in the release.',
+    );
 
-    // Output for GitHub Actions
+    // Output for GitHub Actions (if running in CI)
     const outputFile = process.env.GITHUB_OUTPUT;
     if (outputFile) {
       fs.appendFileSync(
@@ -78,15 +86,17 @@ async function main(): Promise<void> {
 }
 
 /**
- * Gets the list of packages that were released in the current release commit.
+ * Gets the list of packages that are pending release.
  *
- * This is determined by looking at packages that have a git tag matching
- * their current version in package.json.
+ * This is determined by looking at packages in the packages/ directory
+ * whose current version in package.json does NOT have a corresponding git tag.
+ * This indicates the version was bumped by `create-release-branch` and is
+ * awaiting release.
  *
- * @returns Array of released packages with their names and versions.
+ * @returns Array of packages pending release with their names and versions.
  */
-async function getReleasedPackages(): Promise<ReleasedPackage[]> {
-  const released: ReleasedPackage[] = [];
+async function getPackagesToRelease(): Promise<ReleasedPackage[]> {
+  const pendingRelease: ReleasedPackage[] = [];
 
   // Get all workspace packages (excluding playgrounds and private packages)
   const { stdout } = await execa('yarn', [
@@ -109,56 +119,58 @@ async function getReleasedPackages(): Promise<ReleasedPackage[]> {
     const rawManifest = await fs.promises.readFile(manifestPath, 'utf8');
     const manifest: PackageManifest = JSON.parse(rawManifest);
 
-    // Check if there's a git tag for this version
+    // Check if there's NO git tag for this version (meaning it's pending release)
     const tagName = `${manifest.name}@${manifest.version}`;
     try {
       await execa('git', ['rev-parse', `refs/tags/${tagName}`]);
-      // Tag exists, this package was released
-      released.push({ name: manifest.name, version: manifest.version });
+      // Tag exists, this package version was already released
     } catch {
-      // Tag doesn't exist, package wasn't released in this cycle
+      // Tag doesn't exist, this package is pending release
+      pendingRelease.push({ name: manifest.name, version: manifest.version });
     }
   }
 
-  return released;
+  return pendingRelease;
 }
 
 /**
- * Checks if a playground package depends on any of the released packages
+ * Checks if a playground package depends on any of the packages pending release
  * and bumps its version if so.
  *
  * @param playgroundPath - The path to the playground package.
- * @param releasedPackages - The list of packages that were released.
+ * @param packagesToRelease - The list of packages pending release.
  * @returns True if the playground was bumped, false otherwise.
  */
 async function bumpPlaygroundIfNeeded(
   playgroundPath: string,
-  releasedPackages: ReleasedPackage[],
+  packagesToRelease: ReleasedPackage[],
 ): Promise<boolean> {
   const manifestPath = path.join(playgroundPath, 'package.json');
   const rawManifest = await fs.promises.readFile(manifestPath, 'utf8');
   const manifest: PackageManifest = JSON.parse(rawManifest);
 
-  // Find workspace dependencies that were released
+  // Find workspace dependencies that are being released
   const allDeps = {
     ...manifest.dependencies,
     ...manifest.devDependencies,
   };
 
   const updatedDeps: string[] = [];
-  for (const released of releasedPackages) {
-    const depVersion = allDeps[released.name];
+  for (const pkg of packagesToRelease) {
+    const depVersion = allDeps[pkg.name];
     if (depVersion?.startsWith('workspace:')) {
-      updatedDeps.push(`${released.name}@${released.version}`);
+      updatedDeps.push(`${pkg.name}@${pkg.version}`);
     }
   }
 
   if (updatedDeps.length === 0) {
-    console.log(`\n${manifest.name}: No workspace dependencies were released.`);
+    console.log(
+      `\n${manifest.name}: No workspace dependencies are being released.`,
+    );
     return false;
   }
 
-  console.log(`\n${manifest.name}: Found updated workspace dependencies:`);
+  console.log(`\n${manifest.name}: Found workspace dependencies being released:`);
   for (const dep of updatedDeps) {
     console.log(`  - ${dep}`);
   }

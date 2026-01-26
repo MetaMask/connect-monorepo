@@ -36,6 +36,7 @@
     "test:packages": "yarn test:verbose --silent",
     "test:verbose": "yarn workspaces foreach --all --parallel --verbose run test:verbose",
     "update-readme-content": "tsx scripts/update-readme-content.ts",
+    "bump-playground-versions": "tsx scripts/bump-dependent-playgrounds.ts",
     "workspaces:list-versions": "./scripts/list-workspace-versions.sh"
   },
   "simple-git-hooks": {
