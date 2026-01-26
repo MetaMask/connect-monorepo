@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `createEVMClient` now accepts `ui` in its param options. See `@metamask/connect-multichain` for examples of usage ([#140](https://github.com/MetaMask/connect-monorepo/pull/140))
 
+### Fixed
+- `createEVMClient` ensures session resumption is properly awaited before returning the client instance. Previously there was a race condition which made it possible to make requests to the EIP-1193 provider before the underlying session was fully ready ([#141](https://github.com/MetaMask/connect-monorepo/pull/141))
+
 ## [0.3.1]
 
 ### Fixed
