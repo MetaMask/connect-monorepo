@@ -1,7 +1,6 @@
 {
   "name": "@metamask/react-native-playground",
   "version": "0.0.0",
-  "private": true,
   "description": "A React Native test dapp for multichain api",
   "keywords": [
     "MetaMask",
@@ -31,6 +30,8 @@
     "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
     "ios": "yarn copy-wagmi-connector && expo start --ios",
     "start": "yarn copy-wagmi-connector && expo start --tunnel",
+    "publish:preview": "yarn npm publish --tag preview",
+    "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test",
     "web": "yarn copy-wagmi-connector && expo start --web"
@@ -98,7 +99,7 @@
     "node": ">=20.19.0"
   },
   "publishConfig": {
-    "access": "restricted",
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "lavamoat": {
