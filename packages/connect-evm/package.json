@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-evm",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "EVM Layer for MetaMask Connect",
   "keywords": [
     "MetaMask",
