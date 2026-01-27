@@ -197,10 +197,17 @@ Use the following process to release new packages in this repo:
    On the `main` branch, run:
 
    ```
-   yarn create-release-branch -i
+   yarn prepare-release
    ```
 
-   This will start a local web server (default port 3000) and open a browser interface.
+   This command runs the interactive release tool and automatically bumps playground versions afterward (steps 1-5 below). Alternatively, you can run the steps separately:
+
+   ```
+   yarn create-release-branch -i   # Interactive release tool
+   yarn bump-playground-versions   # Bump playground versions (after step 4)
+   ```
+
+   The interactive tool will start a local web server (default port 3000) and open a browser interface.
 
    > **Tip:**
    > You can specify a different port if needed: `yarn create-release-branch -i -p 3001`
@@ -237,6 +244,8 @@ Use the following process to release new packages in this repo:
    - Add a new section to each package's `CHANGELOG.md` for the new version
 
 5. **Bump playground versions.**
+
+   > **Note:** If you used `yarn prepare-release` in step 1, this step was already performed automatically.
 
    After the release branch is created, run:
 

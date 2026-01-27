@@ -109,9 +109,8 @@ async function getPackagesToRelease(): Promise<ReleasedPackage[]> {
   const workspaces = stdout.split('\n').map((line) => JSON.parse(line));
 
   // Filter to only packages in packages/ directory (not playground/)
-  const corePackages = workspaces.filter(
-    (ws: { location: string }) =>
-      ws.location.startsWith('packages/') && ws.location !== '.',
+  const corePackages = workspaces.filter((ws: { location: string }) =>
+    ws.location.startsWith('packages/'),
   );
 
   for (const workspace of corePackages) {
@@ -170,7 +169,9 @@ async function bumpPlaygroundIfNeeded(
     return false;
   }
 
-  console.log(`\n${manifest.name}: Found workspace dependencies being released:`);
+  console.log(
+    `\n${manifest.name}: Found workspace dependencies being released:`,
+  );
   for (const dep of updatedDeps) {
     console.log(`  - ${dep}`);
   }
@@ -236,7 +237,7 @@ ${depsList}
 
   // Update the links at the bottom
   const unreleasedLinkPattern = new RegExp(
-    `\\[Unreleased\\]: (https://github\\.com/MetaMask/connect-monorepo/compare/${packageName.replace('/', '\\/')}@)[^.]+\\.\\.\\.HEAD`,
+    `\\[Unreleased\\]: (https://github\\.com/MetaMask/connect-monorepo/compare/${packageName.replace('/', '\\/')}@)[\\d.]+\\.\\.\\.HEAD`,
   );
 
   // Check if we need to update or add the unreleased link
