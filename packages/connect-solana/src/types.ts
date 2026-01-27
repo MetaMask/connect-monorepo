@@ -1,24 +1,17 @@
-import type { MultichainCore } from '@metamask/connect-multichain';
+import type {
+  MultichainCore,
+  MultichainOptions,
+} from '@metamask/connect-multichain';
 import type { Wallet } from '@wallet-standard/base';
 
 /**
  * Configuration options for creating a Solana client.
+ *
+ * Derived from MultichainOptions to ensure consistency with the core SDK.
  */
-export type SolanaConnectOptions = {
-  /** Dapp identification and branding settings */
-  dapp: {
-    /** The name of the dapp */
-    name: string;
-    /** The URL of the dapp */
-    url?: string;
-    /** The icon URL of the dapp */
-    iconUrl?: string;
-  };
+export type SolanaConnectOptions = Pick<MultichainOptions, 'dapp'> & {
   /** Optional API configuration */
-  api?: {
-    /** A map of CAIP chain IDs to RPC URLs for supported networks */
-    supportedNetworks?: Record<string, string>;
-  };
+  api?: MultichainOptions['api'];
   /** Enable debug logging */
   debug?: boolean;
 };
