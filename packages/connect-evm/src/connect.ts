@@ -106,12 +106,13 @@ export class MetamaskConnectEVM {
 
   /**
    * Creates a new MetamaskConnectEVM instance.
+   * Use the static `create()` method instead to ensure proper async initialization.
    *
    * @param options - The options for the MetamaskConnectEVM instance
    * @param options.core - The core instance of the Multichain SDK
    * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
    */
-  constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
+  private constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
     this.#core = core;
 
     this.#provider = new EIP1193Provider(
@@ -143,13 +144,26 @@ export class MetamaskConnectEVM {
     this.#displayUriHandler = this.#onDisplayUri.bind(this);
     this.#core.on('display_uri', this.#displayUriHandler);
 
-    // Attempt to set the permitted accounts if there's a valid previous session.
-    // TODO (wenfix): does it make sense to catch here?
-    this.#attemptSessionRecovery().catch((error) => {
-      console.error('Error attempting session recovery', error);
-    });
-
     logger('Connect/EVM constructor completed');
+  }
+
+  /**
+   * Creates a fully initialized MetamaskConnectEVM instance.
+   * This is the recommended way to instantiate the class, as it ensures
+   * all async initialization (like session recovery) completes before
+   * the instance is returned.
+   *
+   * @param options - The options for the MetamaskConnectEVM instance
+   * @param options.core - The core instance of the Multichain SDK
+   * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
+   * @returns A promise that resolves with a fully initialized MetamaskConnectEVM instance
+   */
+  static async create(
+    options: MetamaskConnectEVMOptions,
+  ): Promise<MetamaskConnectEVM> {
+    const instance = new MetamaskConnectEVM(options);
+    await instance.#attemptSessionRecovery();
+    return instance;
   }
 
   /**
@@ -978,7 +992,7 @@ export async function createEVMClient(
       },
     });
 
-    return new MetamaskConnectEVM({
+    return MetamaskConnectEVM.create({
       core,
       eventHandlers: options.eventHandlers,
       supportedNetworks: options.api.supportedNetworks,
