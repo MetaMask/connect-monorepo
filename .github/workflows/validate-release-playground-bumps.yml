@@ -1,0 +1,149 @@
+name: Validate Release Playground Bumps
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/*/package.json'
+      - 'playground/*/package.json'
+
+jobs:
+  validate-playground-bumps:
+    name: Validate playground versions are bumped
+    if: startsWith(github.head_ref, 'Release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Validate playground bumps
+        run: |
+          set -e
+
+          echo "Checking if playground versions need to be bumped..."
+          echo ""
+
+          # Playgrounds to check
+          PLAYGROUNDS=(
+            "playground/browser-playground"
+            "playground/react-native-playground"
+          )
+
+          # Track if we found any issues
+          MISSING_BUMPS=()
+
+          for PLAYGROUND in "${PLAYGROUNDS[@]}"; do
+            echo "Checking $PLAYGROUND..."
+
+            # Get the playground's package.json
+            PLAYGROUND_PKG="$PLAYGROUND/package.json"
+
+            if [ ! -f "$PLAYGROUND_PKG" ]; then
+              echo "  Warning: $PLAYGROUND_PKG not found, skipping"
+              continue
+            fi
+
+            # Get workspace dependencies from both dependencies and devDependencies
+            WORKSPACE_DEPS=$(node -e "
+              const pkg = require('./$PLAYGROUND_PKG');
+              const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+              const workspaceDeps = Object.entries(allDeps)
+                .filter(([_, v]) => v.startsWith('workspace:'))
+                .map(([name]) => name);
+              console.log(workspaceDeps.join('\n'));
+            ")
+
+            if [ -z "$WORKSPACE_DEPS" ]; then
+              echo "  No workspace dependencies found"
+              continue
+            fi
+
+            # Check each workspace dependency to see if it's being released
+            DEPS_BEING_RELEASED=()
+
+            while IFS= read -r DEP_NAME; do
+              [ -z "$DEP_NAME" ] && continue
+
+              # Find the package location (e.g., @metamask/connect -> packages/connect)
+              PKG_DIR=$(echo "$DEP_NAME" | sed 's/@metamask\//packages\//')
+
+              if [ ! -d "$PKG_DIR" ]; then
+                continue
+              fi
+
+              # Get current version from package.json
+              CURRENT_VERSION=$(node -p "require('./$PKG_DIR/package.json').version")
+
+              # Check if there's a git tag for this version
+              TAG_NAME="${DEP_NAME}@${CURRENT_VERSION}"
+
+              if ! git rev-parse "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
+                # No tag means this package is being released
+                DEPS_BEING_RELEASED+=("$DEP_NAME@$CURRENT_VERSION")
+              fi
+            done <<< "$WORKSPACE_DEPS"
+
+            if [ ${#DEPS_BEING_RELEASED[@]} -eq 0 ]; then
+              echo "  No workspace dependencies are being released"
+              continue
+            fi
+
+            echo "  Dependencies being released:"
+            for DEP in "${DEPS_BEING_RELEASED[@]}"; do
+              echo "    - $DEP"
+            done
+
+            # Check if playground version is also being bumped (no tag for current version)
+            PLAYGROUND_NAME=$(node -p "require('./$PLAYGROUND_PKG').name")
+            PLAYGROUND_VERSION=$(node -p "require('./$PLAYGROUND_PKG').version")
+            PLAYGROUND_TAG="${PLAYGROUND_NAME}@${PLAYGROUND_VERSION}"
+
+            if git rev-parse "refs/tags/$PLAYGROUND_TAG" >/dev/null 2>&1; then
+              # Tag exists, meaning playground was NOT bumped
+              echo ""
+              echo "  ❌ ERROR: $PLAYGROUND_NAME has dependencies being released but was NOT bumped!"
+              echo "     Current version $PLAYGROUND_VERSION already has a git tag."
+              echo "     Run 'yarn bump-playground-versions' to fix this."
+              MISSING_BUMPS+=("$PLAYGROUND_NAME")
+            else
+              echo "  ✓ $PLAYGROUND_NAME@$PLAYGROUND_VERSION is being released (no existing tag)"
+            fi
+
+            echo ""
+          done
+
+          if [ ${#MISSING_BUMPS[@]} -gt 0 ]; then
+            echo ""
+            echo "=========================================="
+            echo "VALIDATION FAILED"
+            echo "=========================================="
+            echo ""
+            echo "The following playgrounds have dependencies being released"
+            echo "but their versions were not bumped:"
+            echo ""
+            for PKG in "${MISSING_BUMPS[@]}"; do
+              echo "  - $PKG"
+            done
+            echo ""
+            echo "To fix this, run:"
+            echo "  yarn bump-playground-versions"
+            echo ""
+            echo "Or use the combined command for future releases:"
+            echo "  yarn prepare-release"
+            echo ""
+            exit 1
+          fi
+
+          echo "=========================================="
+          echo "VALIDATION PASSED"
+          echo "=========================================="
+          echo "All playground versions are correctly bumped."
