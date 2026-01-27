@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1]
+
 ### Fixed
 
 - `createEVMClient` now ensures session resumption is properly awaited before returning the client instance. Previously there was a race condition which made it possible to make requests to the EIP-1193 provider before the underlying session was fully ready ([#141](https://github.com/MetaMask/connect-monorepo/pull/141))
@@ -96,7 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.1...HEAD
+[0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.0...@metamask/connect-evm@0.4.1
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.3.1...@metamask/connect-evm@0.4.0
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.3.0...@metamask/connect-evm@0.3.1
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.2.0...@metamask/connect-evm@0.3.0
