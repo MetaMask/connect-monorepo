@@ -1,2 +1,7 @@
 export { createSolanaClient } from './connect';
-export type { SolanaClient, SolanaConnectOptions } from './types';
+export type {
+  SolanaClient,
+  SolanaConnectOptions,
+  SolanaNetwork,
+  SolanaSupportedNetworks,
+} from './types';

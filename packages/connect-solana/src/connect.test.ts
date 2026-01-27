@@ -17,7 +17,7 @@ describe('createSolanaClient', () => {
     },
     api: {
       supportedNetworks: {
-        'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'https://api.mainnet-beta.solana.com',
+        mainnet: 'https://api.mainnet-beta.solana.com',
       },
     },
     debug: true,
@@ -66,12 +66,15 @@ describe('createSolanaClient', () => {
     expect(createMultichainClient).toHaveBeenCalledWith({
       dapp: mockOptions.dapp,
       api: {
-        supportedNetworks: mockOptions.api?.supportedNetworks ?? {},
+        supportedNetworks: {
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+            'https://api.mainnet-beta.solana.com',
+        },
       },
     });
   });
 
-  it('should call createMultichainClient with empty supportedNetworks when api is not provided', async () => {
+  it('should call createMultichainClient with default Solana mainnet when api is not provided', async () => {
     const optionsWithoutApi: SolanaConnectOptions = {
       dapp: {
         name: 'Test DApp',
@@ -83,7 +86,10 @@ describe('createSolanaClient', () => {
     expect(createMultichainClient).toHaveBeenCalledWith({
       dapp: optionsWithoutApi.dapp,
       api: {
-        supportedNetworks: {},
+        supportedNetworks: {
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+            'https://api.mainnet-beta.solana.com',
+        },
       },
     });
   });
