@@ -13,12 +13,6 @@
 ## Installation
 
 ```bash
-yarn add @metamask/connect-evm
-```
-
-or
-
-```bash
 npm install @metamask/connect-evm
 ```
 
@@ -68,7 +62,7 @@ const sdk = await createEVMClient({
     supportedNetworks: {
       // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
       ...getInfuraRpcUrls(INFURA_API_KEY),
-      // or specify your own
+      // or specify your own CAIP Chain ID to rpc endpoint mapping
       'eip155:1': 'https://mainnet.example.io/rpc'
       'eip155:137': 'https://polygon-mainnet.example.io/rpc'
     },
@@ -108,7 +102,7 @@ const sdk = await createEVMClient({
       });
     },
   },
-} as any); // Note: mobile option is passed through to connect-multichain
+}); // Note: see @connect-multichain for more details
 ```
 
 The `mobile.preferredOpenLink` option is checked before falling back to browser-based deeplink methods, making it the recommended approach for React Native applications.
@@ -147,10 +141,6 @@ const result = await provider.request({
 
 Check out the [playground examples](../../playground/browser-playground) for a complete React implementation.
 
-## TypeScript
-
-This package is written in TypeScript and includes full type definitions. No additional `@types` package is required.
-
 ## Development
 
 This package is part of the MetaMask Connect monorepo. From the repo root:
@@ -168,6 +158,10 @@ yarn workspace @metamask/connect-evm run format:fix
 # Run tests
 yarn workspace @metamask/connect-evm run test
 ```
+
+## TypeScript
+
+This package is written in TypeScript and includes full type definitions. No additional `@types` package is required.
 
 ## API Reference
 
@@ -323,7 +317,7 @@ Switches to a different chain. Will attempt to add the chain if not configured i
 
 **Returns**
 
-`Promise<void>` - The result of the switch chain request.
+`Promise<void>`
 
 ```typescript
 await sdk.switchChain({
