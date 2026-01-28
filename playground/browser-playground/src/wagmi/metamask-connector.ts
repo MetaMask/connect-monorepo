@@ -1,4 +1,3 @@
-/* eslint-disable -- AUTO-GENERATED FILE */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  *

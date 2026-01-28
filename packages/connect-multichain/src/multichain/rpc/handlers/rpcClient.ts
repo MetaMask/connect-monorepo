@@ -119,7 +119,9 @@ export class RpcClient {
       const rpcResponse = (await response.json()) as RPCResponse;
       return rpcResponse.result as Json;
     } catch (error) {
-      throw new RPCReadonlyResponseErr(error.message);
+      throw new RPCReadonlyResponseErr(
+        error instanceof Error ? error.message : 'Unknown error',
+      );
     }
   }
 
