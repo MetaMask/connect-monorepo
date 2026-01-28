@@ -108,9 +108,7 @@ export class RpcClient {
       if (error instanceof Error && error.name === 'AbortError') {
         throw new RPCReadonlyRequestErr(`Request timeout after ${timeout}ms`);
       }
-      throw new RPCReadonlyRequestErr(
-        error instanceof Error ? error.message : 'Unknown error',
-      );
+      throw new RPCReadonlyRequestErr(error.message);
     }
   }
 
@@ -119,9 +117,7 @@ export class RpcClient {
       const rpcResponse = (await response.json()) as RPCResponse;
       return rpcResponse.result as Json;
     } catch (error) {
-      throw new RPCReadonlyResponseErr(
-        error instanceof Error ? error.message : 'Unknown error',
-      );
+      throw new RPCReadonlyResponseErr(error.message);
     }
   }
 

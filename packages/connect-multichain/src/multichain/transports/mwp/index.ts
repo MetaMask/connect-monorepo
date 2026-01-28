@@ -298,7 +298,7 @@ export class MWPTransport implements ExtendedTransport {
       });
       return resumeResolve();
     } catch (err) {
-      return resumeReject(err);
+      return resumeReject(err as Error);
     }
   }
 

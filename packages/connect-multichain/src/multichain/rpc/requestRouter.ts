@@ -100,16 +100,8 @@ export class RequestRouter {
       const response = await request;
       if (response.error) {
         const { error } = response;
-        const errCode =
-          typeof error === 'object' && error !== null && 'code' in error
-            ? (error as { code: number }).code
-            : RPCInvokeMethodErr.code;
-        const errMessage =
-          typeof error === 'object' && error !== null && 'message' in error
-            ? (error as { message: string }).message
-            : 'Unknown error';
         throw new RPCInvokeMethodErr(
-          `RPC Request failed with code ${errCode}: ${errMessage}`,
+          `RPC Request failed with code ${error.code}: ${error.message}`,
         );
       }
 
@@ -148,9 +140,7 @@ export class RequestRouter {
       if (error instanceof RPCInvokeMethodErr) {
         throw error;
       }
-      throw new RPCInvokeMethodErr(
-        error instanceof Error ? error.message : 'Unknown error',
-      );
+      throw new RPCInvokeMethodErr(error.message);
     }
   }
 

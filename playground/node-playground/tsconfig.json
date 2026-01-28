@@ -23,6 +23,12 @@
       "src/*": ["../../packages/connect-multichain/src/*"]
     }
   },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "references": [{ "path": "../../packages/connect-multichain" }],
   "include": ["./src"]
 }
