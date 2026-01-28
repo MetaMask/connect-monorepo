@@ -516,7 +516,7 @@ export class MetamaskConnectEVM {
   }: {
     chainId: number | Hex;
     chainConfiguration?: AddEthereumChainParameter;
-  }): Promise<unknown> {
+  }): Promise<void> {
     const method = 'wallet_switchEthereumChain';
     const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
     const scope: Scope = `eip155:${isHex(chainId) ? hexToNumber(chainId) : chainId}`;
@@ -560,7 +560,6 @@ export class MetamaskConnectEVM {
         await this.#cacheChainId(hexChainId);
         this.#onChainChanged(hexChainId);
       }
-      return result;
     } catch (error) {
       await this.#trackWalletActionFailed(method, scope, params, error);
       // Fallback to add the chain if its not configured in the wallet.
