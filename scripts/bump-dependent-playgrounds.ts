@@ -98,7 +98,7 @@ async function main(): Promise<void> {
 async function getPackagesToRelease(): Promise<ReleasedPackage[]> {
   const pendingRelease: ReleasedPackage[] = [];
 
-  // Get all workspace packages (excluding playgrounds and private packages)
+  // Get all workspace packages (excluding private packages)
   const { stdout } = await execa('yarn', [
     'workspaces',
     'list',
