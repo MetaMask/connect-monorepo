@@ -266,7 +266,6 @@ t.describe('ModalFactory', () => {
         },
       };
       uiModule = new ModalFactory(mockFactoryOptions);
-      // uiModule.modal = mockModal;
       mockContainer = document.createElement('div');
     });
 
