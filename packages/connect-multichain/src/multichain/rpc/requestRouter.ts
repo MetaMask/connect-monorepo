@@ -101,9 +101,13 @@ export class RequestRouter {
       if (response.error) {
         const { error } = response;
         const errCode =
-          error instanceof Error ? error.code : RPCInvokeMethodErr.code;
+          typeof error === 'object' && error !== null && 'code' in error
+            ? (error as { code: number }).code
+            : RPCInvokeMethodErr.code;
         const errMessage =
-          error instanceof Error ? error.message : 'Unknown error';
+          typeof error === 'object' && error !== null && 'message' in error
+            ? (error as { message: string }).message
+            : 'Unknown error';
         throw new RPCInvokeMethodErr(
           `RPC Request failed with code ${errCode}: ${errMessage}`,
         );
@@ -139,6 +143,10 @@ export class RequestRouter {
         await this.#trackWalletActionRejected(options);
       } else {
         await this.#trackWalletActionFailed(options);
+      }
+      // Re-throw RPCInvokeMethodErr directly to avoid double-wrapping
+      if (error instanceof RPCInvokeMethodErr) {
+        throw error;
       }
       throw new RPCInvokeMethodErr(
         error instanceof Error ? error.message : 'Unknown error',
