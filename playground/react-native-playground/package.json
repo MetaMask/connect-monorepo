@@ -1,7 +1,6 @@
 {
   "name": "@metamask/react-native-playground",
   "version": "0.0.0",
-  "private": true,
   "description": "A React Native test dapp for multichain api",
   "keywords": [
     "MetaMask",
@@ -31,6 +30,8 @@
     "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
     "ios": "yarn copy-wagmi-connector && expo start --ios",
     "start": "yarn copy-wagmi-connector && expo start --tunnel",
+    "publish:preview": "yarn npm publish --tag preview",
+    "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test",
     "web": "yarn copy-wagmi-connector && expo start --web"
@@ -42,7 +43,6 @@
     "@metamask/connect-multichain": "workspace:^",
     "@metamask/mobile-wallet-protocol-core": "^0.3.0",
     "@metamask/mobile-wallet-protocol-wallet-client": "0.2.1",
-    "@metamask/playground-ui": "workspace:^",
     "@metamask/utils": "^11.8.1",
     "@open-rpc/meta-schema": "^1.14.9",
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -87,6 +87,7 @@
     "@babel/core": "^7.28.4",
     "@metamask/api-specs": "^0.14.0",
     "@metamask/auto-changelog": "^3.4.4",
+    "@metamask/playground-ui": "workspace:^",
     "@types/react": "19.1.0",
     "@types/react-native-get-random-values": "^1.8.2",
     "cross-env": "^10.1.0",
@@ -98,7 +99,7 @@
     "node": ">=20.19.0"
   },
   "publishConfig": {
-    "access": "restricted",
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "lavamoat": {

@@ -197,10 +197,17 @@ Use the following process to release new packages in this repo:
    On the `main` branch, run:
 
    ```
-   yarn create-release-branch -i
+   yarn prepare-release
    ```
 
-   This will start a local web server (default port 3000) and open a browser interface.
+   This command runs the interactive release tool and automatically bumps playground versions afterward (steps 1-5 below). Alternatively, you can run the steps separately:
+
+   ```
+   yarn create-release-branch -i   # Interactive release tool
+   yarn bump-playground-versions   # Bump playground versions (after step 4)
+   ```
+
+   The interactive tool will start a local web server (default port 3000) and open a browser interface.
 
    > **Tip:**
    > You can specify a different port if needed: `yarn create-release-branch -i -p 3001`
@@ -236,7 +243,27 @@ Use the following process to release new packages in this repo:
    - Update the version in each package's `package.json`
    - Add a new section to each package's `CHANGELOG.md` for the new version
 
-5. **Review and update changelogs.**
+5. **Bump playground versions.**
+
+   > **Note:** If you used `yarn prepare-release` in step 1, this step was already performed automatically.
+
+   After the release branch is created, run:
+
+   ```
+   yarn bump-playground-versions
+   ```
+
+   This script automatically detects which core packages are being released and bumps the patch version of any playground packages that depend on them. It will:
+
+   - Identify packages in `packages/` that have version bumps without corresponding git tags
+   - Find playground packages (`browser-playground`, `react-native-playground`) that depend on those packages
+   - Bump their patch versions and update their changelogs
+     - NOTE: It's possible that a playground has unreleased changes that depend on packages other than the packages being bumped! If this is the case, undo the changes by this tool related to the release of affected playground(s)
+   
+
+   Review the changes made by this script before proceeding.
+
+6. **Review and update changelogs.**
 
    Each selected package will have a new changelog section. Review these entries to ensure they are helpful for consumers:
 
@@ -247,25 +274,25 @@ Use the following process to release new packages in this repo:
 
    Run `yarn changelog:validate` when you're done to ensure all changelogs are correctly formatted.
 
-6. **Push and submit a pull request.**
+7. **Push and submit a pull request.**
 
    Create a PR for the release branch so that it can be reviewed and tested.
 
-7. **Incorporate any new changes from `main`.**
+8. **Incorporate any new changes from `main`.**
 
    If you see the "Update branch" button on your release PR, stop and look over the most recent commits made to `main`. If there are new changes to packages you are releasing, make sure they are reflected in the appropriate changelogs.
 
-8. **Merge the release PR and wait for approval.**
+9. **Merge the release PR and wait for approval.**
 
    "Squash & Merge" the release PR when it's approved.
 
    Merging triggers the [`publish-release` GitHub action](https://github.com/MetaMask/action-publish-release) workflow to tag the final release commit and publish the release on GitHub. Before packages are published to NPM, this action will automatically notify the [`npm-publishers`](https://github.com/orgs/MetaMask/teams/npm-publishers) team in Slack to review and approve the release.
 
-9. **Verify publication.**
+10. **Verify publication.**
 
-   Once the `npm-publishers` team has approved the release, you can click on the link in the Slack message to monitor the remainder of the process.
+    Once the `npm-publishers` team has approved the release, you can click on the link in the Slack message to monitor the remainder of the process.
 
-   After the action has completed, [check NPM](https://npms.io/search?q=scope%3Ametamask) to verify that all relevant packages have been published.
+    After the action has completed, [check NPM](https://npms.io/search?q=scope%3Ametamask) to verify that all relevant packages have been published.
 
 ## Performing operations across the monorepo
 

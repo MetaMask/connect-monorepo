@@ -33,6 +33,8 @@
     "deploy": "serve -s build",
     "prepack": "./scripts/prepack.sh",
     "start": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco start",
+    "publish:preview": "yarn npm publish --tag preview",
+    "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test"
   },
@@ -54,7 +56,6 @@
   "dependencies": {
     "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect": "workspace:^",
-    "@metamask/playground-ui": "workspace:^",
     "@metamask/utils": "^11.8.1",
     "@tanstack/query-sync-storage-persister": "5.0.5",
     "@tanstack/react-query": ">=5.45.1",
@@ -71,6 +72,7 @@
     "@lavamoat/preinstall-always-fail": "^2.0.0",
     "@metamask/api-specs": "^0.14.0",
     "@metamask/auto-changelog": "^3.4.4",
+    "@metamask/playground-ui": "workspace:^",
     "@open-rpc/meta-schema": "^1.14.9",
     "@open-rpc/schema-utils-js": "^2.0.5",
     "@solana/web3.js": "^1.98.0",
@@ -107,7 +109,7 @@
     "node": ">=20.19.0"
   },
   "publishConfig": {
-    "access": "restricted",
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "lavamoat": {
