@@ -296,8 +296,7 @@ export function addValidAccounts(
   const accountsByChain = new Map<string, CaipAccountId[]>();
   for (const account of validAccounts) {
     const chainKey = `${account.chain.namespace}:${account.chain.reference}`;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const accountId = `${account.chainId}:${account.address}` as CaipAccountId;
+    const accountId: CaipAccountId = `${account.chainId}:${account.address}`;
 
     if (!accountsByChain.has(chainKey)) {
       accountsByChain.set(chainKey, []);
