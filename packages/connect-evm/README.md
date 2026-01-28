@@ -57,7 +57,7 @@ const accounts = await provider.request({
 ### Basic Connection
 
 ```typescript
-import { createEVMClient } from '@metamask/connect-evm';
+import { createEVMClient, getInfuraRpcUrls } from '@metamask/connect-evm';
 
 const sdk = await createEVMClient({
   dapp: {
@@ -66,8 +66,11 @@ const sdk = await createEVMClient({
   },
   api: {
     supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
-      'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
+      // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
+      ...getInfuraRpcUrls(INFURA_API_KEY),
+      // or specify your own
+      'eip155:1': 'https://mainnet.example.io/rpc'
+      'eip155:137': 'https://polygon-mainnet.example.io/rpc'
     },
   },
 });
@@ -139,6 +142,33 @@ const result = await provider.request({
 });
 ```
 
+
+## Examples
+
+Check out the [playground examples](../../playground/browser-playground) for a complete React implementation.
+
+## TypeScript
+
+This package is written in TypeScript and includes full type definitions. No additional `@types` package is required.
+
+## Development
+
+This package is part of the MetaMask Connect monorepo. From the repo root:
+
+```bash
+# Run linting
+yarn workspace @metamask/connect-evm run lint
+
+# Run type checking
+yarn workspace @metamask/connect-evm run check
+
+# Format code
+yarn workspace @metamask/connect-evm run format:fix
+
+# Run tests
+yarn workspace @metamask/connect-evm run test
+```
+
 ## API Reference
 
 ### `createEVMClient(options)`
@@ -192,17 +222,40 @@ The main SDK class providing EVM connectivity.
 
 Connects to MetaMask wallet.
 
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.chainIds` | `number[]` | Yes | Array of chain IDs to request permission for |
+| `options.account` | `string` | No | Specific account address to connect |
+| `options.forceRequest` | `boolean` | No | Force a new connection request even if already connected |
+
+**Returns**
+
+`Promise<{ accounts: Address[]; chainId: number }>` - The connected accounts and active chain ID.
+
 ```typescript
 const { accounts, chainId } = await sdk.connect({
-  chainIds: [1, 137],      // Required: Array of chain IDs to connect
-  account: '0x...',        // Optional: Specific account to connect
-  forceRequest: false,     // Optional: Force new connection request
+  chainIds: [1, 137],
+  account: '0x...',
+  forceRequest: false,
 });
 ```
 
 ##### `connectAndSign(options)`
 
-Connects and immediately signs a message.
+Connects and immediately signs a message using `personal_sign`.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.message` | `string` | Yes | The message to sign after connecting |
+| `options.chainIds` | `number[]` | No | Chain IDs to connect to (defaults to mainnet) |
+
+**Returns**
+
+`Promise<string>` - The signature as a hex string.
 
 ```typescript
 const signature = await sdk.connectAndSign({
@@ -213,7 +266,21 @@ const signature = await sdk.connectAndSign({
 
 ##### `connectWith(options)`
 
-Connects and immediately invokes a method.
+Connects and immediately invokes a method with specified parameters.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.method` | `string` | Yes | The RPC method name to invoke |
+| `options.params` | `unknown[] \| ((account: Address) => unknown[])` | Yes | Method parameters, or a function that receives the connected account and returns params |
+| `options.chainIds` | `number[]` | No | Chain IDs to connect to (defaults to mainnet) |
+| `options.account` | `string` | No | Specific account to connect |
+| `options.forceRequest` | `boolean` | No | Force a new connection request |
+
+**Returns**
+
+`Promise<unknown>` - The result of the method invocation.
 
 ```typescript
 const result = await sdk.connectWith({
@@ -231,18 +298,37 @@ const result = await sdk.connectWith({
 
 Disconnects from the wallet and cleans up resources.
 
+**Parameters**
+
+None.
+
+**Returns**
+
+`Promise<void>`
+
 ```typescript
 await sdk.disconnect();
 ```
 
 ##### `switchChain(options)`
 
-Switches to a different chain.
+Switches to a different chain. Will attempt to add the chain if not configured in the wallet.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.chainId` | `number \| Hex` | Yes | The chain ID to switch to |
+| `options.chainConfiguration` | `AddEthereumChainParameter` | No | Chain configuration to use if the chain needs to be added |
+
+**Returns**
+
+`Promise<void>` - The result of the switch chain request.
 
 ```typescript
 await sdk.switchChain({
   chainId: 137,
-  chainConfiguration: {  // Optional: Used if chain isn't configured in wallet
+  chainConfiguration: {
     chainId: '0x89',
     chainName: 'Polygon',
     nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
@@ -255,6 +341,14 @@ await sdk.switchChain({
 
 Returns the EIP-1193 provider instance.
 
+**Parameters**
+
+None.
+
+**Returns**
+
+`EIP1193Provider` - The EIP-1193 compliant provider.
+
 ```typescript
 const provider = sdk.getProvider();
 ```
@@ -263,6 +357,14 @@ const provider = sdk.getProvider();
 
 Returns the currently selected chain ID.
 
+**Parameters**
+
+None.
+
+**Returns**
+
+`Hex | undefined` - The currently selected chain ID as a hex string, or undefined if not connected.
+
 ```typescript
 const chainId = sdk.getChainId(); // e.g., '0x1'
 ```
@@ -270,6 +372,14 @@ const chainId = sdk.getChainId(); // e.g., '0x1'
 ##### `getAccount()`
 
 Returns the currently selected account.
+
+**Parameters**
+
+None.
+
+**Returns**
+
+`Address | undefined` - The currently selected account address, or undefined if not connected.
 
 ```typescript
 const account = sdk.getAccount(); // e.g., '0x...'
@@ -296,6 +406,17 @@ EIP-1193 compliant provider for making Ethereum JSON-RPC requests.
 
 Makes an Ethereum JSON-RPC request.
 
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `args.method` | `string` | Yes | The RPC method name |
+| `args.params` | `unknown` | No | The method parameters |
+
+**Returns**
+
+`Promise<unknown>` - The result of the RPC call.
+
 ```typescript
 const result = await provider.request({
   method: 'eth_getBalance',
@@ -306,6 +427,20 @@ const result = await provider.request({
 ##### `sendAsync(request, callback?)` *(deprecated)*
 
 Legacy method for JSON-RPC requests with callback support.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `request.method` | `string` | Yes | The RPC method name |
+| `request.params` | `unknown` | No | The method parameters |
+| `request.id` | `number \| string` | No | Request ID (defaults to 1) |
+| `request.jsonrpc` | `'2.0'` | No | JSON-RPC version |
+| `callback` | `JsonRpcCallback` | No | Optional callback function |
+
+**Returns**
+
+`Promise<JsonRpcResponse> | void` - Returns a promise if no callback is provided, otherwise void.
 
 ```typescript
 provider.sendAsync(
@@ -320,6 +455,18 @@ provider.sendAsync(
 ##### `send(request, callback)` *(deprecated)*
 
 Legacy synchronous-style method for JSON-RPC requests.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `request.method` | `string` | Yes | The RPC method name |
+| `request.params` | `unknown` | No | The method parameters |
+| `callback` | `JsonRpcCallback` | Yes | Callback function to receive the response |
+
+**Returns**
+
+`void`
 
 #### Events
 
@@ -362,6 +509,16 @@ provider.on('display_uri', (uri) => {
 ### `getInfuraRpcUrls(infuraApiKey)`
 
 Helper function to generate Infura RPC URLs for common networks.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `infuraApiKey` | `string` | Yes | Your Infura API key |
+
+**Returns**
+
+`RpcUrlsMap` - A map of CAIP chain IDs to Infura RPC URLs. Includes Ethereum, Linea, Polygon, Optimism, Arbitrum, Palm, Avalanche, Aurora, and Celo networks.
 
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-evm';
@@ -419,32 +576,6 @@ type AddEthereumChainParameter = {
   blockExplorerUrls?: string[];
   iconUrls?: string[];
 };
-```
-
-## Examples
-
-Check out the [playground examples](../../playground/browser-playground) for a complete React implementation.
-
-## TypeScript
-
-This package is written in TypeScript and includes full type definitions. No additional `@types` package is required.
-
-## Development
-
-This package is part of the MetaMask Connect monorepo. From the repo root:
-
-```bash
-# Run linting
-yarn workspace @metamask/connect-evm run lint
-
-# Run type checking
-yarn workspace @metamask/connect-evm run check
-
-# Format code
-yarn workspace @metamask/connect-evm run format:fix
-
-# Run tests
-yarn workspace @metamask/connect-evm run test
 ```
 
 ## Contributing
