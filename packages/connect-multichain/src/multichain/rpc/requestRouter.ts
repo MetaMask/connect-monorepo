@@ -136,7 +136,6 @@ export class RequestRouter {
       } else {
         await this.#trackWalletActionFailed(options);
       }
-      // Re-throw RPCInvokeMethodErr directly to avoid double-wrapping
       if (error instanceof RPCInvokeMethodErr) {
         throw error;
       }
