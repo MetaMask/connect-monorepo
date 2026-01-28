@@ -1,4 +1,7 @@
-import type { Session, SessionRequest } from '@metamask/mobile-wallet-protocol-core';
+import type {
+  Session,
+  SessionRequest,
+} from '@metamask/mobile-wallet-protocol-core';
 import type {
   SessionProperties,
   Transport,

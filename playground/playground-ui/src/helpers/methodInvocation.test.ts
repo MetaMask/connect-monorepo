@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
+/* eslint-disable @typescript-eslint/naming-convention -- RPC method names use snake_case */
 import { describe, it, expect } from 'vitest';
 
 import {
@@ -103,8 +105,8 @@ describe('updateInvokeMethodResults', () => {
       { method: 'eth_getBalance', params: ['0x456'] },
     );
 
-    expect(result['eip155:1']['eth_getBalance']).toHaveLength(2);
-    expect(result['eip155:1']['eth_getBalance'][1]).toEqual({
+    expect(result['eip155:1'].eth_getBalance).toHaveLength(2);
+    expect(result['eip155:1'].eth_getBalance[1]).toEqual({
       result: '0x200',
       request: { method: 'eth_getBalance', params: ['0x456'] },
     });
@@ -129,8 +131,8 @@ describe('updateInvokeMethodResults', () => {
     );
 
     expect(result['eip155:137']).toEqual(previousResults['eip155:137']);
-    expect(result['eip155:1']['eth_getBalance']).toEqual(
-      previousResults['eip155:1']['eth_getBalance'],
+    expect(result['eip155:1'].eth_getBalance).toEqual(
+      previousResults['eip155:1'].eth_getBalance,
     );
   });
 });

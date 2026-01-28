@@ -67,6 +67,7 @@ yarn web
 ### Multichain Connection
 
 Connect to multiple blockchain networks in a single session:
+
 - Ethereum Mainnet & Testnets
 - Layer 2 networks (Linea, Arbitrum, Polygon, etc.)
 - Solana
@@ -143,8 +144,8 @@ See [scripts/README.md](./scripts/README.md) for detailed polyfill documentation
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
+| Variable                     | Description                   |
+| ---------------------------- | ----------------------------- |
 | `EXPO_PUBLIC_INFURA_API_KEY` | Infura API key for RPC access |
 
 ## Troubleshooting

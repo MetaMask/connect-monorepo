@@ -1,15 +1,23 @@
+/* eslint-disable no-restricted-globals -- Browser storage adapter uses window.indexedDB */
+/* eslint-disable @typescript-eslint/naming-convention -- DB_NAME is a constant */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
+/* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
+/* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors -- Custom error objects */
 import { StoreAdapter } from '../../domain';
 
-type kvStores = 'sdk-kv-store' | 'key-value-pairs';
+type KvStores = 'sdk-kv-store' | 'key-value-pairs';
 
 export class StoreAdapterWeb extends StoreAdapter {
-  static readonly stores: kvStores[] = ['sdk-kv-store', 'key-value-pairs'];
+  static readonly stores: KvStores[] = ['sdk-kv-store', 'key-value-pairs'];
+
   static readonly DB_NAME = 'mmsdk';
 
   readonly platform = 'web';
+
   readonly dbPromise: Promise<IDBDatabase>;
 
-  private get internal() {
+  private get internal(): IDBFactory {
     if (typeof window === 'undefined' || !window.indexedDB) {
       throw new Error('indexedDB is not available in this environment');
     }
@@ -18,7 +26,7 @@ export class StoreAdapterWeb extends StoreAdapter {
 
   constructor(
     dbNameSuffix: `-${string}` = '-kv-store',
-    private storeName: kvStores = StoreAdapterWeb.stores[0],
+    private readonly storeName: KvStores = StoreAdapterWeb.stores[0],
   ) {
     super();
 

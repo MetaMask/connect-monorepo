@@ -1,3 +1,13 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Demo helpers */
+/* eslint-disable no-restricted-globals -- Browser playground uses process.env */
+
+import {
+  getConfig,
+  stringToBase64,
+  uint8ArrayToBase64,
+  getHostname,
+} from '@metamask/playground-ui/config';
+import { FEATURED_NETWORKS } from '@metamask/playground-ui/constants';
 import type { Commitment } from '@solana/web3.js';
 import {
   Connection,
@@ -5,14 +15,6 @@ import {
   SystemProgram,
   Transaction,
 } from '@solana/web3.js';
-
-import { FEATURED_NETWORKS } from '@metamask/playground-ui/constants';
-import {
-  getConfig,
-  stringToBase64,
-  uint8ArrayToBase64,
-  getHostname,
-} from '@metamask/playground-ui/config';
 
 const getSolanaRpcConfig = () => {
   const config = getConfig();

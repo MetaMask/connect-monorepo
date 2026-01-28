@@ -1,11 +1,18 @@
+/* eslint-disable @typescript-eslint/naming-convention -- Test mocks use __prefixed naming */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test setup functions */
+/* eslint-disable jsdoc/require-param-description -- Test file */
 
+/* eslint-disable no-empty-function -- Mock implementations can be empty */
+/* eslint-disable @typescript-eslint/no-shadow -- navigator shadow is intentional for mocking */
+/* eslint-disable accessor-pairs -- Setter-only is intentional for mock */
 /** biome-ignore-all lint/suspicious/noAsyncPromiseExecutor: ok for tests */
 
-import { vi } from 'vitest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { JSDOM as Page } from 'jsdom';
-import { NativeStorageStub } from 'tests/types';
-import * as t from 'vitest';
+import type { NativeStorageStub } from 'tests/types';
+import { vi } from 'vitest';
+import * as vitest from 'vitest';
+
 import * as nodeStorage from '../../src/store/adapters/node';
 import * as webStorage from '../../src/store/adapters/web';
 
@@ -13,6 +20,8 @@ export const TRANSPORT_REQUEST_RESPONSE_DELAY = 25;
 
 /**
  * Virtualize nodejs environments, mocking everything needed to run the tests in Node
+ *
+ * @param nativeStorageStub
  */
 export const setupNodeMocks = (nativeStorageStub: NativeStorageStub) => {
   // Mock console.log to prevent QR codes from displaying in test output
@@ -20,23 +29,25 @@ export const setupNodeMocks = (nativeStorageStub: NativeStorageStub) => {
   vi.spyOn(console, 'clear').mockImplementation(() => {});
 
   vi.spyOn(nodeStorage, 'StoreAdapterNode').mockImplementation(() => {
-    const __storage = {
-      get: t.vi.fn((key: string) => nativeStorageStub.getItem(key)),
-      set: t.vi.fn((key: string, value: string) =>
+    const mockStorage = {
+      get: vitest.vi.fn((key: string) => nativeStorageStub.getItem(key)),
+      set: vitest.vi.fn((key: string, value: string) =>
         nativeStorageStub.setItem(key, value),
       ),
-      delete: t.vi.fn((key: string) => nativeStorageStub.removeItem(key)),
+      delete: vitest.vi.fn((key: string) => nativeStorageStub.removeItem(key)),
       platform: 'node' as const,
       get storage() {
-        return __storage;
+        return mockStorage;
       },
     } as any;
-    return __storage;
+    return mockStorage;
   });
 };
 
 /**
  * Virtualize nodejs environments, mocking everything needed to run the tests in React Native
+ *
+ * @param nativeStorageStub
  */
 export const setupRNMocks = (nativeStorageStub: NativeStorageStub) => {
   // Mock console.log to prevent QR codes from displaying in test output (for consistency)
@@ -56,6 +67,9 @@ export const setupRNMocks = (nativeStorageStub: NativeStorageStub) => {
 
 /**
  * Virtualize wev environments, mocking everything needed to run the tests in Web with Chrome extension available
+ *
+ * @param nativeStorageStub
+ * @param dappUrl
  */
 export const setupWebMocks = (
   nativeStorageStub: NativeStorageStub,
@@ -85,17 +99,17 @@ export const setupWebMocks = (
   vi.stubGlobal('document', dom.window.document);
   vi.stubGlobal('HTMLElement', dom.window.HTMLElement);
   vi.stubGlobal('Event', dom.window.Event);
-  vi.stubGlobal('requestAnimationFrame', t.vi.fn());
+  vi.stubGlobal('requestAnimationFrame', vitest.vi.fn());
   vi.stubGlobal('dispatchEvent', dom.window.dispatchEvent.bind(dom.window));
   vi.spyOn(webStorage, 'StoreAdapterWeb').mockImplementation(() => {
     const __storage = {
-      get: t.vi.fn((key: string) => {
+      get: vitest.vi.fn((key: string) => {
         return nativeStorageStub.getItem(key);
       }),
-      set: t.vi.fn((key: string, value: string) => {
+      set: vitest.vi.fn((key: string, value: string) => {
         return nativeStorageStub.setItem(key, value);
       }),
-      delete: t.vi.fn((key: string) => {
+      delete: vitest.vi.fn((key: string) => {
         return nativeStorageStub.removeItem(key);
       }),
       platform: 'web' as const,
@@ -109,6 +123,9 @@ export const setupWebMocks = (
 
 /**
  * Virtualize wev environments, mocking everything needed to run the tests in Web with Chrome extension available
+ *
+ * @param nativeStorageStub
+ * @param dappUrl
  */
 export const setupWebMobileMocks = (
   nativeStorageStub: NativeStorageStub,
@@ -154,17 +171,17 @@ export const setupWebMobileMocks = (
   vi.stubGlobal('document', dom.window.document);
   vi.stubGlobal('HTMLElement', dom.window.HTMLElement);
   vi.stubGlobal('Event', dom.window.Event);
-  vi.stubGlobal('requestAnimationFrame', t.vi.fn());
+  vi.stubGlobal('requestAnimationFrame', vitest.vi.fn());
   vi.stubGlobal('dispatchEvent', dom.window.dispatchEvent.bind(dom.window));
   vi.spyOn(webStorage, 'StoreAdapterWeb').mockImplementation(() => {
     const __storage = {
-      get: t.vi.fn((key: string) => {
+      get: vitest.vi.fn((key: string) => {
         return nativeStorageStub.getItem(key);
       }),
-      set: t.vi.fn((key: string, value: string) => {
+      set: vitest.vi.fn((key: string, value: string) => {
         return nativeStorageStub.setItem(key, value);
       }),
-      delete: t.vi.fn((key: string) => {
+      delete: vitest.vi.fn((key: string) => {
         return nativeStorageStub.removeItem(key);
       }),
       platform: 'web' as const,

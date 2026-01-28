@@ -1,3 +1,6 @@
+/* eslint-disable import-x/unambiguous -- Setup file has side effects only */
+
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors -- Passing through original reason */
 // Setup file to handle unhandled promise rejections in tests
 // This prevents CI failures from expected unhandled rejections in web-mobile timeout tests
 
@@ -18,7 +21,7 @@ process.on('unhandledRejection', (reason) => {
   ];
 
   // If it's an expected error from our timeout tests, ignore it
-  if (expectedErrors.some((msg) => errorMessage.includes(msg))) {
+  if (expectedErrors.some((errorMsg) => errorMessage.includes(errorMsg))) {
     // Silently handle - these are expected in web-mobile timeout scenarios
     return;
   }
@@ -28,4 +31,3 @@ process.on('unhandledRejection', (reason) => {
     handler(reason, Promise.reject(reason));
   });
 });
-

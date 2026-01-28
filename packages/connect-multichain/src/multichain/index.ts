@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-restricted-globals */
+/* eslint-disable promise/always-return -- Event handlers */
+/* eslint-disable no-async-promise-executor -- Async promise executor needed for complex flow */
 import { analytics } from '@metamask/analytics';
 import {
   ErrorCode,
@@ -11,8 +13,8 @@ import {
 } from '@metamask/mobile-wallet-protocol-core';
 import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
+  type SessionProperties,
   getMultichainClient,
-  SessionProperties,
   type MultichainApiClient,
   type SessionData,
 } from '@metamask/multichain-api-client';
@@ -56,10 +58,10 @@ import {
 import { RpcClient } from './rpc/handlers/rpcClient';
 import { RequestRouter } from './rpc/requestRouter';
 import { DefaultTransport } from './transports/default';
+import { MultichainApiClientWrapperTransport } from './transports/multichainApiClientWrapper';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
 import { getDappId, openDeeplink, setupDappMetadata } from './utils';
-import { MultichainApiClientWrapperTransport } from './transports/multichainApiClientWrapper';
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
@@ -67,9 +69,9 @@ export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 const logger = createLogger('metamask-sdk:core');
 
 export class MetaMaskConnectMultichain extends MultichainCore {
-  #provider: MultichainApiClient<RPCAPI>;
+  readonly #provider: MultichainApiClient<RPCAPI>;
 
-  #providerTransportWrapper: MultichainApiClientWrapperTransport;
+  readonly #providerTransportWrapper: MultichainApiClientWrapperTransport;
 
   #transport: ExtendedTransport | undefined = undefined;
 
@@ -142,11 +144,17 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     super(allOptions);
 
-    this.#providerTransportWrapper = new MultichainApiClientWrapperTransport(this);
-    this.#provider = getMultichainClient({ transport: this.#providerTransportWrapper });
+    this.#providerTransportWrapper = new MultichainApiClientWrapperTransport(
+      this,
+    );
+    this.#provider = getMultichainClient({
+      transport: this.#providerTransportWrapper,
+    });
   }
 
-  static async create(options: MultichainOptions): Promise<MetaMaskConnectMultichain> {
+  static async create(
+    options: MultichainOptions,
+  ): Promise<MetaMaskConnectMultichain> {
     const instance = new MetaMaskConnectMultichain(options);
     const isEnabled = await isLoggerEnabled(
       'metamask-sdk:core',
@@ -377,7 +385,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
               (async (): Promise<void> => {
                 try {
-                  await this.transport.connect({ scopes, caipAccountIds, sessionProperties });
+                  await this.transport.connect({
+                    scopes,
+                    caipAccountIds,
+                    sessionProperties,
+                  });
                   await this.options.ui.factory.unload();
                   this.options.ui.factory.modal?.unmount();
                   this.status = 'connected';
@@ -482,7 +494,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           };
 
           // Generate and emit the QR code link
-          const deeplink = this.options.ui.factory.createConnectionDeeplink(connectionRequest);
+          const deeplink =
+            this.options.ui.factory.createConnectionDeeplink(connectionRequest);
           this.emit('display_uri', deeplink);
         },
       );
@@ -528,7 +541,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     caipAccountIds: CaipAccountId[],
     sessionProperties?: SessionProperties,
   ): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       // Handle the response to the initial wallet_createSession request
       const dappClientMessageHandler = (payload: unknown): void => {
         if (
@@ -709,12 +722,20 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
 
     // Needed because empty object will cause wallet_createSession to return an error
-    const nonEmptySessionProperites = Object.keys(sessionProperties ?? {}).length > 0 ? sessionProperties : undefined;
+    const nonEmptySessionProperites =
+      Object.keys(sessionProperties ?? {}).length > 0
+        ? sessionProperties
+        : undefined;
 
     if (this.#transport?.isConnected() && !secure) {
       return this.#handleConnection(
         this.#transport
-          .connect({ scopes, caipAccountIds, sessionProperties: nonEmptySessionProperites, forceRequest })
+          .connect({
+            scopes,
+            caipAccountIds,
+            sessionProperties: nonEmptySessionProperites,
+            forceRequest,
+          })
           .then(async () => {
             if (this.#transport instanceof MWPTransport) {
               return this.storage.setTransport(TransportType.MWP);
@@ -730,7 +751,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (platformType === PlatformType.MetaMaskMobileWebview) {
       const defaultTransport = await this.#setupDefaultTransport();
       return this.#handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties: nonEmptySessionProperites, forceRequest }),
+        defaultTransport.connect({
+          scopes,
+          caipAccountIds,
+          sessionProperties: nonEmptySessionProperites,
+          forceRequest,
+        }),
         scopes,
         transportType,
       );
@@ -741,7 +767,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       const defaultTransport = await this.#setupDefaultTransport();
       // Web transport has no initial payload
       return this.#handleConnection(
-        defaultTransport.connect({ scopes, caipAccountIds, sessionProperties: nonEmptySessionProperites, forceRequest }),
+        defaultTransport.connect({
+          scopes,
+          caipAccountIds,
+          sessionProperties: nonEmptySessionProperites,
+          forceRequest,
+        }),
         scopes,
         transportType,
       );
@@ -758,7 +789,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (secure && !shouldShowInstallModal) {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
       return this.#handleConnection(
-        this.#deeplinkConnect(scopes, caipAccountIds, nonEmptySessionProperites),
+        this.#deeplinkConnect(
+          scopes,
+          caipAccountIds,
+          nonEmptySessionProperites,
+        ),
         scopes,
         transportType,
       );
@@ -766,7 +801,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     // Show install modal for RN, Web + Node
     return this.#handleConnection(
-      this.#showInstallModal(shouldShowInstallModal, scopes, caipAccountIds, nonEmptySessionProperites),
+      this.#showInstallModal(
+        shouldShowInstallModal,
+        scopes,
+        caipAccountIds,
+        nonEmptySessionProperites,
+      ),
       scopes,
       transportType,
     );

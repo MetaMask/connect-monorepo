@@ -1,381 +1,499 @@
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test functions */
+/* eslint-disable @typescript-eslint/await-thenable -- Mock functions may be thenable */
 import type { CaipAccountId } from '@metamask/utils';
 import * as t from 'vitest';
 import { vi } from 'vitest';
+
+import * as utils from '.';
 import { getVersion, type Scope } from '../../domain';
 import type { MultichainOptions } from '../../domain/multichain';
 import { getPlatformType, PlatformType } from '../../domain/platform';
-import * as utils from '.';
 
 vi.mock('../../domain/platform', async () => {
-	const actual = (await vi.importActual('../../domain/platform')) as any;
-	return {
-		...actual,
-		getPlatformType: vi.fn(),
+  const actual = (await vi.importActual('../../domain/platform')) as any;
+  return {
+    ...actual,
+    getPlatformType: vi.fn(),
     getVersion: t.vi.fn(() => '0.0.0'),
-	};
+  };
 });
 
 t.describe('Utils', () => {
-	let options: MultichainOptions;
-
-	t.beforeEach(() => {
-		t.vi.clearAllMocks();
-		options = {
-			dapp: {
-				name: 'test',
-				url: 'test',
-			},
-			api: {
-			},
-		} as MultichainOptions;
-	});
-
-	t.describe('getDappId', () => {
-		const mockDappName = 'Mock DApp Name';
-		const mockDappUrl = 'http://mockdapp.com';
-
-		t.it('should return dappMetadata.name if defined and url is not', () => {
-			global.window = undefined as any;
-			const dappSettings = { name: mockDappName };
-			t.expect(utils.getDappId(dappSettings)).toBe(mockDappName);
-		});
-
-		t.it('should return dappMetadata.url if defined', () => {
-			global.window = undefined as any;
-			const dappSettings = { url: mockDappUrl, name: mockDappName };
-			t.expect(utils.getDappId(dappSettings)).toBe(mockDappUrl);
-		});
-
-	});
-
-	t.describe('getSDKVersion', () => {
-		t.it('should get SDK version', () => {
-			t.expect(getVersion()).toBe('0.0.0');
-		});
-	});
-
-	t.describe('extractFavicon', () => {
-		t.it('should return undefined if document is undefined', () => {
-			global.document = undefined as any;
-
-			t.expect(utils.extractFavicon()).toBeUndefined();
-		});
-
-		t.it('should return favicon href if rel is icon', () => {
-			global.document = {
-				getElementsByTagName: t.vi.fn().mockReturnValue([
-					{
-						getAttribute: (attr: string) => (attr === 'rel' ? 'icon' : '/favicon.ico'),
-					},
-				]),
-			} as any;
-
-			t.expect(utils.extractFavicon()).toBe('/favicon.ico');
-		});
-
-		t.it('should return favicon href if rel is shortcut icon', () => {
-			global.document = {
-				getElementsByTagName: t.vi.fn().mockReturnValue([
-					{
-						getAttribute: (attr: string) => (attr === 'rel' ? 'shortcut icon' : '/favicon.ico'),
-					},
-				]),
-			} as any;
-
-			t.expect(utils.extractFavicon()).toBe('/favicon.ico');
-		});
-
-		t.it('should return undefined if no favicon is found', () => {
-			global.document = {
-				getElementsByTagName: t.vi.fn().mockReturnValue([]),
-			} as any;
-
-			t.expect(utils.extractFavicon()).toBeUndefined();
-		});
-
-		t.it('should return undefined if rel attribute is different', () => {
-			global.document = {
-				getElementsByTagName: t.vi.fn().mockReturnValue([
-					{
-						getAttribute: (attr: string) => (attr === 'rel' ? 'something else' : '/favicon.ico'),
-					},
-				]),
-			} as any;
-
-			t.expect(utils.extractFavicon()).toBeUndefined();
-		});
-	});
-
-	t.describe('setupDappMetadata', () => {
-		t.beforeEach(() => {
-			// Mock the document object to avoid undefined errors
-			global.document = {
-				getElementsByTagName: t.vi.fn().mockReturnValue([]),
-			} as any;
-
-			t.vi.spyOn(utils, 'extractFavicon').mockReturnValue('xd');
-		});
-
-		t.afterEach(() => {
-			t.vi.restoreAllMocks();
-		});
-
-		t.it('should attach dappMetadata to the instance if valid', async () => {
-			(options.dapp as any).iconUrl = 'https://example.com/favicon.ico';
-			options.dapp.url = 'https://example.com';
-			const originalDappOptions = {
-				...options.dapp,
-			};
-			await utils.setupDappMetadata(options);
-			t.expect(options.dapp).toStrictEqual(originalDappOptions);
-		});
-
-		t.it('should set iconUrl to undenied if it does not start with http:// or https:// and favicon is undefined', async () => {
-			(options.dapp as any).iconUrl = 'ftp://example.com/favicon.ico';
-			options.dapp.url = 'https://example.com';
-			const consoleWarnSpy = t.vi.spyOn(console, 'warn');
-
-			await utils.setupDappMetadata(options);
-
-			t.expect((options.dapp as any).iconUrl).toBeUndefined();
-			t.expect(consoleWarnSpy).toHaveBeenCalledWith('Invalid dappMetadata.iconUrl: URL must start with http:// or https://');
-		});
-
-		t.it('should set url to undefined if it does not start with http:// or https:// and favicon is undefined', async () => {
-			options.dapp.url = 'wrong';
-			const consoleWarnSpy = t.vi.spyOn(console, 'warn');
-
-			await utils.setupDappMetadata(options);
-
-			t.expect((options.dapp as any).iconUrl).toBeUndefined();
-			t.expect(consoleWarnSpy).toHaveBeenCalledWith('Invalid dappMetadata.url: URL must start with http:// or https://');
-		});
-
-		t.it('throw if platform is not browser and dapp url is missing', async () => {
-			(options.dapp as any) = { name: 'test' };
-			await t.expect(() => utils.setupDappMetadata(options)).toThrow('You must provide dapp url');
-		});
-
-		t.it('throw if platform dapp name is missing', async () => {
-			(options.dapp as any) = { url: 'https://example.com' };
-			await t.expect(() => utils.setupDappMetadata(options)).toThrow('You must provide dapp name');
-		});
-
-		t.it('should set the dapp url if not provided and platform is browser', async () => {
-			const mockGetPlatformType = t.vi.mocked(getPlatformType);
-			mockGetPlatformType.mockReturnValue(PlatformType.DesktopWeb);
-			t.vi.stubGlobal('window', {
-				location: {
-					protocol: 'https:',
-					host: 'example.com',
-				},
-			});
-			(options.dapp as any) = {
-				name: 'test',
-			};
-			utils.setupDappMetadata(options);
-			t.expect(options.dapp.url).toBe('https://example.com');
-		});
-
-		t.it('should set base64Icon to undefined if its length exceeds 163400 characters', async () => {
-			const longString = new Array(163401).fill('a').join('');
-			const consoleWarnSpy = t.vi.spyOn(console, 'warn');
-
-			options.dapp = {
-				name: 'test',
-				iconUrl: 'https://example.com/favicon.ico',
-				url: 'https://example.com',
-				base64Icon: longString,
-			};
-
-			await utils.setupDappMetadata(options);
-
-			t.expect((options.dapp as any).base64Icon).toBeUndefined();
-			t.expect(consoleWarnSpy).toHaveBeenCalledWith('Invalid dappMetadata.base64Icon: Base64-encoded icon string length must be less than 163400 characters');
-		});
-
-		t.it('should set iconUrl to the extracted favicon if iconUrl and base64Icon are not provided', async () => {
-			options.dapp = {
-				name: 'test',
-				url: 'https://example.com',
-			};
-
-			global.window = {
-				location: {
-					protocol: 'https:',
-					host: 'example.com',
-				},
-			} as any;
-
-			// Mock document.getElementsByTagName to return a link element with favicon
-			global.document = {
-				getElementsByTagName: t.vi.fn().mockReturnValue([
-					{
-						getAttribute: (attr: string) => {
-							if (attr === 'rel') return 'icon';
-							if (attr === 'href') return '/favicon.ico';
-							return null;
-						},
-					},
-				]),
-			} as any;
-
-			await utils.setupDappMetadata(options);
-
-			t.expect((options.dapp as any).iconUrl).toBe('https://example.com/favicon.ico');
-		});
-	});
-
-	t.describe('isSameScopesAndAccounts', () => {
-		const mockWalletSession = {
-			sessionScopes: {
-				'eip155:1': {
-					methods: ['eth_sendTransaction'],
-					notifications: ['chainChanged'],
-					accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
-				},
-				'eip155:137': {
-					methods: ['eth_sendTransaction'],
-					notifications: ['chainChanged'],
-					accounts: ['eip155:137:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
-				},
-			},
-		} as any;
-
-		t.it('should return true when scopes and accounts match exactly', () => {
-			const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedCaipAccountIds = ['eip155:1:0x1234567890123456789012345678901234567890', 'eip155:137:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, mockWalletSession, proposedCaipAccountIds);
-
-			t.expect(result).toBe(true);
-		});
-
-		t.it('should return false when scopes do not match', () => {
-			const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedScopes: Scope[] = ['eip155:1', 'eip155:56']; // Different scope
-			const proposedCaipAccountIds = ['eip155:1:0x1234567890123456789012345678901234567890'] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, mockWalletSession, proposedCaipAccountIds);
-
-			t.expect(result).toBe(false);
-		});
-
-		t.it('should return false when proposed accounts are not included in existing session', () => {
-			const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedCaipAccountIds = [
-				'eip155:1:0x1234567890123456789012345678901234567890',
-				'eip155:1:0x9999999999999999999999999999999999999999', // Not in session
-			] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, mockWalletSession, proposedCaipAccountIds);
-
-			t.expect(result).toBe(false);
-		});
-
-		t.it('should return true when proposed accounts are subset of existing session accounts', () => {
-			const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedCaipAccountIds = [
-				'eip155:1:0x1234567890123456789012345678901234567890', // Only one account
-			] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, mockWalletSession, proposedCaipAccountIds);
-
-			t.expect(result).toBe(true);
-		});
-
-		t.it('should return true when no accounts are proposed and scopes match', () => {
-			const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedCaipAccountIds: CaipAccountId[] = [];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, mockWalletSession, proposedCaipAccountIds);
-
-			t.expect(result).toBe(true);
-		});
-
-		t.it('should handle empty session scopes', () => {
-			const emptySession = { sessionScopes: {} } as any;
-			const currentScopes: Scope[] = [];
-			const proposedScopes: Scope[] = [];
-			const proposedCaipAccountIds: CaipAccountId[] = [];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, emptySession, proposedCaipAccountIds);
-
-			t.expect(result).toBe(true);
-		});
-
-		t.it('should handle scope objects without accounts property', () => {
-			const sessionWithoutAccounts = {
-				sessionScopes: {
-					'eip155:1': {
-						methods: ['eth_sendTransaction'],
-						notifications: ['chainChanged'],
-						// No accounts property
-					},
-				},
-			} as any;
-
-			const currentScopes: Scope[] = ['eip155:1'];
-			const proposedScopes: Scope[] = ['eip155:1'];
-			const proposedCaipAccountIds = ['eip155:1:0x1234567890123456789012345678901234567890'] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, sessionWithoutAccounts, proposedCaipAccountIds);
-
-			t.expect(result).toBe(false);
-		});
-
-		t.it('should handle scope objects with empty accounts array', () => {
-			const sessionWithEmptyAccounts = {
-				sessionScopes: {
-					'eip155:1': {
-						methods: ['eth_sendTransaction'],
-						notifications: ['chainChanged'],
-						accounts: [],
-					},
-				},
-			} as any;
-
-			const currentScopes: Scope[] = ['eip155:1'];
-			const proposedScopes: Scope[] = ['eip155:1'];
-			const proposedCaipAccountIds = ['eip155:1:0x1234567890123456789012345678901234567890'] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, sessionWithEmptyAccounts, proposedCaipAccountIds);
-
-			t.expect(result).toBe(false);
-		});
-
-		t.it('should return true when scopes have different order but same content', () => {
-			const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
-			const proposedScopes: Scope[] = ['eip155:137', 'eip155:1']; // Different order
-			const proposedCaipAccountIds = ['eip155:1:0x1234567890123456789012345678901234567890', 'eip155:137:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, mockWalletSession, proposedCaipAccountIds);
-
-			t.expect(result).toBe(true);
-		});
-
-		t.it('should handle multiple accounts in same scope', () => {
-			const sessionWithMultipleAccounts = {
-				sessionScopes: {
-					'eip155:1': {
-						methods: ['eth_sendTransaction'],
-						notifications: ['chainChanged'],
-						accounts: ['eip155:1:0x1234567890123456789012345678901234567890', 'eip155:1:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
-					},
-				},
-			} as any;
-
-			const currentScopes: Scope[] = ['eip155:1'];
-			const proposedScopes: Scope[] = ['eip155:1'];
-			const proposedCaipAccountIds = ['eip155:1:0x1234567890123456789012345678901234567890'] as CaipAccountId[];
-
-			const result = utils.isSameScopesAndAccounts(currentScopes, proposedScopes, sessionWithMultipleAccounts, proposedCaipAccountIds);
-
-			t.expect(result).toBe(true);
-		});
-	});
+  let options: MultichainOptions;
+
+  t.beforeEach(() => {
+    t.vi.clearAllMocks();
+    options = {
+      dapp: {
+        name: 'test',
+        url: 'test',
+      },
+      api: {},
+    } as MultichainOptions;
+  });
+
+  t.describe('getDappId', () => {
+    const mockDappName = 'Mock DApp Name';
+    const mockDappUrl = 'http://mockdapp.com';
+
+    t.it('should return dappMetadata.name if defined and url is not', () => {
+      global.window = undefined as any;
+      const dappSettings = { name: mockDappName };
+      t.expect(utils.getDappId(dappSettings)).toBe(mockDappName);
+    });
+
+    t.it('should return dappMetadata.url if defined', () => {
+      global.window = undefined as any;
+      const dappSettings = { url: mockDappUrl, name: mockDappName };
+      t.expect(utils.getDappId(dappSettings)).toBe(mockDappUrl);
+    });
+  });
+
+  t.describe('getSDKVersion', () => {
+    t.it('should get SDK version', () => {
+      t.expect(getVersion()).toBe('0.0.0');
+    });
+  });
+
+  t.describe('extractFavicon', () => {
+    t.it('should return undefined if document is undefined', () => {
+      global.document = undefined as any;
+
+      t.expect(utils.extractFavicon()).toBeUndefined();
+    });
+
+    t.it('should return favicon href if rel is icon', () => {
+      global.document = {
+        getElementsByTagName: t.vi.fn().mockReturnValue([
+          {
+            getAttribute: (attr: string) =>
+              attr === 'rel' ? 'icon' : '/favicon.ico',
+          },
+        ]),
+      } as any;
+
+      t.expect(utils.extractFavicon()).toBe('/favicon.ico');
+    });
+
+    t.it('should return favicon href if rel is shortcut icon', () => {
+      global.document = {
+        getElementsByTagName: t.vi.fn().mockReturnValue([
+          {
+            getAttribute: (attr: string) =>
+              attr === 'rel' ? 'shortcut icon' : '/favicon.ico',
+          },
+        ]),
+      } as any;
+
+      t.expect(utils.extractFavicon()).toBe('/favicon.ico');
+    });
+
+    t.it('should return undefined if no favicon is found', () => {
+      global.document = {
+        getElementsByTagName: t.vi.fn().mockReturnValue([]),
+      } as any;
+
+      t.expect(utils.extractFavicon()).toBeUndefined();
+    });
+
+    t.it('should return undefined if rel attribute is different', () => {
+      global.document = {
+        getElementsByTagName: t.vi.fn().mockReturnValue([
+          {
+            getAttribute: (attr: string) =>
+              attr === 'rel' ? 'something else' : '/favicon.ico',
+          },
+        ]),
+      } as any;
+
+      t.expect(utils.extractFavicon()).toBeUndefined();
+    });
+  });
+
+  t.describe('setupDappMetadata', () => {
+    t.beforeEach(() => {
+      // Mock the document object to avoid undefined errors
+      global.document = {
+        getElementsByTagName: t.vi.fn().mockReturnValue([]),
+      } as any;
+
+      t.vi.spyOn(utils, 'extractFavicon').mockReturnValue('xd');
+    });
+
+    t.afterEach(() => {
+      t.vi.restoreAllMocks();
+    });
+
+    t.it('should attach dappMetadata to the instance if valid', async () => {
+      (options.dapp as any).iconUrl = 'https://example.com/favicon.ico';
+      options.dapp.url = 'https://example.com';
+      const originalDappOptions = {
+        ...options.dapp,
+      };
+      await utils.setupDappMetadata(options);
+      t.expect(options.dapp).toStrictEqual(originalDappOptions);
+    });
+
+    t.it(
+      'should set iconUrl to undenied if it does not start with http:// or https:// and favicon is undefined',
+      async () => {
+        (options.dapp as any).iconUrl = 'ftp://example.com/favicon.ico';
+        options.dapp.url = 'https://example.com';
+        const consoleWarnSpy = t.vi.spyOn(console, 'warn');
+
+        await utils.setupDappMetadata(options);
+
+        t.expect((options.dapp as any).iconUrl).toBeUndefined();
+        t.expect(consoleWarnSpy).toHaveBeenCalledWith(
+          'Invalid dappMetadata.iconUrl: URL must start with http:// or https://',
+        );
+      },
+    );
+
+    t.it(
+      'should set url to undefined if it does not start with http:// or https:// and favicon is undefined',
+      async () => {
+        options.dapp.url = 'wrong';
+        const consoleWarnSpy = t.vi.spyOn(console, 'warn');
+
+        await utils.setupDappMetadata(options);
+
+        t.expect((options.dapp as any).iconUrl).toBeUndefined();
+        t.expect(consoleWarnSpy).toHaveBeenCalledWith(
+          'Invalid dappMetadata.url: URL must start with http:// or https://',
+        );
+      },
+    );
+
+    t.it(
+      'throw if platform is not browser and dapp url is missing',
+      async () => {
+        (options.dapp as any) = { name: 'test' };
+        await t
+          .expect(() => utils.setupDappMetadata(options))
+          .toThrow('You must provide dapp url');
+      },
+    );
+
+    t.it('throw if platform dapp name is missing', async () => {
+      (options.dapp as any) = { url: 'https://example.com' };
+      await t
+        .expect(() => utils.setupDappMetadata(options))
+        .toThrow('You must provide dapp name');
+    });
+
+    t.it(
+      'should set the dapp url if not provided and platform is browser',
+      async () => {
+        const mockGetPlatformType = t.vi.mocked(getPlatformType);
+        mockGetPlatformType.mockReturnValue(PlatformType.DesktopWeb);
+        t.vi.stubGlobal('window', {
+          location: {
+            protocol: 'https:',
+            host: 'example.com',
+          },
+        });
+        (options.dapp as any) = {
+          name: 'test',
+        };
+        utils.setupDappMetadata(options);
+        t.expect(options.dapp.url).toBe('https://example.com');
+      },
+    );
+
+    t.it(
+      'should set base64Icon to undefined if its length exceeds 163400 characters',
+      async () => {
+        const longString = new Array(163401).fill('a').join('');
+        const consoleWarnSpy = t.vi.spyOn(console, 'warn');
+
+        options.dapp = {
+          name: 'test',
+          iconUrl: 'https://example.com/favicon.ico',
+          url: 'https://example.com',
+          base64Icon: longString,
+        };
+
+        await utils.setupDappMetadata(options);
+
+        t.expect((options.dapp as any).base64Icon).toBeUndefined();
+        t.expect(consoleWarnSpy).toHaveBeenCalledWith(
+          'Invalid dappMetadata.base64Icon: Base64-encoded icon string length must be less than 163400 characters',
+        );
+      },
+    );
+
+    t.it(
+      'should set iconUrl to the extracted favicon if iconUrl and base64Icon are not provided',
+      async () => {
+        options.dapp = {
+          name: 'test',
+          url: 'https://example.com',
+        };
+
+        global.window = {
+          location: {
+            protocol: 'https:',
+            host: 'example.com',
+          },
+        } as any;
+
+        // Mock document.getElementsByTagName to return a link element with favicon
+        global.document = {
+          getElementsByTagName: t.vi.fn().mockReturnValue([
+            {
+              getAttribute: (attr: string) => {
+                if (attr === 'rel') {
+                  return 'icon';
+                }
+                if (attr === 'href') {
+                  return '/favicon.ico';
+                }
+                return null;
+              },
+            },
+          ]),
+        } as any;
+
+        await utils.setupDappMetadata(options);
+
+        t.expect((options.dapp as any).iconUrl).toBe(
+          'https://example.com/favicon.ico',
+        );
+      },
+    );
+  });
+
+  t.describe('isSameScopesAndAccounts', () => {
+    const mockWalletSession = {
+      sessionScopes: {
+        'eip155:1': {
+          methods: ['eth_sendTransaction'],
+          notifications: ['chainChanged'],
+          accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+        },
+        'eip155:137': {
+          methods: ['eth_sendTransaction'],
+          notifications: ['chainChanged'],
+          accounts: ['eip155:137:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
+        },
+      },
+    } as any;
+
+    t.it('should return true when scopes and accounts match exactly', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedCaipAccountIds = [
+        'eip155:1:0x1234567890123456789012345678901234567890',
+        'eip155:137:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+      ] as CaipAccountId[];
+
+      const result = utils.isSameScopesAndAccounts(
+        currentScopes,
+        proposedScopes,
+        mockWalletSession,
+        proposedCaipAccountIds,
+      );
+
+      t.expect(result).toBe(true);
+    });
+
+    t.it('should return false when scopes do not match', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedScopes: Scope[] = ['eip155:1', 'eip155:56']; // Different scope
+      const proposedCaipAccountIds = [
+        'eip155:1:0x1234567890123456789012345678901234567890',
+      ] as CaipAccountId[];
+
+      const result = utils.isSameScopesAndAccounts(
+        currentScopes,
+        proposedScopes,
+        mockWalletSession,
+        proposedCaipAccountIds,
+      );
+
+      t.expect(result).toBe(false);
+    });
+
+    t.it(
+      'should return false when proposed accounts are not included in existing session',
+      () => {
+        const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+        const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
+        const proposedCaipAccountIds = [
+          'eip155:1:0x1234567890123456789012345678901234567890',
+          'eip155:1:0x9999999999999999999999999999999999999999', // Not in session
+        ] as CaipAccountId[];
+
+        const result = utils.isSameScopesAndAccounts(
+          currentScopes,
+          proposedScopes,
+          mockWalletSession,
+          proposedCaipAccountIds,
+        );
+
+        t.expect(result).toBe(false);
+      },
+    );
+
+    t.it(
+      'should return true when proposed accounts are subset of existing session accounts',
+      () => {
+        const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+        const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
+        const proposedCaipAccountIds = [
+          'eip155:1:0x1234567890123456789012345678901234567890', // Only one account
+        ] as CaipAccountId[];
+
+        const result = utils.isSameScopesAndAccounts(
+          currentScopes,
+          proposedScopes,
+          mockWalletSession,
+          proposedCaipAccountIds,
+        );
+
+        t.expect(result).toBe(true);
+      },
+    );
+
+    t.it(
+      'should return true when no accounts are proposed and scopes match',
+      () => {
+        const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+        const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
+        const proposedCaipAccountIds: CaipAccountId[] = [];
+
+        const result = utils.isSameScopesAndAccounts(
+          currentScopes,
+          proposedScopes,
+          mockWalletSession,
+          proposedCaipAccountIds,
+        );
+
+        t.expect(result).toBe(true);
+      },
+    );
+
+    t.it('should handle empty session scopes', () => {
+      const emptySession = { sessionScopes: {} } as any;
+      const currentScopes: Scope[] = [];
+      const proposedScopes: Scope[] = [];
+      const proposedCaipAccountIds: CaipAccountId[] = [];
+
+      const result = utils.isSameScopesAndAccounts(
+        currentScopes,
+        proposedScopes,
+        emptySession,
+        proposedCaipAccountIds,
+      );
+
+      t.expect(result).toBe(true);
+    });
+
+    t.it('should handle scope objects without accounts property', () => {
+      const sessionWithoutAccounts = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: ['eth_sendTransaction'],
+            notifications: ['chainChanged'],
+            // No accounts property
+          },
+        },
+      } as any;
+
+      const currentScopes: Scope[] = ['eip155:1'];
+      const proposedScopes: Scope[] = ['eip155:1'];
+      const proposedCaipAccountIds = [
+        'eip155:1:0x1234567890123456789012345678901234567890',
+      ] as CaipAccountId[];
+
+      const result = utils.isSameScopesAndAccounts(
+        currentScopes,
+        proposedScopes,
+        sessionWithoutAccounts,
+        proposedCaipAccountIds,
+      );
+
+      t.expect(result).toBe(false);
+    });
+
+    t.it('should handle scope objects with empty accounts array', () => {
+      const sessionWithEmptyAccounts = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: ['eth_sendTransaction'],
+            notifications: ['chainChanged'],
+            accounts: [],
+          },
+        },
+      } as any;
+
+      const currentScopes: Scope[] = ['eip155:1'];
+      const proposedScopes: Scope[] = ['eip155:1'];
+      const proposedCaipAccountIds = [
+        'eip155:1:0x1234567890123456789012345678901234567890',
+      ] as CaipAccountId[];
+
+      const result = utils.isSameScopesAndAccounts(
+        currentScopes,
+        proposedScopes,
+        sessionWithEmptyAccounts,
+        proposedCaipAccountIds,
+      );
+
+      t.expect(result).toBe(false);
+    });
+
+    t.it(
+      'should return true when scopes have different order but same content',
+      () => {
+        const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+        const proposedScopes: Scope[] = ['eip155:137', 'eip155:1']; // Different order
+        const proposedCaipAccountIds = [
+          'eip155:1:0x1234567890123456789012345678901234567890',
+          'eip155:137:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+        ] as CaipAccountId[];
+
+        const result = utils.isSameScopesAndAccounts(
+          currentScopes,
+          proposedScopes,
+          mockWalletSession,
+          proposedCaipAccountIds,
+        );
+
+        t.expect(result).toBe(true);
+      },
+    );
+
+    t.it('should handle multiple accounts in same scope', () => {
+      const sessionWithMultipleAccounts = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: ['eth_sendTransaction'],
+            notifications: ['chainChanged'],
+            accounts: [
+              'eip155:1:0x1234567890123456789012345678901234567890',
+              'eip155:1:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+            ],
+          },
+        },
+      } as any;
+
+      const currentScopes: Scope[] = ['eip155:1'];
+      const proposedScopes: Scope[] = ['eip155:1'];
+      const proposedCaipAccountIds = [
+        'eip155:1:0x1234567890123456789012345678901234567890',
+      ] as CaipAccountId[];
+
+      const result = utils.isSameScopesAndAccounts(
+        currentScopes,
+        proposedScopes,
+        sessionWithMultipleAccounts,
+        proposedCaipAccountIds,
+      );
+
+      t.expect(result).toBe(true);
+    });
+  });
 });

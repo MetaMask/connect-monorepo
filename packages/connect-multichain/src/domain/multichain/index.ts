@@ -3,7 +3,6 @@
 import type {
   MultichainApiClient,
   SessionProperties,
-  Transport,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
 

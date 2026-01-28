@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- Browser utilities use window */
 import type { PlaygroundConfig, PlatformAdapter } from '../types/config';
 
 /**

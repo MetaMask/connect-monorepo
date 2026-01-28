@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/require-param-description -- Complex nested params */
+
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject } from '@open-rpc/meta-schema';
 import type { Dispatch, SetStateAction } from 'react';
@@ -96,6 +98,9 @@ export const updateInvokeMethodResults = (
  * Extracts the params from a wallet_invokeMethod request object.
  *
  * @param finalRequestObject - The full request object
+ * @param finalRequestObject.params
+ * @param finalRequestObject.params.request
+ * @param finalRequestObject.params.request.params
  * @returns The params from the nested request
  */
 export const extractRequestParams = (finalRequestObject: {
@@ -108,6 +113,8 @@ export const extractRequestParams = (finalRequestObject: {
  * Extracts the request object for storage from a wallet_invokeMethod request.
  *
  * @param finalRequestObject - The full request object
+ * @param finalRequestObject.params
+ * @param finalRequestObject.params.request
  * @returns The nested request object
  */
 export const extractRequestForStorage = (finalRequestObject: {
@@ -167,6 +174,7 @@ export const autoSelectAccountForScope = (
  * @param caipChainId - The CAIP chain ID.
  * @param selectedAccount - The selected account for this scope.
  * @param metamaskOpenrpcDocument - The MetaMask OpenRPC document.
+ * @param metamaskOpenrpcDocument.methods
  * @param injectParamsFn - Function to inject parameters for specific methods.
  * @param openRPCExampleToJSONFn - Function to convert OpenRPC examples to JSON.
  * @param methodsRequiringInjection - Object containing methods that require parameter injection.
@@ -195,7 +203,7 @@ export const prepareMethodRequest = (
     return null;
   }
 
-  let exampleParams: Json = openRPCExampleToJSONFn(example as MethodObject);
+  let exampleParams: Json = openRPCExampleToJSONFn(example);
 
   if (method in methodsRequiringInjection && selectedAccount) {
     exampleParams = injectParamsFn(

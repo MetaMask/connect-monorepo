@@ -102,7 +102,6 @@ If you're developing your project locally and want to test changes to a package,
 
 1. First, you must build the monorepo, by running `yarn build`.
 2. Next, you need to connect the package to your project by overriding the resolution logic in your package manager to replace the published version of the package with the local version.
-
    1. Open `package.json` in the project and locate the dependency entry for the package.
    2. Locate the section responsible for resolution overrides (or create it if it doesn't exist). If you're using Yarn, this is `resolutions`; if you're using NPM or any other package manager, this is `overrides`.
    3. Add a line to this section that mirrors the dependency entry on the left-hand side and points to the local path on the right-hand side:
@@ -135,7 +134,6 @@ If you're a member of the MetaMask organization, you can create preview builds b
 2. After a few minutes, the action should complete and you will see a new comment that lists the newly published packages along with their versions.
 
    Note two things about each package:
-
    - The name is scoped to `@metamask-previews` instead of `@metamask`.
    - The ID of the last commit in the branch is appended to the version, e.g. `1.2.3-preview-e2df9b4` instead of `1.2.3`.
 
@@ -158,7 +156,6 @@ If you've forked this repository, you can create preview builds based on a branc
    ```
 
    You should be able to see the published version of each package in the output. Note two things:
-
    - The name is scoped to the NPM organization you entered instead of `@metamask`.
    - The ID of the last commit in the branch is appended to the version, e.g. `1.2.3-preview-e2df9b4` instead of `1.2.3`.
 
@@ -215,7 +212,6 @@ Use the following process to release new packages in this repo:
 2. **Select packages to release.**
 
    The UI will show all packages with changes since their last release. For each package:
-
    - Choose whether to include it in the release
    - Select an appropriate version bump (patch, minor, or major) following SemVer rules
    - The UI will automatically validate your selections and identify dependencies that need to be included
@@ -223,12 +219,10 @@ Use the following process to release new packages in this repo:
 3. **Review and resolve dependency requirements.**
 
    The UI automatically analyzes your selections and identifies potential dependency issues that need to be addressed before proceeding. You'll need to review and resolve these issues by either:
-
    - Including the suggested additional packages
    - Confirming that you want to skip certain packages (if you're certain they don't need to be updated)
 
    Common types of dependency issues you might encounter:
-
    - **Missing dependencies**: If you're releasing Package A that depends on Package B, the UI will prompt you to include Package B
    - **Breaking change impacts**: If you're releasing Package B with breaking changes, the UI will identify packages that have peer dependencies on Package B that need to be updated
    - **Version incompatibilities**: The UI will flag if your selected version bumps don't follow semantic versioning rules relative to dependent packages
@@ -238,7 +232,6 @@ Use the following process to release new packages in this repo:
 4. **Confirm your selections.**
 
    Once you're satisfied with your package selections and version bumps, confirm them in the UI. This will:
-
    - Create a new branch named `release/<new release version>`
    - Update the version in each package's `package.json`
    - Add a new section to each package's `CHANGELOG.md` for the new version
@@ -266,7 +259,6 @@ Use the following process to release new packages in this repo:
 6. **Review and update changelogs.**
 
    Each selected package will have a new changelog section. Review these entries to ensure they are helpful for consumers:
-
    - Categorize entries appropriately following the ["Keep a Changelog"](https://keepachangelog.com/en/1.0.0/) guidelines. Ensure that no changes are listed under "Uncategorized".
    - Remove changelog entries that don't affect consumers of the package (e.g. lockfile changes or development environment changes). Exceptions may be made for changes that might be of interest despite not having an effect upon the published package (e.g. major test improvements, security improvements, improved documentation, etc.).
    - Reword changelog entries to explain changes in terms that users of the package will understand (e.g., avoid referencing internal variables/concepts).

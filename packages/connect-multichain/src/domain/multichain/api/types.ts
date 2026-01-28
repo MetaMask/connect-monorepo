@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { CaipChainId } from '@metamask/utils';
+import type { CaipChainId } from '@metamask/utils';
+
 import type EIP155 from './eip155';
 
 /**

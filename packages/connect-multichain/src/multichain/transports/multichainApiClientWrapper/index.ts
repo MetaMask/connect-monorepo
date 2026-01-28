@@ -1,3 +1,8 @@
+/* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
+/* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
+/* eslint-disable no-plusplus -- Increment operator is safe here */
+/* eslint-disable @typescript-eslint/no-floating-promises -- Promise is intentionally not awaited */
 import type {
   CreateSessionParams,
   Transport,
@@ -22,31 +27,33 @@ const getUniqueId = (): number => {
 type TransportRequestWithId = TransportRequest & { id: number };
 
 export class MultichainApiClientWrapperTransport implements Transport {
-  private requestId = getUniqueId();
+  #requestId = getUniqueId();
 
-  private readonly notificationCallbacks = new Set<(data: unknown) => void>();
+  readonly #notificationCallbacks = new Set<(data: unknown) => void>();
 
-  constructor(private readonly metamaskConnectMultichain: MetaMaskConnectMultichain) {}
+  constructor(
+    private readonly metamaskConnectMultichain: MetaMaskConnectMultichain,
+  ) {}
 
   isTransportDefined(): boolean {
     try {
       return Boolean(this.metamaskConnectMultichain.transport);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
 
-  clearNotificationCallbacks() {
-    this.notificationCallbacks.clear();
+  clearNotificationCallbacks(): void {
+    this.#notificationCallbacks.clear();
   }
 
-  notifyCallbacks(data: unknown) {
-    this.notificationCallbacks.forEach((callback) => {
+  notifyCallbacks(data: unknown): void {
+    this.#notificationCallbacks.forEach((callback) => {
       callback(data);
     });
   }
 
-  setupNotifcationListener() {
+  setupNotifcationListener(): void {
     this.metamaskConnectMultichain.transport.onNotification(
       this.notifyCallbacks.bind(this),
     );
@@ -73,7 +80,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     params: ParamsType,
     _options: { timeout?: number } = {},
   ): Promise<ReturnType> {
-    const id = this.requestId++;
+    const id = this.#requestId++;
     const requestPayload = {
       id,
       jsonrpc: '2.0',
@@ -96,11 +103,11 @@ export class MultichainApiClientWrapperTransport implements Transport {
     throw new Error(`Unknown method: ${requestPayload.method}`);
   }
 
-  onNotification(callback: (data: unknown) => void) {
+  onNotification(callback: (data: unknown) => void): () => void {
     if (!this.isTransportDefined()) {
-      this.notificationCallbacks.add(callback);
+      this.#notificationCallbacks.add(callback);
       return () => {
-        this.notificationCallbacks.delete(callback);
+        this.#notificationCallbacks.delete(callback);
       };
     }
 
@@ -164,7 +171,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     try {
       this.metamaskConnectMultichain.disconnect();
       return { jsonrpc: '2.0', id: request.id, result: true };
-    } catch (error) {
+    } catch (_error) {
       return { jsonrpc: '2.0', id: request.id, result: false };
     }
   }
@@ -179,6 +186,6 @@ export class MultichainApiClientWrapperTransport implements Transport {
 
     return {
       result,
-    }
+    };
   }
 }

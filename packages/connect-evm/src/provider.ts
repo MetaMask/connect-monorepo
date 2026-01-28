@@ -1,3 +1,8 @@
+/* eslint-disable promise/always-return -- Legacy callback patterns */
+/* eslint-disable promise/no-callback-in-promise -- Legacy sendAsync/send API */
+/* eslint-disable consistent-return -- Legacy method returns void or Promise */
+/* eslint-disable @typescript-eslint/no-floating-promises -- Legacy fire-and-forget pattern */
+/* eslint-disable jsdoc/require-returns -- Inherited from abstract class */
 import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
 import { hexToNumber, numberToHex } from '@metamask/utils';
@@ -141,6 +146,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
 
   /**
    * Legacy method for sending JSON-RPC requests.
+   *
    * @deprecated Use `request` instead. This method is provided for backwards compatibility.
    * @param request - The JSON-RPC request object
    * @param callback - Optional callback function. If provided, the method returns void.
@@ -195,6 +201,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
 
   /**
    * Legacy method for sending JSON-RPC requests synchronously (callback-based).
+   *
    * @deprecated Use `request` instead. This method is provided for backwards compatibility.
    * @param request - The JSON-RPC request object
    * @param callback - The callback function to receive the response

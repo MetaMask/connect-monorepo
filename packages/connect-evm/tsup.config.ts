@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Tsup config convention */
+
 import { defineConfig } from 'tsup';
+
 import pkg from './package.json';
 
-const deps = Object.keys((pkg as any).dependencies || {});
-const peerDeps = Object.keys((pkg as any).peerDependencies || {});
+const deps = Object.keys(
+  (pkg as { dependencies?: Record<string, string> }).dependencies ?? {},
+);
+const peerDeps = Object.keys(
+  (pkg as { peerDependencies?: Record<string, string> }).peerDependencies ?? {},
+);
 const external = [...deps, ...peerDeps];
-const entryName = (pkg as any).name.replace('@metamask/', '');
+const entryName = (pkg as { name: string }).name.replace('@metamask/', '');
 
 export default defineConfig([
   {
@@ -18,11 +25,11 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
-    esbuildOptions: (o) => {
-      o.platform = 'browser';
-      o.mainFields = ['browser', 'module', 'main'];
-      o.conditions = ['browser'];
-      o.outExtension = { '.js': '.mjs' };
+    esbuildOptions: (options) => {
+      options.platform = 'browser';
+      options.mainFields = ['browser', 'module', 'main'];
+      options.conditions = ['browser'];
+      options.outExtension = { '.js': '.mjs' };
     },
   },
   {

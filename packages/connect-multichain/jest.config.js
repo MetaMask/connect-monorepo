@@ -3,6 +3,8 @@
  * https://jestjs.io/docs/configuration
  */
 
+/* eslint-disable import-x/no-unresolved -- Jest config pattern */
+/* eslint-disable import-x/extensions -- Jest config pattern */
 const merge = require('deepmerge');
 const path = require('path');
 

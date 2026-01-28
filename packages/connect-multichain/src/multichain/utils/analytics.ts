@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars -- Scope type used in JSDoc */
 import { getDappId } from '.';
 import type {
   InvokeMethodOptions,

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test mock functions */
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
@@ -9,7 +11,7 @@ import {
   resetPlatformAdapter,
   stringToBase64,
   getHostname,
-} from './index';
+} from '.';
 
 describe('config', () => {
   beforeEach(() => {

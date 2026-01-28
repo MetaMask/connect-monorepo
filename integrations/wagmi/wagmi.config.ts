@@ -1,5 +1,5 @@
-import { defineConfig } from '@wagmi/cli'
-import { foundry, hardhat } from '@wagmi/cli/plugins'
+import { defineConfig } from '@wagmi/cli';
+import { foundry, hardhat } from '@wagmi/cli/plugins';
 
 export default defineConfig({
   out: 'src/generated.ts',
@@ -14,4 +14,4 @@ export default defineConfig({
       project: '../../packages/cli/src/plugins/__fixtures__/hardhat',
     }),
   ],
-})
+});

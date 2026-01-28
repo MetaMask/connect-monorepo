@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention -- External library Bowser */
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable n/no-process-env -- Test environment setup */
 import Bowser from 'bowser';
 import * as t from 'vitest';
 
@@ -9,7 +12,7 @@ import {
   isEnabled,
   PlatformType,
   type SDKEvents,
-} from './';
+} from '.';
 
 const parseMock = t.vi.fn();
 // Mock Bowser at the top level

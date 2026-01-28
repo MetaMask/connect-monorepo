@@ -199,4 +199,4 @@ export const wagmiContractConfig = {
       type: 'function',
     },
   ],
-} as const
+} as const;

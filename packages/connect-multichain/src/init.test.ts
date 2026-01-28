@@ -1,4 +1,12 @@
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable import-x/order -- Mock imports need specific order */
+/* eslint-disable jsdoc/require-param-description -- Test helpers */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test functions */
+/* eslint-disable @typescript-eslint/naming-convention -- Test naming and snake_case APIs */
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- Test assertions */
 import * as t from 'vitest';
+
 import type { MultichainOptions, MultichainCore } from './domain';
 import {
   runTestsInNodeEnv,
@@ -10,9 +18,16 @@ import {
 // Careful, order of import matters to keep mocks working
 import { analytics } from '@metamask/analytics';
 import * as loggerModule from './domain/logger';
-import type { TestSuiteOptions, MockedData } from '../tests/types';
 import { mockSessionData, mockSessionRequestData } from '../tests/data';
+import type { TestSuiteOptions, MockedData } from '../tests/types';
 
+/**
+ *
+ * @param options0
+ * @param options0.platform
+ * @param options0.createSDK
+ * @param options0.options
+ */
 function testSuite<T extends MultichainOptions>({
   platform,
   createSDK,
@@ -177,7 +192,7 @@ function testSuite<T extends MultichainOptions>({
           ...testOptions,
           transport: {
             ...(testOptions.transport ?? {}),
-            onNotification: onNotification,
+            onNotification,
           },
         };
         sdk = await createSDK(optionsWithEvent);
@@ -210,7 +225,10 @@ function testSuite<T extends MultichainOptions>({
         if (platform === 'node') {
           // Node: set multichain-transport in storage first, then throw when reading it
           // getTransport() calls adapter.get('multichain-transport') which calls getItem
-          mockedData.nativeStorageStub.data.set('multichain-transport', 'browser');
+          mockedData.nativeStorageStub.data.set(
+            'multichain-transport',
+            'browser',
+          );
           getItemSpy.mockImplementation((key: string) => {
             if (key === 'multichain-transport') {
               throw testError;
@@ -256,7 +274,8 @@ function testSuite<T extends MultichainOptions>({
         // Verify that the logger was called with the error
         // The error might be wrapped in a StorageGetErr, so check for the error message
         t.expect(mockLogger).toHaveBeenCalled();
-        const lastCall = mockLogger.mock.calls[mockLogger.mock.calls.length - 1];
+        const lastCall =
+          mockLogger.mock.calls[mockLogger.mock.calls.length - 1];
         t.expect(lastCall[0]).toBe('MetaMaskSDK error during initialization');
         // The error might be wrapped, so check if it contains our test error message
         const loggedError = lastCall[1];

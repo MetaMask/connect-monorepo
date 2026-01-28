@@ -1,6 +1,14 @@
-
-
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
+/* eslint-disable jsdoc/require-param-description -- Test helpers */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test functions */
+/* eslint-disable promise/param-names -- Test promise patterns */
+/* eslint-disable no-negated-condition -- Test assertions */
+/* eslint-disable @typescript-eslint/unbound-method -- Mock assertions */
+/* eslint-disable @typescript-eslint/naming-convention -- Test type parameters */
+import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import * as t from 'vitest';
+
 import type {
   MultichainOptions,
   MultichainCore,
@@ -8,20 +16,24 @@ import type {
   SessionData,
 } from './domain';
 // Careful, order of import matters to keep mocks working
+import { Store } from './store';
+import { mockSessionData, mockSessionRequestData } from '../tests/data';
 import {
   runTestsInNodeEnv,
   runTestsInRNEnv,
   runTestsInWebEnv,
   runTestsInWebMobileEnv,
 } from '../tests/fixtures.test';
-
-import { Store } from './store';
-
 import type { TestSuiteOptions, MockedData } from '../tests/types';
-import { mockSessionData, mockSessionRequestData } from '../tests/data';
-import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import { MULTICHAIN_PROVIDER_STREAM_NAME } from './multichain/transports/constants';
 
+/**
+ *
+ * @param options0
+ * @param options0.platform
+ * @param options0.createSDK
+ * @param options0.options
+ */
 function testSuite<T extends MultichainOptions>({
   platform,
   createSDK,
@@ -60,15 +72,15 @@ function testSuite<T extends MultichainOptions>({
 
         storage: new Store({
           platform: platform as 'web' | 'rn' | 'node',
-          get(key) {
+          async get(key) {
             return Promise.resolve(mockedData.nativeStorageStub.getItem(key));
           },
-          set(key, value) {
+          async set(key, value) {
             return Promise.resolve(
               mockedData.nativeStorageStub.setItem(key, value),
             );
           },
-          delete(key) {
+          async delete(key) {
             return Promise.resolve(
               mockedData.nativeStorageStub.removeItem(key),
             );
@@ -110,7 +122,7 @@ function testSuite<T extends MultichainOptions>({
           JSON.stringify({
             jsonrpc: '2.0',
             method: 'wallet_sessionChanged',
-            result: mockSessionData
+            result: mockSessionData,
           }),
         );
       }
@@ -170,7 +182,7 @@ function testSuite<T extends MultichainOptions>({
           { timeout: 60 * 1000 },
         );
       } else {
-        //Session is cached in storage so we don't need to call the getSession method
+        // Session is cached in storage so we don't need to call the getSession method
         t.expect(
           mockedData.mockDappClient.sendRequest,
         ).not.toHaveBeenCalledWith(
@@ -290,11 +302,14 @@ function testSuite<T extends MultichainOptions>({
         // Use a shorter timeout and handle both success and timeout cases
         let timeoutId: NodeJS.Timeout;
         const timeoutPromise = new Promise<never>((_, reject) => {
-          timeoutId = setTimeout(() => reject(new Error('Connect timeout')), 3000);
+          timeoutId = setTimeout(
+            () => reject(new Error('Connect timeout')),
+            3000,
+          );
         });
-        
+
         const connectPromise = sdk.connect(scopes, caipAccountIds);
-        
+
         // Ensure both promises have catch handlers BEFORE racing to prevent unhandled rejections
         // This ensures that even if one promise rejects after the race resolves, it won't be unhandled
         connectPromise.catch(() => {
@@ -303,17 +318,17 @@ function testSuite<T extends MultichainOptions>({
         timeoutPromise.catch(() => {
           // Silently handle - timeout will be processed by race or ignored if connect wins
         });
-        
+
         let connectError: any;
         let timedOut = false;
-        
+
         try {
           await Promise.race([connectPromise, timeoutPromise]);
           // If we get here without timeout, connect succeeded unexpectedly
           t.expect.fail('Expected connect to throw an error');
         } catch (error) {
           clearTimeout(timeoutId);
-          
+
           if (error instanceof Error && error.message === 'Connect timeout') {
             // For web-mobile, timeout might be expected due to deeplink hanging
             // Verify state instead
@@ -332,13 +347,15 @@ function testSuite<T extends MultichainOptions>({
           t.expect(connectError).toBeDefined();
         } else {
           // If timed out, at least verify it's not connected
-          t.expect(['loaded', 'disconnected', 'connecting']).toContain(sdk.status);
+          t.expect(['loaded', 'disconnected', 'connecting']).toContain(
+            sdk.status,
+          );
         }
-        
+
         // Ensure both promises are fully handled to prevent unhandled rejections
         // Wait a tick to ensure any pending rejections are caught
         await new Promise((resolve) => setTimeout(resolve, 0));
-        
+
         // Disconnect SDK to clean up any ongoing async operations
         try {
           if (sdk.status !== 'disconnected' && sdk.status !== 'pending') {

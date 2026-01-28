@@ -1,178 +1,230 @@
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/naming-convention -- Test mock names */
+/* eslint-disable @typescript-eslint/no-shadow -- Test scopes */
+/* eslint-disable new-cap -- Constructor naming */
+/* eslint-disable require-unicode-regexp -- Test regex */
 import * as t from 'vitest';
 import { vi } from 'vitest';
+
 import { MissingRpcEndpointErr, type RpcClient } from './rpcClient';
-import { RPCHttpErr, RPCReadonlyRequestErr, RPCReadonlyResponseErr, Scope } from '../../../domain';
+import {
+  RPCHttpErr,
+  RPCReadonlyRequestErr,
+  RPCReadonlyResponseErr,
+  type Scope,
+} from '../../../domain';
 
 // Mock cross-fetch with proper implementation
 vi.mock('cross-fetch', () => {
-	const mockFetch = vi.fn();
-	return {
-		default: mockFetch,
-		__mockFetch: mockFetch,
-	};
+  const mockFetch = vi.fn();
+  return {
+    default: mockFetch,
+    __mockFetch: mockFetch,
+  };
 });
 
 t.describe('RpcClient', () => {
-	let mockConfig: any;
-	let sdkInfo: string;
-	let rpcClient: RpcClient;
-	let rpcClientModule: typeof RpcClient;
-	let defaultHeaders: Record<string, string>;
-	let headers: Record<string, string>;
-	let mockFetch: any;
-	let baseOptions: any;
+  let mockConfig: any;
+  let sdkInfo: string;
+  let rpcClient: RpcClient;
+  let rpcClientModule: typeof RpcClient;
+  let defaultHeaders: Record<string, string>;
+  let headers: Record<string, string>;
+  let mockFetch: any;
+  let baseOptions: any;
 
-	t.beforeEach(async () => {
-		const clientModule = await import('./rpcClient');
-		baseOptions = {
-			scope: 'eip155:1' as Scope,
-			request: {
-				method: 'eth_getBalance',
-				params: { address: '0x123', blockNumber: 'latest' },
-			},
-		};
+  t.beforeEach(async () => {
+    const clientModule = await import('./rpcClient');
+    baseOptions = {
+      scope: 'eip155:1' as Scope,
+      request: {
+        method: 'eth_getBalance',
+        params: { address: '0x123', blockNumber: 'latest' },
+      },
+    };
 
-		mockConfig = {
-			api: {
-				supportedNetworks: {
-					'eip155:1': 'https://mainnet.infura.io/v3/01234567890',
-					'eip155:11155111': 'https://custom-sepolia.com',
-				},
-			},
-		};
-		sdkInfo = 'Sdk/Javascript SdkVersion/1.0.0 Platform/web';
-		rpcClient = new clientModule.RpcClient(mockConfig, sdkInfo);
-		rpcClientModule = clientModule.RpcClient;
-		// Get mock fetch from the module mock
-		const fetchModule = await import('cross-fetch');
-		mockFetch = (fetchModule as any).__mockFetch;
-		// Reset mocks
-		mockFetch.mockClear();
-		defaultHeaders = {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-		};
-		headers = {
-			...defaultHeaders,
-			'Metamask-Sdk-Info': sdkInfo,
-		};
-	});
+    mockConfig = {
+      api: {
+        supportedNetworks: {
+          'eip155:1': 'https://mainnet.infura.io/v3/01234567890',
+          'eip155:11155111': 'https://custom-sepolia.com',
+        },
+      },
+    };
+    sdkInfo = 'Sdk/Javascript SdkVersion/1.0.0 Platform/web';
+    rpcClient = new clientModule.RpcClient(mockConfig, sdkInfo);
+    rpcClientModule = clientModule.RpcClient;
+    // Get mock fetch from the module mock
+    const fetchModule = await import('cross-fetch');
+    mockFetch = (fetchModule as any).__mockFetch;
+    // Reset mocks
+    mockFetch.mockClear();
+    defaultHeaders = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+    headers = {
+      ...defaultHeaders,
+      'Metamask-Sdk-Info': sdkInfo,
+    };
+  });
 
-	t.afterEach(async () => {
-		t.vi.clearAllMocks();
-		t.vi.resetAllMocks();
-	});
+  t.afterEach(async () => {
+    t.vi.clearAllMocks();
+    t.vi.resetAllMocks();
+  });
 
-	t.describe('getHeaders', () => {
-		t.it('should return default headers when RPC endpoint does not include infura', () => {
-			const customRpcEndpoint = 'https://custom-ethereum-node.com/rpc';
-			const headers = (rpcClient as any).getHeaders(customRpcEndpoint);
-			t.expect(headers).toEqual(defaultHeaders);
-			t.expect(headers).not.toHaveProperty('Metamask-Sdk-Info');
-		});
+  t.describe('getHeaders', () => {
+    t.it(
+      'should return default headers when RPC endpoint does not include infura',
+      () => {
+        const customRpcEndpoint = 'https://custom-ethereum-node.com/rpc';
+        const headers = (rpcClient as any).getHeaders(customRpcEndpoint);
+        t.expect(headers).toEqual(defaultHeaders);
+        t.expect(headers).not.toHaveProperty('Metamask-Sdk-Info');
+      },
+    );
 
-		t.it('should return headers with Metamask-Sdk-Info when RPC endpoint includes infura', () => {
-			const infuraEndpoint = 'https://mainnet.infura.io/v3/test-key';
-			const currentHeaders = (rpcClient as any).getHeaders(infuraEndpoint);
-			t.expect(currentHeaders).toEqual(headers);
-		});
-	});
+    t.it(
+      'should return headers with Metamask-Sdk-Info when RPC endpoint includes infura',
+      () => {
+        const infuraEndpoint = 'https://mainnet.infura.io/v3/test-key';
+        const currentHeaders = (rpcClient as any).getHeaders(infuraEndpoint);
+        t.expect(currentHeaders).toEqual(headers);
+      },
+    );
+  });
 
-	t.describe('request', () => {
-		t.it('should use supportedNetworks rpc endpoint', async () => {
-			const mockJsonResponse = {
-				jsonrpc: '2.0',
-				result: '0x1234567890abcdef',
-				id: 1,
-			};
+  t.describe('request', () => {
+    t.it('should use supportedNetworks rpc endpoint', async () => {
+      const mockJsonResponse = {
+        jsonrpc: '2.0',
+        result: '0x1234567890abcdef',
+        id: 1,
+      };
 
-			const mockResponse = {
-				ok: true,
-				json: t.vi.fn().mockResolvedValue(mockJsonResponse),
-			};
+      const mockResponse = {
+        ok: true,
+        json: t.vi.fn().mockResolvedValue(mockJsonResponse),
+      };
 
-			mockFetch.mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
 
-			const result = await rpcClient.request({ ...baseOptions, scope: 'eip155:11155111' });
-
-			t.expect(result).toBe('0x1234567890abcdef');
-			t.expect(mockFetch).toHaveBeenCalledWith('https://custom-sepolia.com', t.expect.objectContaining({
-				method: 'POST',
-				headers: defaultHeaders,
-				body: t.expect.stringContaining('"method":"eth_getBalance"'),
-				signal: t.expect.any(AbortSignal),
-			}));
-		});
-
-			t.it('should throw RPCReadonlyResponseErr when response cannot be parsed as JSON', async () => {
-				const mockResponse = {
-					ok: true,
-					json: t.vi.fn().mockRejectedValue(new Error('Invalid JSON')),
-				};
-
-				mockFetch.mockResolvedValue(mockResponse);
-
-				await t.expect(rpcClient.request(baseOptions)).rejects.toBeInstanceOf(RPCReadonlyResponseErr);
-				await t.expect(rpcClient.request(baseOptions)).rejects.toThrow('Invalid JSON');
-			});
-
-			t.it('should throw RPCHttpErr when fetch response is not ok', async () => {
-				const mockResponse = {
-					ok: false,
-					status: 500,
-				};
-
-				mockFetch.mockResolvedValue(mockResponse);
-
-				await t.expect(rpcClient.request(baseOptions)).rejects.toBeInstanceOf(RPCHttpErr);
-			});
-
-			t.it('should throw RPCReadonlyRequestErr when fetch throws', async () => {
-				const fetchError = new Error('Network error');
-				mockFetch.mockRejectedValue(fetchError);
-
-				await t.expect(rpcClient.request(baseOptions)).rejects.toBeInstanceOf(RPCReadonlyRequestErr);
-				await t.expect(rpcClient.request(baseOptions)).rejects.toThrow('Network error');
-			});
-
-			t.it('should use only default headers when RPC endpoint does not include infura and custom readonly RPC is provided', async () => {
-				const configWithCustomRPC = {
-					api: {
-						supportedNetworks: {
-							'eip155:1': 'https://custom-ethereum-node.com/rpc',
-						},
-					},
-				} as any;
-				const clientWithCustomRPC = new rpcClientModule(configWithCustomRPC, sdkInfo);
-				const mockJsonResponse = {
-					jsonrpc: '2.0',
-					result: '0x123456account12345',
-					id: 1,
-				};
-				const mockResponse = {
-					ok: true,
-					json: t.vi.fn().mockResolvedValue(mockJsonResponse),
-				};
-
-				mockFetch.mockResolvedValue(mockResponse);
-				baseOptions.request = {
-					method: 'eth_accounts',
-					params: undefined,
-				};
-
-				const result = await clientWithCustomRPC.request(baseOptions);
-				t.expect(result).toBe('0x123456account12345');
-				t.expect(mockFetch).toHaveBeenCalledWith('https://custom-ethereum-node.com/rpc', t.expect.objectContaining({
-					method: 'POST',
-					headers: defaultHeaders,
-					body: t.expect.stringMatching(/^\{"jsonrpc":"2\.0","method":"eth_accounts","id":\d+\}$/),
-					signal: t.expect.any(AbortSignal),
-				}));
-			});
-
-      t.it('should throw MissingRpcEndpointErr when no RPC endpoint is available', async () => {
-        const options = { ...baseOptions, scope: 'eip155:999' as Scope };
-        await t.expect(rpcClient.request(options)).rejects.toBeInstanceOf(MissingRpcEndpointErr);
+      const result = await rpcClient.request({
+        ...baseOptions,
+        scope: 'eip155:11155111',
       });
-	});
+
+      t.expect(result).toBe('0x1234567890abcdef');
+      t.expect(mockFetch).toHaveBeenCalledWith(
+        'https://custom-sepolia.com',
+        t.expect.objectContaining({
+          method: 'POST',
+          headers: defaultHeaders,
+          body: t.expect.stringContaining('"method":"eth_getBalance"'),
+          signal: t.expect.any(AbortSignal),
+        }),
+      );
+    });
+
+    t.it(
+      'should throw RPCReadonlyResponseErr when response cannot be parsed as JSON',
+      async () => {
+        const mockResponse = {
+          ok: true,
+          json: t.vi.fn().mockRejectedValue(new Error('Invalid JSON')),
+        };
+
+        mockFetch.mockResolvedValue(mockResponse);
+
+        await t
+          .expect(rpcClient.request(baseOptions))
+          .rejects.toBeInstanceOf(RPCReadonlyResponseErr);
+        await t
+          .expect(rpcClient.request(baseOptions))
+          .rejects.toThrow('Invalid JSON');
+      },
+    );
+
+    t.it('should throw RPCHttpErr when fetch response is not ok', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+      };
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await t
+        .expect(rpcClient.request(baseOptions))
+        .rejects.toBeInstanceOf(RPCHttpErr);
+    });
+
+    t.it('should throw RPCReadonlyRequestErr when fetch throws', async () => {
+      const fetchError = new Error('Network error');
+      mockFetch.mockRejectedValue(fetchError);
+
+      await t
+        .expect(rpcClient.request(baseOptions))
+        .rejects.toBeInstanceOf(RPCReadonlyRequestErr);
+      await t
+        .expect(rpcClient.request(baseOptions))
+        .rejects.toThrow('Network error');
+    });
+
+    t.it(
+      'should use only default headers when RPC endpoint does not include infura and custom readonly RPC is provided',
+      async () => {
+        const configWithCustomRPC = {
+          api: {
+            supportedNetworks: {
+              'eip155:1': 'https://custom-ethereum-node.com/rpc',
+            },
+          },
+        } as any;
+        const clientWithCustomRPC = new rpcClientModule(
+          configWithCustomRPC,
+          sdkInfo,
+        );
+        const mockJsonResponse = {
+          jsonrpc: '2.0',
+          result: '0x123456account12345',
+          id: 1,
+        };
+        const mockResponse = {
+          ok: true,
+          json: t.vi.fn().mockResolvedValue(mockJsonResponse),
+        };
+
+        mockFetch.mockResolvedValue(mockResponse);
+        baseOptions.request = {
+          method: 'eth_accounts',
+          params: undefined,
+        };
+
+        const result = await clientWithCustomRPC.request(baseOptions);
+        t.expect(result).toBe('0x123456account12345');
+        t.expect(mockFetch).toHaveBeenCalledWith(
+          'https://custom-ethereum-node.com/rpc',
+          t.expect.objectContaining({
+            method: 'POST',
+            headers: defaultHeaders,
+            body: t.expect.stringMatching(
+              /^\{"jsonrpc":"2\.0","method":"eth_accounts","id":\d+\}$/,
+            ),
+            signal: t.expect.any(AbortSignal),
+          }),
+        );
+      },
+    );
+
+    t.it(
+      'should throw MissingRpcEndpointErr when no RPC endpoint is available',
+      async () => {
+        const options = { ...baseOptions, scope: 'eip155:999' as Scope };
+        await t
+          .expect(rpcClient.request(options))
+          .rejects.toBeInstanceOf(MissingRpcEndpointErr);
+      },
+    );
+  });
 });

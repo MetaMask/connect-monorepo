@@ -1,15 +1,20 @@
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/no-shadow -- Test scopes */
+/* eslint-disable @typescript-eslint/unbound-method -- Mock assertions */
+/* eslint-disable @typescript-eslint/naming-convention -- NodeModals import */
+/* eslint-disable no-empty-function -- Empty mock functions */
+import encodeQR from '@paulmillr/qr';
+import { v4 } from 'uuid';
 import * as t from 'vitest';
 import { vi } from 'vitest';
 
+import * as NodeModals from '.';
 import {
   type ConnectionRequest,
   getVersion,
   type Modal,
   PlatformType,
 } from '../../../domain';
-import * as NodeModals from './';
-import { v4 } from 'uuid';
-import encodeQR from '@paulmillr/qr';
 
 vi.mock('@paulmillr/qr', () => {
   return {
@@ -178,7 +183,7 @@ t.describe('Node Modals', () => {
   t.it('Rendering OTPCodeModal on Node', async () => {
     const otpCode = '123456';
 
-    //TODO: Modal is currently not doing much but will be a placeholder for the future 2fa modal
+    // TODO: Modal is currently not doing much but will be a placeholder for the future 2fa modal
     const otpCodeModal = new NodeModals.OTPCodeModal({
       otpCode,
       parentElement: undefined,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention -- UI component naming convention */
 /**
  * Input label types for dynamic input components.
  */

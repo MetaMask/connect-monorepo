@@ -19,6 +19,7 @@ export const FEATURED_NETWORKS = {
 
 /**
  * Gets the human-readable network name from a CAIP-2 chain ID.
+ *
  * @param chainId - The CAIP-2 chain ID (e.g., "eip155:1")
  * @returns The network name if found, otherwise returns the chain ID as-is
  */

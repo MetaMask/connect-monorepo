@@ -50,6 +50,7 @@
     "dist/"
   ],
   "scripts": {
+    "allow-scripts": "",
     "build": "yarn clean && tsc -b tsconfig.build.json && npx tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-multichain",
@@ -66,8 +67,7 @@
     "test:ci": "yarn pretest:ci && vitest run --coverage --coverage.reporter=text --silent",
     "test:unit": "vitest run",
     "test:verbose": "vitest run --reporter=verbose",
-    "test:watch": "vitest watch",
-    "allow-scripts": ""
+    "test:watch": "vitest watch"
   },
   "dependencies": {
     "@metamask/analytics": "workspace:^",

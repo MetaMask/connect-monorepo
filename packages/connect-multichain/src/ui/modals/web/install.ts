@@ -1,13 +1,14 @@
+/* eslint-disable no-restricted-globals -- Web modal uses document */
 import type { MmInstallModalCustomEvent } from '@metamask/multichain-ui';
 
 import { AbstractInstallModal } from '../base/AbstractInstallModal';
 
 export class InstallModal extends AbstractInstallModal {
   renderQRCode(): void {
-    //Not needed for web as its using install Modal
+    // Not needed for web as its using install Modal
   }
 
-  mount() {
+  mount(): void {
     const { options } = this;
     const modal = document.createElement(
       'mm-install-modal',
@@ -33,7 +34,7 @@ export class InstallModal extends AbstractInstallModal {
     this.startExpirationCheck(options.connectionRequest);
   }
 
-  unmount() {
+  unmount(): void {
     const { options, instance: modal } = this;
     this.stopExpirationCheck();
     if (modal && options.parentElement?.contains(modal)) {

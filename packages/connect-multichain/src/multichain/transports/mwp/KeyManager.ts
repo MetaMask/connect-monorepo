@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals -- Buffer is polyfilled for browser/RN environments */
+/* eslint-disable @typescript-eslint/await-thenable -- decrypt returns Promise in some implementations */
 import type {
   IKeyManager,
   KeyPair,

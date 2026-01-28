@@ -1,8 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention -- AsyncStorage is an external library
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { StoreAdapter } from '../../domain';
 
 export class StoreAdapterRN extends StoreAdapter {
   readonly platform = 'rn';
+
   async get(key: string): Promise<string | null> {
     return AsyncStorage.getItem(key);
   }

@@ -1,5 +1,6 @@
+/* eslint-disable import-x/export -- Re-export pattern for package */
 /**
- * @metamask/playground-ui
+ * @module playground-ui
  *
  * Shared UI logic and utilities for MetaMask playground applications.
  * This package provides common constants, helpers, types, and configuration

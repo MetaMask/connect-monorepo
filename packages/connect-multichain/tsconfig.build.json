@@ -17,10 +17,16 @@
     "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo",
     "lib": ["DOM", "ES2020"],
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": ["node"]
   },
   "include": ["./src"],
-  "exclude": ["node_modules", "dist", "./tests", "**/*.spec.ts", "**/*.test.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "./tests",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
   "references": [
     { "path": "../multichain-ui/tsconfig.build.json" },
     { "path": "../analytics/tsconfig.build.json" }

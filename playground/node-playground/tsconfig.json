@@ -7,20 +7,28 @@
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": false,
+    "strict": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": "./",
     "paths": {
-      "@metamask/connect-multichain": ["../../packages/connect-multichain/src/index.node.ts"],
-      "@metamask/multichain-ui/loader": ["../../packages/multichain-ui/dist/loader"],
+      "@metamask/connect-multichain": [
+        "../../packages/connect-multichain/src/index.node.ts"
+      ],
+      "@metamask/multichain-ui/loader": [
+        "../../packages/multichain-ui/dist/loader"
+      ],
       "@metamask/*": ["../../*/src"],
       "src/*": ["../../packages/connect-multichain/src/*"]
     }
   },
-  "references": [
-    { "path": "../../packages/connect-multichain" },
-  ],
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "references": [{ "path": "../../packages/connect-multichain" }],
   "include": ["./src"]
 }

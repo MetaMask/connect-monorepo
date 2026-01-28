@@ -72,11 +72,13 @@ When you start the playground, you can choose between:
 Once connected, the available actions depend on your connector type:
 
 **Multichain API:**
+
 - Sign Ethereum Message (`personal_sign`)
 - Sign Solana Message (`signMessage`)
 - Disconnect
 
 **Legacy EVM Connector:**
+
 - Sign Ethereum Message (`personal_sign`)
 - Switch Chain (Ethereum, Polygon, Linea, Sepolia)
 - Disconnect
@@ -103,6 +105,7 @@ node-playground/
 ## Dependencies
 
 The playground uses:
+
 - `@metamask/connect-multichain` - For multichain API connections
 - `@metamask/connect-evm` - For legacy EVM connections
 - `inquirer` - Interactive CLI prompts

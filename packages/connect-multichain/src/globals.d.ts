@@ -6,7 +6,7 @@ declare global {
     /**
      * TODO: Add types for the window object to manage connection with inApp browser, etc
      */
-    ReactNativeWebView?: any;
+    reactNativeWebView?: any;
     mmsdk?: any;
     ethereum?: {
       isMetaMask?: boolean;

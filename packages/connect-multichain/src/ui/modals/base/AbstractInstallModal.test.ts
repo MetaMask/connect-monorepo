@@ -1,8 +1,9 @@
+/* eslint-disable id-length -- vitest alias */
 /** biome-ignore-all lint/suspicious/noExplicitAny: ok in tests */
 import * as t from 'vitest';
-import type { ConnectionRequest, QRLink } from '../../../domain';
 
 import { AbstractInstallModal } from './AbstractInstallModal';
+import type { ConnectionRequest, QRLink } from '../../../domain';
 
 const mountMock = t.vi.fn();
 const unmountMock = t.vi.fn();
@@ -16,7 +17,6 @@ class TestInstallModal extends AbstractInstallModal {
     super.updateExpiresIn(expiresIn);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   renderQRCode(): void {
     // mock
   }

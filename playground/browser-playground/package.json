@@ -24,12 +24,12 @@
     "build/"
   ],
   "scripts": {
-    "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
     "build": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco build",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/browser-playground",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/browser-playground",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/browser-playground",
+    "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
     "deploy": "serve -s build",
     "prepack": "./scripts/prepack.sh",
     "start": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco start",
