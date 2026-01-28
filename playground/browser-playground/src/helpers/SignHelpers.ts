@@ -1,9 +1,19 @@
+/* eslint-disable @typescript-eslint/naming-convention -- Method names match RPC methods */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Demo helpers */
+/* eslint-disable id-denylist -- 'err' is clear in catch context */
+/* eslint-disable @typescript-eslint/restrict-template-expressions -- Error logging */
+/* eslint-disable no-alert -- Browser playground uses alert */
+/* eslint-disable no-restricted-globals -- Browser uses alert for feedback */
+/* eslint-disable consistent-return -- Error handling */
+/* eslint-disable id-length -- Short error variable */
+/* eslint-disable camelcase -- RPC method names */
+/* eslint-disable import-x/no-nodejs-modules -- Buffer polyfill */
 import type { EIP1193Provider } from '@metamask/connect/evm';
-import { Buffer } from 'buffer';
 import {
   createSignTypedDataParams,
   getDefaultPersonalSignMessage,
 } from '@metamask/playground-ui/helpers';
+import { Buffer } from 'buffer';
 
 /**
  * Sends an eth_signTypedData_v4 request to the provider.
@@ -36,7 +46,7 @@ export const send_eth_signTypedData_v4 = async (
     return await provider?.request({ method, params });
   } catch (e: unknown) {
     console.log(`eth_signTypedData_v4 error: ${e}`);
-    return 'Error: ' + e;
+    return `Error: ${e}`;
   }
 };
 
@@ -50,7 +60,7 @@ export const send_personal_sign = async (provider: EIP1193Provider) => {
   try {
     const from = provider.selectedAccount;
     const message = getDefaultPersonalSignMessage('Create React dapp');
-    const hexMessage = '0x' + Buffer.from(message, 'utf8').toString('hex');
+    const hexMessage = `0x${Buffer.from(message, 'utf8').toString('hex')}`;
 
     const sign = await provider.request({
       method: 'personal_sign',
@@ -59,6 +69,6 @@ export const send_personal_sign = async (provider: EIP1193Provider) => {
     return sign;
   } catch (err: unknown) {
     console.log(`personal_sign error: ${err}`);
-    return 'Error: ' + err;
+    return `Error: ${err}`;
   }
 };

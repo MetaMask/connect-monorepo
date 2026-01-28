@@ -1,10 +1,15 @@
-import { deflate } from 'pako';
+/* eslint-disable no-restricted-globals -- Browser APIs are intentionally used */
+/* eslint-disable jsdoc/require-param-description -- Auto-generated JSDoc */
+/* eslint-disable jsdoc/require-returns -- Auto-generated JSDoc */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
 import {
   type CaipAccountId,
   type CaipChainId,
   parseCaipAccountId,
   parseCaipChainId,
 } from '@metamask/utils';
+import { deflate } from 'pako';
+
 import {
   type DappSettings,
   getPlatformType,
@@ -19,6 +24,8 @@ export type OptionalScopes = Record<Scope, SessionData['sessionScopes'][Scope]>;
 /**
  * Cross-platform base64 encoding
  * Works in browser, Node.js, and React Native environments
+ *
+ * @param str
  */
 function base64Encode(str: string): string {
   if (typeof btoa !== 'undefined') {
@@ -34,6 +41,8 @@ function base64Encode(str: string): string {
 /**
  * Compress a string using pako (deflateRaw)
  * Returns a base64-encoded compressed string
+ *
+ * @param str
  */
 export function compressString(str: string): string {
   const compressed = deflate(str);
@@ -43,18 +52,27 @@ export function compressString(str: string): string {
   return base64Encode(binaryString);
 }
 
+/**
+ *
+ * @param dapp
+ */
 export function getDappId(dapp: DappSettings) {
   return dapp.url ?? dapp.name;
 }
 
+/**
+ *
+ * @param options
+ * @param deeplink
+ * @param universalLink
+ */
 export function openDeeplink(
   options: MultichainOptions,
   deeplink: string,
   universalLink: string,
 ) {
   const { mobile } = options;
-  const useDeeplink =
-    mobile && mobile.useDeeplink !== undefined ? mobile.useDeeplink : true;
+  const useDeeplink = mobile?.useDeeplink ?? true;
   if (useDeeplink) {
     if (typeof window !== 'undefined') {
       // We don't need to open a deeplink in a new tab
@@ -79,6 +97,10 @@ export function openDeeplink(
   }
 }
 
+/**
+ *
+ * @param scopes
+ */
 export function getOptionalScopes(scopes: Scope[]) {
   return scopes.reduce<OptionalScopes>(
     (prev, scope) => ({
@@ -113,6 +135,10 @@ export const extractFavicon = () => {
   return favicon;
 };
 
+/**
+ *
+ * @param options
+ */
 export function setupDappMetadata(
   options: MultichainOptions,
 ): MultichainOptions {
@@ -136,7 +162,7 @@ export function setupDappMetadata(
   }
   const BASE_64_ICON_MAX_LENGTH = 163400;
   // Check if iconUrl and url are valid
-  const urlPattern = /^(http|https):\/\/[^\s]*$/; // Regular expression for URLs starting with http:// or https://
+  const urlPattern = /^(http|https):\/\/[^\s]*$/u; // Regular expression for URLs starting with http:// or https://
   if (options.dapp) {
     if ('iconUrl' in options.dapp) {
       if (options.dapp.iconUrl && !urlPattern.test(options.dapp.iconUrl)) {
@@ -173,7 +199,7 @@ export function setupDappMetadata(
       !('base64Icon' in options.dapp)
     ) {
       const faviconUrl = `${window.location.protocol}//${window.location.host}${favicon}`;
-      // @ts-ignore
+      // @ts-expect-error -- iconUrl may not exist on all dapp types
       options.dapp.iconUrl = faviconUrl;
     }
   }
@@ -182,6 +208,7 @@ export function setupDappMetadata(
 
 /**
  * Enhanced scope checking function that validates both scopes and accounts
+ *
  * @param currentScopes - Current scopes from the existing session
  * @param proposedScopes - Proposed scopes from the connect options
  * @param walletSession - The existing wallet session data
@@ -215,15 +242,22 @@ export function isSameScopesAndAccounts(
   return allProposedAccountsIncluded;
 }
 
+/**
+ *
+ * @param caipAccountIds
+ */
 export function getValidAccounts(caipAccountIds: CaipAccountId[]) {
   return caipAccountIds.reduce<ReturnType<typeof parseCaipAccountId>[]>(
     (caipAccounts, caipAccountId) => {
       try {
         // biome-ignore lint/performance/noAccumulatingSpread: Needed
         return [...caipAccounts, parseCaipAccountId(caipAccountId)];
-      } catch (err) {
+      } catch (error) {
         const stringifiedAccountId = JSON.stringify(caipAccountId);
-        console.error(`Invalid CAIP account ID: ${stringifiedAccountId}`, err);
+        console.error(
+          `Invalid CAIP account ID: ${stringifiedAccountId}`,
+          error,
+        );
         return caipAccounts;
       }
     },
@@ -262,6 +296,7 @@ export function addValidAccounts(
   const accountsByChain = new Map<string, CaipAccountId[]>();
   for (const account of validAccounts) {
     const chainKey = `${account.chain.namespace}:${account.chain.reference}`;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const accountId = `${account.chainId}:${account.address}` as CaipAccountId;
 
     if (!accountsByChain.has(chainKey)) {

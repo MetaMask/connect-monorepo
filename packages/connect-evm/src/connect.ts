@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 import { analytics } from '@metamask/analytics';
 import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
@@ -840,7 +841,10 @@ export class MetamaskConnectEVM {
     // Skip session recovery if transport is not initialized yet.
     // Transport is only initialized when there's a stored session or after connect() is called.
     // Only attempt recovery if we're in a state where transport should be available.
-    if (this.#core.status !== 'connected' && this.#core.status !== 'connecting') {
+    if (
+      this.#core.status !== 'connected' &&
+      this.#core.status !== 'connecting'
+    ) {
       return;
     }
     try {
@@ -962,8 +966,9 @@ export class MetamaskConnectEVM {
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp' | 'api'> &
-  { ui?: Omit<MultichainOptions['ui'], 'factory'>; } & {
+  options: Pick<MultichainOptions, 'dapp' | 'api'> & {
+    ui?: Omit<MultichainOptions['ui'], 'factory'>;
+  } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
   },

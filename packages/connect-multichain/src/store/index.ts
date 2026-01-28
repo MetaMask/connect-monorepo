@@ -1,3 +1,5 @@
+/* eslint-disable id-denylist -- 'err' is a common pattern for catch clauses */
+/* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand */
 import * as uuid from 'uuid';
 
 import type { StoreAdapter, TransportType } from '../domain';

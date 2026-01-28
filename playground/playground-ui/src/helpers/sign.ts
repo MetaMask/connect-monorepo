@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Demo helpers */
 /**
  * EIP-712 typed data domain configuration.
  */
@@ -88,7 +89,7 @@ export const createPersonalSignMessage = (
   message: string,
   hexEncoder: (input: string) => string,
 ): string => {
-  return '0x' + hexEncoder(message);
+  return `0x${hexEncoder(message)}`;
 };
 
 /**

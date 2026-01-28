@@ -53,10 +53,14 @@ export const TEST_IDS = {
   // DYNAMIC INPUTS
   // ============================================
   dynamicInputs: {
-    container: (label: string) => createTestId('dynamic-inputs', 'container', label),
-    heading: (label: string) => createTestId('dynamic-inputs', 'heading', label),
-    checkbox: (value: string) => createTestId('dynamic-inputs', 'checkbox', value),
-    checkboxLabel: (value: string) => createTestId('dynamic-inputs', 'label', value),
+    container: (label: string) =>
+      createTestId('dynamic-inputs', 'container', label),
+    heading: (label: string) =>
+      createTestId('dynamic-inputs', 'heading', label),
+    checkbox: (value: string) =>
+      createTestId('dynamic-inputs', 'checkbox', value),
+    checkboxLabel: (value: string) =>
+      createTestId('dynamic-inputs', 'label', value),
   },
 
   // ============================================
@@ -64,10 +68,12 @@ export const TEST_IDS = {
   // ============================================
   featuredNetworks: {
     container: 'featured-networks-container',
-    networkItem: (chainId: string) => createTestId('featured-networks', 'item', chainId),
+    networkItem: (chainId: string) =>
+      createTestId('featured-networks', 'item', chainId),
     networkCheckbox: (chainId: string) =>
       createTestId('featured-networks', 'checkbox', chainId),
-    networkLabel: (chainId: string) => createTestId('featured-networks', 'label', chainId),
+    networkLabel: (chainId: string) =>
+      createTestId('featured-networks', 'label', chainId),
   },
 
   // ============================================
@@ -75,29 +81,40 @@ export const TEST_IDS = {
   // ============================================
   scopeCard: {
     card: (scope: string) => createTestId('scope-card', scope),
-    networkName: (scope: string) => createTestId('scope-card', 'network-name', scope),
+    networkName: (scope: string) =>
+      createTestId('scope-card', 'network-name', scope),
 
     // Account section
-    accountsLabel: (scope: string) => createTestId('scope-card', 'accounts-label', scope),
-    accountsBadge: (scope: string) => createTestId('scope-card', 'accounts-badge', scope),
-    accountSelect: (scope: string) => createTestId('scope-card', 'account-select', scope),
+    accountsLabel: (scope: string) =>
+      createTestId('scope-card', 'accounts-label', scope),
+    accountsBadge: (scope: string) =>
+      createTestId('scope-card', 'accounts-badge', scope),
+    accountSelect: (scope: string) =>
+      createTestId('scope-card', 'account-select', scope),
     accountOption: (scope: string, account: string) =>
       createTestId('scope-card', 'account-option', scope, account),
-    activeAccount: (scope: string) => createTestId('scope-card', 'active-account', scope),
+    activeAccount: (scope: string) =>
+      createTestId('scope-card', 'active-account', scope),
 
     // Method section
-    methodsLabel: (scope: string) => createTestId('scope-card', 'methods-label', scope),
-    methodsBadge: (scope: string) => createTestId('scope-card', 'methods-badge', scope),
-    methodSelect: (scope: string) => createTestId('scope-card', 'method-select', scope),
+    methodsLabel: (scope: string) =>
+      createTestId('scope-card', 'methods-label', scope),
+    methodsBadge: (scope: string) =>
+      createTestId('scope-card', 'methods-badge', scope),
+    methodSelect: (scope: string) =>
+      createTestId('scope-card', 'method-select', scope),
     methodOption: (scope: string, method: string) =>
       createTestId('scope-card', 'method-option', scope, method),
-    selectedMethod: (scope: string) => createTestId('scope-card', 'selected-method', scope),
+    selectedMethod: (scope: string) =>
+      createTestId('scope-card', 'selected-method', scope),
 
     // Invoke section
     invokeCollapsible: (scope: string) =>
       createTestId('scope-card', 'invoke-collapsible', scope),
-    invokeTextarea: (scope: string) => createTestId('scope-card', 'invoke-textarea', scope),
-    invokeBtn: (scope: string) => createTestId('scope-card', 'invoke-btn', scope),
+    invokeTextarea: (scope: string) =>
+      createTestId('scope-card', 'invoke-textarea', scope),
+    invokeBtn: (scope: string) =>
+      createTestId('scope-card', 'invoke-btn', scope),
 
     // Results
     resultContainer: (scope: string, method: string, index: number) =>
@@ -203,8 +220,10 @@ export const TEST_IDS = {
     walletName: (uuid: string) => createTestId('wallet-list', 'name', uuid),
     walletUuid: (uuid: string) => createTestId('wallet-list', 'uuid', uuid),
     walletRdns: (uuid: string) => createTestId('wallet-list', 'rdns', uuid),
-    walletExtensionId: (uuid: string) => createTestId('wallet-list', 'extension-id', uuid),
-    btnConnect: (uuid: string) => createTestId('wallet-list', 'btn-connect', uuid),
+    walletExtensionId: (uuid: string) =>
+      createTestId('wallet-list', 'extension-id', uuid),
+    btnConnect: (uuid: string) =>
+      createTestId('wallet-list', 'btn-connect', uuid),
   },
 } as const;
 

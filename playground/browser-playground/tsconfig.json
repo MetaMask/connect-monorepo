@@ -16,7 +16,9 @@
     "target": "es2020",
     "jsx": "react-jsx",
     "paths": {
-      "@metamask/playground-ui": ["../playground-ui/dist/es/playground-ui.d.mts"],
+      "@metamask/playground-ui": [
+        "../playground-ui/dist/es/playground-ui.d.mts"
+      ],
       "@metamask/playground-ui/*": ["../playground-ui/dist/es/*.d.mts"],
       "@metamask/*": ["../../*/src"]
     }

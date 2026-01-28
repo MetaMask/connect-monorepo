@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test helpers */
+
 /**
  * Platform-specific selector helpers for e2e tests.
  *
@@ -5,7 +7,7 @@
  * in e2e tests across different testing frameworks and platforms.
  */
 
-import { TEST_IDS } from './index';
+import { TEST_IDS } from '.';
 
 /**
  * Browser-specific selector helpers for e2e tests.
@@ -14,6 +16,7 @@ import { TEST_IDS } from './index';
 export const browserSelectors = {
   /**
    * Creates a CSS selector for data-testid attribute.
+   *
    * @param testId - The test ID to select
    * @returns CSS selector string
    */
@@ -21,14 +24,17 @@ export const browserSelectors = {
 
   /**
    * Creates a CSS selector for id attribute.
+   *
    * @param id - The element ID to select
    * @returns CSS selector string
    */
   byId: (id: string) => `#${id}`,
 
   // Convenience methods for common patterns
-  scopeCard: (scope: string) => `[data-testid="${TEST_IDS.scopeCard.card(scope)}"]`,
-  connectBtn: (type?: string) => `[data-testid="${TEST_IDS.app.btnConnect(type)}"]`,
+  scopeCard: (scope: string) =>
+    `[data-testid="${TEST_IDS.scopeCard.card(scope)}"]`,
+  connectBtn: (type?: string) =>
+    `[data-testid="${TEST_IDS.app.btnConnect(type)}"]`,
   disconnectBtn: () => `[data-testid="${TEST_IDS.app.btnDisconnect}"]`,
 };
 
@@ -39,6 +45,7 @@ export const browserSelectors = {
 export const rnSelectors = {
   /**
    * Returns the testID string for React Native element selection.
+   *
    * @param testId - The test ID to select
    * @returns The testID string
    */

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- Browser playground uses window */
 import { createConfig, http } from 'wagmi';
 import { mainnet, sepolia, optimism, celo } from 'wagmi/chains';
 
@@ -22,6 +23,7 @@ export const wagmiConfig = createConfig({
 });
 
 declare module 'wagmi' {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Register {
     config: typeof wagmiConfig;
   }

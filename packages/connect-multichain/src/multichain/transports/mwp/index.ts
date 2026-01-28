@@ -12,6 +12,7 @@
 /* eslint-disable @typescript-eslint/prefer-readonly */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable no-async-promise-executor -- Async promise executor needed for complex flow */
 import type {
   Session,
   SessionRequest,
@@ -19,8 +20,8 @@ import type {
 import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import type { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
+  type SessionProperties,
   type CreateSessionParams,
-  SessionProperties,
   type TransportRequest,
   type TransportResponse,
   TransportTimeoutError,
@@ -102,7 +103,11 @@ export class MWPTransport implements ExtendedTransport {
   constructor(
     private dappClient: DappClient,
     private kvstore: StoreAdapter,
-    private options: { requestTimeout: number; connectionTimeout: number; resumeTimeout: number } = {
+    private options: {
+      requestTimeout: number;
+      connectionTimeout: number;
+      resumeTimeout: number;
+    } = {
       requestTimeout: DEFAULT_REQUEST_TIMEOUT,
       connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
       resumeTimeout: DEFAULT_RESUME_TIMEOUT,
@@ -272,7 +277,7 @@ export class MWPTransport implements ExtendedTransport {
           walletSession = response.result as SessionData;
         }
       } else if (!walletSession) {
-      // TODO: verify if this branching logic can ever be hit
+        // TODO: verify if this branching logic can ever be hit
         const optionalScopes = addValidAccounts(
           getOptionalScopes(options?.scopes ?? []),
           getValidAccounts(options?.caipAccountIds ?? []),
@@ -664,7 +669,8 @@ export class MWPTransport implements ExtendedTransport {
   // for the initial wallet_createSession connection request to not have been handled and cached yet. This results
   // in the wallet_getSession request never resolving unless we wait for it explicitly as done in this method.
   private async waitForWalletSessionIfNotCached() {
-    const cachedWalletGetSessionResponse = await this.kvstore.get(SESSION_STORE_KEY);
+    const cachedWalletGetSessionResponse =
+      await this.kvstore.get(SESSION_STORE_KEY);
     if (cachedWalletGetSessionResponse) {
       return;
     }
@@ -674,7 +680,10 @@ export class MWPTransport implements ExtendedTransport {
         if (typeof message === 'object' && message !== null) {
           if ('data' in message) {
             const messagePayload = message.data as Record<string, unknown>;
-            if (messagePayload.method === 'wallet_getSession' || messagePayload.method === 'wallet_sessionChanged') {
+            if (
+              messagePayload.method === 'wallet_getSession' ||
+              messagePayload.method === 'wallet_sessionChanged'
+            ) {
               unsubscribe();
               resolve();
             }

@@ -75,6 +75,9 @@ const config = createConfig([
           allowDefaultProject: [
             './scripts/*.ts',
             'packages/*/stencil.config.ts',
+            'packages/*/*.config.ts',
+            'playground/*/*.config.ts',
+            'integrations/wagmi/wagmi.config.ts',
           ],
         },
       },
