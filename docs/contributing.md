@@ -258,6 +258,8 @@ Use the following process to release new packages in this repo:
    - Identify packages in `packages/` that have version bumps without corresponding git tags
    - Find playground packages (`browser-playground`, `react-native-playground`) that depend on those packages
    - Bump their patch versions and update their changelogs
+     - NOTE: It's possible that a playground has unreleased changes that depend on packages other than the packages being bumped! If this is the case, undo the changes by this tool related to the release of affected playground(s)
+   
 
    Review the changes made by this script before proceeding.
 
