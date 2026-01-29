@@ -33,8 +33,8 @@ const sdk = await createEVMClient({
       // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
       ...getInfuraRpcUrls(INFURA_API_KEY),
       // or specify your own CAIP Chain ID to rpc endpoint mapping
-      'eip155:1': 'https://mainnet.example.io/rpc'
-      'eip155:137': 'https://polygon-mainnet.example.io/rpc'
+      'eip155:1': 'https://mainnet.example.io/rpc',
+      'eip155:137': 'https://polygon-mainnet.example.io/rpc',
     },
   },
 });
