@@ -1,9 +1,23 @@
+/**
+ * Formats remaining time in a human-readable format.
+ *
+ * @param milliseconds - The remaining time in milliseconds.
+ * @returns A formatted string representing the remaining time.
+ */
 export function formatRemainingTime(milliseconds: number): string {
-  if (milliseconds <= 0) return 'EXPIRED';
+  if (milliseconds <= 0) {
+    return 'EXPIRED';
+  }
   const seconds = Math.floor(milliseconds / 1000);
   return `${seconds}s`;
 }
 
+/**
+ * Determines whether to log the countdown at the current remaining seconds.
+ *
+ * @param remainingSeconds - The remaining seconds until expiration.
+ * @returns True if the countdown should be logged, false otherwise.
+ */
 export function shouldLogCountdown(remainingSeconds: number): boolean {
   // Log at specific intervals to avoid spam
   if (remainingSeconds <= 10) {
@@ -18,8 +32,7 @@ export function shouldLogCountdown(remainingSeconds: number): boolean {
   } else if (remainingSeconds <= 300) {
     // Log every 30 seconds for the last 5 minutes
     return remainingSeconds % 30 === 0;
-  } else {
-    // Log every minute for longer durations
-    return remainingSeconds % 60 === 0;
   }
+  // Log every minute for longer durations
+  return remainingSeconds % 60 === 0;
 }

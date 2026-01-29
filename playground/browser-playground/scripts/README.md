@@ -34,10 +34,12 @@ There are several reasons why we cannot directly import the connector from its o
 ### Usage
 
 The script runs automatically during:
+
 - `yarn build` - Before building the production bundle
 - `yarn start` - Before starting the development server
 
 You can also run it manually:
+
 ```bash
 yarn copy-wagmi-connector
 ```

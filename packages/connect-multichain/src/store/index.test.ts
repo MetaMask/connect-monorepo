@@ -1,7 +1,16 @@
+/* eslint-disable import-x/no-unassigned-import -- Fake IndexedDB setup */
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/naming-convention -- AsyncStorage external library */
+/* eslint-disable @typescript-eslint/no-shadow -- IDBFactory shadows global */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- Test patterns */
+/* eslint-disable jsdoc/require-param-description -- Test helpers */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test functions */
 import 'fake-indexeddb/auto';
-import { IDBFactory } from 'fake-indexeddb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IDBFactory } from 'fake-indexeddb';
 import * as t from 'vitest';
+
+import { Store } from '.';
 import type { StoreAdapter } from '../domain';
 import {
   StorageDeleteErr,
@@ -12,7 +21,6 @@ import { TransportType } from '../domain/multichain';
 import { StoreAdapterNode } from './adapters/node';
 import { StoreAdapterRN } from './adapters/rn';
 import { StoreAdapterWeb } from './adapters/web';
-import { Store } from './index';
 
 /**
  * Dummy mocked storage to keep track of data between tests
@@ -32,6 +40,13 @@ const nativeStorageStub = {
 };
 
 // Reusable test function that can be used with any adapter
+/**
+ *
+ * @param adapterName
+ * @param createAdapter
+ * @param setupMocks
+ * @param cleanupMocks
+ */
 function createStoreTests(
   adapterName: string,
   createAdapter: () => StoreAdapter,
@@ -249,7 +264,7 @@ t.describe(`Store with NodeAdapter`, () => {
 });
 
 t.describe(`Store with WebAdapter`, () => {
-  //Test browser storage with mocked local storage
+  // Test browser storage with mocked local storage
   createStoreTests(
     'WebAdapter',
     () => new StoreAdapterWeb(),
@@ -269,7 +284,7 @@ t.describe(`Store with WebAdapter`, () => {
         indexedDB: undefined,
       });
       const store = new Store(new StoreAdapterWeb());
-      await t.expect(() => store.getAnonId()).rejects.toThrow();
+      await t.expect(async () => store.getAnonId()).rejects.toThrow();
     },
   );
 });

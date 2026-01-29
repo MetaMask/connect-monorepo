@@ -1,3 +1,10 @@
+/* eslint-disable no-restricted-globals -- Polyfill intentionally uses global/window */
+/* eslint-disable import-x/no-nodejs-modules -- Buffer polyfill */
+/* eslint-disable no-negated-condition -- Clearer pattern for undefined checks */
+/* eslint-disable no-empty-function -- Stub implementations */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Polyfill stubs */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- Polyfill assignments */
+
 import { Buffer } from 'buffer';
 
 // NOTE: Buffer polyfill is now handled by @metamask/connect-multichain
@@ -62,12 +69,19 @@ if (typeof global !== 'undefined') {
 if (typeof global.Event === 'undefined' && typeof Event === 'undefined') {
   class EventPolyfill {
     type: string;
+
     bubbles: boolean;
+
     cancelable: boolean;
+
     defaultPrevented: boolean;
+
     eventPhase: number;
+
     timeStamp: number;
+
     target: EventTarget | null;
+
     currentTarget: EventTarget | null;
 
     constructor(type: string, options?: EventInit) {
@@ -105,17 +119,28 @@ if (typeof global.Event === 'undefined' && typeof Event === 'undefined') {
 
 // Polyfill CustomEvent (used by wagmi and other libraries)
 // React Native doesn't have CustomEvent, so we create a simple polyfill
-if (typeof global.CustomEvent === 'undefined' && typeof CustomEvent === 'undefined') {
+if (
+  typeof global.CustomEvent === 'undefined' &&
+  typeof CustomEvent === 'undefined'
+) {
   // Get Event class (either the polyfill we just created or the native one)
-  const EventClass = (typeof global !== 'undefined' && global.Event) || 
-                     (typeof Event !== 'undefined' ? Event : 
-                      class {
-                        type: string;
-                        constructor(type: string) { this.type = type; }
-                        preventDefault() {}
-                        stopPropagation() {}
-                        stopImmediatePropagation() {}
-                      });
+  const EventClass =
+    (typeof global !== 'undefined' && global.Event) ||
+    (typeof Event !== 'undefined'
+      ? Event
+      : class {
+          type: string;
+
+          constructor(type: string) {
+            this.type = type;
+          }
+
+          preventDefault() {}
+
+          stopPropagation() {}
+
+          stopImmediatePropagation() {}
+        });
 
   class CustomEventPolyfill extends EventClass {
     detail: any;

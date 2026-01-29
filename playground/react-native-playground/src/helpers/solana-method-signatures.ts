@@ -1,9 +1,19 @@
-import { Transaction, PublicKey, SystemProgram, Connection } from '@solana/web3.js';
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Demo helpers */
+/* eslint-disable no-restricted-globals -- React Native polyfills process */
+
+/* eslint-disable jsdoc/require-param-description -- Demo helpers */
+/* eslint-disable jsdoc/require-returns -- Demo helpers */
+/* eslint-disable import-x/no-nodejs-modules -- Buffer polyfill */
+import { getConfig } from '@metamask/playground-ui/config';
+import { FEATURED_NETWORKS } from '@metamask/playground-ui/constants';
+import {
+  Transaction,
+  PublicKey,
+  SystemProgram,
+  Connection,
+} from '@solana/web3.js';
 import type { Commitment } from '@solana/web3.js';
 import { Buffer } from 'buffer';
-
-import { FEATURED_NETWORKS } from '@metamask/playground-ui/constants';
-import { getConfig } from '@metamask/playground-ui/config';
 
 const getSolanaRpcConfig = () => {
   const config = getConfig();
@@ -68,7 +78,9 @@ const generateBase64Transaction = async (address: string) => {
   });
 
   // React Native uses Buffer for base64 encoding
-  const base64Transaction = Buffer.from(serializedTransaction).toString('base64');
+  const base64Transaction = Buffer.from(serializedTransaction).toString(
+    'base64',
+  );
 
   return base64Transaction;
 };
@@ -76,6 +88,8 @@ const generateBase64Transaction = async (address: string) => {
 /**
  * Converts a string to base64 for React Native.
  * Uses Buffer which is available in React Native via the buffer polyfill.
+ *
+ * @param str
  */
 const stringToBase64 = (str: string): string => {
   const buffer = Buffer.from(str, 'utf8');

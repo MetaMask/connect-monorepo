@@ -1,4 +1,6 @@
-import * as t from 'vitest';
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Mock factory function */
+/* eslint-disable n/no-unsupported-features/node-builtins -- CloseEvent used for type annotation */
+import * as vitest from 'vitest';
 
 // Mock WebSocket at the top level
 const createMockWebSocket = () => {
@@ -17,24 +19,24 @@ const createMockWebSocket = () => {
     onmessage: null as ((event: MessageEvent) => void) | null,
     onerror: null as ((event: Event) => void) | null,
     onclose: null as ((event: CloseEvent) => void) | null,
-    send: t.vi.fn(),
-    close: t.vi.fn(),
-    addEventListener: t.vi.fn(),
-    removeEventListener: t.vi.fn(),
-    dispatchEvent: t.vi.fn(),
+    send: vitest.vi.fn(),
+    close: vitest.vi.fn(),
+    addEventListener: vitest.vi.fn(),
+    removeEventListener: vitest.vi.fn(),
+    dispatchEvent: vitest.vi.fn(),
   };
   return mockWS;
 };
 
-t.vi.mock('ws', () => {
+vitest.vi.mock('ws', () => {
   return {
-    default: t.vi.fn().mockImplementation(() => createMockWebSocket()),
-    WebSocket: t.vi.fn().mockImplementation(() => createMockWebSocket()),
+    default: vitest.vi.fn().mockImplementation(() => createMockWebSocket()),
+    WebSocket: vitest.vi.fn().mockImplementation(() => createMockWebSocket()),
   };
 });
 
 // Mock native WebSocket for browser environments
-const mockWebSocketConstructor = t.vi
+const mockWebSocketConstructor = vitest.vi
   .fn()
   .mockImplementation(() => createMockWebSocket());
-t.vi.stubGlobal('WebSocket', mockWebSocketConstructor);
+vitest.vi.stubGlobal('WebSocket', mockWebSocketConstructor);

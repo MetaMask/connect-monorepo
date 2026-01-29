@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
 import { describe, it, expect } from 'vitest';
+
 import { escapeTestId, createTestId } from './testId';
 
 describe('escapeTestId', () => {
@@ -49,7 +51,9 @@ describe('escapeTestId', () => {
 
 describe('createTestId', () => {
   it('should join parts with dashes', () => {
-    expect(createTestId('scope-card', 'container')).toBe('scope-card-container');
+    expect(createTestId('scope-card', 'container')).toBe(
+      'scope-card-container',
+    );
     expect(createTestId('app', 'btn', 'connect')).toBe('app-btn-connect');
   });
 
@@ -86,8 +90,8 @@ describe('createTestId', () => {
     const scope = 'eip155:1';
     const method = 'eth_getBalance';
     const index = 0;
-    expect(createTestId('scope-card', 'result', scope, method, String(index))).toBe(
-      'scope-card-result-eip155-1-eth-getbalance-0',
-    );
+    expect(
+      createTestId('scope-card', 'result', scope, method, String(index)),
+    ).toBe('scope-card-result-eip155-1-eth-getbalance-0');
   });
 });

@@ -52,7 +52,12 @@ import type {
 ### Configuration
 
 ```typescript
-import { setConfig, getConfig, setPlatformAdapter, getPlatformAdapter } from '@metamask/playground-ui/config';
+import {
+  setConfig,
+  getConfig,
+  setPlatformAdapter,
+  getPlatformAdapter,
+} from '@metamask/playground-ui/config';
 
 // Set configuration at app startup
 setConfig({
