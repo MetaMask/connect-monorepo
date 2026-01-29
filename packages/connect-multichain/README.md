@@ -244,7 +244,6 @@ const result = await sdk.invokeMethod({
 | `status` | `ConnectionStatus` | Connection status |
 | `provider` | `MultichainApiClient` | Multichain API client |
 | `transport` | `ExtendedTransport` | Active transport layer |
-| `storage` | `StoreClient` | Storage client |
 
 #### Events
 
