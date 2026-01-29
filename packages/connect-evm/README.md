@@ -16,39 +16,9 @@
 npm install @metamask/connect-evm
 ```
 
-## Quick Start
-
-```typescript
-import { createEVMClient } from '@metamask/connect-evm';
-
-// Create an SDK instance
-const sdk = await createEVMClient({
-  dapp: {
-    name: 'My DApp',
-    url: 'https://mydapp.com',
-  },
-  api: {
-    supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
-    },
-  },
-});
-
-// Connect to MetaMask
-await sdk.connect({ chainIds: [1] }); // Connect to Ethereum Mainnet
-
-// Get the EIP-1193 provider
-const provider = sdk.getProvider();
-
-// Request accounts
-const accounts = await provider.request({
-  method: 'eth_accounts',
-});
-```
-
 ## Usage
 
-### Basic Connection
+### Quick Start
 
 ```typescript
 import { createEVMClient, getInfuraRpcUrls } from '@metamask/connect-evm';
@@ -69,11 +39,16 @@ const sdk = await createEVMClient({
   },
 });
 
-// Connect with multiple chains
-const { accounts, chainId } = await sdk.connect({ chainIds: [1, 137] });
+// Connect to MetaMask
+await sdk.connect({ chainIds: [1] }); // Connect to Ethereum Mainnet
 
-// Connect to a specific chain and account
-await sdk.connect({ chainIds: [1], account: '0x...' });
+// Get the EIP-1193 provider
+const provider = sdk.getProvider();
+
+// Request accounts
+const accounts = await provider.request({
+  method: 'eth_accounts',
+});
 ```
 
 ### React Native Support
