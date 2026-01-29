@@ -32,9 +32,9 @@
     "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
     "deploy": "serve -s build",
     "prepack": "./scripts/prepack.sh",
-    "start": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco start",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
+    "start": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco start",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test"
   },

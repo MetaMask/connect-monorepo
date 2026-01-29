@@ -3,7 +3,7 @@
 import execa from 'execa';
 import fs from 'fs';
 import path from 'path';
-import semver from 'semver';
+import { inc } from 'semver';
 
 /**
  * Playground packages that should be auto-bumped when their workspace
@@ -73,6 +73,7 @@ async function main(): Promise<void> {
     );
 
     // Output for GitHub Actions (if running in CI)
+    // eslint-disable-next-line n/no-process-env -- CI environment variable access
     const outputFile = process.env.GITHUB_OUTPUT;
     if (outputFile) {
       fs.appendFileSync(
@@ -178,7 +179,7 @@ async function bumpPlaygroundIfNeeded(
 
   // Bump patch version
   const currentVersion = manifest.version;
-  const newVersion = semver.inc(currentVersion, 'patch');
+  const newVersion = inc(currentVersion, 'patch');
 
   if (!newVersion) {
     throw new Error(
@@ -237,7 +238,8 @@ ${depsList}
 
   // Update the links at the bottom
   const unreleasedLinkPattern = new RegExp(
-    `\\[Unreleased\\]: (https://github\\.com/MetaMask/connect-monorepo/compare/${packageName.replace('/', '\\/')}@)[\\d.]+\\.\\.\\.HEAD`,
+    `\\[Unreleased\\]: (https://github\\.com/MetaMask/connect-monorepo/compare/${packageName.replace(/\//gu, '\\/')}@)[\\d.]+\\.\\.\\.HEAD`,
+    'u',
   );
 
   // Check if we need to update or add the unreleased link
@@ -250,11 +252,11 @@ ${depsList}
 
   if (!changelog.includes(`[${newVersion}]:`)) {
     // Find where to insert the new version link
-    const existingVersionLinks = changelog.match(/\[\d+\.\d+\.\d+\]: .+/g);
+    const existingVersionLinks = changelog.match(/\[\d+\.\d+\.\d+\]: .+/gu);
     if (existingVersionLinks && existingVersionLinks.length > 0) {
       const firstLink = existingVersionLinks[0];
       if (firstLink) {
-        const previousVersionMatch = firstLink.match(/\[(\d+\.\d+\.\d+)\]/);
+        const previousVersionMatch = firstLink.match(/\[(\d+\.\d+\.\d+)\]/u);
         if (previousVersionMatch) {
           const prevVersion = previousVersionMatch[1];
           const newVersionLink = `[${newVersion}]: https://github.com/MetaMask/connect-monorepo/compare/${packageName}@${prevVersion}...${packageName}@${newVersion}\n`;

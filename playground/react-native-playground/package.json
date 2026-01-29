@@ -29,9 +29,9 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/react-native-playground",
     "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
     "ios": "yarn copy-wagmi-connector && expo start --ios",
-    "start": "yarn copy-wagmi-connector && expo start --tunnel",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
+    "start": "yarn copy-wagmi-connector && expo start --tunnel",
     "test": "echo \"No test specified\"",
     "test:verbose": "yarn test",
     "web": "yarn copy-wagmi-connector && expo start --web"

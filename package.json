@@ -18,6 +18,7 @@
     "build:clean": "yarn build:only-clean && yarn build",
     "build:docs": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run build:docs",
     "build:only-clean": "rimraf -g 'packages/*/dist' 'packages/*/*.tsbuildinfo'",
+    "bump-playground-versions": "tsx scripts/bump-dependent-playgrounds.ts",
     "changelog:format": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:format",
     "changelog:update": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:update",
     "changelog:validate": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:validate",
@@ -37,7 +38,6 @@
     "test:packages": "yarn test:verbose --silent",
     "test:verbose": "yarn workspaces foreach --all --parallel --verbose run test:verbose",
     "update-readme-content": "tsx scripts/update-readme-content.ts",
-    "bump-playground-versions": "tsx scripts/bump-dependent-playgrounds.ts",
     "workspaces:list-versions": "./scripts/list-workspace-versions.sh"
   },
   "simple-git-hooks": {
