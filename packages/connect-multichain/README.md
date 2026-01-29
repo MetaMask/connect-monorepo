@@ -417,8 +417,8 @@ import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
 // {
 //   'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
-//   'eip155:5': 'https://goerli.infura.io/v3/YOUR_KEY',
 //   'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
+//   'eip155:11155111': 'https://sepolia.infura.io/v3/YOUR_KEY',
 //   ...
 // }
 ```
