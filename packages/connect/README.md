@@ -29,8 +29,9 @@ const sdk = await createEVMClient({
 });
 
 // Connect to MetaMask
+let accounts, chainId;
 try {
-  const { accounts, chainId } = await sdk.connect({ chainIds: [1] });
+  ({ accounts, chainId } = await sdk.connect({ chainIds: [1] }));
 } catch (error) {
   if (error.code === 4001) {
     console.log('User rejected the connection request');
@@ -38,6 +39,9 @@ try {
     console.log('Connection request already pending');
   }
 }
+
+console.log({accounts}); // The connected accounts where the first account is the selected account
+console.log({chainId}); // The currently active chainId
 
 // Get the EIP-1193 provider
 const provider = sdk.getProvider();

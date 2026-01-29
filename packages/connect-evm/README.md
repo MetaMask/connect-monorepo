@@ -40,8 +40,9 @@ const sdk = await createEVMClient({
 });
 
 // Connect to MetaMask
+let accounts, chainId;
 try {
-  const { accounts, chainId } = await sdk.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
+  ({ accounts, chainId } = await sdk.connect({ chainIds: [1, 137] })); // Connect to Ethereum Mainnet, and Polygon
 } catch (error) {
   if (error.code === 4001) {
     console.log('User rejected the connection request');
