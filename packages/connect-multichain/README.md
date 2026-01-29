@@ -387,6 +387,77 @@ type InvokeMethodOptions = {
 
 Session data returned from the wallet containing permissioned scopes and accounts.
 
+```typescript
+type SessionData = {
+    /** Map of chain IDs to their respective scope objects */
+    sessionScopes: Record<CaipChainId, ScopeObject>;
+    /** Chain-specific properties (not implemented in MetaMask yet) */
+    scopedProperties?: ScopedProperties;
+    /** Session-wide properties (not implemented in MetaMask yet) */
+    sessionProperties?: SessionProperties;
+};
+```
+
+#### `CaipChainId`
+
+CAIP-2 chain identifier representing a specific blockchain network. See [CAIP-2](https://chainagnostic.org/CAIPs/caip-2) for the full specification.
+
+```typescript
+type CaipChainId = `${string}:${string}`;
+```
+
+**Format:** `<namespace>:<reference>`
+
+**Examples:**
+- `'eip155:1'` - Ethereum Mainnet
+- `'eip155:137'` - Polygon
+- `'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d'` - Solana Mainnet
+
+#### `ScopeObject`
+
+Represents permissions and capabilities for a specific chain as defined in [CAIP-217](https://chainagnostic.org/CAIPs/caip-217). Used within session data to define what a dApp is authorized to do on a particular chain.
+
+```typescript
+type ScopeObject = {
+    /** List of JSON-RPC methods this scope can invoke */
+    methods: string[];
+    /** List of notification types this scope can receive */
+    notifications: string[];
+    /** List of CAIP-10 account identifiers this scope has access to */
+    accounts?: CaipAccountId[];
+};
+```
+
+**Example:**
+
+```typescript
+const scopeObject: ScopeObject = {
+  methods: ['eth_sendTransaction', 'eth_signTypedData_v4', 'personal_sign'],
+  notifications: ['accountsChanged', 'chainChanged'],
+  accounts: ['eip155:1:0x1234567890abcdef1234567890abcdef12345678'],
+};
+```
+
+#### `ScopedProperties`
+
+Properties that are scoped to specific chains. Each key is a CAIP-2 chain identifier with associated JSON data. This allows storing chain-specific metadata or configuration within a session.
+
+```typescript
+type ScopedProperties = {
+    [scopeString: CaipChainId]: Json;
+};
+```
+
+#### `SessionProperties`
+
+Properties that apply to the entire session, not scoped to specific chains. Used for session-wide configuration or metadata.
+
+```typescript
+type SessionProperties = {
+    [key: string]: Json;
+};
+```
+
 #### `RpcUrlsMap`
 
 ```typescript
