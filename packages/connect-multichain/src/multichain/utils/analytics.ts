@@ -9,6 +9,8 @@ import type {
 } from '../../domain';
 import { getPlatformType, getVersion, TransportType } from '../../domain';
 
+// Should this move into the analytics package?
+
 /**
  * Checks if an error represents a user rejection.
  *
