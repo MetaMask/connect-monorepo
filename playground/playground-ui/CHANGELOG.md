@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- Setup NPM Publication for Playground Packages (E2E Testing Enablement) ([#143](https://github.com/MetaMask/connect-monorepo/pull/143))
+
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications
