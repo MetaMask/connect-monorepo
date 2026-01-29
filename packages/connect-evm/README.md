@@ -371,7 +371,7 @@ const account = sdk.getAccount(); // e.g., '0x...'
 | `accounts` | `Address[]` | Currently permitted accounts |
 | `selectedAccount` | `Address \| undefined` | Currently selected account |
 | `selectedChainId` | `Hex \| undefined` | Currently selected chain ID (hex) |
-| `status` | `ConnectionStatus` | Connection status (`'pending'`, `'connecting'`, `'connected'`, `'disconnected'`) |
+| `status` | `ConnectionStatus` | Connection status ( `'loaded'`, `'pending'`, `'connecting'`, `'connected'`, `'disconnected'`) |
 
 ---
 
