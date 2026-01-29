@@ -561,6 +561,7 @@ export class MetamaskConnectEVM {
         await this.#cacheChainId(hexChainId);
         this.#onChainChanged(hexChainId);
       }
+      return Promise.resolve();
     } catch (error) {
       await this.#trackWalletActionFailed(method, scope, params, error);
       // Fallback to add the chain if its not configured in the wallet.
