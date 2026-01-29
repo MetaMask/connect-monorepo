@@ -973,7 +973,7 @@ export async function createEVMClient(
     debug?: boolean;
   },
 ): Promise<MetamaskConnectEVM> {
-  if(options.debug) {
+  if (options.debug) {
     enableDebug();
   }
 
