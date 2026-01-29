@@ -53,7 +53,7 @@ type ConnectOptions = {
   /** Whether to force a request regardless of an existing session */
   forceRequest?: boolean;
   /** All available chain IDs in the dapp */
-  chainIds: number[];
+  chainIds?: number[];
 };
 
 /**
@@ -78,9 +78,10 @@ type ConnectOptions = {
  *   dapp: { name: 'My DApp', url: 'https://mydapp.com' }
  * });
  *
- * await sdk.connect({ chainId: 1 });
- * const provider = await sdk.getProvider();
- * const accounts = await provider.request({ method: 'eth_accounts' });
+ * const { accounts, chainId } = await sdk.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
+ *
+ * const provider = sdk.getProvider();
+ * const signedMessage = await provider.request({ method: 'personal_sign', params: ['0x0', accounts[0]] });
  * ```
  */
 export class MetamaskConnectEVM {
@@ -318,11 +319,11 @@ export class MetamaskConnectEVM {
    * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
-  async connect(
-    { account, forceRequest, chainIds }: ConnectOptions = {
-      chainIds: [DEFAULT_CHAIN_ID],
-    },
-  ): Promise<{ accounts: Address[]; chainId: number }> {
+  async connect({
+    account,
+    forceRequest,
+    chainIds = [DEFAULT_CHAIN_ID],
+  }: ConnectOptions = {}): Promise<{ accounts: Address[]; chainId: number }> {
     logger('request: connect', { account });
 
     if (!chainIds || chainIds.length === 0) {

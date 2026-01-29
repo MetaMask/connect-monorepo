@@ -205,7 +205,7 @@ Connects to MetaMask wallet.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `options.chainIds` | `number[]` | No | Array of chain IDs to request permission for |
+| `options.chainIds` | `number[]` | No | Array of chain IDs to request permission for (defaults to ethereum mainnet if not provided) |
 | `options.account` | `string` | No | Specific account address to connect |
 | `options.forceRequest` | `boolean` | No | Force a new connection request even if already connected |
 
