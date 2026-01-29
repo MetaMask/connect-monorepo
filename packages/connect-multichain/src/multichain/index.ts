@@ -111,10 +111,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.#dappClient;
   }
 
+  // should this be private?
   get storage(): StoreClient {
     return this.options.storage;
   }
 
+  // should this be private?
   get transportType(): TransportType {
     return this.#transport instanceof MWPTransport
       ? TransportType.MWP

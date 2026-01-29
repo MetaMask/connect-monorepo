@@ -7,19 +7,13 @@ This package provides the underlying multichain infrastructure for connecting dA
 ## Installation
 
 ```bash
-yarn add @metamask/connect-multichain
-```
-
-or
-
-```bash
 npm install @metamask/connect-multichain
 ```
 
 ## Quick Start
 
 ```typescript
-import { createMultichainClient } from '@metamask/connect-multichain';
+import { createMultichainClient, getInfuraRpcUrls } from '@metamask/connect-multichain';
 
 const sdk = await createMultichainClient({
   dapp: {
@@ -28,8 +22,11 @@ const sdk = await createMultichainClient({
   },
   api: {
     supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
-      'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
+      // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
+      ...getInfuraRpcUrls(INFURA_API_KEY),
+      // or specify your own CAIP Chain ID to rpc endpoint mapping
+      'eip155:1': 'https://mainnet.example.io/rpc'
+      'eip155:137': 'https://polygon-mainnet.example.io/rpc'
     },
   },
 });
@@ -118,6 +115,10 @@ const sdk = await createMultichainClient({
 });
 ```
 
+## TypeScript
+
+This package is written in TypeScript and includes full type definitions. No additional `@types` package is required.
+
 ## API Reference
 
 ### `createMultichainClient(options)`
@@ -172,6 +173,19 @@ The main SDK class extending `MultichainCore`.
 
 Connects to MetaMask with specified chain scopes.
 
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `scopes` | `Scope[]` | Yes | Array of CAIP-2 chain identifiers to request permission for |
+| `caipAccountIds` | `CaipAccountId[]` | Yes | Array of CAIP-10 account identifiers to request (pass `[]` for any account) |
+| `sessionProperties` | `SessionProperties` | No | Additional session properties |
+| `forceRequest` | `boolean` | No | Force a new connection request even if already connected |
+
+**Returns**
+
+`Promise<void>`
+
 ```typescript
 await sdk.connect(
   ['eip155:1', 'eip155:137'],  // Chain scopes to request
@@ -185,6 +199,14 @@ await sdk.connect(
 
 Disconnects from the wallet and cleans up resources.
 
+**Parameters**
+
+None.
+
+**Returns**
+
+`Promise<void>`
+
 ```typescript
 await sdk.disconnect();
 ```
@@ -192,6 +214,18 @@ await sdk.disconnect();
 ##### `invokeMethod(options)`
 
 Invokes an RPC method on a specific chain.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `options.scope` | `Scope` | Yes | The CAIP-2 chain identifier to invoke the method on |
+| `options.request.method` | `string` | Yes | The RPC method name |
+| `options.request.params` | `unknown[]` | No | The method parameters |
+
+**Returns**
+
+`Promise<Json>` - The result of the RPC method call.
 
 ```typescript
 const result = await sdk.invokeMethod({
@@ -203,14 +237,6 @@ const result = await sdk.invokeMethod({
 });
 ```
 
-##### `openDeeplinkIfNeeded()`
-
-Opens the MetaMask mobile app via deeplink if needed (for mobile web flows).
-
-```typescript
-sdk.openDeeplinkIfNeeded();
-```
-
 #### Properties
 
 | Property | Type | Description |
@@ -218,7 +244,6 @@ sdk.openDeeplinkIfNeeded();
 | `status` | `ConnectionStatus` | Connection status |
 | `provider` | `MultichainApiClient` | Multichain API client |
 | `transport` | `ExtendedTransport` | Active transport layer |
-| `transportType` | `TransportType` | Type of transport (`'browser'` or `'mwp'`) |
 | `storage` | `StoreClient` | Storage client |
 
 #### Events
@@ -252,13 +277,46 @@ Abstract base class providing core multichain functionality.
 
 Registers an event handler.
 
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `event` | `string` | Yes | The event name to listen for |
+| `handler` | `Function` | Yes | The callback function to invoke when the event is emitted |
+
+**Returns**
+
+`void`
+
 ##### `off(event, handler)`
 
 Removes an event handler.
 
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `event` | `string` | Yes | The event name to stop listening for |
+| `handler` | `Function` | Yes | The callback function to remove |
+
+**Returns**
+
+`void`
+
 ##### `emit(event, args)`
 
 Emits an event to all registered handlers.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `event` | `string` | Yes | The event name to emit |
+| `args` | `any` | No | Arguments to pass to the event handlers |
+
+**Returns**
+
+`void`
 
 ---
 
@@ -276,15 +334,6 @@ type Scope = `${string}:${string}`;
 
 ```typescript
 type ConnectionStatus = 'pending' | 'connecting' | 'connected' | 'disconnected' | 'loaded';
-```
-
-#### `TransportType`
-
-```typescript
-enum TransportType {
-  Browser = 'browser',
-  MWP = 'mwp',
-}
 ```
 
 #### `DappSettings`
@@ -353,6 +402,16 @@ type RpcUrlsMap = Record<Scope, string>;
 
 Generates Infura RPC URLs for common networks.
 
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `infuraApiKey` | `string` | Yes | Your Infura API key |
+
+**Returns**
+
+`RpcUrlsMap` - A map of CAIP chain IDs to Infura RPC URLs. Includes Ethereum, Linea, Polygon, Optimism, Arbitrum, Palm, Avalanche, Aurora, and Celo networks.
+
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 
@@ -363,26 +422,6 @@ const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
 //   'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
 //   ...
 // }
-```
-
-#### `getWalletActionAnalyticsProperties(options, storage, invokeOptions)`
-
-Helper for generating analytics properties for wallet actions.
-
-#### `isRejectionError(error)`
-
-Checks if an error is a user rejection error.
-
-```typescript
-import { isRejectionError } from '@metamask/connect-multichain';
-
-try {
-  await sdk.connect(['eip155:1'], []);
-} catch (error) {
-  if (isRejectionError(error)) {
-    console.log('User rejected the connection');
-  }
-}
 ```
 
 ---
@@ -409,31 +448,6 @@ try {
 
 ---
 
-### Platform Detection
-
-#### `getPlatformType()`
-
-Detects the current platform.
-
-```typescript
-import { getPlatformType, PlatformType } from '@metamask/connect-multichain';
-
-const platform = getPlatformType();
-// PlatformType.DesktopWeb | PlatformType.MobileWeb | PlatformType.ReactNative | ...
-```
-
-#### `PlatformType`
-
-```typescript
-enum PlatformType {
-  DesktopWeb = 'web-desktop',
-  MobileWeb = 'web-mobile',
-  ReactNative = 'react-native',
-  NodeJS = 'nodejs',
-  MetaMaskMobileWebview = 'in-app-browser',
-}
-```
-
 ## Headless Mode
 
 For custom QR code implementations, use headless mode:
@@ -457,3 +471,7 @@ await sdk.connect(['eip155:1'], []);
 ## Contributing
 
 This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/connect-monorepo#readme).
+
+## License
+
+MIT

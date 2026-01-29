@@ -5,12 +5,6 @@ Unified entry point for MetaMask Connect SDK packages. This package re-exports b
 ## Installation
 
 ```bash
-yarn add @metamask/connect
-```
-
-or
-
-```bash
 npm install @metamask/connect
 ```
 
