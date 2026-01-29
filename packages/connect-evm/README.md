@@ -40,14 +40,20 @@ const sdk = await createEVMClient({
 });
 
 // Connect to MetaMask
-await sdk.connect({ chainIds: [1] }); // Connect to Ethereum Mainnet
+const { accounts, chainId } = await sdk.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
+console.log({accounts}); // The connected accounts where the first account is the selected account
+console.log({chainId}); // The currently active chainId
 
 // Get the EIP-1193 provider
 const provider = sdk.getProvider();
 
 // Request accounts
 const accounts = await provider.request({
-  method: 'eth_accounts',
+  method: 'personal_sign',
+  params: [
+    '0x0',
+    accounts[0]
+  ]
 });
 ```
 
