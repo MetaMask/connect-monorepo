@@ -48,7 +48,7 @@ console.log({chainId}); // The currently active chainId
 const provider = sdk.getProvider();
 
 // Sign a message
-const accounts = await provider.request({
+const signedMessage = await provider.request({
   method: 'personal_sign',
   params: [
     '0x0',
