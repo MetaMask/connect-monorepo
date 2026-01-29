@@ -47,7 +47,7 @@ console.log({chainId}); // The currently active chainId
 // Get the EIP-1193 provider
 const provider = sdk.getProvider();
 
-// Request accounts
+// Sign a message
 const accounts = await provider.request({
   method: 'personal_sign',
   params: [
