@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-monorepo",
-  "version": "8.0.0",
+  "version": "14.0.0",
   "private": true,
   "description": "MetaMask Connect Monorepo",
   "repository": {
@@ -18,6 +18,7 @@
     "build:clean": "yarn build:only-clean && yarn build",
     "build:docs": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run build:docs",
     "build:only-clean": "rimraf -g 'packages/*/dist' 'packages/*/*.tsbuildinfo'",
+    "bump-playground-versions": "tsx scripts/bump-dependent-playgrounds.ts",
     "changelog:format": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:format",
     "changelog:update": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:update",
     "changelog:validate": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run changelog:validate",
@@ -30,6 +31,7 @@
     "lint:fix": "yarn lint:eslint --fix && echo && yarn lint:misc --write && yarn constraints --fix && yarn lint:dependencies:fix",
     "lint:misc": "prettier --no-error-on-unmatched-pattern '**/*.json' '**/*.md' '**/*.yml' '!.yarnrc.yml' '!merged-packages/**' --ignore-path .gitignore",
     "prepare-preview-builds": "./scripts/prepare-preview-builds.sh",
+    "prepare-release": "yarn create-release-branch -i && yarn bump-playground-versions",
     "publish-previews": "yarn workspaces foreach --all --no-private --parallel --verbose run publish:preview",
     "test": "yarn test:scripts --silent && yarn test:packages",
     "test:clean": "yarn workspaces foreach --all --parallel --verbose run test:clean && yarn test",

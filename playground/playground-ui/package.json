@@ -1,6 +1,7 @@
 {
   "name": "@metamask/playground-ui",
-  "version": "0.1.0",
+  "version": "0.0.0",
+  "private": true,
   "description": "Shared UI logic and utilities for MetaMask playground applications",
   "keywords": [
     "MetaMask",
@@ -8,7 +9,7 @@
     "playground",
     "UI"
   ],
-  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/packages/playground-ui#readme",
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/playground-ui#readme",
   "bugs": {
     "url": ""
   },
@@ -70,6 +71,16 @@
         "default": "./dist/cjs/config.cjs"
       }
     },
+    "./testIds": {
+      "import": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/es/testIds.mjs"
+      },
+      "require": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/cjs/testIds.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/cjs/playground-ui.cjs",
@@ -86,7 +97,6 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/playground-ui",
     "clean": "npx rimraf ./dist",
     "dev": "tsup --watch",
-    "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",
     "test:ci": "vitest run --coverage --coverage.reporter=text --silent",
@@ -120,9 +130,5 @@
   },
   "engines": {
     "node": ">=20.19.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   }
 }

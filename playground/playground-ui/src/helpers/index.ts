@@ -1,4 +1,3 @@
-// Re-export all helpers
 export { getCaip25FormattedAddresses } from './address';
 
 export { convertCaipChainIdsToHex } from './chainId';
@@ -20,3 +19,5 @@ export {
   getDefaultPersonalSignMessage,
 } from './sign';
 export type { EIP712Domain } from './sign';
+
+export { escapeTestId, createTestId } from '../utils/testId';

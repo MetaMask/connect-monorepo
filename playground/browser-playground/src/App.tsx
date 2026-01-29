@@ -3,7 +3,7 @@ import type { Scope, SessionData } from '@metamask/connect';
 import { hexToNumber, type CaipAccountId } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { FEATURED_NETWORKS, convertCaipChainIdsToHex } from '@metamask/playground-ui';
+import { FEATURED_NETWORKS, convertCaipChainIdsToHex, TEST_IDS } from '@metamask/playground-ui';
 import { useSDK } from './sdk';
 import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
@@ -20,7 +20,7 @@ function App() {
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
   const {
     error,
-    state,
+    status,
     session,
     connect: sdkConnect,
     disconnect: sdkDisconnect,
@@ -124,7 +124,7 @@ function App() {
 
   const connectSolana = useCallback(async () => {
     // Find the MetaMask wallet in registered wallets
-    const metamaskWallet = wallets.find((w) => 
+    const metamaskWallet = wallets.find((w) =>
       w.adapter.name.toLowerCase().includes('metamask')
     );
     if (metamaskWallet) {
@@ -139,9 +139,9 @@ function App() {
     }
   }, [wallets, select, solanaConnect]);
 
-  const isConnected = state === 'connected';
+  const isConnected = status === 'connected';
   const isDisconnected =
-    state === 'disconnected' || state === 'pending' || state === 'loaded';
+    status === 'disconnected' || status === 'pending' || status === 'loaded';
 
   const disconnect = useCallback(async () => {
     // Disconnect all connections if connected
@@ -168,11 +168,11 @@ function App() {
     return all;
   }, []);
 
-  const isConnecting = state === 'connecting';
+  const isConnecting = status === 'connecting';
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center">
+    <div data-testid={TEST_IDS.app.container} className="min-h-screen bg-gray-50 flex justify-center">
       <div className="max-w-6xl w-full p-8">
-        <h1 className="text-slate-800 text-4xl font-bold mb-8 text-center">
+        <h1 data-testid={TEST_IDS.app.title} className="text-slate-800 text-4xl font-bold mb-8 text-center">
           MetaMask MultiChain API Test Dapp
         </h1>
         <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
@@ -189,6 +189,7 @@ function App() {
             {isConnecting && (
               <button
                 type="button"
+                data-testid={TEST_IDS.app.btnConnect()}
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
@@ -199,6 +200,7 @@ function App() {
             {isDisconnected && (
               <button
                 type="button"
+                data-testid={TEST_IDS.app.btnConnect()}
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
@@ -209,6 +211,7 @@ function App() {
             {!legacyConnected && (
               <button
                 type="button"
+                data-testid={TEST_IDS.app.btnConnect('legacy')}
                 onClick={connectLegacyEVM}
                 className="bg-green-500 text-white px-5 py-2 rounded text-base hover:bg-green-600 transition-colors"
               >
@@ -219,6 +222,7 @@ function App() {
             {!wagmiConnected && (
               <button
                 type="button"
+                data-testid={TEST_IDS.app.btnConnect('wagmi')}
                 onClick={connectWagmi}
                 disabled={wagmiStatus === 'pending'}
                 className="bg-yellow-500 text-white px-5 py-2 rounded text-base hover:bg-yellow-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -240,6 +244,7 @@ function App() {
             {isConnected && (
               <button
                 type="button"
+                data-testid={scopesHaveChanged() ? TEST_IDS.app.btnReconnect : TEST_IDS.app.btnDisconnect}
                 onClick={scopesHaveChanged() ? connect : disconnect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
@@ -252,6 +257,7 @@ function App() {
             {(isConnected || legacyConnected || wagmiConnected || solanaConnected) && (
               <button
                 type="button"
+                data-testid={TEST_IDS.app.btnDisconnect}
                 onClick={disconnect}
                 className="bg-red-500 text-white px-5 py-2 rounded text-base hover:bg-red-600 transition-colors"
               >
@@ -261,14 +267,14 @@ function App() {
           </div>
         </section>
         {error && (
-          <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+          <section data-testid={TEST_IDS.app.sectionError} className="bg-white rounded-lg p-8 mb-6 shadow-sm">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
             <p className="text-gray-700">{error.message.toString()}</p>
           </section>
         )}
-        <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <section data-testid={TEST_IDS.app.sectionConnected} className="bg-white rounded-lg p-8 mb-6 shadow-sm">
           {Object.keys(session?.sessionScopes ?? {}).length > 0 && (
-            <section className="mb-6">
+            <section data-testid={TEST_IDS.app.sectionScopes} className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Connected Networks
               </h2>

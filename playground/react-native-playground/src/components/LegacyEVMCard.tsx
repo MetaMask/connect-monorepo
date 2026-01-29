@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import type { EIP1193Provider } from '@metamask/connect-evm';
+import { TEST_IDS } from '@metamask/playground-ui';
 import { send_eth_signTypedData_v4, send_personal_sign } from '../helpers/SignHelpers';
 import { colors, sharedStyles } from '../styles/shared';
 
@@ -178,32 +179,32 @@ export function LegacyEVMCard({
   };
 
   return (
-    <View style={styles.card}>
+    <View testID={TEST_IDS.legacyEvm.card} style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.title}>Legacy EVM Connection</Text>
+        <Text testID={TEST_IDS.legacyEvm.title} style={styles.title}>Legacy EVM Connection</Text>
       </View>
 
       <View style={styles.section}>
         <View style={sharedStyles.row}>
-          <Text style={styles.sectionLabel}>Connected Chain:</Text>
+          <Text testID={TEST_IDS.legacyEvm.chainIdLabel} style={styles.sectionLabel}>Connected Chain:</Text>
           <View style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginLeft: 8 }]}>
-            <Text style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
+            <Text testID={TEST_IDS.legacyEvm.chainIdValue} style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
               {chainId || 'Not available'}
             </Text>
           </View>
         </View>
 
         <View style={[sharedStyles.row, { marginTop: 8 }]}>
-          <Text style={styles.sectionLabel}>Accounts:</Text>
+          <Text testID={TEST_IDS.legacyEvm.accountsLabel} style={styles.sectionLabel}>Accounts:</Text>
           <View style={[sharedStyles.badge, sharedStyles.badgeBlue, { marginLeft: 8 }]}>
-            <Text style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
+            <Text testID={TEST_IDS.legacyEvm.accountsValue} style={[sharedStyles.badgeText, sharedStyles.badgeTextBlue]}>
               {accounts.length} available
             </Text>
           </View>
         </View>
 
         {accounts.length > 0 && (
-          <View style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginTop: 12, alignSelf: 'stretch' }]}>
+          <View testID={TEST_IDS.legacyEvm.activeAccount} style={[sharedStyles.badge, sharedStyles.badgeGreen, { marginTop: 12, alignSelf: 'stretch' }]}>
             <Text style={[sharedStyles.badgeText, sharedStyles.badgeTextGreen]}>Active Account:</Text>
             <Text style={[sharedStyles.textMono, sharedStyles.badgeTextGreen, { marginTop: 4 }]}>
               {accounts[0]}
@@ -213,56 +214,56 @@ export function LegacyEVMCard({
       </View>
 
       {response && (
-        <View style={styles.responseContainer}>
-          <Text style={styles.responseLabel}>Last Response:</Text>
-          <Text style={[sharedStyles.textMono, styles.responseText]}>{String(response)}</Text>
+        <View testID={TEST_IDS.legacyEvm.responseContainer} style={styles.responseContainer}>
+          <Text testID={TEST_IDS.legacyEvm.responseLabel} style={styles.responseLabel}>Last Response:</Text>
+          <Text testID={TEST_IDS.legacyEvm.responseText} style={[sharedStyles.textMono, styles.responseText]}>{String(response)}</Text>
         </View>
       )}
 
       <ScrollView style={styles.buttonsContainer} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity onPress={requestPermissions} style={sharedStyles.button}>
+        <TouchableOpacity testID={TEST_IDS.legacyEvm.btnRequestPermissions} onPress={requestPermissions} style={sharedStyles.button}>
           <Text style={sharedStyles.buttonText}>wallet_requestPermissions</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={eth_signTypedData_v4} style={sharedStyles.button}>
+        <TouchableOpacity testID={TEST_IDS.legacyEvm.btnSignTypedDataV4} onPress={eth_signTypedData_v4} style={sharedStyles.button}>
           <Text style={sharedStyles.buttonText}>eth_signTypedData_v4</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={eth_personal_sign} style={sharedStyles.button}>
+        <TouchableOpacity testID={TEST_IDS.legacyEvm.btnPersonalSign} onPress={eth_personal_sign} style={sharedStyles.button}>
           <Text style={sharedStyles.buttonText}>personal_sign</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={sendTransaction} style={sharedStyles.button}>
+        <TouchableOpacity testID={TEST_IDS.legacyEvm.btnSendTransaction} onPress={sendTransaction} style={sharedStyles.button}>
           <Text style={sharedStyles.buttonText}>Send transaction</Text>
         </TouchableOpacity>
 
         {chainId === '0x1' ? (
-          <TouchableOpacity onPress={() => changeNetwork('0xAA36A7')} style={sharedStyles.button}>
+          <TouchableOpacity testID={TEST_IDS.legacyEvm.btnSwitchToSepolia} onPress={() => changeNetwork('0xAA36A7')} style={sharedStyles.button}>
             <Text style={sharedStyles.buttonText}>Switch to Sepolia</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={() => changeNetwork('0x1')} style={sharedStyles.button}>
+          <TouchableOpacity testID={TEST_IDS.legacyEvm.btnSwitchToMainnet} onPress={() => changeNetwork('0x1')} style={sharedStyles.button}>
             <Text style={sharedStyles.buttonText}>Switch to Mainnet</Text>
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity onPress={() => changeNetwork('0x89')} style={sharedStyles.button}>
+        <TouchableOpacity testID={TEST_IDS.legacyEvm.btnSwitchToPolygon} onPress={() => changeNetwork('0x89')} style={sharedStyles.button}>
           <Text style={sharedStyles.buttonText}>Switch to Polygon</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={addEthereumChain} style={sharedStyles.button}>
+        <TouchableOpacity testID={TEST_IDS.legacyEvm.btnAddPolygonChain} onPress={addEthereumChain} style={sharedStyles.button}>
           <Text style={sharedStyles.buttonText}>Add Polygon Chain</Text>
         </TouchableOpacity>
 
-        <View style={styles.readOnlySection}>
+        <View testID={TEST_IDS.legacyEvm.readOnlySection} style={styles.readOnlySection}>
           <Text style={styles.readOnlyTitle}>Read-Only RPC Calls</Text>
-          <TouchableOpacity onPress={eth_getBalance} style={[sharedStyles.button, styles.readOnlyButton]}>
+          <TouchableOpacity testID={TEST_IDS.legacyEvm.btnGetBalance} onPress={eth_getBalance} style={[sharedStyles.button, styles.readOnlyButton]}>
             <Text style={sharedStyles.buttonText}>eth_getBalance</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={eth_blockNumber} style={[sharedStyles.button, styles.readOnlyButton]}>
+          <TouchableOpacity testID={TEST_IDS.legacyEvm.btnBlockNumber} onPress={eth_blockNumber} style={[sharedStyles.button, styles.readOnlyButton]}>
             <Text style={sharedStyles.buttonText}>eth_blockNumber</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={eth_gasPrice} style={[sharedStyles.button, styles.readOnlyButton]}>
+          <TouchableOpacity testID={TEST_IDS.legacyEvm.btnGasPrice} onPress={eth_gasPrice} style={[sharedStyles.button, styles.readOnlyButton]}>
             <Text style={sharedStyles.buttonText}>eth_gasPrice</Text>
           </TouchableOpacity>
         </View>

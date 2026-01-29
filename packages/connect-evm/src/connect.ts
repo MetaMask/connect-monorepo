@@ -1,6 +1,8 @@
+/* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 import { analytics } from '@metamask/analytics';
 import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import type {
+  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -35,6 +37,7 @@ import { getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
+  isChainIdRequest,
   isConnectRequest,
   isSwitchChainRequest,
   validSupportedChainsUrls,
@@ -96,17 +99,21 @@ export class MetamaskConnectEVM {
   /** The handler for the wallet_sessionChanged event */
   readonly #sessionChangedHandler: (session?: SessionData) => void;
 
+  /** The handler for the display_uri event */
+  readonly #displayUriHandler: (uri: string) => void;
+
   /** The clean-up function for the notification handler */
   #removeNotificationHandler?: () => void;
 
   /**
    * Creates a new MetamaskConnectEVM instance.
+   * Use the static `create()` method instead to ensure proper async initialization.
    *
    * @param options - The options for the MetamaskConnectEVM instance
    * @param options.core - The core instance of the Multichain SDK
    * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
    */
-  constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
+  private constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
     this.#core = core;
 
     this.#provider = new EIP1193Provider(
@@ -131,13 +138,33 @@ export class MetamaskConnectEVM {
       this.#sessionChangedHandler.bind(this),
     );
 
-    // Attempt to set the permitted accounts if there's a valid previous session.
-    // TODO (wenfix): does it make sense to catch here?
-    this.#attemptSessionRecovery().catch((error) => {
-      console.error('Error attempting session recovery', error);
-    });
+    /**
+     * Handles the display_uri event.
+     * Forwards the QR code URI to the provider for custom UI implementations.
+     */
+    this.#displayUriHandler = this.#onDisplayUri.bind(this);
+    this.#core.on('display_uri', this.#displayUriHandler);
 
     logger('Connect/EVM constructor completed');
+  }
+
+  /**
+   * Creates a fully initialized MetamaskConnectEVM instance.
+   * This is the recommended way to instantiate the class, as it ensures
+   * all async initialization (like session recovery) completes before
+   * the instance is returned.
+   *
+   * @param options - The options for the MetamaskConnectEVM instance
+   * @param options.core - The core instance of the Multichain SDK
+   * @param options.eventHandlers - Optional event handlers for EIP-1193 provider events
+   * @returns A promise that resolves with a fully initialized MetamaskConnectEVM instance
+   */
+  static async create(
+    options: MetamaskConnectEVMOptions,
+  ): Promise<MetamaskConnectEVM> {
+    const instance = new MetamaskConnectEVM(options);
+    await instance.#attemptSessionRecovery();
+    return instance;
   }
 
   /**
@@ -313,7 +340,7 @@ export class MetamaskConnectEVM {
     await this.#core.connect(
       caipChainIds as Scope[],
       caipAccountIds as CaipAccountId[],
-      {},
+      undefined,
       forceRequest,
     );
 
@@ -466,6 +493,7 @@ export class MetamaskConnectEVM {
     this.#clearConnectionState();
 
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
+    this.#core.off('display_uri', this.#displayUriHandler);
 
     if (this.#removeNotificationHandler) {
       this.#removeNotificationHandler();
@@ -619,6 +647,10 @@ export class MetamaskConnectEVM {
       await this.#trackWalletActionSucceeded(method, scope, params);
 
       return this.#provider.accounts;
+    }
+
+    if (isChainIdRequest(request)) {
+      return this.#provider.selectedChainId;
     }
 
     logger('Request not intercepted, forwarding to default handler', request);
@@ -785,6 +817,18 @@ export class MetamaskConnectEVM {
   }
 
   /**
+   * Handles display_uri events and emits them to the provider.
+   * This allows consumers to display their own custom QR code UI.
+   *
+   * @param uri - The deeplink URI to be displayed as a QR code
+   */
+  #onDisplayUri(uri: string): void {
+    logger('handler: display_uri', uri);
+    this.#provider.emit('display_uri', uri);
+    this.#eventHandlers?.displayUri?.(uri);
+  }
+
+  /**
    * Will trigger an accountsChanged event if there's a valid previous session.
    * This is needed because the accountsChanged event is not triggered when
    * revising, reloading or opening the app in a new tab.
@@ -797,7 +841,10 @@ export class MetamaskConnectEVM {
     // Skip session recovery if transport is not initialized yet.
     // Transport is only initialized when there's a stored session or after connect() is called.
     // Only attempt recovery if we're in a state where transport should be available.
-    if (this.#core.state !== 'connected' && this.#core.state !== 'connecting') {
+    if (
+      this.#core.status !== 'connected' &&
+      this.#core.status !== 'connecting'
+    ) {
       return;
     }
     try {
@@ -892,6 +939,15 @@ export class MetamaskConnectEVM {
   get selectedChainId(): Hex | undefined {
     return this.#provider.selectedChainId;
   }
+
+  /**
+   * Gets the current connection status
+   *
+   * @returns The current connection status
+   */
+  get status(): ConnectionStatus {
+    return this.#core.status;
+  }
 }
 
 /**
@@ -901,12 +957,18 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of CAIP chain IDs to RPC URLs for read-only requests
+ * @param options.ui - UI configuration options
+ * @param options.ui.headless - Whether to run without UI
+ * @param options.ui.preferExtension - Whether to prefer browser extension
+ * @param options.ui.showInstallModal - Whether to render installation modal for desktop extension
  * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
  * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createEVMClient(
   options: Pick<MultichainOptions, 'dapp' | 'api'> & {
+    ui?: Omit<MultichainOptions['ui'], 'factory'>;
+  } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
   },
@@ -935,7 +997,7 @@ export async function createEVMClient(
       },
     });
 
-    return new MetamaskConnectEVM({
+    return MetamaskConnectEVM.create({
       core,
       eventHandlers: options.eventHandlers,
       supportedNetworks: options.api.supportedNetworks,

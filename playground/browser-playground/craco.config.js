@@ -1,3 +1,7 @@
+/* eslint-disable import-x/no-extraneous-dependencies -- Build tool */
+/* eslint-disable n/no-extraneous-require -- Build tool */
+/* eslint-disable require-unicode-regexp -- Webpack config */
+/* eslint-disable n/no-process-env -- Build tool env */
 require('dotenv').config();
 const webpack = require('webpack');
 
@@ -21,7 +25,6 @@ module.exports = {
       // === NODE.JS POLYFILLS ===
       webpackConfig.resolve.fallback = {
         ...webpackConfig.resolve.fallback,
-        buffer: require.resolve('buffer'),
         process: require.resolve('process/browser.js'),
       };
 
@@ -44,7 +47,6 @@ module.exports = {
       // === PROVIDE PLUGINS ===
       webpackConfig.plugins.push(
         new webpack.ProvidePlugin({
-          Buffer: ['buffer', 'Buffer'],
           process: 'process/browser.js',
         }),
         new webpack.DefinePlugin({

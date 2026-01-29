@@ -62,6 +62,18 @@ export function isAccountsRequest(
 }
 
 /**
+ * Type guard for generic eth_chainId request.
+ *
+ * @param req - The request object to check
+ * @returns True if the request is a eth_chainId request, false otherwise
+ */
+export function isChainIdRequest(
+  req: ProviderRequest,
+): req is Extract<ProviderRequest, { method: 'eth_chainId' }> {
+  return req.method === 'eth_chainId';
+}
+
+/**
  * Validates that all values in a Record are valid URLs.
  *
  * @param record - The record to validate (e.g., supportedNetworks)

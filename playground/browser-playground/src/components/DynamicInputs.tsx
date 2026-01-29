@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 import type React from 'react';
+import { TEST_IDS } from '@metamask/playground-ui';
 
 export enum INPUT_LABEL_TYPE {
   ADDRESS = 'Address',
@@ -22,18 +23,20 @@ const DynamicInputs: React.FC<DynamicInputsProps> = ({
   availableOptions,
 }) => {
   return (
-    <div className="space-y-3">
-      <h3 className="text-lg font-medium text-gray-800">{label}s:</h3>
+    <div data-testid={TEST_IDS.dynamicInputs.container(label)} className="space-y-3">
+      <h3 data-testid={TEST_IDS.dynamicInputs.heading(label)} className="text-lg font-medium text-gray-800">{label}s:</h3>
       <div className="flex flex-wrap gap-4">
         {availableOptions.map((option) => {
           const isChecked = inputArray.includes(option.value);
           return (
             <label
               key={`checkbox-${option.value}`}
+              data-testid={TEST_IDS.dynamicInputs.checkboxLabel(option.value)}
               className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
             >
               <input
                 type="checkbox"
+                data-testid={TEST_IDS.dynamicInputs.checkbox(option.value)}
                 checked={isChecked}
                 onChange={(e) =>
                   handleCheckboxChange(option.value, e.target.checked)

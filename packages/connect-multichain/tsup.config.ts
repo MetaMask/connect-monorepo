@@ -1,16 +1,26 @@
-import { defineConfig, type Options } from 'tsup';
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Tsup config */
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
+import { defineConfig, type Options } from 'tsup';
+
 import packageJson from './package.json';
+
 const pkg: any = packageJson as any;
 
 // Dependencies categorization (same as rollup config)
-const peerDependencies = Object.keys(pkg.peerDependencies || {});
-const optionalDependencies = Object.keys(pkg.optionalDependencies || {});
+const peerDependencies = Object.keys(pkg.peerDependencies ?? {});
+const optionalDependencies = Object.keys(pkg.optionalDependencies ?? {});
 
 // Dependencies that should be bundled
-const bundledDeps = [ 'readable-stream'];
+const bundledDeps = ['readable-stream'];
 // Shared dependencies that should be deduplicated
-const sharedDeps = ['eventemitter2', 'socket.io-client', 'debug', 'uuid', 'cross-fetch', '@metamask/sdk-analytics'];
+const sharedDeps = [
+  'eventemitter2',
+  'socket.io-client',
+  'debug',
+  'uuid',
+  'cross-fetch',
+  '@metamask/sdk-analytics',
+];
 
 // Filter function to exclude bundled dependencies
 const excludeBundledDeps = (dep: string) => !bundledDeps.includes(dep);
@@ -24,7 +34,8 @@ const baseExternalDeps = [
   'extension-port-stream',
   '@metamask/utils',
   '@metamask/rpc-errors',
-  'ws'
+  'ws',
+  'buffer',
 ];
 
 // Platform-specific externals
@@ -43,7 +54,6 @@ const baseConfig: Partial<Options> = {
   splitting: false, // Keep bundle as single file to match rollup,
 };
 
-
 const entryName = packageJson.name.replace('@metamask/', '');
 
 // TSUP Configuration
@@ -60,11 +70,11 @@ export default defineConfig([
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
-      options.outExtension = { ".js": '.mjs' };
+      options.outExtension = { '.js': '.mjs' };
     },
     banner: {
       js: '/* Browser ES build */',
-    }
+    },
   },
   {
     ...baseConfig,
@@ -72,12 +82,10 @@ export default defineConfig([
     outDir: 'dist/browser/umd',
     platform: 'browser',
     external: [...baseExternalDeps, ...peerDependencies],
-    esbuildPlugins: [
-      umdWrapper({}) as any,
-    ],
+    esbuildPlugins: [umdWrapper({}) as any],
     esbuildOptions: (options) => {
       options.metafile = true;
-      options.outExtension = { ".js": '.js' };
+      options.outExtension = { '.js': '.js' };
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
@@ -96,7 +104,7 @@ export default defineConfig([
     globalName: 'MetaMaskSDK', // Matches rollup IIFE config
     esbuildOptions: (options) => {
       options.metafile = true;
-      options.outExtension = { ".js": '.js' };
+      options.outExtension = { '.js': '.js' };
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
@@ -117,7 +125,7 @@ export default defineConfig([
       options.platform = 'node';
       options.mainFields = ['module', 'main'];
       options.conditions = ['node'];
-      options.outExtension = { ".js": '.js' };
+      options.outExtension = { '.js': '.js' };
     },
     banner: {
       js: '/* Node.js CJS build */',
@@ -135,7 +143,7 @@ export default defineConfig([
       options.platform = 'node';
       options.mainFields = ['module', 'main'];
       options.conditions = ['node'];
-      options.outExtension = { ".js": '.mjs' };
+      options.outExtension = { '.js': '.mjs' };
     },
     banner: {
       js: '/* Node.js ES build */',
@@ -152,7 +160,7 @@ export default defineConfig([
       options.metafile = true;
       options.mainFields = ['react-native', 'node', 'browser'];
       options.conditions = ['react-native', 'node', 'browser'];
-      options.outExtension = { ".js": '.mjs' };
+      options.outExtension = { '.js': '.mjs' };
     },
     banner: {
       js: '/* React Native ES build */',
@@ -163,5 +171,5 @@ export default defineConfig([
     entry: { [entryName]: 'src/index.browser.ts' },
     outDir: 'dist/types',
     dts: { only: true },
-  }
+  },
 ]);

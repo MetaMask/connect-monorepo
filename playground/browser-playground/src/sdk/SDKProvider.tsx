@@ -6,7 +6,7 @@ import {
   type InvokeMethodOptions,
   type MultichainCore,
   type Scope,
-  type SDKState,
+  type ConnectionStatus,
   type SessionData,
 } from '@metamask/connect';
 import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
@@ -25,7 +25,7 @@ import {
 const SDKContext = createContext<
   | {
       session: SessionData | undefined;
-      state: SDKState;
+      status: ConnectionStatus;
       error: Error | null;
       connect: (
         scopes: Scope[],
@@ -38,7 +38,7 @@ const SDKContext = createContext<
 >(undefined);
 
 export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, setState] = useState<SDKState>('pending');
+  const [status, setStatus] = useState<ConnectionStatus>('pending');
   const [session, setSession] = useState<SessionData | undefined>(undefined);
   const [error, setError] = useState<Error | null>(null);
 
@@ -65,7 +65,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
             ) {
               setSession(payload.params as SessionData);
             } else if (payload.method === 'stateChanged') {
-              setState(payload.params as SDKState);
+              setStatus(payload.params as ConnectionStatus);
             }
           },
         },
@@ -116,7 +116,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
     <SDKContext.Provider
       value={{
         session,
-        state,
+        status,
         error,
         connect,
         disconnect,

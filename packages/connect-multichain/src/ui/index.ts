@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals -- Web UI uses document */
+/* eslint-disable @typescript-eslint/naming-convention -- Type parameter T is a standard convention */
 /**
  * Browser/Web UI module entry point
  */

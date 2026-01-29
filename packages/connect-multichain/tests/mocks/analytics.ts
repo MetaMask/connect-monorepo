@@ -2,12 +2,12 @@
  * This file mocks Analytics package in the SDK
  * Allowing us to know if specific events triggered or not
  */
-import * as t from 'vitest';
+import * as vitest from 'vitest';
 
-t.vi.mock('@metamask/analytics', () => ({
+vitest.vi.mock('@metamask/analytics', () => ({
   analytics: {
-    setGlobalProperty: t.vi.fn(),
-    enable: t.vi.fn(),
-    track: t.vi.fn(),
+    setGlobalProperty: vitest.vi.fn(),
+    enable: vitest.vi.fn(),
+    track: vitest.vi.fn(),
   },
 }));

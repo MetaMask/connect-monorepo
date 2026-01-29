@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable no-restricted-syntax */
+import encodeQR from '@paulmillr/qr';
+
 import {
   type ConnectionRequest,
   createLogger,
   type QRLink,
 } from '../../../domain';
-import encodeQR from '@paulmillr/qr';
 import { AbstractInstallModal } from '../base/AbstractInstallModal';
 import { formatRemainingTime, shouldLogCountdown } from '../base/utils';
 

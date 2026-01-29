@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention -- RPC method names use snake_case */
+
 import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
 import {
   parseCaipAccountId,
@@ -20,6 +22,7 @@ export const METHODS_REQUIRING_PARAM_INJECTION = {
 
 /**
  * Injects address and chainId (where applicable) into example params for a given method.
+ *
  * @param method - The method to inject the address into.
  * @param exampleParams - The example params to inject the address into.
  * @param addressToInject - The address to inject.

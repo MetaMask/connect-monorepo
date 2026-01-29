@@ -2,6 +2,7 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable import-x/no-named-as-default-member -- Bowser.parse is the intended API */
 import Bowser from 'bowser';
 
 export enum PlatformType {
@@ -117,8 +118,8 @@ const detectionPromise: Promise<boolean> = (async () => {
     setTimeout(() => {
       window.removeEventListener('eip6963:announceProvider', handler);
 
-      const hasMetaMask = providers.some(
-        (provider) =>  provider?.info?.rdns?.startsWith('io.metamask')
+      const hasMetaMask = providers.some((provider) =>
+        provider?.info?.rdns?.startsWith('io.metamask'),
       );
 
       resolve(hasMetaMask);

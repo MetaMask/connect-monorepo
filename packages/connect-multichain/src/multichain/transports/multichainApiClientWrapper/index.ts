@@ -1,3 +1,8 @@
+/* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
+/* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
+/* eslint-disable no-plusplus -- Increment operator is safe here */
+/* eslint-disable @typescript-eslint/no-floating-promises -- Promise is intentionally not awaited */
 import type {
   CreateSessionParams,
   Transport,
@@ -7,7 +12,7 @@ import type {
 import { providerErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
 import type { InvokeMethodOptions, RPCAPI, Scope } from 'src/domain';
-import type { MultichainSDK } from 'src/multichain';
+import type { MetaMaskConnectMultichain } from 'src/multichain';
 
 // uint32 (two's complement) max
 // more conservative than Number.MAX_SAFE_INTEGER
@@ -22,32 +27,34 @@ const getUniqueId = (): number => {
 type TransportRequestWithId = TransportRequest & { id: number };
 
 export class MultichainApiClientWrapperTransport implements Transport {
-  private requestId = getUniqueId();
+  #requestId = getUniqueId();
 
-  private readonly notificationCallbacks = new Set<(data: unknown) => void>();
+  readonly #notificationCallbacks = new Set<(data: unknown) => void>();
 
-  constructor(private readonly multichainSDK: MultichainSDK) {}
+  constructor(
+    private readonly metamaskConnectMultichain: MetaMaskConnectMultichain,
+  ) {}
 
   isTransportDefined(): boolean {
     try {
-      return Boolean(this.multichainSDK.transport);
-    } catch (error) {
+      return Boolean(this.metamaskConnectMultichain.transport);
+    } catch (_error) {
       return false;
     }
   }
 
-  clearNotificationCallbacks() {
-    this.notificationCallbacks.clear();
+  clearNotificationCallbacks(): void {
+    this.#notificationCallbacks.clear();
   }
 
-  notifyCallbacks(data: unknown) {
-    this.notificationCallbacks.forEach((callback) => {
+  notifyCallbacks(data: unknown): void {
+    this.#notificationCallbacks.forEach((callback) => {
       callback(data);
     });
   }
 
-  setupNotifcationListener() {
-    this.multichainSDK.transport.onNotification(
+  setupNotifcationListener(): void {
+    this.metamaskConnectMultichain.transport.onNotification(
       this.notifyCallbacks.bind(this),
     );
   }
@@ -73,7 +80,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     params: ParamsType,
     _options: { timeout?: number } = {},
   ): Promise<ReturnType> {
-    const id = this.requestId++;
+    const id = this.#requestId++;
     const requestPayload = {
       id,
       jsonrpc: '2.0',
@@ -96,15 +103,15 @@ export class MultichainApiClientWrapperTransport implements Transport {
     throw new Error(`Unknown method: ${requestPayload.method}`);
   }
 
-  onNotification(callback: (data: unknown) => void) {
+  onNotification(callback: (data: unknown) => void): () => void {
     if (!this.isTransportDefined()) {
-      this.notificationCallbacks.add(callback);
+      this.#notificationCallbacks.add(callback);
       return () => {
-        this.notificationCallbacks.delete(callback);
+        this.#notificationCallbacks.delete(callback);
       };
     }
 
-    return this.multichainSDK.transport.onNotification(callback);
+    return this.metamaskConnectMultichain.transport.onNotification(callback);
   }
 
   async #walletCreateSession(request: TransportRequestWithId) {
@@ -130,13 +137,13 @@ export class MultichainApiClientWrapperTransport implements Transport {
     const accounts = [...new Set(scopeAccounts)];
 
     console.log('📚 SDK connect');
-    await this.multichainSDK.connect(
+    await this.metamaskConnectMultichain.connect(
       scopes,
       accounts,
       createSessionParams.sessionProperties,
     );
     console.log('📚 SDK connected');
-    return this.multichainSDK.transport.request({
+    return this.metamaskConnectMultichain.transport.request({
       method: 'wallet_getSession',
     });
   }
@@ -151,7 +158,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
         },
       };
     }
-    return this.multichainSDK.transport.request({
+    return this.metamaskConnectMultichain.transport.request({
       method: 'wallet_getSession',
     });
   }
@@ -162,9 +169,9 @@ export class MultichainApiClientWrapperTransport implements Transport {
     }
 
     try {
-      this.multichainSDK.disconnect();
+      this.metamaskConnectMultichain.disconnect();
       return { jsonrpc: '2.0', id: request.id, result: true };
-    } catch (error) {
+    } catch (_error) {
       return { jsonrpc: '2.0', id: request.id, result: false };
     }
   }
@@ -173,12 +180,12 @@ export class MultichainApiClientWrapperTransport implements Transport {
     if (!this.isTransportDefined()) {
       return { error: providerErrors.unauthorized() };
     }
-    const result = this.multichainSDK.invokeMethod(
+    const result = this.metamaskConnectMultichain.invokeMethod(
       request.params as InvokeMethodOptions,
     );
 
     return {
       result,
-    }
+    };
   }
 }

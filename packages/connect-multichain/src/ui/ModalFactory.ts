@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable @typescript-eslint/no-misused-promises */
+
 /* eslint-disable no-restricted-globals */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/parameter-properties */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable no-restricted-syntax */
-/* eslint-disable promise/no-return-wrap */
-/* eslint-disable require-atomic-updates */
+
 /* eslint-disable @typescript-eslint/naming-convention */
 import MetaMaskOnboarding from '@metamask/onboarding';
 
@@ -32,12 +31,16 @@ export type PreloadFn = () => Promise<void>;
  * Base ModalFactory class that accepts a preload function.
  * Platform-specific implementations should extend this class.
  */
-export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> {
+export abstract class BaseModalFactory<
+  T extends FactoryModals = FactoryModals,
+> {
   public modal!: Modal<any>;
 
   private readonly platform: PlatformType = getPlatformType();
 
   private successCallback!: (error?: Error) => Promise<void>;
+
+  private displayUriCallback?: (uri: string) => void;
 
   /**
    * Creates a new modal factory instance.
@@ -115,7 +118,9 @@ export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> 
 
   createConnectionDeeplink(connectionRequest?: ConnectionRequest) {
     if (!connectionRequest) {
-      throw new Error('createConnectionDeeplink can only be called with a connection request');
+      throw new Error(
+        'createConnectionDeeplink can only be called with a connection request',
+      );
     }
     const json = JSON.stringify(connectionRequest);
     const compressed = compressString(json);
@@ -147,14 +152,18 @@ export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> 
     showInstallModal: boolean,
     createConnectionRequest: () => Promise<ConnectionRequest>,
     successCallback: (error?: Error) => Promise<void>,
+    onDisplayUri?: (uri: string) => void,
   ) {
     this.modal?.unmount();
     await this.preload();
     this.successCallback = successCallback;
+    this.displayUriCallback = onDisplayUri;
 
     const parentElement = this.getMountedContainer();
     const connectionRequest = await createConnectionRequest();
     const qrCodeLink = this.createConnectionDeeplink(connectionRequest);
+
+    this.displayUriCallback?.(qrCodeLink);
 
     const modal: Modal<any> = new this.options.InstallModal({
       expiresIn:
@@ -164,11 +173,15 @@ export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> 
       showInstallModal,
       link: qrCodeLink,
       sdkVersion: getVersion(),
-      generateQRCode: async (request: ConnectionRequest) =>
-        this.createConnectionDeeplink(request),
+      generateQRCode: async (request: ConnectionRequest) => {
+        const newLink = this.createConnectionDeeplink(request);
+        this.displayUriCallback?.(newLink);
+        return newLink;
+      },
       onClose: this.onCloseModal.bind(this),
       startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
       createConnectionRequest,
+      onDisplayUri: this.displayUriCallback,
     });
 
     this.modal = modal;

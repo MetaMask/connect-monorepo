@@ -12,6 +12,12 @@ export type EIP1193ProviderEvents = {
   accountsChanged: [Address[]];
   chainChanged: [Hex];
   message: [{ type: string; data: unknown }];
+  /**
+   * Emitted when a QR code URI is available for display.
+   * This allows consumers to show their own custom QR code UI.
+   */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  display_uri: [string];
   connectAndSign: [
     { accounts: readonly Address[]; chainId: number; signResponse: string },
   ];
@@ -25,10 +31,11 @@ export type EIP1193ProviderEvents = {
 };
 
 export type EventHandlers = {
-  connect: (result: { chainId: string, accounts: Address[] }) => void;
+  connect: (result: { chainId: string; accounts: Address[] }) => void;
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;
+  displayUri: (uri: string) => void;
   connectAndSign: (result: {
     accounts: readonly Address[];
     chainId: number;
@@ -115,6 +122,7 @@ export type ProviderRequestInterceptor = (
 ) => Promise<unknown>;
 
 // JSON-RPC types for legacy compatibility (sendAsync/send)
+// eslint-disable-next-line @typescript-eslint/naming-convention -- T is standard type parameter
 export type JsonRpcRequest<T = unknown> = {
   id?: number | string;
   jsonrpc?: '2.0';
@@ -122,6 +130,7 @@ export type JsonRpcRequest<T = unknown> = {
   params?: T;
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention -- T is standard type parameter
 export type JsonRpcResponse<T = unknown> = {
   id: number | string;
   jsonrpc: '2.0';
@@ -133,6 +142,7 @@ export type JsonRpcResponse<T = unknown> = {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention -- T is standard type parameter
 export type JsonRpcCallback<T = unknown> = (
   error: Error | null,
   response: JsonRpcResponse<T> | null,

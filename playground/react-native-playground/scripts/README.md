@@ -34,6 +34,7 @@ There are several reasons why we cannot directly import the connector from its o
 ### Usage
 
 The script runs automatically during:
+
 - `yarn start` - Before starting the development server
 - `yarn ios` - Before starting iOS development
 - `yarn android` - Before starting Android development
@@ -41,6 +42,7 @@ The script runs automatically during:
 - `yarn build` - Before building the production bundle
 
 You can also run it manually:
+
 ```bash
 yarn copy-wagmi-connector
 ```
@@ -57,17 +59,20 @@ yarn copy-wagmi-connector
 Since React Native doesn't have a `window` object, a polyfill has been added in `polyfills.ts` to provide the following properties and methods that the wagmi connector and connect-multichain libraries expect:
 
 **Window Object Properties:**
+
 - `window.location.hostname` - Default value: `'react-native-playground'`
 - `window.location.href` - Default value: `'react-native-playground://'`
 
 **Note:** Deeplinks in React Native are handled via the `mobile.preferredOpenLink` option passed to the wagmi connector, not through `window.location.href`. This is configured in `src/wagmi/config.ts` using React Native's `Linking.openURL()`.
 
 **Window Object Methods:**
+
 - `window.addEventListener()` - No-op function (browser events don't exist in React Native)
 - `window.removeEventListener()` - No-op function for cleanup
 - `window.dispatchEvent()` - No-op function (returns `true`)
 
 **Event Classes:**
+
 - `Event` - Polyfill for the Event class with basic properties and methods
 - `CustomEvent` - Polyfill for CustomEvent that extends Event, used by wagmi and other libraries
 

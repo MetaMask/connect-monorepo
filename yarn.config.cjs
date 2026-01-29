@@ -108,7 +108,16 @@ module.exports = defineConfig({
         await expectWorkspaceLicense(workspace);
 
         // All non-root packages must not have side effects.
-        expectWorkspaceField(workspace, 'sideEffects', false);
+        // Exception: connect-multichain needs sideEffects for Buffer polyfill
+        // (eciesjs requires Buffer globally; the polyfill shim sets globalThis.Buffer)
+        if (workspace.ident === '@metamask/connect-multichain') {
+          expectWorkspaceField(workspace, 'sideEffects', [
+            './src/polyfills/buffer-shim.ts',
+            './dist/**/polyfills/buffer-shim.*',
+          ]);
+        } else {
+          expectWorkspaceField(workspace, 'sideEffects', false);
+        }
 
         // All non-root packages must set up ESM- and CommonJS-compatible
         // exports correctly.

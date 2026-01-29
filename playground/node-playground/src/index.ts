@@ -1,17 +1,26 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Interactive CLI demo */
+/* eslint-disable no-restricted-globals -- Node.js playground uses process */
+/* eslint-disable require-atomic-updates -- Interactive CLI state updates are sequential */
+
+/* eslint-disable import-x/no-extraneous-dependencies -- Playground dependencies */
+/* eslint-disable import-x/no-named-as-default-member -- Library APIs */
+/* eslint-disable @typescript-eslint/no-use-before-define -- Function hoisting in CLI */
+/* eslint-disable guard-for-in -- CLI demo iteration */
+
+import {
+  createEVMClient,
+  type MetamaskConnectEVM,
+} from '@metamask/connect-evm';
 import {
   createMultichainClient,
   getInfuraRpcUrls,
   type SessionData,
 } from '@metamask/connect-multichain';
-import {
-  createEVMClient,
-  type MetamaskConnectEVM,
-} from '@metamask/connect-evm';
 import { hexToNumber } from '@metamask/utils';
 import chalk from 'chalk';
+import dotenv from 'dotenv';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';
-import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -30,14 +39,16 @@ const AVAILABLE_CHAINS = [
 const state: {
   app: AppState;
   connectorType: ConnectorType | null;
-  multichainSdk: Awaited<ReturnType<typeof createMultichainClient>> | null;
+  metamaskConnectMultichain: Awaited<
+    ReturnType<typeof createMultichainClient>
+  > | null;
   evmSdk: MetamaskConnectEVM | null;
   accounts: { [chainId: string]: string[] }; // Group accounts by chain
   spinner: Ora | null;
 } = {
   app: 'DISCONNECTED',
   connectorType: null,
-  multichainSdk: null,
+  metamaskConnectMultichain: null,
   evmSdk: null,
   accounts: {}, // Initialize as an empty object
   spinner: null,
@@ -141,7 +152,7 @@ const handleConnect = async () => {
   try {
     if (state.connectorType === 'multichain') {
       // Requesting accounts for Ethereum Mainnet and Solana Mainnet
-      await state.multichainSdk?.connect(
+      await state.metamaskConnectMultichain?.connect(
         ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
         [],
       );
@@ -168,7 +179,7 @@ const handleDisconnect = async () => {
   state.spinner = ora('Disconnecting...').start();
   try {
     if (state.connectorType === 'multichain') {
-      await state.multichainSdk?.disconnect();
+      await state.metamaskConnectMultichain?.disconnect();
     } else if (state.connectorType === 'evm') {
       await state.evmSdk?.disconnect();
     }
@@ -210,7 +221,7 @@ const handleEthereumSign = async () => {
 
   try {
     if (state.connectorType === 'multichain') {
-      const result = await state.multichainSdk?.invokeMethod({
+      const result = await state.metamaskConnectMultichain?.invokeMethod({
         scope: chain,
         request: {
           method: 'personal_sign',
@@ -283,7 +294,7 @@ const handleSwitchChain = async () => {
   try {
     await state.evmSdk.switchChain({ chainId: chain });
     const chainName =
-      AVAILABLE_CHAINS.find((chainOption) => chainOption.id === chain)?.name ||
+      AVAILABLE_CHAINS.find((chainOption) => chainOption.id === chain)?.name ??
       'chain';
     state.spinner.succeed(`Successfully switched to ${chainName}.`);
   } catch (error: unknown) {
@@ -332,7 +343,7 @@ const handleSolanaSign = async () => {
   ).start();
 
   try {
-    const result = await state.multichainSdk?.invokeMethod({
+    const result = await state.metamaskConnectMultichain?.invokeMethod({
       scope: chain,
       request: {
         method: 'signMessage',
@@ -363,11 +374,11 @@ const main = async (): Promise<void> => {
   console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
   console.log('------------------------------------');
 
-  const infuraApiKey = process.env.INFURA_API_KEY || 'demo';
+  const infuraApiKey = process.env.INFURA_API_KEY ?? 'demo';
   const supportedNetworks = getInfuraRpcUrls(infuraApiKey);
 
   // Initialize Multichain SDK
-  state.multichainSdk = await createMultichainClient({
+  state.metamaskConnectMultichain = await createMultichainClient({
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',
@@ -452,47 +463,50 @@ const main = async (): Promise<void> => {
   });
 
   // --- Multichain SDK Event Handler ---
-  state.multichainSdk.on('wallet_sessionChanged', (session?: SessionData) => {
-    if (state.app !== 'CONNECTING') {
-      // Only clear the console if we are not in the middle of a connection flow
-      console.clear();
-      console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
-      console.log('------------------------------------');
-    }
+  state.metamaskConnectMultichain.on(
+    'wallet_sessionChanged',
+    (session?: SessionData) => {
+      if (state.app !== 'CONNECTING') {
+        // Only clear the console if we are not in the middle of a connection flow
+        console.clear();
+        console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
+        console.log('------------------------------------');
+      }
 
-    if (state.spinner && state.app === 'CONNECTING') {
-      state.spinner.stop();
-      state.spinner = null;
-    }
+      if (state.spinner && state.app === 'CONNECTING') {
+        state.spinner.stop();
+        state.spinner = null;
+      }
 
-    if (session?.sessionScopes) {
-      const groupedAccounts: { [chainId: string]: string[] } = {};
-      for (const scope of Object.values(session.sessionScopes) as {
-        accounts?: string[];
-      }[]) {
-        if (scope.accounts) {
-          for (const acc of scope.accounts) {
-            const [namespace, reference] = acc.split(':');
-            const chainId = `${namespace}:${reference}`;
-            if (!groupedAccounts[chainId]) {
-              groupedAccounts[chainId] = [];
+      if (session?.sessionScopes) {
+        const groupedAccounts: { [chainId: string]: string[] } = {};
+        for (const scope of Object.values(session.sessionScopes) as {
+          accounts?: string[];
+        }[]) {
+          if (scope.accounts) {
+            for (const acc of scope.accounts) {
+              const [namespace, reference] = acc.split(':');
+              const chainId = `${namespace}:${reference}`;
+              if (!groupedAccounts[chainId]) {
+                groupedAccounts[chainId] = [];
+              }
+              groupedAccounts[chainId].push(acc);
             }
-            groupedAccounts[chainId].push(acc);
           }
         }
+        state.accounts = groupedAccounts;
+        state.app = 'CONNECTED';
+      } else {
+        state.accounts = {};
+        state.app = 'DISCONNECTED';
+        state.connectorType = null;
+        console.log(chalk.yellow('Session ended. You are now disconnected.'));
       }
-      state.accounts = groupedAccounts;
-      state.app = 'CONNECTED';
-    } else {
-      state.accounts = {};
-      state.app = 'DISCONNECTED';
-      state.connectorType = null;
-      console.log(chalk.yellow('Session ended. You are now disconnected.'));
-    }
-  });
+    },
+  );
 
   // --- Main application loop ---
-  // eslint-disable-next-line no-constant-condition
+
   while (true) {
     try {
       await showMenu();
