@@ -530,7 +530,7 @@ CAIP-10 account identifier: `` `${string}:${string}:${string}` ``
 
 ```typescript
 type EventHandlers = {
-  connect: (result: { chainId: string; accounts: Address[] }) => void;
+  connect: (result: { chainId: string; }) => void;
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;
