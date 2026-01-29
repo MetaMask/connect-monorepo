@@ -40,7 +40,15 @@ const sdk = await createEVMClient({
 });
 
 // Connect to MetaMask
-const { accounts, chainId } = await sdk.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
+try {
+  const { accounts, chainId } = await sdk.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
+} catch (error) {
+  if (error.code === 4001) {
+    console.log('User rejected the connection request');
+  } else if (error.code === -32002) {
+    console.log('Connection request already pending');
+  }
+}
 console.log({accounts}); // The connected accounts where the first account is the selected account
 console.log({chainId}); // The currently active chainId
 
