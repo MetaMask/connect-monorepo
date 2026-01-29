@@ -41,6 +41,9 @@
   "simple-git-hooks": {
     "pre-push": "yarn lint"
   },
+  "resolutions": {
+    "bs58": "4.0.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.28.4",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",

@@ -39,9 +39,7 @@ module.exports = {
 
       // === SUPPRESS SOURCE MAP WARNINGS ===
       // Ignore source map warnings from node_modules dependencies
-      webpackConfig.ignoreWarnings = [
-        /Failed to parse source map/,
-      ];
+      webpackConfig.ignoreWarnings = [/Failed to parse source map/];
 
       // === PROVIDE PLUGINS ===
       webpackConfig.plugins.push(
@@ -50,7 +48,9 @@ module.exports = {
           process: 'process/browser.js',
         }),
         new webpack.DefinePlugin({
-          'process.env.INFURA_API_KEY': JSON.stringify(process.env.INFURA_API_KEY),
+          'process.env.INFURA_API_KEY': JSON.stringify(
+            process.env.INFURA_API_KEY,
+          ),
         }),
       );
 
