@@ -956,12 +956,18 @@ export class MetamaskConnectEVM {
  * @param options.ui.headless - Whether to run without UI
  * @param options.ui.preferExtension - Whether to prefer browser extension
  * @param options.ui.showInstallModal - Whether to render installation modal for desktop extension
+ * @param options.mobile - Mobile configuration options
+ * @param options.mobile.preferredOpenLink - Custom handler for opening deeplinks (useful for React Native, etc.)
+ * @param options.mobile.useDeeplink - Whether to use native deeplinks instead of universal links
+ * @param options.transport - Optional transport configuration (e.g., extensionId, notification handler)
+ * @param options.transport.extensionId - Extension ID for browser extension transport
+ * @param options.transport.onNotification - Optional callback for receiving transport notifications
  * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
  * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp' | 'api'> &
+  options: Pick<MultichainOptions, 'dapp' | 'api' | 'mobile' | 'transport'> &
   { ui?: Omit<MultichainOptions['ui'], 'factory'>; } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;

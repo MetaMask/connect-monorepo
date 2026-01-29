@@ -83,7 +83,7 @@ const sdk = await createEVMClient({
       });
     },
   },
-}); // Note: see @connect-multichain for more details
+});
 ```
 
 The `mobile.preferredOpenLink` option is checked before falling back to browser-based deeplink methods, making it the recommended approach for React Native applications.
@@ -161,6 +161,10 @@ Factory function to create a new MetaMask Connect EVM instance.
 | `ui.headless` | `boolean` | No | Run without UI (for custom QR implementations) |
 | `ui.preferExtension` | `boolean` | No | Prefer browser extension over mobile (default: true) |
 | `ui.showInstallModal` | `boolean` | No | Show installation modal for desktop |
+| `mobile.preferredOpenLink` | `(deeplink: string, target?: string) => void` | No | Custom deeplink handler |
+| `mobile.useDeeplink` | `boolean` | No | Use `metamask://` instead of universal links |
+| `transport.extensionId` | `string` | No | Custom extension ID |
+| `transport.onNotification` | `(notification: unknown) => void` | No | Notification handler |
 | `eventHandlers` | `Partial<EventHandlers>` | No | Event handlers for provider events |
 | `debug` | `boolean` | No | Enable debug logging |
 
