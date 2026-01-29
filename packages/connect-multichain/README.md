@@ -2,7 +2,7 @@
 
 > Core multichain connectivity library for MetaMask Connect SDK. Supports multiple blockchain networks including EVM chains (Ethereum, Polygon, etc.) and non-EVM chains (Solana, etc.).
 
-This package provides the underlying multichain infrastructure for connecting dApps to MetaMask across various blockchain ecosystems.
+This package provides support for connecting to MetaMask and using the [CAIP Multichain API](https://github.com/MetaMask/metamask-improvement-proposals/blob/main/MIPs/mip-5.md) which agnostically supports making requests to multiple blockchain ecosystems simultaneously.
 
 ## Installation
 
@@ -466,6 +466,19 @@ sdk.on('display_uri', (uri) => {
 
 await sdk.connect(['eip155:1'], []);
 ```
+
+## Standards
+
+- [CAIP-25](https://chainagnostic.org/CAIPs/caip-25) (please see CAIP Multichain API)
+- [CAIP-27](https://chainagnostic.org/CAIPs/caip-27)
+- [CAIP-2](https://chainagnostic.org/CAIPs/caip-2)
+- [CAIP-10](https://chainagnostic.org/CAIPs/caip-10)
+- [CAIP-217](https://chainagnostic.org/CAIPs/caip-217)
+- [CAIP-316](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-316.md)
+- [CAIP-312](https://chainagnostic.org/CAIPs/caip-312)
+- [CAIP-311](https://chainagnostic.org/CAIPs/caip-311)
+- [CAIP-285](https://chainagnostic.org/CAIPs/caip-285)
+- [CAIP Multichain API](https://github.com/MetaMask/metamask-improvement-proposals/blob/main/MIPs/mip-5.md)
 
 ## Contributing
 
