@@ -315,7 +315,7 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Wwhether to force a request regardless of an existing session
-   * @param options.chainIds - Array of chain IDs to connect to
+   * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
   async connect(
@@ -402,7 +402,7 @@ export class MetamaskConnectEVM {
    *
    * @param options - The connection options
    * @param options.message - The message to sign after connecting
-   * @param options.chainIds - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
+   * @param [options.chainIds] - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the signature
    * @throws Error if the selected account is not available after timeout
    */
@@ -437,9 +437,9 @@ export class MetamaskConnectEVM {
    * @param options - The options for connecting and invoking the method
    * @param options.method - The method name to invoke
    * @param options.params - The parameters to pass to the method, or a function that receives the account and returns params
-   * @param options.chainIds - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
-   * @param options.account - Optional specific account to connect to
-   * @param options.forceRequest - Whether to force a request regardless of an existing session
+   * @param [options.chainIds] - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
+   * @param [options.account] - Optional specific account to connect to
+   * @param [options.forceRequest] - Whether to force a request regardless of an existing session
    * @returns A promise that resolves with the result of the method invocation
    * @throws Error if the selected account is not available after timeout (for methods that require an account)
    */
