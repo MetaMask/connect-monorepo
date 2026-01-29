@@ -1,3 +1,4 @@
+/* eslint-disable import-x/no-unassigned-import -- Polyfill must be imported first */
 // Buffer polyfill must be imported first to set up globalThis.Buffer
 import './polyfills/buffer-shim';
 
@@ -11,12 +12,12 @@ export * from './domain';
 export const createMultichainClient: CreateMultichainFN = async (options) => {
   const uiModules = await import('./ui/modals/web');
   let storage: StoreClient;
-  if (!options.storage) {
+  if (options.storage) {
+    storage = options.storage;
+  } else {
     const { StoreAdapterWeb } = await import('./store/adapters/web');
     const adapter = new StoreAdapterWeb();
     storage = new Store(adapter);
-  } else {
-    storage = options.storage;
   }
   const factory = new ModalFactory(uiModules);
   return MetaMaskConnectMultichain.create({

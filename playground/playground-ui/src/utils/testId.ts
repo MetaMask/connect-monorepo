@@ -1,3 +1,4 @@
+/* eslint-disable require-unicode-regexp -- Simple character replacement */
 /**
  * Test ID utilities for consistent cross-platform testing.
  * Provides functions for escaping and creating test IDs that work

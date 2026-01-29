@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable @typescript-eslint/no-misused-promises */
+
 /* eslint-disable no-restricted-globals */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/parameter-properties */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable no-restricted-syntax */
-/* eslint-disable promise/no-return-wrap */
-/* eslint-disable require-atomic-updates */
+
 /* eslint-disable @typescript-eslint/naming-convention */
 import MetaMaskOnboarding from '@metamask/onboarding';
 
@@ -32,7 +31,9 @@ export type PreloadFn = () => Promise<void>;
  * Base ModalFactory class that accepts a preload function.
  * Platform-specific implementations should extend this class.
  */
-export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> {
+export abstract class BaseModalFactory<
+  T extends FactoryModals = FactoryModals,
+> {
   public modal!: Modal<any>;
 
   private readonly platform: PlatformType = getPlatformType();
@@ -117,7 +118,9 @@ export abstract class BaseModalFactory<T extends FactoryModals = FactoryModals> 
 
   createConnectionDeeplink(connectionRequest?: ConnectionRequest) {
     if (!connectionRequest) {
-      throw new Error('createConnectionDeeplink can only be called with a connection request');
+      throw new Error(
+        'createConnectionDeeplink can only be called with a connection request',
+      );
     }
     const json = JSON.stringify(connectionRequest);
     const compressed = compressString(json);

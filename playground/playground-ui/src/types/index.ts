@@ -1,5 +1,9 @@
 // Re-export all types
-export type { PlaygroundConfig, PlatformAdapter, Base64Encoder } from './config';
+export type {
+  PlaygroundConfig,
+  PlatformAdapter,
+  Base64Encoder,
+} from './config';
 
 export type {
   SessionScopeData,
@@ -10,9 +14,7 @@ export type {
   SetSelectedAccountsFn,
 } from './sdk';
 
-export {
-  INPUT_LABEL_TYPE,
-} from './components';
+export { INPUT_LABEL_TYPE } from './components';
 
 export type {
   DynamicInputsProps,

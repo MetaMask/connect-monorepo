@@ -21,10 +21,7 @@
       "@metamask/multichain-ui/loader": ["../multichain-ui/dist/loader"]
     }
   },
-  "references": [
-    { "path": "../multichain-ui" },
-    { "path": "../analytics" }
-  ],
+  "references": [{ "path": "../multichain-ui" }, { "path": "../analytics" }],
   "include": ["./src", "./tests"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist"]
 }

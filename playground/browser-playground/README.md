@@ -60,6 +60,7 @@ This launches the development server at `http://localhost:3000`.
 ### Multichain Connection
 
 Connect to multiple blockchain networks in a single session:
+
 - Ethereum Mainnet & Testnets
 - Layer 2 networks (Linea, Arbitrum, Polygon, etc.)
 - Solana
