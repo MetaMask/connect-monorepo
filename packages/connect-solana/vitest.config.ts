@@ -1,0 +1,22 @@
+import { defineConfig } from 'vitest/config';
+import path from 'path';
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+      '**/fixtures.test.ts',
+    ],
+    include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+  },
+  resolve: {
+    alias: {
+      '@metamask/connect-multichain': path.resolve(__dirname, 'src/mocks/connect-multichain.ts'),
+      '@metamask/solana-wallet-standard': path.resolve(__dirname, 'src/mocks/solana-wallet-standard.ts'),
+    },
+  },
+});
