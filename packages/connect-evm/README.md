@@ -519,22 +519,6 @@ const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
 
 ### Types
 
-#### `Hex`
-
-Hexadecimal string type: `` `0x${string}` ``
-
-#### `Address`
-
-Ethereum address type (alias for `Hex`)
-
-#### `CaipChainId`
-
-CAIP-2 chain identifier: `` `${string}:${string}` ``
-
-#### `CaipAccountId`
-
-CAIP-10 account identifier: `` `${string}:${string}:${string}` ``
-
 #### `EventHandlers`
 
 ```typescript

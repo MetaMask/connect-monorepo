@@ -241,7 +241,7 @@ const result = await sdk.invokeMethod({
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `status` | `ConnectionStatus` | Connection status |
+| `status` | `ConnectionStatus` | Connection status ( `'loaded'`, `'pending'`, `'connecting'`, `'connected'`, `'disconnected'`) |
 | `provider` | `MultichainApiClient` | Multichain API client |
 | `transport` | `ExtendedTransport` | Active transport layer |
 
@@ -319,153 +319,6 @@ Emits an event to all registered handlers.
 
 ---
 
-### Types
-
-#### `Scope`
-
-CAIP-2 chain identifier (e.g., `'eip155:1'`, `'solana:mainnet'`).
-
-```typescript
-type Scope = `${string}:${string}`;
-```
-
-#### `ConnectionStatus`
-
-```typescript
-type ConnectionStatus = 'pending' | 'connecting' | 'connected' | 'disconnected' | 'loaded';
-```
-
-#### `DappSettings`
-
-```typescript
-type DappSettings = {
-  name: string;
-  url?: string;
-} & ({ iconUrl?: string } | { base64Icon?: string });
-```
-
-#### `MultichainOptions`
-
-```typescript
-type MultichainOptions = {
-  dapp: DappSettings;
-  api: {
-    supportedNetworks: RpcUrlsMap;
-  };
-  analytics?: { integrationType: string };
-  storage: StoreClient;
-  ui: {
-    factory: BaseModalFactory;
-    headless?: boolean;
-    preferExtension?: boolean;
-    showInstallModal?: boolean;
-  };
-  mobile?: {
-    preferredOpenLink?: (deeplink: string, target?: string) => void;
-    useDeeplink?: boolean;
-  };
-  transport?: {
-    extensionId?: string;
-    onNotification?: (notification: unknown) => void;
-  };
-};
-```
-
-#### `InvokeMethodOptions`
-
-```typescript
-type InvokeMethodOptions = {
-  scope: Scope;
-  request: {
-    method: string;
-    params?: unknown[];
-  };
-};
-```
-
-#### `SessionData`
-
-Session data returned from the wallet containing permissioned scopes and accounts.
-
-```typescript
-type SessionData = {
-    /** Map of chain IDs to their respective scope objects */
-    sessionScopes: Record<CaipChainId, ScopeObject>;
-    /** Chain-specific properties (not implemented in MetaMask yet) */
-    scopedProperties?: ScopedProperties;
-    /** Session-wide properties (not implemented in MetaMask yet) */
-    sessionProperties?: SessionProperties;
-};
-```
-
-#### `CaipChainId`
-
-CAIP-2 chain identifier representing a specific blockchain network. See [CAIP-2](https://chainagnostic.org/CAIPs/caip-2) for the full specification.
-
-```typescript
-type CaipChainId = `${string}:${string}`;
-```
-
-**Format:** `<namespace>:<reference>`
-
-**Examples:**
-- `'eip155:1'` - Ethereum Mainnet
-- `'eip155:137'` - Polygon
-- `'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d'` - Solana Mainnet
-
-#### `ScopeObject`
-
-Represents permissions and capabilities for a specific chain as defined in [CAIP-217](https://chainagnostic.org/CAIPs/caip-217). Used within session data to define what a dApp is authorized to do on a particular chain.
-
-```typescript
-type ScopeObject = {
-    /** List of JSON-RPC methods this scope can invoke */
-    methods: string[];
-    /** List of notification types this scope can receive */
-    notifications: string[];
-    /** List of CAIP-10 account identifiers this scope has access to */
-    accounts?: CaipAccountId[];
-};
-```
-
-**Example:**
-
-```typescript
-const scopeObject: ScopeObject = {
-  methods: ['eth_sendTransaction', 'eth_signTypedData_v4', 'personal_sign'],
-  notifications: ['accountsChanged', 'chainChanged'],
-  accounts: ['eip155:1:0x1234567890abcdef1234567890abcdef12345678'],
-};
-```
-
-#### `ScopedProperties`
-
-Properties that are scoped to specific chains. Each key is a CAIP-2 chain identifier with associated JSON data. This allows storing chain-specific metadata or configuration within a session.
-
-```typescript
-type ScopedProperties = {
-    [scopeString: CaipChainId]: Json;
-};
-```
-
-#### `SessionProperties`
-
-Properties that apply to the entire session, not scoped to specific chains. Used for session-wide configuration or metadata.
-
-```typescript
-type SessionProperties = {
-    [key: string]: Json;
-};
-```
-
-#### `RpcUrlsMap`
-
-```typescript
-type RpcUrlsMap = Record<Scope, string>;
-```
-
----
-
 ### Utilities
 
 #### `getInfuraRpcUrls(infuraApiKey)`
@@ -480,7 +333,7 @@ Generates Infura RPC URLs for common networks.
 
 **Returns**
 
-`RpcUrlsMap` - A map of CAIP chain IDs to Infura RPC URLs. Includes Ethereum, Linea, Polygon, Optimism, Arbitrum, Palm, Avalanche, Aurora, and Celo networks.
+A Record of CAIP chain IDs to Infura RPC URLs. Includes Ethereum, Linea, Polygon, Optimism, Arbitrum, Palm, Avalanche, Aurora, and Celo networks.
 
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
