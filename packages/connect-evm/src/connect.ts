@@ -985,10 +985,7 @@ export async function createEVMClient(
     );
   }
 
-  validSupportedChainsUrls(
-    options.api.supportedNetworks,
-    'supportedNetworks',
-  );
+  validSupportedChainsUrls(options.api.supportedNetworks, 'supportedNetworks');
 
   const supportedNetworksCaipChainId = Object.entries(
     options.api.supportedNetworks,
