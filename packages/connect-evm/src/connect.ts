@@ -622,7 +622,7 @@ export class MetamaskConnectEVM {
 
     if (isSwitchChainRequest(request)) {
       return this.switchChain({
-        chainId: request.params[0].chainId as unknown as Hex,
+        chainId: request.params[0].chainId as Hex,
       });
     }
 
