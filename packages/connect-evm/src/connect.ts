@@ -49,7 +49,7 @@ type ConnectOptions = {
   /** Whether to force a request regardless of an existing session */
   forceRequest?: boolean;
   /** All available chain IDs in the dapp in hex format */
-  chainIds: Hex[];
+  chainIds?: Hex[];
 };
 
 /**
@@ -311,13 +311,11 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.account - Optional specific account to connect to
    * @param options.forceRequest - Wwhether to force a request regardless of an existing session
-   * @param options.chainIds - Array of chain IDs to connect to
+   * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
   async connect(
-    { account, forceRequest, chainIds }: ConnectOptions = {
-      chainIds: [DEFAULT_CHAIN_ID],
-    },
+    { account, forceRequest, chainIds = [DEFAULT_CHAIN_ID] }: ConnectOptions = {},
   ): Promise<{ accounts: Address[]; chainId: Hex }> {
     logger('request: connect', { account });
 
@@ -398,7 +396,7 @@ export class MetamaskConnectEVM {
    *
    * @param options - The connection options
    * @param options.message - The message to sign after connecting
-   * @param options.chainIds - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
+   * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the signature
    * @throws Error if the selected account is not available after timeout
    */
@@ -433,9 +431,9 @@ export class MetamaskConnectEVM {
    * @param options - The options for connecting and invoking the method
    * @param options.method - The method name to invoke
    * @param options.params - The parameters to pass to the method, or a function that receives the account and returns params
-   * @param options.chainIds - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
-   * @param options.account - Optional specific account to connect to
-   * @param options.forceRequest - Whether to force a request regardless of an existing session
+   * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
+   * @param [options.account] - Optional specific account to connect to
+   * @param [options.forceRequest] - Whether to force a request regardless of an existing session
    * @returns A promise that resolves with the result of the method invocation
    * @throws Error if the selected account is not available after timeout (for methods that require an account)
    */
@@ -513,7 +511,7 @@ export class MetamaskConnectEVM {
   }: {
     chainId: Hex;
     chainConfiguration?: AddEthereumChainParameter;
-  }): Promise<unknown> {
+  }): Promise<void> {
     const method = 'wallet_switchEthereumChain';
     const scope: Scope = `eip155:${hexToNumber(chainId)}`;
     const params = [{ chainId }];
@@ -556,7 +554,7 @@ export class MetamaskConnectEVM {
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
       }
-      return result;
+      return Promise.resolve();
     } catch (error) {
       await this.#trackWalletActionFailed(method, scope, params, error);
       // Fallback to add the chain if its not configured in the wallet.
@@ -956,12 +954,18 @@ export class MetamaskConnectEVM {
  * @param options.ui.headless - Whether to run without UI
  * @param options.ui.preferExtension - Whether to prefer browser extension
  * @param options.ui.showInstallModal - Whether to render installation modal for desktop extension
+ * @param options.mobile - Mobile configuration options
+ * @param options.mobile.preferredOpenLink - Custom handler for opening deeplinks (useful for React Native, etc.)
+ * @param options.mobile.useDeeplink - Whether to use native deeplinks instead of universal links
+ * @param options.transport - Optional transport configuration (e.g., extensionId, notification handler)
+ * @param options.transport.extensionId - Extension ID for browser extension transport
+ * @param options.transport.onNotification - Optional callback for receiving transport notifications
  * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
  * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp'> & {
+  options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
     ui?: Omit<MultichainOptions['ui'], 'factory'>;
   } & {
     eventHandlers?: Partial<EventHandlers>;
