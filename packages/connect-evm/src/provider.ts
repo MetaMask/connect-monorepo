@@ -5,7 +5,7 @@
 /* eslint-disable jsdoc/require-returns -- Inherited from abstract class */
 import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
-import { hexToNumber, numberToHex } from '@metamask/utils';
+import { hexToNumber } from '@metamask/utils';
 
 import { INTERCEPTABLE_METHODS } from './constants';
 import { logger } from './logger';

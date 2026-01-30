@@ -29,31 +29,39 @@ type AppState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SIGNING';
 type ConnectorType = 'multichain' | 'evm';
 
 const AVAILABLE_CHAINS = [
-  { id: 1, hex: '0x1' as Hex, name: 'Ethereum Mainnet', caip: 'eip155:1' },
-  { id: 137, hex: '0x89' as Hex, name: 'Polygon', caip: 'eip155:137' },
-  { id: 59144, hex: '0xe708' as Hex, name: 'Linea', caip: 'eip155:59144' },
-  { id: 11155111, hex: '0xaa36a7' as Hex, name: 'Sepolia Testnet', caip: 'eip155:11155111' },
+  { id: 1, hexId: '0x1' as Hex, name: 'Ethereum Mainnet', caip: 'eip155:1' },
+  { id: 137, hexId: '0x89' as Hex, name: 'Polygon', caip: 'eip155:137' },
+  { id: 59144, hexId: '0xe708' as Hex, name: 'Linea', caip: 'eip155:59144' },
+  {
+    id: 11155111,
+    hexId: '0xaa36a7' as Hex,
+    name: 'Sepolia Testnet',
+    caip: 'eip155:11155111',
+  },
 ] as const;
 
 /**
  * Converts CAIP-2 keyed RPC URLs map to hex-keyed format.
  * Example: { 'eip155:1': 'url' } -> { '0x1': 'url' }
+ *
+ * @param caipMap - A map of CAIP-2 chain IDs to RPC URLs
+ * @returns A map of hex chain IDs to RPC URLs
  */
 function convertCaipToHexKeys(
   caipMap: Record<string, string>,
 ): Record<Hex, string> {
-  return Object.entries(caipMap).reduce(
+  return Object.entries(caipMap).reduce<Record<Hex, string>>(
     (acc, [caipChainId, url]) => {
       // Extract the numeric part from CAIP-2 format (e.g., 'eip155:1' -> 1)
-      const match = caipChainId.match(/^eip155:(\d+)$/);
+      const match = caipChainId.match(/^eip155:(\d+)$/u);
       if (match?.[1]) {
         const decimalChainId = parseInt(match[1], 10);
-        const hexChainId = `0x${decimalChainId.toString(16)}` as Hex;
+        const hexChainId: Hex = `0x${decimalChainId.toString(16)}`;
         acc[hexChainId] = url;
       }
       return acc;
     },
-    {} as Record<Hex, string>,
+    {},
   );
 }
 
@@ -304,7 +312,7 @@ const handleSwitchChain = async () => {
       message: 'Select a chain to switch to:',
       choices: availableChains.map((chainOption) => ({
         name: chainOption.name,
-        value: chainOption.hex,
+        value: chainOption.hexId,
       })),
     },
   ]);
@@ -316,8 +324,8 @@ const handleSwitchChain = async () => {
   try {
     await state.evmSdk.switchChain({ chainId: chain });
     const chainName =
-      AVAILABLE_CHAINS.find((chainOption) => chainOption.hex === chain)?.name ??
-      'chain';
+      AVAILABLE_CHAINS.find((chainOption) => chainOption.hexId === chain)
+        ?.name ?? 'chain';
     state.spinner.succeed(`Successfully switched to ${chainName}.`);
   } catch (error: unknown) {
     state.spinner.fail('Failed to switch chain.');

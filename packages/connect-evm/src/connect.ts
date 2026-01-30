@@ -14,11 +14,7 @@ import {
   isRejectionError,
   TransportType,
 } from '@metamask/connect-multichain';
-import {
-  numberToHex,
-  hexToNumber,
-  isHexString as isHex,
-} from '@metamask/utils';
+import { hexToNumber } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
 import { enableDebug, logger } from './logger';
@@ -636,7 +632,9 @@ export class MetamaskConnectEVM {
 
     if (isAccountsRequest(request)) {
       const { method } = request;
-      const decimalChainId = hexToNumber(this.#provider.selectedChainId || '0x1')
+      const decimalChainId = hexToNumber(
+        this.#provider.selectedChainId ?? '0x1',
+      );
       const scope: Scope = `eip155:${decimalChainId}`;
       const params: unknown[] = [];
 
@@ -680,7 +678,10 @@ export class MetamaskConnectEVM {
     }
 
     // Get chain ID from config or use current chain
-    const chainId =  chainConfiguration.chainId as unknown as Hex || this.#provider.selectedChainId || '0x1';
+    const chainId =
+      (chainConfiguration.chainId as unknown as Hex) ??
+      this.#provider.selectedChainId ??
+      '0x1';
     const decimalChainId = hexToNumber(chainId);
     const scope: Scope = `eip155:${decimalChainId}`;
     const params = [chainConfiguration];
@@ -967,7 +968,7 @@ export async function createEVMClient(
     debug?: boolean;
     api: {
       supportedNetworks: Record<Hex, string>;
-    }
+    };
   },
 ): Promise<MetamaskConnectEVM> {
   if (options.debug) {
@@ -988,21 +989,20 @@ export async function createEVMClient(
 
   validSupportedChainsUrls(options.api.supportedNetworks, 'supportedNetworks');
 
-  const supportedNetworksCaipChainId = Object.entries(options.api.supportedNetworks).reduce(
-    (acc, [hexChainId, url]) => {
-      const decimalChainId = parseInt(hexChainId, 16);
-      const caip2ChainId = `eip155:${decimalChainId}`;
-      acc[caip2ChainId] = url;
-      return acc;
-    },
-    {} as Record<string, string>,
-  );
+  const supportedNetworksCaipChainId = Object.entries(
+    options.api.supportedNetworks,
+  ).reduce<Record<string, string>>((acc, [hexChainId, url]) => {
+    const decimalChainId = parseInt(hexChainId, 16);
+    const caip2ChainId = `eip155:${decimalChainId}`;
+    acc[caip2ChainId] = url;
+    return acc;
+  }, {});
 
   try {
     const core = await createMultichainClient({
       ...options,
       api: {
-        supportedNetworks: supportedNetworksCaipChainId
+        supportedNetworks: supportedNetworksCaipChainId,
       },
     });
 
