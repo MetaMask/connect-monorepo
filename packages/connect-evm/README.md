@@ -498,7 +498,7 @@ provider.on('display_uri', (uri) => {
 
 ### `getInfuraRpcUrls(infuraApiKey)`
 
-Helper function to generate Infura RPC URLs for common networks.
+Helper function to generate EVM Infura RPC URLs for common networks keyed by hex chain ID.
 
 **Parameters**
 
@@ -508,13 +508,13 @@ Helper function to generate Infura RPC URLs for common networks.
 
 **Returns**
 
-`RpcUrlsMap` - A map of CAIP chain IDs to Infura RPC URLs. Includes Ethereum, Linea, Polygon, Optimism, Arbitrum, Palm, Avalanche, Aurora, and Celo networks.
+A map of hex chain IDs to Infura RPC URLs. Includes Ethereum, Linea, Polygon, Optimism, Arbitrum, Palm, Avalanche, Aurora, and Celo networks.
 
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-evm';
 
 const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
-// Returns: { 'eip155:1': 'https://mainnet.infura.io/v3/KEY', ... }
+// Returns: { '0x1': 'https://mainnet.infura.io/v3/KEY', ... }
 ```
 
 ---

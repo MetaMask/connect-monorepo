@@ -92,8 +92,8 @@ This package re-exports all functionality from `@metamask/connect-evm`:
 
 - `createEVMClient` - Factory function to create an EVM SDK instance
 - `MetamaskConnectEVM` - The main EVM SDK class
-- `EIP1193Provider` - EIP-1193 compliant provider interface
-- `getInfuraRpcUrls` - Helper to generate Infura RPC URLs
+- `EIP1193Provider` - EIP-1193 compliant provider interface keyed
+- `getInfuraRpcUrls` - Helper to generate EVM Infura RPC URLs keyed by hex chain ID
 
 See [@metamask/connect-evm](../connect-evm/README.md) for detailed API documentation.
 
@@ -103,6 +103,7 @@ This package re-exports all functionality from `@metamask/connect-multichain`:
 
 - `createMultichainClient` - Factory function to create a Multichain SDK instance
 - `MetaMaskConnectMultichain` - The main Multichain SDK class
+- `getInfuraRpcUrls` - Helper to generate Infura RPC URLs keyed by CAIP Chain ID
 - Various domain types, utilities, and error classes
 
 See [@metamask/connect-multichain](../connect-multichain/README.md) for detailed API documentation.

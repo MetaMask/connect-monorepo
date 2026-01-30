@@ -324,7 +324,7 @@ Emits an event to all registered handlers.
 
 #### `getInfuraRpcUrls(infuraApiKey)`
 
-Generates Infura RPC URLs for common networks.
+Generates Infura RPC URLs for common networks keyed by CAIP Chain ID.
 
 **Parameters**
 
