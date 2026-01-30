@@ -93,7 +93,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         if (!accounts?.length) {
           // Convert numeric chain IDs to hex format for connect-evm API
           const chainIds = config.chains.map(
-            (chain) => `0x${chain.id.toString(16)}` as Hex,
+            (chain): Hex => `0x${chain.id.toString(16)}`,
           );
           if (parameters.connectAndSign || parameters.connectWith) {
             if (parameters.connectAndSign) {
@@ -130,13 +130,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         if (signResponse) {
           provider.emit('connectAndSign', {
             accounts,
-            chainId: currentChainId,
+            chainId: `0x${currentChainId.toString(16)}`,
             signResponse,
           });
         } else if (connectWithResponse) {
           provider.emit('connectWith', {
             accounts,
-            chainId: currentChainId,
+            chainId: `0x${currentChainId.toString(16)}`,
             connectWithResponse,
           });
         }
@@ -221,7 +221,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
 
       try {
         const instance = await this.getInstance();
-        const hexChainId = `0x${chainId.toString(16)}` as Hex;
+        const hexChainId: Hex = `0x${chainId.toString(16)}`;
         await instance.switchChain({
           chainId: hexChainId,
           chainConfiguration: {
