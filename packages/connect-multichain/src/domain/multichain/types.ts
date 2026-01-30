@@ -79,6 +79,8 @@ export type MultichainOptions = {
     extensionId?: string;
     onNotification?: (notification: unknown) => void;
   };
+  /** Enable debug logging */
+  debug?: boolean;
 };
 
 type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
