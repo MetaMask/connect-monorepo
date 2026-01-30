@@ -16,7 +16,7 @@ export const getInfuraRpcUrls = (infuraAPIKey: string): RpcUrlsMap => {
         return acc;
       }
       const chainId = numberToHex(parseInt(reference, 10));
-      acc[chainId] = url;
+      acc[chainId] = url as string;
       return acc;
     },
     {},
