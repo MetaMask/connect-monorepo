@@ -314,9 +314,11 @@ export class MetamaskConnectEVM {
    * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
-  async connect(
-    { account, forceRequest, chainIds = [DEFAULT_CHAIN_ID] }: ConnectOptions = {},
-  ): Promise<{ accounts: Address[]; chainId: Hex }> {
+  async connect({
+    account,
+    forceRequest,
+    chainIds = [DEFAULT_CHAIN_ID],
+  }: ConnectOptions = {}): Promise<{ accounts: Address[]; chainId: Hex }> {
     logger('request: connect', { account });
 
     if (!chainIds || chainIds.length === 0) {
