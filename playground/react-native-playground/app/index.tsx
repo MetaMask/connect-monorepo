@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
-import { hexToNumber, type CaipAccountId } from '@metamask/utils';
+import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { TEST_IDS } from '@metamask/playground-ui';
 
@@ -77,8 +77,7 @@ export default function Page() {
 	const connectLegacyEVM = useCallback(async () => {
 		const selectedScopesArray = customScopes.filter((scope) => scope.length);
 		// Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
-		// Then convert hex chain IDs to numbers for the connect method
-		const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+		const chainIds = convertCaipChainIdsToHex(selectedScopesArray) as Hex[];
 		await legacyConnect(chainIds);
 	}, [customScopes, legacyConnect]);
 
