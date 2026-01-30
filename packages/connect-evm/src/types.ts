@@ -7,7 +7,7 @@ export type CaipAccountId = `${string}:${string}:${string}`;
 export type CaipChainId = `${string}:${string}`;
 
 export type EIP1193ProviderEvents = {
-  connect: [{ chainId: string }];
+  connect: [{ chainId: Hex }];
   disconnect: [];
   accountsChanged: [Address[]];
   chainChanged: [Hex];
@@ -19,12 +19,12 @@ export type EIP1193ProviderEvents = {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   display_uri: [string];
   connectAndSign: [
-    { accounts: readonly Address[]; chainId: number; signResponse: string },
+    { accounts: readonly Address[]; chainId: Hex; signResponse: string },
   ];
   connectWith: [
     {
       accounts: readonly Address[];
-      chainId: number;
+      chainId: Hex;
       connectWithResponse: unknown;
     },
   ];
@@ -38,12 +38,12 @@ export type EventHandlers = {
   displayUri: (uri: string) => void;
   connectAndSign: (result: {
     accounts: readonly Address[];
-    chainId: number;
+    chainId: Hex;
     signResponse: string;
   }) => void;
   connectWith: (result: {
     accounts: readonly Address[];
-    chainId: number;
+    chainId: Hex;
     connectWithResponse: unknown;
   }) => void;
 };
@@ -71,7 +71,7 @@ export type AddEthereumChainParameter = {
 // Specific provider request types
 type ConnectRequest = {
   method: 'wallet_requestPermissions' | 'eth_requestAccounts';
-  params: [chainId?: number, account?: string];
+  params: [chainId?: Hex, account?: string];
 };
 
 type RevokePermissionsRequest = {

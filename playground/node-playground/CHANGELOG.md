@@ -14,5 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `@types/node` from ^20.4.1 to ^22.9.0 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 - Bump `tsup` from ^8.0.1 to ^8.4.0 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
 - Bump `typescript` from ~5.2.2 to ~5.9.2 ([#11](https://github.com/MetaMask/connect-monorepo/pull/11))
+- Update to use hex chain ID format for `@metamask/connect-evm` API compatibility ([#150](https://github.com/MetaMask/connect-monorepo/pull/150))
 
 [Unreleased]: https://github.com/MetaMask/connect-monorepo/

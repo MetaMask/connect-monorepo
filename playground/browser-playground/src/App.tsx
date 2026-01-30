@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
-import { hexToNumber, type CaipAccountId } from '@metamask/utils';
+import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
 import { FEATURED_NETWORKS, convertCaipChainIdsToHex, TEST_IDS } from '@metamask/playground-ui';
 import { useSDK } from './sdk';
@@ -93,8 +93,7 @@ function App() {
   const connectLegacyEVM = useCallback(async () => {
     const selectedScopesArray = customScopes.filter((scope) => scope.length);
     // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
-    // Then convert hex chain IDs to numbers for the connect method
-    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray) as Hex[];
     await legacyConnect(chainIds);
   }, [customScopes, legacyConnect]);
 

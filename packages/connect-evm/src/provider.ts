@@ -5,7 +5,7 @@
 /* eslint-disable jsdoc/require-returns -- Inherited from abstract class */
 import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
-import { hexToNumber, numberToHex } from '@metamask/utils';
+import { hexToNumber } from '@metamask/utils';
 
 import { INTERCEPTABLE_METHODS } from './constants';
 import { logger } from './logger';
@@ -79,8 +79,8 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
       throw new Error('No chain ID selected');
     }
 
-    const chainId = hexToNumber(this.#selectedChainId);
-    const scope: Scope = `eip155:${chainId}`;
+    const decimalChainId = hexToNumber(this.#selectedChainId);
+    const scope: Scope = `eip155:${decimalChainId}`;
 
     // Validate that the chain is configured in supportedNetworks
     // This check is performed here to provide better error messages
@@ -120,16 +120,8 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     return this.#selectedChainId;
   }
 
-  public set selectedChainId(chainId: Hex | number | undefined) {
-    const hexChainId =
-      chainId && typeof chainId === 'number' ? numberToHex(chainId) : chainId;
-
-    // Don't overwrite the selected chain ID with an undefined value
-    if (!hexChainId) {
-      return;
-    }
-
-    this.#selectedChainId = hexChainId as Hex;
+  public set selectedChainId(chainId: Hex | undefined) {
+    this.#selectedChainId = chainId;
   }
 
   // ==========================================
