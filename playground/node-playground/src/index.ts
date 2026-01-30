@@ -16,7 +16,7 @@ import {
   getInfuraRpcUrls,
   type SessionData,
 } from '@metamask/connect-multichain';
-import { hexToNumber } from '@metamask/utils';
+import { hexToNumber, type Hex } from '@metamask/utils';
 import chalk from 'chalk';
 import dotenv from 'dotenv';
 import inquirer from 'inquirer';
@@ -29,11 +29,41 @@ type AppState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SIGNING';
 type ConnectorType = 'multichain' | 'evm';
 
 const AVAILABLE_CHAINS = [
-  { id: 1, name: 'Ethereum Mainnet', caip: 'eip155:1' },
-  { id: 137, name: 'Polygon', caip: 'eip155:137' },
-  { id: 59144, name: 'Linea', caip: 'eip155:59144' },
-  { id: 11155111, name: 'Sepolia Testnet', caip: 'eip155:11155111' },
+  { id: 1, hexId: '0x1' as Hex, name: 'Ethereum Mainnet', caip: 'eip155:1' },
+  { id: 137, hexId: '0x89' as Hex, name: 'Polygon', caip: 'eip155:137' },
+  { id: 59144, hexId: '0xe708' as Hex, name: 'Linea', caip: 'eip155:59144' },
+  {
+    id: 11155111,
+    hexId: '0xaa36a7' as Hex,
+    name: 'Sepolia Testnet',
+    caip: 'eip155:11155111',
+  },
 ] as const;
+
+/**
+ * Converts CAIP-2 keyed RPC URLs map to hex-keyed format.
+ * Example: { 'eip155:1': 'url' } -> { '0x1': 'url' }
+ *
+ * @param caipMap - A map of CAIP-2 chain IDs to RPC URLs
+ * @returns A map of hex chain IDs to RPC URLs
+ */
+function convertCaipToHexKeys(
+  caipMap: Record<string, string>,
+): Record<Hex, string> {
+  return Object.entries(caipMap).reduce<Record<Hex, string>>(
+    (acc, [caipChainId, url]) => {
+      // Extract the numeric part from CAIP-2 format (e.g., 'eip155:1' -> 1)
+      const match = caipChainId.match(/^eip155:(\d+)$/u);
+      if (match?.[1]) {
+        const decimalChainId = parseInt(match[1], 10);
+        const hexChainId: Hex = `0x${decimalChainId.toString(16)}`;
+        acc[hexChainId] = url;
+      }
+      return acc;
+    },
+    {},
+  );
+}
 
 // Store our application state in a simple object
 const state: {
@@ -158,7 +188,7 @@ const handleConnect = async () => {
       );
     } else if (state.connectorType === 'evm') {
       // Connect using EVM connector (Ethereum Mainnet only)
-      await state.evmSdk?.connect({ chainIds: [1] });
+      await state.evmSdk?.connect({ chainIds: ['0x1'] });
     }
   } catch (error: unknown) {
     if (state.spinner) {
@@ -282,7 +312,7 @@ const handleSwitchChain = async () => {
       message: 'Select a chain to switch to:',
       choices: availableChains.map((chainOption) => ({
         name: chainOption.name,
-        value: chainOption.id,
+        value: chainOption.hexId,
       })),
     },
   ]);
@@ -294,8 +324,8 @@ const handleSwitchChain = async () => {
   try {
     await state.evmSdk.switchChain({ chainId: chain });
     const chainName =
-      AVAILABLE_CHAINS.find((chainOption) => chainOption.id === chain)?.name ??
-      'chain';
+      AVAILABLE_CHAINS.find((chainOption) => chainOption.hexId === chain)
+        ?.name ?? 'chain';
     state.spinner.succeed(`Successfully switched to ${chainName}.`);
   } catch (error: unknown) {
     state.spinner.fail('Failed to switch chain.');
@@ -376,6 +406,8 @@ const main = async (): Promise<void> => {
 
   const infuraApiKey = process.env.INFURA_API_KEY ?? 'demo';
   const supportedNetworks = getInfuraRpcUrls(infuraApiKey);
+  // Convert CAIP-keyed RPC URLs to hex-keyed format for EVM SDK
+  const hexKeyedNetworks = convertCaipToHexKeys(supportedNetworks);
 
   // Initialize Multichain SDK
   state.metamaskConnectMultichain = await createMultichainClient({
@@ -395,7 +427,7 @@ const main = async (): Promise<void> => {
       url: 'https://playground.metamask.io',
     },
     api: {
-      supportedNetworks,
+      supportedNetworks: hexKeyedNetworks,
     },
     eventHandlers: {
       connect: ({ accounts, chainId }) => {

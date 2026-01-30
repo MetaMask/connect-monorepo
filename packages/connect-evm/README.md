@@ -80,8 +80,9 @@ const sdk = await createEVMClient({
     url: 'https://mydapp.com',
   },
   api: {
+    // Chain IDs are specified in hex format
     supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
+      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY',
     },
   },
   // React Native: use Linking.openURL for deeplinks

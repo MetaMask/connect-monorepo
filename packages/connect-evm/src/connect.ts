@@ -14,11 +14,7 @@ import {
   isRejectionError,
   TransportType,
 } from '@metamask/connect-multichain';
-import {
-  numberToHex,
-  hexToNumber,
-  isHexString as isHex,
-} from '@metamask/utils';
+import { hexToNumber } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
 import { enableDebug, logger } from './logger';
@@ -43,7 +39,7 @@ import {
   validSupportedChainsUrls,
 } from './utils/type-guards';
 
-const DEFAULT_CHAIN_ID = 1;
+const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
 
 /** The options for the connect method */
@@ -52,8 +48,8 @@ type ConnectOptions = {
   account?: string | undefined;
   /** Whether to force a request regardless of an existing session */
   forceRequest?: boolean;
-  /** All available chain IDs in the dapp */
-  chainIds?: number[];
+  /** All available chain IDs in the dapp in hex format */
+  chainIds?: Hex[];
 };
 
 /**
@@ -319,11 +315,9 @@ export class MetamaskConnectEVM {
    * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
-  async connect({
-    account,
-    forceRequest,
-    chainIds = [DEFAULT_CHAIN_ID],
-  }: ConnectOptions = {}): Promise<{ accounts: Address[]; chainId: number }> {
+  async connect(
+    { account, forceRequest, chainIds = [DEFAULT_CHAIN_ID] }: ConnectOptions = {},
+  ): Promise<{ accounts: Address[]; chainId: Hex }> {
     logger('request: connect', { account });
 
     if (!chainIds || chainIds.length === 0) {
@@ -332,7 +326,7 @@ export class MetamaskConnectEVM {
 
     const caipChainIds = Array.from(
       new Set(chainIds.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID]),
-    ).map((id) => `eip155:${id}`);
+    ).map((id) => `eip155:${hexToNumber(id)}`);
 
     const caipAccountIds = account
       ? caipChainIds.map((caipChainId) => `${caipChainId}:${account}`)
@@ -375,7 +369,7 @@ export class MetamaskConnectEVM {
         // @ts-expect-error TODO: address this
         if (notification?.method === 'metamask_chainChanged') {
           // @ts-expect-error TODO: address this
-          const notificationChainId = Number(notification?.params?.chainId);
+          const notificationChainId = notification?.params?.chainId;
           logger('transport-event: chainChanged', notificationChainId);
           // Cache the chainId for persistence across page refreshes
           this.#cacheChainId(notificationChainId).catch((error) => {
@@ -394,7 +388,7 @@ export class MetamaskConnectEVM {
     // TODO: update required here since accounts and chainId are now promises
     return {
       accounts: this.#provider.accounts,
-      chainId: hexToNumber(chainId),
+      chainId,
     };
   }
 
@@ -403,7 +397,7 @@ export class MetamaskConnectEVM {
    *
    * @param options - The connection options
    * @param options.message - The message to sign after connecting
-   * @param [options.chainIds] - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
+   * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the signature
    * @throws Error if the selected account is not available after timeout
    */
@@ -412,7 +406,7 @@ export class MetamaskConnectEVM {
     chainIds,
   }: {
     message: string;
-    chainIds?: number[];
+    chainIds?: Hex[];
   }): Promise<string> {
     const { accounts, chainId } = await this.connect({
       chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
@@ -438,7 +432,7 @@ export class MetamaskConnectEVM {
    * @param options - The options for connecting and invoking the method
    * @param options.method - The method name to invoke
    * @param options.params - The parameters to pass to the method, or a function that receives the account and returns params
-   * @param [options.chainIds] - Optional chain IDs to connect to (defaults to ethereum mainnet if not provided)
+   * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @param [options.account] - Optional specific account to connect to
    * @param [options.forceRequest] - Whether to force a request regardless of an existing session
    * @returns A promise that resolves with the result of the method invocation
@@ -453,7 +447,7 @@ export class MetamaskConnectEVM {
   }: {
     method: string;
     params: unknown[] | ((account: Address) => unknown[]);
-    chainIds?: number[];
+    chainIds?: Hex[];
     account?: string | undefined;
     forceRequest?: boolean;
   }): Promise<unknown> {
@@ -516,29 +510,28 @@ export class MetamaskConnectEVM {
     chainId,
     chainConfiguration,
   }: {
-    chainId: number | Hex;
+    chainId: Hex;
     chainConfiguration?: AddEthereumChainParameter;
   }): Promise<void> {
     const method = 'wallet_switchEthereumChain';
-    const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
-    const scope: Scope = `eip155:${isHex(chainId) ? hexToNumber(chainId) : chainId}`;
-    const params = [{ chainId: hexChainId }];
+    const scope: Scope = `eip155:${hexToNumber(chainId)}`;
+    const params = [{ chainId }];
 
     await this.#trackWalletActionRequested(method, scope, params);
 
     // TODO (wenfix): better way to return here other than resolving.
-    if (this.selectedChainId === hexChainId) {
+    if (this.selectedChainId === chainId) {
       return Promise.resolve();
     }
 
     const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
 
     if (
-      permittedChainIds.includes(hexChainId) &&
+      permittedChainIds.includes(chainId) &&
       this.#core.transportType === TransportType.MWP
     ) {
-      await this.#cacheChainId(hexChainId);
-      this.#onChainChanged(hexChainId);
+      await this.#cacheChainId(chainId);
+      this.#onChainChanged(chainId);
       await this.#trackWalletActionSucceeded(method, scope, params);
       return Promise.resolve();
     }
@@ -559,8 +552,8 @@ export class MetamaskConnectEVM {
       await this.#trackWalletActionSucceeded(method, scope, params);
       if ((result as { result: unknown }).result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
-        await this.#cacheChainId(hexChainId);
-        this.#onChainChanged(hexChainId);
+        await this.#cacheChainId(chainId);
+        this.#onChainChanged(chainId);
       }
       return Promise.resolve();
     } catch (error) {
@@ -628,7 +621,7 @@ export class MetamaskConnectEVM {
 
     if (isSwitchChainRequest(request)) {
       return this.switchChain({
-        chainId: parseInt(request.params[0].chainId, 16),
+        chainId: request.params[0].chainId as Hex,
       });
     }
 
@@ -638,10 +631,10 @@ export class MetamaskConnectEVM {
 
     if (isAccountsRequest(request)) {
       const { method } = request;
-      const chainId = this.#provider.selectedChainId
-        ? hexToNumber(this.#provider.selectedChainId)
-        : 1;
-      const scope: Scope = `eip155:${chainId}`;
+      const decimalChainId = hexToNumber(
+        this.#provider.selectedChainId ?? '0x1',
+      );
+      const scope: Scope = `eip155:${decimalChainId}`;
       const params: unknown[] = [];
 
       await this.#trackWalletActionRequested(method, scope, params);
@@ -663,7 +656,7 @@ export class MetamaskConnectEVM {
    */
   #clearConnectionState(): void {
     this.#provider.accounts = [];
-    this.#provider.selectedChainId = undefined as unknown as number;
+    this.#provider.selectedChainId = undefined;
   }
 
   /**
@@ -684,10 +677,12 @@ export class MetamaskConnectEVM {
     }
 
     // Get chain ID from config or use current chain
-    const chainId = chainConfiguration.chainId
-      ? parseInt(chainConfiguration.chainId, 16)
-      : hexToNumber(this.#provider.selectedChainId ?? '0x1');
-    const scope: Scope = `eip155:${chainId}`;
+    const chainId =
+      (chainConfiguration.chainId as Hex) ||
+      this.#provider.selectedChainId ||
+      '0x1';
+    const decimalChainId = hexToNumber(chainId);
+    const scope: Scope = `eip155:${decimalChainId}`;
     const params = [chainConfiguration];
 
     await this.#trackWalletActionRequested(method, scope, params);
@@ -736,14 +731,13 @@ export class MetamaskConnectEVM {
   /**
    * Caches the chainId to storage for persistence across page refreshes.
    *
-   * @param chainId - The chain ID (can be hex string or number)
+   * @param chainId - The hex chain ID
    */
-  async #cacheChainId(chainId: Hex | number): Promise<void> {
+  async #cacheChainId(chainId: Hex): Promise<void> {
     try {
-      const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
       await this.#core.storage.adapter.set(
         CHAIN_STORE_KEY,
-        JSON.stringify(hexChainId),
+        JSON.stringify(chainId),
       );
     } catch (error) {
       logger('Error caching chainId', error);
@@ -753,17 +747,16 @@ export class MetamaskConnectEVM {
   /**
    * Handles chain change events and updates the provider's selected chain ID.
    *
-   * @param chainId - The new chain ID (can be hex string or number)
+   * @param chainId - The new hex chain ID
    */
-  #onChainChanged(chainId: Hex | number): void {
-    const hexChainId = isHex(chainId) ? chainId : numberToHex(chainId);
-    if (hexChainId === this.#provider.selectedChainId) {
+  #onChainChanged(chainId: Hex): void {
+    if (chainId === this.#provider.selectedChainId) {
       return;
     }
     logger('handler: chainChanged', { chainId });
     this.#provider.selectedChainId = chainId;
-    this.#eventHandlers?.chainChanged?.(hexChainId);
-    this.#provider.emit('chainChanged', hexChainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
+    this.#provider.emit('chainChanged', chainId);
   }
 
   /**
@@ -782,19 +775,19 @@ export class MetamaskConnectEVM {
    * Handles connection events and emits the connect event to listeners.
    *
    * @param options - The connection options
-   * @param options.chainId - The chain ID of the connection (can be hex string or number)
+   * @param options.chainId - The hex chain ID of the connection
    * @param options.accounts - The accounts of the connection
    */
   #onConnect({
     chainId,
     accounts,
   }: {
-    chainId: Hex | number;
+    chainId: Hex;
     accounts: Address[];
   }): void {
     logger('handler: connect', { chainId, accounts });
     const data = {
-      chainId: isHex(chainId) ? chainId : numberToHex(chainId),
+      chainId,
       accounts,
     };
 
@@ -957,7 +950,7 @@ export class MetamaskConnectEVM {
  * @param options - The options for the Metamask Connect/EVM layer
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
- * @param options.api.supportedNetworks - A map of CAIP chain IDs to RPC URLs for read-only requests
+ * @param options.api.supportedNetworks - A map of hex chain IDs to RPC URLs for read-only requests
  * @param options.ui - UI configuration options
  * @param options.ui.headless - Whether to run without UI
  * @param options.ui.preferExtension - Whether to prefer browser extension
@@ -973,14 +966,19 @@ export class MetamaskConnectEVM {
  * @returns The Metamask Connect/EVM layer instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp' | 'api' | 'mobile' | 'transport'> & {
+  options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
     ui?: Omit<MultichainOptions['ui'], 'factory'>;
   } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
+    api: {
+      supportedNetworks: Record<Hex, string>;
+    };
   },
 ): Promise<MetamaskConnectEVM> {
-  enableDebug(options.debug);
+  if (options.debug) {
+    enableDebug();
+  }
 
   logger('Creating Metamask Connect/EVM with options:', options);
 
@@ -996,11 +994,20 @@ export async function createEVMClient(
 
   validSupportedChainsUrls(options.api.supportedNetworks, 'supportedNetworks');
 
+  const supportedNetworksCaipChainId = Object.entries(
+    options.api.supportedNetworks,
+  ).reduce<Record<string, string>>((acc, [hexChainId, url]) => {
+    const decimalChainId = parseInt(hexChainId, 16);
+    const caip2ChainId = `eip155:${decimalChainId}`;
+    acc[caip2ChainId] = url;
+    return acc;
+  }, {});
+
   try {
     const core = await createMultichainClient({
       ...options,
       api: {
-        supportedNetworks: options.api.supportedNetworks,
+        supportedNetworks: supportedNetworksCaipChainId,
       },
     });
 

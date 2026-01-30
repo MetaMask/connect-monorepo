@@ -2,6 +2,7 @@ import { MetamaskConnectEVM, createEVMClient } from '@metamask/connect-evm';
 import type { EIP1193Provider } from '@metamask/connect-evm';
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
+import type { Hex } from '@metamask/utils';
 import type React from 'react';
 import {
   createContext,
@@ -13,6 +14,28 @@ import {
 } from 'react';
 import { Linking } from 'react-native';
 
+/**
+ * Converts CAIP-2 keyed RPC URLs map to hex-keyed format.
+ * Example: { 'eip155:1': 'url' } -> { '0x1': 'url' }
+ */
+function convertCaipToHexKeys(
+  caipMap: Record<string, string>,
+): Record<Hex, string> {
+  return Object.entries(caipMap).reduce(
+    (acc, [caipChainId, url]) => {
+      // Extract the numeric part from CAIP-2 format (e.g., 'eip155:1' -> 1)
+      const match = caipChainId.match(/^eip155:(\d+)$/);
+      if (match?.[1]) {
+        const decimalChainId = parseInt(match[1], 10);
+        const hexChainId = `0x${decimalChainId.toString(16)}` as Hex;
+        acc[hexChainId] = url;
+      }
+      return acc;
+    },
+    {} as Record<Hex, string>,
+  );
+}
+
 const LegacyEVMSDKContext = createContext<
   | {
       sdk: MetamaskConnectEVM | undefined;
@@ -20,7 +43,7 @@ const LegacyEVMSDKContext = createContext<
       provider: EIP1193Provider | undefined;
       chainId: string | undefined;
       accounts: string[];
-      connect: (chainIds: number[]) => Promise<void>;
+      connect: (chainIds: Hex[]) => Promise<void>;
       disconnect: () => Promise<void>;
     }
   | undefined
@@ -42,7 +65,8 @@ export const LegacyEVMSDKProvider = ({
     if (!sdkRef.current) {
       const setupSDK = async () => {
         const infuraApiKey = process.env.EXPO_PUBLIC_INFURA_API_KEY || '';
-        const supportedNetworks = infuraApiKey
+        // Get CAIP-keyed RPC URLs and convert to hex-keyed format
+        const caipNetworks = infuraApiKey
           ? getInfuraRpcUrls(infuraApiKey)
           : {
               // Fallback public RPC endpoints if no Infura key is provided
@@ -51,6 +75,7 @@ export const LegacyEVMSDKProvider = ({
               'eip155:11155111': 'https://sepolia.infura.io/v3/demo',
               'eip155:137': 'https://polygon-rpc.com',
             };
+        const supportedNetworks = convertCaipToHexKeys(caipNetworks);
 
         // Type assertion needed because createEVMClient's type doesn't include mobile/transport
         // but they are passed through to createMultichainClient at runtime
@@ -108,14 +133,14 @@ export const LegacyEVMSDKProvider = ({
     }
   }, []);
 
-  const connect = useCallback(async (chainIds: number[]) => {
+  const connect = useCallback(async (chainIds: Hex[]) => {
     try {
       if (!sdkRef.current) {
         throw new Error('SDK not initialized');
       }
       const sdkInstance = await sdkRef.current;
       // Ensure at least one chain ID is provided, default to mainnet if empty
-      const chainIdsToUse = chainIds.length > 0 ? chainIds : [1];
+      const chainIdsToUse = chainIds.length > 0 ? chainIds : ['0x1' as Hex];
       await sdkInstance.connect({ chainIds: chainIdsToUse });
     } catch (error) {
       console.error('Failed to connect:', error);

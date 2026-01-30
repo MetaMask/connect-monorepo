@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING** Standardize `chainId` to use `Hex` format throughout the public API ([#150](https://github.com/MetaMask/connect-monorepo/pull/150))
+  - `connect()`, `connectAndSign()`, and `connectWith()` now expect `chainIds` as hex strings instead of decimal numbers
+  - `connect()` now returns `{ accounts, chainId: Hex }` instead of `{ accounts, chainId: number }`
+  - `switchChain()` now expects `chainId: Hex` instead of `chainId: number | Hex`
+  - `createEVMClient()` param option `api.supportedNetworks` now expects hex chain IDs as keys (e.g., `'0x1'`) instead of CAIP chain IDs
+  - Event handler types for `connectAndSign` and `connectWith` now use `Hex` for `chainId`
+- The `debug` option param used by `createEVMClient()` now enables console debug logs of the underlying `MultichainClient` instance. ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
+
 ## [0.4.1]
 
 ### Fixed
