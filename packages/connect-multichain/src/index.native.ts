@@ -3,6 +3,7 @@
 import './polyfills/buffer-shim';
 
 import type { CreateMultichainFN, StoreClient } from './domain';
+import { enableDebug } from './domain';
 import { MetaMaskConnectMultichain } from './multichain';
 import { Store } from './store';
 import { ModalFactory } from './ui/index.native';
@@ -10,6 +11,10 @@ import { ModalFactory } from './ui/index.native';
 export * from './domain';
 
 export const createMultichainClient: CreateMultichainFN = async (options) => {
+  if (options.debug) {
+    enableDebug('metamask-sdk:*');
+  }
+
   const uiModules = await import('./ui/modals/rn');
   let storage: StoreClient;
   if (options.storage) {

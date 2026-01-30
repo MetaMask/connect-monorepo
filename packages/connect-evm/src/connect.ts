@@ -971,7 +971,9 @@ export async function createEVMClient(
     };
   },
 ): Promise<MetamaskConnectEVM> {
-  enableDebug(options.debug);
+  if (options.debug) {
+    enableDebug();
+  }
 
   logger('Creating Metamask Connect/EVM with options:', options);
 
