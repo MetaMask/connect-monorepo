@@ -622,7 +622,7 @@ export class MetamaskConnectEVM {
 
     if (isSwitchChainRequest(request)) {
       return this.switchChain({
-        chainId: request.params[0].chainId as unknown as Hex,
+        chainId: request.params[0].chainId as Hex,
       });
     }
 
@@ -679,8 +679,8 @@ export class MetamaskConnectEVM {
 
     // Get chain ID from config or use current chain
     const chainId =
-      (chainConfiguration.chainId as unknown as Hex) ??
-      this.#provider.selectedChainId ??
+      (chainConfiguration.chainId as Hex) ||
+      this.#provider.selectedChainId ||
       '0x1';
     const decimalChainId = hexToNumber(chainId);
     const scope: Scope = `eip155:${decimalChainId}`;
