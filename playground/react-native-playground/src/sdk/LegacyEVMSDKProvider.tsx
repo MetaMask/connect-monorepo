@@ -25,7 +25,7 @@ function convertCaipToHexKeys(
     (acc, [caipChainId, url]) => {
       // Extract the numeric part from CAIP-2 format (e.g., 'eip155:1' -> 1)
       const match = caipChainId.match(/^eip155:(\d+)$/);
-      if (match) {
+      if (match?.[1]) {
         const decimalChainId = parseInt(match[1], 10);
         const hexChainId = `0x${decimalChainId.toString(16)}` as Hex;
         acc[hexChainId] = url;
