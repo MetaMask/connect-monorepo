@@ -33,8 +33,9 @@ const sdk = await createEVMClient({
       // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
       ...getInfuraRpcUrls(INFURA_API_KEY),
       // or specify your own CAIP Chain ID to rpc endpoint mapping
-      'eip155:1': 'https://mainnet.example.io/rpc',
-      'eip155:137': 'https://polygon-mainnet.example.io/rpc',
+      // Hex chain IDs mapped to RPC URLs
+      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY',      // Ethereum Mainnet
+      '0x89': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY', // Polygon
     },
   },
 });
@@ -42,7 +43,7 @@ const sdk = await createEVMClient({
 // Connect to MetaMask
 let accounts, chainId;
 try {
-  ({ accounts, chainId } = await sdk.connect({ chainIds: [1, 137] })); // Connect to Ethereum Mainnet, and Polygon
+  ({ accounts, chainId } = await sdk.connect({ chainIds: ['0x1', '0x89'] })); // Connect to Ethereum Mainnet and Polygon
 } catch (error) {
   if (error.code === 4001) {
     console.log('User rejected the connection request');
@@ -167,7 +168,7 @@ Factory function to create a new MetaMask Connect EVM instance.
 | `dapp.name` | `string` | Yes | Name of your dApp |
 | `dapp.url` | `string` | No | URL of your dApp |
 | `dapp.iconUrl` | `string` | No | Icon URL for your dApp |
-| `api.supportedNetworks` | `Record<string, string>` | Yes | Map of CAIP chain IDs to RPC URLs |
+| `api.supportedNetworks` | `Record<Hex, string>` | Yes | Map of hex chain IDs to RPC URLs |
 | `ui.headless` | `boolean` | No | Run without UI (for custom QR implementations) |
 | `ui.preferExtension` | `boolean` | No | Prefer browser extension over mobile (default: true) |
 | `ui.showInstallModal` | `boolean` | No | Show installation modal for desktop |
@@ -187,8 +188,8 @@ const sdk = await createEVMClient({
   dapp: { name: 'My DApp', url: 'https://mydapp.com' },
   api: {
     supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/KEY',
-      'eip155:137': 'https://polygon-mainnet.infura.io/v3/KEY',
+      '0x1': 'https://mainnet.infura.io/v3/KEY',
+      '0x89': 'https://polygon-mainnet.infura.io/v3/KEY',
     },
   },
   eventHandlers: {
@@ -215,17 +216,17 @@ Connects to MetaMask wallet.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `options.chainIds` | `number[]` | No | Array of chain IDs to request permission for (defaults to ethereum mainnet if not provided) |
+| `options.chainIds` | `Hex[]` | No | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided) |
 | `options.account` | `string` | No | Specific account address to connect |
 | `options.forceRequest` | `boolean` | No | Force a new connection request even if already connected |
 
 **Returns**
 
-`Promise<{ accounts: Address[]; chainId: number }>` - The connected accounts and active chain ID.
+`Promise<{ accounts: Address[]; chainId: Hex }>` - The connected accounts and active chain ID.
 
 ```typescript
 const { accounts, chainId } = await sdk.connect({
-  chainIds: [1, 137],
+  chainIds: ['0x1', '0x89'], // Ethereum Mainnet and Polygon
   account: '0x...',
   forceRequest: false,
 });
@@ -240,7 +241,7 @@ Connects and immediately signs a message using `personal_sign`.
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `options.message` | `string` | Yes | The message to sign after connecting |
-| `options.chainIds` | `number[]` | No | Chain IDs to connect to (defaults to mainnet) |
+| `options.chainIds` | `Hex[]` | No | Hex chain IDs to connect to (defaults to `['0x1']`) |
 
 **Returns**
 
@@ -249,7 +250,7 @@ Connects and immediately signs a message using `personal_sign`.
 ```typescript
 const signature = await sdk.connectAndSign({
   message: 'Sign this message',
-  chainIds: [1],
+  chainIds: ['0x1'],
 });
 ```
 
@@ -263,7 +264,7 @@ Connects and immediately invokes a method with specified parameters.
 |------|------|----------|-------------|
 | `options.method` | `string` | Yes | The RPC method name to invoke |
 | `options.params` | `unknown[] \| ((account: Address) => unknown[])` | Yes | Method parameters, or a function that receives the connected account and returns params |
-| `options.chainIds` | `number[]` | No | Chain IDs to connect to (defaults to mainnet) |
+| `options.chainIds` | `Hex[]` | No | Hex chain IDs to connect to (defaults to `['0x1']`) |
 | `options.account` | `string` | No | Specific account to connect |
 | `options.forceRequest` | `boolean` | No | Force a new connection request |
 
@@ -279,7 +280,7 @@ const result = await sdk.connectWith({
     to: '0x...',
     value: '0x1',
   }],
-  chainIds: [1],
+  chainIds: ['0x1'],
 });
 ```
 
@@ -307,7 +308,7 @@ Switches to a different chain. Will attempt to add the chain if not configured i
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `options.chainId` | `number \| Hex` | Yes | The chain ID to switch to |
+| `options.chainId` | `Hex` | Yes | The hex chain ID to switch to |
 | `options.chainConfiguration` | `AddEthereumChainParameter` | No | Chain configuration to use if the chain needs to be added |
 
 **Returns**
@@ -524,13 +525,13 @@ const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
 
 ```typescript
 type EventHandlers = {
-  connect: (result: { chainId: string; }) => void;
+  connect: (result: { chainId: Hex; }) => void;
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;
   displayUri: (uri: string) => void;
-  connectAndSign: (result: { accounts: Address[]; chainId: number; signResponse: string }) => void;
-  connectWith: (result: { accounts: Address[]; chainId: number; connectWithResponse: unknown }) => void;
+  connectAndSign: (result: { accounts: Address[]; chainId: Hex; signResponse: string }) => void;
+  connectWith: (result: { accounts: Address[]; chainId: Hex; connectWithResponse: unknown }) => void;
 };
 ```
 

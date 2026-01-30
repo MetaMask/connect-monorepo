@@ -144,6 +144,7 @@ Factory function to create a new Multichain SDK instance.
 | `analytics.integrationType` | `string` | No | Integration type for analytics |
 | `transport.extensionId` | `string` | No | Custom extension ID |
 | `transport.onNotification` | `(notification: unknown) => void` | No | Notification handler |
+| `debug` | `boolean` | No | Enable debug logging |
 
 #### Returns
 
