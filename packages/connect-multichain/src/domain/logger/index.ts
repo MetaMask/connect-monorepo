@@ -9,6 +9,7 @@ import type { StoreClient } from '../store/client';
  * These namespaces help categorize and filter debug output.
  */
 export type LoggerNameSpaces =
+  | 'metamask-sdk:*'
   | 'metamask-sdk'
   | 'metamask-sdk:core'
   | 'metamask-sdk:provider'

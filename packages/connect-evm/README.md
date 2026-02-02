@@ -33,10 +33,15 @@ const sdk = await createEVMClient({
     name: 'My DApp',
     url: 'https://mydapp.com',
   },
+  api: {
+    supportedNetworks: {
+      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY',
+    },
+  },
 });
 
-// Connect to MetaMask
-await sdk.connect({ chainId: 1 }); // Connect to Ethereum Mainnet
+// Connect to MetaMask (chainIds use hex format)
+await sdk.connect({ chainIds: ['0x1'] }); // Connect to Ethereum Mainnet
 
 // Get the EIP-1193 provider
 const provider = await sdk.getProvider();
@@ -59,16 +64,23 @@ const sdk = await createEVMClient({
     name: 'My DApp',
     url: 'https://mydapp.com',
   },
+  api: {
+    // Chain IDs are specified in hex format
+    supportedNetworks: {
+      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY', // Ethereum Mainnet
+      '0x89': 'https://polygon-rpc.com', // Polygon
+    },
+  },
 });
 
 // Connect with default chain (mainnet)
 const { accounts, chainId } = await sdk.connect();
 
-// Connect to a specific chain
-await sdk.connect({ chainId: 137 }); // Polygon
+// Connect to specific chains (chainIds use hex format)
+await sdk.connect({ chainIds: ['0x89'] }); // Polygon
 
-// Connect to a specific chain and account
-await sdk.connect({ chainId: 1, account: '0x...' });
+// Connect to specific chains and account
+await sdk.connect({ chainIds: ['0x1'], account: '0x...' });
 ```
 
 ### React Native Support
@@ -85,8 +97,9 @@ const sdk = await createEVMClient({
     url: 'https://mydapp.com',
   },
   api: {
+    // Chain IDs are specified in hex format
     supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
+      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY',
     },
   },
   // React Native: use Linking.openURL for deeplinks

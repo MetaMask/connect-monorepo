@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
-import { hexToNumber, type CaipAccountId } from '@metamask/utils';
+import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { FEATURED_NETWORKS, convertCaipChainIdsToHex, TEST_IDS } from '@metamask/playground-ui';
@@ -10,6 +10,11 @@ import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
+import {
+  isProviderActive,
+  setProviderActive,
+  clearAllActiveProviders,
+} from './utils/activeProviderStorage';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { Buffer } from 'buffer';
 
@@ -18,6 +23,12 @@ global.Buffer = Buffer;
 function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
+
+  // Track whether wagmi should be shown based on localStorage
+  const [wagmiIsActiveProvider, setWagmiIsActiveProvider] = useState(() =>
+    isProviderActive('wagmi'),
+  );
+
   const {
     error,
     status,
@@ -38,6 +49,16 @@ function App() {
   const wagmiChainId = useChainId();
   const { connectors, connectAsync: wagmiConnectAsync, status: wagmiStatus } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
+
+  // On mount, check if wagmi is connected but not marked as active provider
+  // If so, disconnect wagmi to clear stale state
+  useEffect(() => {
+    if (wagmiConnected && !isProviderActive('wagmi')) {
+      // Wagmi thinks it's connected but our localStorage says it shouldn't be
+      // Disconnect to clear stale state
+      wagmiDisconnect();
+    }
+  }, []);
   const { connected: solanaConnected, publicKey: solanaPublicKey, wallets, select, connect: solanaConnect, disconnect: solanaDisconnect } = useWallet();
 
   const handleCheckboxChange = useCallback(
@@ -96,8 +117,7 @@ function App() {
   const connectLegacyEVM = useCallback(async () => {
     const selectedScopesArray = customScopes.filter((scope) => scope.length);
     // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
-    // Then convert hex chain IDs to numbers for the connect method
-    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray) as Hex[];
     await legacyConnect(chainIds);
   }, [customScopes, legacyConnect]);
 
@@ -116,6 +136,8 @@ function App() {
           connector: metaMaskConnector,
           chainId,
         });
+        setProviderActive('wagmi');
+        setWagmiIsActiveProvider(true);
       } catch (error) {
         console.error('Wagmi connection error:', error);
       }
@@ -144,6 +166,9 @@ function App() {
     status === 'disconnected' || status === 'pending' || status === 'loaded';
 
   const disconnect = useCallback(async () => {
+    clearAllActiveProviders();
+    setWagmiIsActiveProvider(false);
+
     // Disconnect all connections if connected
     if (isConnected) {
       await sdkDisconnect();
@@ -219,7 +244,7 @@ function App() {
               </button>
             )}
 
-            {!wagmiConnected && (
+            {(!wagmiConnected || !wagmiIsActiveProvider) && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect('wagmi')}
@@ -308,7 +333,7 @@ function App() {
               </div>
             </section>
           )}
-          {wagmiConnected && wagmiAddress && (
+          {wagmiConnected && wagmiAddress && wagmiIsActiveProvider && (
             <section className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Wagmi Connection

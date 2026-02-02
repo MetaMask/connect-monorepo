@@ -19,6 +19,7 @@ import type { ExactPartial, OneOf, UnionCompute } from '@wagmi/core/internal';
 import {
   type Address,
   getAddress,
+  type Hex,
   type ProviderConnectInfo,
   ResourceUnavailableRpcError,
   type RpcError,
@@ -90,7 +91,10 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         let signResponse: string | undefined;
         let connectWithResponse: unknown | undefined;
         if (!accounts?.length) {
-          const chainIds = config.chains.map((chain) => chain.id);
+          // Convert numeric chain IDs to hex format for connect-evm API
+          const chainIds = config.chains.map(
+            (chain): Hex => `0x${chain.id.toString(16)}`,
+          );
           if (parameters.connectAndSign || parameters.connectWith) {
             if (parameters.connectAndSign) {
               signResponse = await instance.connectAndSign({
@@ -126,13 +130,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         if (signResponse) {
           provider.emit('connectAndSign', {
             accounts,
-            chainId: currentChainId,
+            chainId: `0x${currentChainId.toString(16)}`,
             signResponse,
           });
         } else if (connectWithResponse) {
           provider.emit('connectWith', {
             accounts,
-            chainId: currentChainId,
+            chainId: `0x${currentChainId.toString(16)}`,
             connectWithResponse,
           });
         }
@@ -217,8 +221,9 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
 
       try {
         const instance = await this.getInstance();
+        const hexChainId: Hex = `0x${chainId.toString(16)}`;
         await instance.switchChain({
-          chainId,
+          chainId: hexChainId,
           chainConfiguration: {
             blockExplorerUrls: addEthereumChainParameter?.blockExplorerUrls
               ? [...addEthereumChainParameter.blockExplorerUrls]
@@ -293,9 +298,10 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           })();
           metamaskPromise = createEVMClient({
             api: {
+              // Use hex chain IDs as keys for supportedNetworks
               supportedNetworks: Object.fromEntries(
                 config.chains.map((chain) => [
-                  `eip155:${chain.id}`,
+                  `0x${chain.id.toString(16)}`,
                   chain.rpcUrls.default?.http[0],
                 ]),
               ),
