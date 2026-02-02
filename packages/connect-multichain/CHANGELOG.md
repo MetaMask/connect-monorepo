@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- build: re-introduce lint step to ci workflow ([#145](https://github.com/MetaMask/connect-monorepo/pull/145))
-
 ### Added
 
 - `createMultichainClient()` now accepts an optional `debug` param option which enables console debug logs when set to `true`. Defaults to `false`. ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
