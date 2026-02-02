@@ -40,6 +40,7 @@ function App() {
     chainId: legacyChainId,
     accounts: legacyAccounts,
     sdk: legacySDK,
+    error: legacyError,
     connect: legacyConnect,
     disconnect: legacyDisconnect,
   } = useLegacyEVMSDK();
@@ -79,7 +80,7 @@ function App() {
       for (const scope of scopes) {
         const { accounts } =
           session.sessionScopes?.[
-            scope as keyof typeof session.sessionScopes
+          scope as keyof typeof session.sessionScopes
           ] ?? {};
         if (accounts && accounts.length > 0) {
           allAccounts.push(...accounts);
@@ -258,10 +259,21 @@ function App() {
             )}
           </div>
         </section>
-        {error && (
+        {(error || legacyError) && (
           <section data-testid={TEST_IDS.app.sectionError} className="bg-white rounded-lg p-8 mb-6 shadow-sm">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-            <p className="text-gray-700">{error.message.toString()}</p>
+            {error && (
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Multichain:</span> {error.message.toString()}
+                {(error as any).code && <span className="ml-2 text-sm text-gray-500">(code: {(error as any).code})</span>}
+              </p>
+            )}
+            {legacyError && (
+              <p className="text-gray-700">
+                <span className="font-semibold">Legacy EVM:</span> {legacyError.message.toString()}
+                {(legacyError as any).code && <span className="ml-2 text-sm text-gray-500">(code: {(legacyError as any).code})</span>}
+              </p>
+            )}
           </section>
         )}
         <section data-testid={TEST_IDS.app.sectionConnected} className="bg-white rounded-lg p-8 mb-6 shadow-sm">

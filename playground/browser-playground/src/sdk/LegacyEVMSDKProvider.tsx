@@ -42,14 +42,15 @@ function convertCaipToHexKeys(
 
 const LegacyEVMSDKContext = createContext<
   | {
-      sdk: MetamaskConnectEVM | undefined;
-      connected: boolean;
-      provider: EIP1193Provider | undefined;
-      chainId: string | undefined;
-      accounts: string[];
-      connect: (chainIds: Hex[]) => Promise<void>;
-      disconnect: () => Promise<void>;
-    }
+    sdk: MetamaskConnectEVM | undefined;
+    connected: boolean;
+    provider: EIP1193Provider | undefined;
+    chainId: string | undefined;
+    accounts: string[];
+    error: Error | null;
+    connect: (chainIds: Hex[]) => Promise<void>;
+    disconnect: () => Promise<void>;
+  }
   | undefined
 >(undefined);
 
@@ -63,6 +64,7 @@ export const LegacyEVMSDKProvider = ({
   const [provider, setProvider] = useState<EIP1193Provider>();
   const [chainId, setChainId] = useState<string>();
   const [accounts, setAccounts] = useState<string[]>([]);
+  const [error, setError] = useState<Error | null>(null);
   const sdkRef = useRef<Promise<MetamaskConnectEVM>>(undefined);
 
   useEffect(() => {
@@ -73,12 +75,12 @@ export const LegacyEVMSDKProvider = ({
         const caipNetworks = infuraApiKey
           ? getInfuraRpcUrls(infuraApiKey)
           : {
-              // Fallback public RPC endpoints if no Infura key is provided
-              'eip155:1': 'https://eth.llamarpc.com',
-              'eip155:5': 'https://goerli.infura.io/v3/demo',
-              'eip155:11155111': 'https://sepolia.infura.io/v3/demo',
-              'eip155:137': 'https://polygon-rpc.com',
-            };
+            // Fallback public RPC endpoints if no Infura key is provided
+            'eip155:1': 'https://eth.llamarpc.com',
+            'eip155:5': 'https://goerli.infura.io/v3/demo',
+            'eip155:11155111': 'https://sepolia.infura.io/v3/demo',
+            'eip155:137': 'https://polygon-rpc.com',
+          };
         const supportedNetworks = convertCaipToHexKeys(caipNetworks);
 
         const clientSDK = await createEVMClient({
@@ -140,6 +142,7 @@ export const LegacyEVMSDKProvider = ({
   }, []);
 
   const connect = useCallback(async (chainIds: Hex[]) => {
+    setError(null);
     try {
       if (!sdkRef.current) {
         throw new Error('SDK not initialized');
@@ -149,8 +152,9 @@ export const LegacyEVMSDKProvider = ({
       const chainIdsToUse = chainIds.length > 0 ? chainIds : ['0x1' as Hex];
       await sdkInstance.connect({ chainIds: chainIdsToUse });
       setProviderActive('legacy-evm');
-    } catch (error) {
-      console.error('Failed to connect:', error);
+    } catch (err) {
+      console.error('Failed to connect:', err);
+      setError(err as Error);
     }
   }, []);
 
@@ -178,6 +182,7 @@ export const LegacyEVMSDKProvider = ({
         provider,
         chainId,
         accounts,
+        error,
         connect,
         disconnect,
       }}

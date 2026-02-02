@@ -108,10 +108,10 @@ export class MWPTransport implements ExtendedTransport {
       connectionTimeout: number;
       resumeTimeout: number;
     } = {
-      requestTimeout: DEFAULT_REQUEST_TIMEOUT,
-      connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
-      resumeTimeout: DEFAULT_RESUME_TIMEOUT,
-    },
+        requestTimeout: DEFAULT_REQUEST_TIMEOUT,
+        connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
+        resumeTimeout: DEFAULT_RESUME_TIMEOUT,
+      },
   ) {
     this.dappClient.on('message', this.handleMessage.bind(this));
     if (
@@ -149,14 +149,37 @@ export class MWPTransport implements ExtendedTransport {
     if (typeof message === 'object' && message !== null) {
       if ('data' in message) {
         const messagePayload = message.data as Record<string, unknown>;
+
         if ('id' in messagePayload && typeof messagePayload.id === 'string') {
           const request = this.pendingRequests.get(messagePayload.id);
+
           if (request) {
+            clearTimeout(request.timeout);
+
+            // Check if the message contains an error (e.g., user rejected)
+            if ('error' in messagePayload && messagePayload.error) {
+              const errorData = messagePayload.error as {
+                message?: string;
+                code?: number;
+              };
+              this.pendingRequests.delete(messagePayload.id);
+
+              // Create error with code property for EIP-1193 compliance
+              const error = new Error(
+                errorData.message ?? 'Request rejected by user',
+              );
+              (error as any).code = errorData.code ?? 4001; // 4001 = User rejected (EIP-1193 standard)
+
+              request.reject(error);
+              return;
+            }
+
+            // Success case - resolve the promise
             const requestWithName = {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                request.method === 'wallet_createSession'
+                  request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -168,14 +191,12 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                request.method === 'wallet_createSession'
+                  request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
             };
 
-            clearTimeout(request.timeout);
-            // Might need to handle the evm case?
             this.notifyCallbacks(notification);
             request.resolve(requestWithName);
             this.pendingRequests.delete(messagePayload.id);
@@ -391,7 +412,8 @@ export class MWPTransport implements ExtendedTransport {
               params: sessionRequest,
             };
 
-            // just used for initial connection
+            // Handler for initial connection messages - checks for error responses
+            // and properly rejects the connection promise with EIP-1193 error codes
             initialConnectionMessageHandler = async (
               message: unknown,
             ): Promise<void> => {
@@ -401,6 +423,38 @@ export class MWPTransport implements ExtendedTransport {
                     string,
                     unknown
                   >;
+
+                  // Check if this message is for our connection request (by ID)
+                  if (messagePayload.id === request.id) {
+                    // Check for error response (e.g., user rejected the connection)
+                    if (messagePayload.error) {
+                      if (initialConnectionMessageHandler) {
+                        this.dappClient.off(
+                          'message',
+                          initialConnectionMessageHandler,
+                        );
+                      }
+                      const errorData = messagePayload.error as {
+                        message?: string;
+                        code?: number;
+                      };
+                      const error = new Error(
+                        errorData.message ?? 'Connection rejected',
+                      );
+                      (error as any).code = errorData.code ?? 4001; // EIP-1193: User rejected request
+                      return rejectConnection(error);
+                    }
+
+                    // Success case
+                    await this.storeWalletSession(
+                      request,
+                      messagePayload as TransportResponse,
+                    );
+                    this.notifyCallbacks(messagePayload);
+                    return resolveConnection();
+                  }
+
+                  // Also handle by method for backward compatibility (notifications without ID)
                   if (
                     messagePayload.method === 'wallet_createSession' ||
                     messagePayload.method === 'wallet_sessionChanged'
@@ -412,7 +466,15 @@ export class MWPTransport implements ExtendedTransport {
                           initialConnectionMessageHandler,
                         );
                       }
-                      return rejectConnection(messagePayload.error);
+                      const errorData = messagePayload.error as {
+                        message?: string;
+                        code?: number;
+                      };
+                      const error = new Error(
+                        errorData.message ?? 'Connection rejected',
+                      );
+                      (error as any).code = errorData.code ?? 4001;
+                      return rejectConnection(error);
                     }
                     await this.storeWalletSession(
                       request,
