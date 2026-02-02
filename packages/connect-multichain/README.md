@@ -185,12 +185,12 @@ Connects to MetaMask with specified chain scopes.
 
 **Parameters**
 
-| Name                | Type                | Required | Description                                                                 |
-| ------------------- | ------------------- | -------- | --------------------------------------------------------------------------- |
-| `scopes`            | `Scope[]`           | Yes      | Array of CAIP-2 chain identifiers to request permission for                 |
+| Name                | Type                | Required | Description                                                                                             |
+| ------------------- | ------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `scopes`            | `Scope[]`           | Yes      | Array of CAIP-2 chain identifiers to request permission for                                             |
 | `caipAccountIds`    | `CaipAccountId[]`   | Yes      | Array of CAIP-10 account identifiers to request (pass `[]` if no specific accounts should be requested) |
-| `sessionProperties` | `SessionProperties` | No       | Additional session properties                                               |
-| `forceRequest`      | `boolean`           | No       | Force a new connection request even if already connected                    |
+| `sessionProperties` | `SessionProperties` | No       | Additional session properties                                                                           |
+| `forceRequest`      | `boolean`           | No       | Force a new connection request even if already connected                                                |
 
 **Returns**
 
