@@ -55,7 +55,10 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
         url: window.location.origin,
       },
       api: {
-        supportedNetworks: {},
+        supportedNetworks: {
+          devnet: SOLANA_DEVNET_ENDPOINT,
+          mainnet: SOLANA_MAINNET_ENDPOINT,
+        },
       },
     })
       .then((solanaClient) => {
