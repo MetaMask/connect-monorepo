@@ -28,8 +28,8 @@ const sdk = await createEVMClient({
   },
   api: {
     supportedNetworks: {
-      'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
-      'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
+      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY',
+      '0x89': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
     },
   },
 });

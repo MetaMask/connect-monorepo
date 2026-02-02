@@ -323,7 +323,7 @@ Switches to a different chain. Will attempt to add the chain if not configured i
 
 ```typescript
 await sdk.switchChain({
-  chainId: 137,
+  chainId: '0x89',
   chainConfiguration: {
     chainId: '0x89',
     chainName: 'Polygon',
