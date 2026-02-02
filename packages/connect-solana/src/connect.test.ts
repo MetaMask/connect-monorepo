@@ -1,12 +1,14 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createSolanaClient } from './connect';
-import type { SolanaConnectOptions } from './types';
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
 // These imports resolve to mocks via vitest.config.ts aliases
 import { createMultichainClient } from '@metamask/connect-multichain';
 import {
   getWalletStandard,
   registerSolanaWalletStandard,
 } from '@metamask/solana-wallet-standard';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+import { createSolanaClient } from './connect';
+import type { SolanaConnectOptions } from './types';
 
 describe('createSolanaClient', () => {
   const mockOptions: SolanaConnectOptions = {
@@ -39,9 +41,9 @@ describe('createSolanaClient', () => {
       mockCore,
     );
     (getWalletStandard as ReturnType<typeof vi.fn>).mockReturnValue(mockWallet);
-    (registerSolanaWalletStandard as ReturnType<typeof vi.fn>).mockResolvedValue(
-      undefined,
-    );
+    (
+      registerSolanaWalletStandard as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(undefined);
   });
 
   afterEach(() => {

@@ -20,15 +20,7 @@
     "types": ["node"],
     "noEmit": false
   },
-  "references": [
-    { "path": "../connect-multichain/tsconfig.build.json" }
-  ],
+  "references": [{ "path": "../connect-multichain/tsconfig.build.json" }],
   "include": ["./src"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "./tests",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "exclude": ["node_modules", "dist", "./tests", "**/*.spec.ts", "**/*.test.ts"]
 }

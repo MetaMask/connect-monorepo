@@ -46,8 +46,14 @@ await client.registerWallet();
 The most common use case is integrating with `@solana/wallet-adapter-react`:
 
 ```tsx
-import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from '@solana/wallet-adapter-react';
+import {
+  WalletModalProvider,
+  WalletMultiButton,
+} from '@solana/wallet-adapter-react-ui';
 import { createSolanaClient } from '@metamask/connect-solana';
 import { useEffect } from 'react';
 
