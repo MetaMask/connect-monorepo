@@ -19,7 +19,10 @@ npm install @metamask/connect-multichain
 ## Quick Start
 
 ```typescript
-import { createMultichainClient, getInfuraRpcUrls } from '@metamask/connect-multichain';
+import {
+  createMultichainClient,
+  getInfuraRpcUrls,
+} from '@metamask/connect-multichain';
 
 const sdk = await createMultichainClient({
   dapp: {
@@ -69,9 +72,9 @@ const sdk = await createMultichainClient({
     },
   },
   ui: {
-    preferExtension: true,    // Prefer browser extension over mobile QR
-    showInstallModal: false,  // Show modal to install extension
-    headless: false,          // Set true for custom QR UI
+    preferExtension: true, // Prefer browser extension over mobile QR
+    showInstallModal: false, // Show modal to install extension
+    headless: false, // Set true for custom QR UI
   },
 });
 ```
@@ -133,24 +136,24 @@ Factory function to create a new Multichain SDK instance.
 
 #### Parameters
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `dapp.name` | `string` | Yes | Name of your dApp |
-| `dapp.url` | `string` | No | URL of your dApp |
-| `dapp.iconUrl` | `string` | No | Icon URL for your dApp |
-| `dapp.base64Icon` | `string` | No | Base64-encoded icon (alternative to iconUrl) |
-| `api.supportedNetworks` | `RpcUrlsMap` | Yes | Map of CAIP chain IDs to RPC URLs |
-| `storage` | `StoreClient` | No | Custom storage adapter |
-| `ui.factory` | `BaseModalFactory` | No | Custom modal factory |
-| `ui.headless` | `boolean` | No | Run without UI (for custom QR implementations) |
-| `ui.preferExtension` | `boolean` | No | Prefer browser extension (default: true) |
-| `ui.showInstallModal` | `boolean` | No | Show installation modal |
-| `mobile.preferredOpenLink` | `(deeplink: string, target?: string) => void` | No | Custom deeplink handler |
-| `mobile.useDeeplink` | `boolean` | No | Use `metamask://` instead of universal links |
-| `analytics.integrationType` | `string` | No | Integration type for analytics |
-| `transport.extensionId` | `string` | No | Custom extension ID |
-| `transport.onNotification` | `(notification: unknown) => void` | No | Notification handler |
-| `debug` | `boolean` | No | Enable debug logging |
+| Option                      | Type                                          | Required | Description                                    |
+| --------------------------- | --------------------------------------------- | -------- | ---------------------------------------------- |
+| `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                              |
+| `dapp.url`                  | `string`                                      | No       | URL of your dApp                               |
+| `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                         |
+| `dapp.base64Icon`           | `string`                                      | No       | Base64-encoded icon (alternative to iconUrl)   |
+| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of CAIP chain IDs to RPC URLs              |
+| `storage`                   | `StoreClient`                                 | No       | Custom storage adapter                         |
+| `ui.factory`                | `BaseModalFactory`                            | No       | Custom modal factory                           |
+| `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations) |
+| `ui.preferExtension`        | `boolean`                                     | No       | Prefer browser extension (default: true)       |
+| `ui.showInstallModal`       | `boolean`                                     | No       | Show installation modal                        |
+| `mobile.preferredOpenLink`  | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                        |
+| `mobile.useDeeplink`        | `boolean`                                     | No       | Use `metamask://` instead of universal links   |
+| `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                 |
+| `transport.extensionId`     | `string`                                      | No       | Custom extension ID                            |
+| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                           |
+| `debug`                     | `boolean`                                     | No       | Enable debug logging                           |
 
 #### Returns
 
@@ -182,12 +185,12 @@ Connects to MetaMask with specified chain scopes.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `scopes` | `Scope[]` | Yes | Array of CAIP-2 chain identifiers to request permission for |
-| `caipAccountIds` | `CaipAccountId[]` | Yes | Array of CAIP-10 account identifiers to request (pass `[]` for any account) |
-| `sessionProperties` | `SessionProperties` | No | Additional session properties |
-| `forceRequest` | `boolean` | No | Force a new connection request even if already connected |
+| Name                | Type                | Required | Description                                                                 |
+| ------------------- | ------------------- | -------- | --------------------------------------------------------------------------- |
+| `scopes`            | `Scope[]`           | Yes      | Array of CAIP-2 chain identifiers to request permission for                 |
+| `caipAccountIds`    | `CaipAccountId[]`   | Yes      | Array of CAIP-10 account identifiers to request (pass `[]` for any account) |
+| `sessionProperties` | `SessionProperties` | No       | Additional session properties                                               |
+| `forceRequest`      | `boolean`           | No       | Force a new connection request even if already connected                    |
 
 **Returns**
 
@@ -195,10 +198,10 @@ Connects to MetaMask with specified chain scopes.
 
 ```typescript
 await sdk.connect(
-  ['eip155:1', 'eip155:137'],  // Chain scopes to request
-  ['eip155:1:0x...'],          // Optional: Specific accounts to request
-  undefined,                    // Optional: Session properties
-  false                         // Optional: Force new connection
+  ['eip155:1', 'eip155:137'], // Chain scopes to request
+  ['eip155:1:0x...'], // Optional: Specific accounts to request
+  undefined, // Optional: Session properties
+  false, // Optional: Force new connection
 );
 ```
 
@@ -224,11 +227,11 @@ Invokes an RPC method on a specific chain.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `options.scope` | `Scope` | Yes | The CAIP-2 chain identifier to invoke the method on |
-| `options.request.method` | `string` | Yes | The RPC method name |
-| `options.request.params` | `unknown[]` | No | The method parameters |
+| Name                     | Type        | Required | Description                                         |
+| ------------------------ | ----------- | -------- | --------------------------------------------------- |
+| `options.scope`          | `Scope`     | Yes      | The CAIP-2 chain identifier to invoke the method on |
+| `options.request.method` | `string`    | Yes      | The RPC method name                                 |
+| `options.request.params` | `unknown[]` | No       | The method parameters                               |
 
 **Returns**
 
@@ -246,11 +249,11 @@ const result = await sdk.invokeMethod({
 
 #### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `status` | `ConnectionStatus` | Connection status ( `'loaded'`, `'pending'`, `'connecting'`, `'connected'`, `'disconnected'`) |
-| `provider` | `MultichainApiClient` | Multichain API client |
-| `transport` | `ExtendedTransport` | Active transport layer |
+| Property    | Type                  | Description                                                                                   |
+| ----------- | --------------------- | --------------------------------------------------------------------------------------------- |
+| `status`    | `ConnectionStatus`    | Connection status ( `'loaded'`, `'pending'`, `'connecting'`, `'connected'`, `'disconnected'`) |
+| `provider`  | `MultichainApiClient` | Multichain API client                                                                         |
+| `transport` | `ExtendedTransport`   | Active transport layer                                                                        |
 
 #### Events
 
@@ -285,10 +288,10 @@ Registers an event handler.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `event` | `string` | Yes | The event name to listen for |
-| `handler` | `Function` | Yes | The callback function to invoke when the event is emitted |
+| Name      | Type       | Required | Description                                               |
+| --------- | ---------- | -------- | --------------------------------------------------------- |
+| `event`   | `string`   | Yes      | The event name to listen for                              |
+| `handler` | `Function` | Yes      | The callback function to invoke when the event is emitted |
 
 **Returns**
 
@@ -300,10 +303,10 @@ Removes an event handler.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `event` | `string` | Yes | The event name to stop listening for |
-| `handler` | `Function` | Yes | The callback function to remove |
+| Name      | Type       | Required | Description                          |
+| --------- | ---------- | -------- | ------------------------------------ |
+| `event`   | `string`   | Yes      | The event name to stop listening for |
+| `handler` | `Function` | Yes      | The callback function to remove      |
 
 **Returns**
 
@@ -315,10 +318,10 @@ Emits an event to all registered handlers.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `event` | `string` | Yes | The event name to emit |
-| `args` | `any` | No | Arguments to pass to the event handlers |
+| Name    | Type     | Required | Description                             |
+| ------- | -------- | -------- | --------------------------------------- |
+| `event` | `string` | Yes      | The event name to emit                  |
+| `args`  | `any`    | No       | Arguments to pass to the event handlers |
 
 **Returns**
 
@@ -334,9 +337,9 @@ Generates Infura RPC URLs for common networks keyed by CAIP Chain ID.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `infuraApiKey` | `string` | Yes | Your Infura API key |
+| Name           | Type     | Required | Description         |
+| -------------- | -------- | -------- | ------------------- |
+| `infuraApiKey` | `string` | Yes      | Your Infura API key |
 
 **Returns**
 

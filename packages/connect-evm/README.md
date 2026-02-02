@@ -40,7 +40,7 @@ const sdk = await createEVMClient({
       ...getInfuraRpcUrls(INFURA_API_KEY),
       // or specify your own CAIP Chain ID to rpc endpoint mapping
       // Hex chain IDs mapped to RPC URLs
-      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY',      // Ethereum Mainnet
+      '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY', // Ethereum Mainnet
       '0x89': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY', // Polygon
     },
   },
@@ -57,8 +57,8 @@ try {
     console.log('Connection request already pending');
   }
 }
-console.log({accounts}); // The connected accounts where the first account is the selected account
-console.log({chainId}); // The currently active chainId
+console.log({ accounts }); // The connected accounts where the first account is the selected account
+console.log({ chainId }); // The currently active chainId
 
 // Get the EIP-1193 provider
 const provider = sdk.getProvider();
@@ -66,10 +66,7 @@ const provider = sdk.getProvider();
 // Sign a message
 const signedMessage = await provider.request({
   method: 'personal_sign',
-  params: [
-    '0x0',
-    accounts[0]
-  ]
+  params: ['0x0', accounts[0]],
 });
 ```
 
@@ -134,7 +131,6 @@ const result = await provider.request({
 });
 ```
 
-
 ## Examples
 
 Check out the [playground examples](../../playground/browser-playground) for a complete React implementation.
@@ -169,21 +165,21 @@ Factory function to create a new MetaMask Connect EVM instance.
 
 #### Parameters
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `dapp.name` | `string` | Yes | Name of your dApp |
-| `dapp.url` | `string` | No | URL of your dApp |
-| `dapp.iconUrl` | `string` | No | Icon URL for your dApp |
-| `api.supportedNetworks` | `Record<Hex, string>` | Yes | Map of hex chain IDs to RPC URLs |
-| `ui.headless` | `boolean` | No | Run without UI (for custom QR implementations) |
-| `ui.preferExtension` | `boolean` | No | Prefer browser extension over mobile (default: true) |
-| `ui.showInstallModal` | `boolean` | No | Show installation modal for desktop |
-| `mobile.preferredOpenLink` | `(deeplink: string, target?: string) => void` | No | Custom deeplink handler |
-| `mobile.useDeeplink` | `boolean` | No | Use `metamask://` instead of universal links |
-| `transport.extensionId` | `string` | No | Custom extension ID |
-| `transport.onNotification` | `(notification: unknown) => void` | No | Notification handler |
-| `eventHandlers` | `Partial<EventHandlers>` | No | Event handlers for provider events |
-| `debug` | `boolean` | No | Enable debug logging |
+| Option                     | Type                                          | Required | Description                                          |
+| -------------------------- | --------------------------------------------- | -------- | ---------------------------------------------------- |
+| `dapp.name`                | `string`                                      | Yes      | Name of your dApp                                    |
+| `dapp.url`                 | `string`                                      | No       | URL of your dApp                                     |
+| `dapp.iconUrl`             | `string`                                      | No       | Icon URL for your dApp                               |
+| `api.supportedNetworks`    | `Record<Hex, string>`                         | Yes      | Map of hex chain IDs to RPC URLs                     |
+| `ui.headless`              | `boolean`                                     | No       | Run without UI (for custom QR implementations)       |
+| `ui.preferExtension`       | `boolean`                                     | No       | Prefer browser extension over mobile (default: true) |
+| `ui.showInstallModal`      | `boolean`                                     | No       | Show installation modal for desktop                  |
+| `mobile.preferredOpenLink` | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                              |
+| `mobile.useDeeplink`       | `boolean`                                     | No       | Use `metamask://` instead of universal links         |
+| `transport.extensionId`    | `string`                                      | No       | Custom extension ID                                  |
+| `transport.onNotification` | `(notification: unknown) => void`             | No       | Notification handler                                 |
+| `eventHandlers`            | `Partial<EventHandlers>`                      | No       | Event handlers for provider events                   |
+| `debug`                    | `boolean`                                     | No       | Enable debug logging                                 |
 
 #### Returns
 
@@ -220,11 +216,11 @@ Connects to MetaMask wallet.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `options.chainIds` | `Hex[]` | No | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided) |
-| `options.account` | `string` | No | Specific account address to connect |
-| `options.forceRequest` | `boolean` | No | Force a new connection request even if already connected |
+| Name                   | Type      | Required | Description                                                                              |
+| ---------------------- | --------- | -------- | ---------------------------------------------------------------------------------------- |
+| `options.chainIds`     | `Hex[]`   | No       | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided) |
+| `options.account`      | `string`  | No       | Specific account address to connect                                                      |
+| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                 |
 
 **Returns**
 
@@ -244,10 +240,10 @@ Connects and immediately signs a message using `personal_sign`.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `options.message` | `string` | Yes | The message to sign after connecting |
-| `options.chainIds` | `Hex[]` | No | Hex chain IDs to connect to (defaults to `['0x1']`) |
+| Name               | Type     | Required | Description                                         |
+| ------------------ | -------- | -------- | --------------------------------------------------- |
+| `options.message`  | `string` | Yes      | The message to sign after connecting                |
+| `options.chainIds` | `Hex[]`  | No       | Hex chain IDs to connect to (defaults to `['0x1']`) |
 
 **Returns**
 
@@ -266,13 +262,13 @@ Connects and immediately invokes a method with specified parameters.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `options.method` | `string` | Yes | The RPC method name to invoke |
-| `options.params` | `unknown[] \| ((account: Address) => unknown[])` | Yes | Method parameters, or a function that receives the connected account and returns params |
-| `options.chainIds` | `Hex[]` | No | Hex chain IDs to connect to (defaults to `['0x1']`) |
-| `options.account` | `string` | No | Specific account to connect |
-| `options.forceRequest` | `boolean` | No | Force a new connection request |
+| Name                   | Type                                             | Required | Description                                                                             |
+| ---------------------- | ------------------------------------------------ | -------- | --------------------------------------------------------------------------------------- |
+| `options.method`       | `string`                                         | Yes      | The RPC method name to invoke                                                           |
+| `options.params`       | `unknown[] \| ((account: Address) => unknown[])` | Yes      | Method parameters, or a function that receives the connected account and returns params |
+| `options.chainIds`     | `Hex[]`                                          | No       | Hex chain IDs to connect to (defaults to `['0x1']`)                                     |
+| `options.account`      | `string`                                         | No       | Specific account to connect                                                             |
+| `options.forceRequest` | `boolean`                                        | No       | Force a new connection request                                                          |
 
 **Returns**
 
@@ -281,11 +277,13 @@ Connects and immediately invokes a method with specified parameters.
 ```typescript
 const result = await sdk.connectWith({
   method: 'eth_sendTransaction',
-  params: (account) => [{
-    from: account,
-    to: '0x...',
-    value: '0x1',
-  }],
+  params: (account) => [
+    {
+      from: account,
+      to: '0x...',
+      value: '0x1',
+    },
+  ],
   chainIds: ['0x1'],
 });
 ```
@@ -312,10 +310,10 @@ Switches to a different chain. Will attempt to add the chain if not configured i
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `options.chainId` | `Hex` | Yes | The hex chain ID to switch to |
-| `options.chainConfiguration` | `AddEthereumChainParameter` | No | Chain configuration to use if the chain needs to be added |
+| Name                         | Type                        | Required | Description                                               |
+| ---------------------------- | --------------------------- | -------- | --------------------------------------------------------- |
+| `options.chainId`            | `Hex`                       | Yes      | The hex chain ID to switch to                             |
+| `options.chainConfiguration` | `AddEthereumChainParameter` | No       | Chain configuration to use if the chain needs to be added |
 
 **Returns**
 
@@ -383,12 +381,12 @@ const account = sdk.getAccount(); // e.g., '0x...'
 
 #### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `accounts` | `Address[]` | Currently permitted accounts |
-| `selectedAccount` | `Address \| undefined` | Currently selected account |
-| `selectedChainId` | `Hex \| undefined` | Currently selected chain ID (hex) |
-| `status` | `ConnectionStatus` | Connection status ( `'loaded'`, `'pending'`, `'connecting'`, `'connected'`, `'disconnected'`) |
+| Property          | Type                   | Description                                                                                   |
+| ----------------- | ---------------------- | --------------------------------------------------------------------------------------------- |
+| `accounts`        | `Address[]`            | Currently permitted accounts                                                                  |
+| `selectedAccount` | `Address \| undefined` | Currently selected account                                                                    |
+| `selectedChainId` | `Hex \| undefined`     | Currently selected chain ID (hex)                                                             |
+| `status`          | `ConnectionStatus`     | Connection status ( `'loaded'`, `'pending'`, `'connecting'`, `'connected'`, `'disconnected'`) |
 
 ---
 
@@ -404,10 +402,10 @@ Makes an Ethereum JSON-RPC request.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `args.method` | `string` | Yes | The RPC method name |
-| `args.params` | `unknown` | No | The method parameters |
+| Name          | Type      | Required | Description           |
+| ------------- | --------- | -------- | --------------------- |
+| `args.method` | `string`  | Yes      | The RPC method name   |
+| `args.params` | `unknown` | No       | The method parameters |
 
 **Returns**
 
@@ -420,19 +418,19 @@ const result = await provider.request({
 });
 ```
 
-##### `sendAsync(request, callback?)` *(deprecated)*
+##### `sendAsync(request, callback?)` _(deprecated)_
 
 Legacy method for JSON-RPC requests with callback support.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `request.method` | `string` | Yes | The RPC method name |
-| `request.params` | `unknown` | No | The method parameters |
-| `request.id` | `number \| string` | No | Request ID (defaults to 1) |
-| `request.jsonrpc` | `'2.0'` | No | JSON-RPC version |
-| `callback` | `JsonRpcCallback` | No | Optional callback function |
+| Name              | Type               | Required | Description                |
+| ----------------- | ------------------ | -------- | -------------------------- |
+| `request.method`  | `string`           | Yes      | The RPC method name        |
+| `request.params`  | `unknown`          | No       | The method parameters      |
+| `request.id`      | `number \| string` | No       | Request ID (defaults to 1) |
+| `request.jsonrpc` | `'2.0'`            | No       | JSON-RPC version           |
+| `callback`        | `JsonRpcCallback`  | No       | Optional callback function |
 
 **Returns**
 
@@ -444,21 +442,21 @@ provider.sendAsync(
   (error, response) => {
     if (error) console.error(error);
     else console.log(response.result);
-  }
+  },
 );
 ```
 
-##### `send(request, callback)` *(deprecated)*
+##### `send(request, callback)` _(deprecated)_
 
 Legacy synchronous-style method for JSON-RPC requests.
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `request.method` | `string` | Yes | The RPC method name |
-| `request.params` | `unknown` | No | The method parameters |
-| `callback` | `JsonRpcCallback` | Yes | Callback function to receive the response |
+| Name             | Type              | Required | Description                               |
+| ---------------- | ----------------- | -------- | ----------------------------------------- |
+| `request.method` | `string`          | Yes      | The RPC method name                       |
+| `request.params` | `unknown`         | No       | The method parameters                     |
+| `callback`       | `JsonRpcCallback` | Yes      | Callback function to receive the response |
 
 **Returns**
 
@@ -468,14 +466,14 @@ Legacy synchronous-style method for JSON-RPC requests.
 
 The provider extends `EventEmitter` and emits standard EIP-1193 events:
 
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `connect` | `{ chainId: string }` | Emitted when connected |
-| `disconnect` | - | Emitted when disconnected |
-| `accountsChanged` | `Address[]` | Emitted when accounts change |
-| `chainChanged` | `Hex` | Emitted when chain changes |
-| `message` | `{ type: string, data: unknown }` | Emitted for provider messages |
-| `display_uri` | `string` | Emitted with QR code URI for custom UI |
+| Event             | Payload                           | Description                            |
+| ----------------- | --------------------------------- | -------------------------------------- |
+| `connect`         | `{ chainId: string }`             | Emitted when connected                 |
+| `disconnect`      | -                                 | Emitted when disconnected              |
+| `accountsChanged` | `Address[]`                       | Emitted when accounts change           |
+| `chainChanged`    | `Hex`                             | Emitted when chain changes             |
+| `message`         | `{ type: string, data: unknown }` | Emitted for provider messages          |
+| `display_uri`     | `string`                          | Emitted with QR code URI for custom UI |
 
 ```typescript
 provider.on('accountsChanged', (accounts) => {
@@ -493,12 +491,12 @@ provider.on('display_uri', (uri) => {
 
 #### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `accounts` | `Address[]` | Currently permitted accounts |
-| `selectedAccount` | `Address \| undefined` | Currently selected account |
-| `selectedChainId` | `Hex \| undefined` | Currently selected chain ID |
-| `chainId` | `Hex \| undefined` | Alias for `selectedChainId` (legacy compatibility) |
+| Property          | Type                   | Description                                        |
+| ----------------- | ---------------------- | -------------------------------------------------- |
+| `accounts`        | `Address[]`            | Currently permitted accounts                       |
+| `selectedAccount` | `Address \| undefined` | Currently selected account                         |
+| `selectedChainId` | `Hex \| undefined`     | Currently selected chain ID                        |
+| `chainId`         | `Hex \| undefined`     | Alias for `selectedChainId` (legacy compatibility) |
 
 ---
 
@@ -508,9 +506,9 @@ Helper function to generate EVM Infura RPC URLs for common networks keyed by hex
 
 **Parameters**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `infuraApiKey` | `string` | Yes | Your Infura API key |
+| Name           | Type     | Required | Description         |
+| -------------- | -------- | -------- | ------------------- |
+| `infuraApiKey` | `string` | Yes      | Your Infura API key |
 
 **Returns**
 
@@ -531,13 +529,21 @@ const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
 
 ```typescript
 type EventHandlers = {
-  connect: (result: { chainId: Hex; }) => void;
+  connect: (result: { chainId: Hex }) => void;
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;
   displayUri: (uri: string) => void;
-  connectAndSign: (result: { accounts: Address[]; chainId: Hex; signResponse: string }) => void;
-  connectWith: (result: { accounts: Address[]; chainId: Hex; connectWithResponse: unknown }) => void;
+  connectAndSign: (result: {
+    accounts: Address[];
+    chainId: Hex;
+    signResponse: string;
+  }) => void;
+  connectWith: (result: {
+    accounts: Address[];
+    chainId: Hex;
+    connectWithResponse: unknown;
+  }) => void;
 };
 ```
 

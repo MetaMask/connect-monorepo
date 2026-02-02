@@ -46,8 +46,8 @@ try {
   }
 }
 
-console.log({accounts}); // The connected accounts where the first account is the selected account
-console.log({chainId}); // The currently active chainId
+console.log({ accounts }); // The connected accounts where the first account is the selected account
+console.log({ chainId }); // The currently active chainId
 
 // Get the EIP-1193 provider
 const provider = sdk.getProvider();
@@ -124,11 +124,11 @@ See [@metamask/connect-multichain](../connect-multichain/README.md) for detailed
 
 ## When to Use Which
 
-| Use Case | Import Path |
-|----------|-------------|
-| Ethereum/EVM dApps with standard EIP-1193 provider | `@metamask/connect/evm` |
-| Multi-chain dApps (Ethereum + Solana, etc.) | `@metamask/connect/multichain` |
-| Direct package imports (smaller bundle) | `@metamask/connect-evm` or `@metamask/connect-multichain` |
+| Use Case                                           | Import Path                                               |
+| -------------------------------------------------- | --------------------------------------------------------- |
+| Ethereum/EVM dApps with standard EIP-1193 provider | `@metamask/connect/evm`                                   |
+| Multi-chain dApps (Ethereum + Solana, etc.)        | `@metamask/connect/multichain`                            |
+| Direct package imports (smaller bundle)            | `@metamask/connect-evm` or `@metamask/connect-multichain` |
 
 ## Contributing
 
