@@ -7,6 +7,12 @@ This package provides support for connecting to MetaMask and using the [CAIP Mul
 ## Installation
 
 ```bash
+yarn add @metamask/connect-multichain
+```
+
+or
+
+```bash
 npm install @metamask/connect-multichain
 ```
 
