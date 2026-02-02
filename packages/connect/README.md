@@ -118,8 +118,8 @@ See [@metamask/connect-multichain](../connect-multichain/README.md) for detailed
 
 ```
 @metamask/connect
-├── /evm        → Re-exports from @metamask/connect-evm
-└── /multichain → Re-exports from @metamask/connect-multichain
+├── /           → Re-exports from @metamask/connect-multichain
+└── /evm        → Re-exports from @metamask/connect-evm
 ```
 
 ## When to Use Which
@@ -128,7 +128,6 @@ See [@metamask/connect-multichain](../connect-multichain/README.md) for detailed
 | -------------------------------------------------- | --------------------------------------------------------- |
 | Ethereum/EVM dApps with standard EIP-1193 provider | `@metamask/connect/evm`                                   |
 | Multi-chain dApps (Ethereum + Solana, etc.)        | `@metamask/connect/multichain`                            |
-| Direct package imports (smaller bundle)            | `@metamask/connect-evm` or `@metamask/connect-multichain` |
 
 ## Contributing
 
