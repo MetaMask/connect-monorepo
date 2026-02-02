@@ -310,8 +310,8 @@ export class MetamaskConnectEVM {
    * Connects to the wallet with the specified chain ID and optional account.
    *
    * @param options - The connection options
-   * @param [options.account] - Optional specific account to connect to
-   * @param [options.forceRequest] - Wwhether to force a request regardless of an existing session
+   * @param [options.account] - Optional param to specify an account to connect to
+   * @param [options.forceRequest] - Optional param to force a connection request regardless of whether there is a pre-existing session
    * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
