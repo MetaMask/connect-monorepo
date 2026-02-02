@@ -168,9 +168,9 @@ Factory function to create a new MetaMask Connect EVM instance.
 | Option                     | Type                                          | Required | Description                                          |
 | -------------------------- | --------------------------------------------- | -------- | ---------------------------------------------------- |
 | `dapp.name`                | `string`                                      | Yes      | Name of your dApp                                    |
+| `api.supportedNetworks`    | `Record<Hex, string>`                         | Yes      | Map of hex chain IDs to RPC URLs                     |
 | `dapp.url`                 | `string`                                      | No       | URL of your dApp                                     |
 | `dapp.iconUrl`             | `string`                                      | No       | Icon URL for your dApp                               |
-| `api.supportedNetworks`    | `Record<Hex, string>`                         | Yes      | Map of hex chain IDs to RPC URLs                     |
 | `ui.headless`              | `boolean`                                     | No       | Run without UI (for custom QR implementations)       |
 | `ui.preferExtension`       | `boolean`                                     | No       | Prefer browser extension over mobile (default: true) |
 | `ui.showInstallModal`      | `boolean`                                     | No       | Show installation modal for desktop                  |
