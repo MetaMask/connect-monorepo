@@ -139,10 +139,10 @@ Factory function to create a new Multichain SDK instance.
 | Option                      | Type                                          | Required | Description                                    |
 | --------------------------- | --------------------------------------------- | -------- | ---------------------------------------------- |
 | `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                              |
+| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of CAIP chain IDs to RPC URLs              |
 | `dapp.url`                  | `string`                                      | No       | URL of your dApp                               |
 | `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                         |
 | `dapp.base64Icon`           | `string`                                      | No       | Base64-encoded icon (alternative to iconUrl)   |
-| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of CAIP chain IDs to RPC URLs              |
 | `storage`                   | `StoreClient`                                 | No       | Custom storage adapter                         |
 | `ui.factory`                | `BaseModalFactory`                            | No       | Custom modal factory                           |
 | `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations) |
