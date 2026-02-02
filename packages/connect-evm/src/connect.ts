@@ -310,14 +310,16 @@ export class MetamaskConnectEVM {
    * Connects to the wallet with the specified chain ID and optional account.
    *
    * @param options - The connection options
-   * @param options.account - Optional specific account to connect to
-   * @param options.forceRequest - Wwhether to force a request regardless of an existing session
+   * @param [options.account] - Optional specific account to connect to
+   * @param [options.forceRequest] - Wwhether to force a request regardless of an existing session
    * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
-  async connect(
-    { account, forceRequest, chainIds = [DEFAULT_CHAIN_ID] }: ConnectOptions = {},
-  ): Promise<{ accounts: Address[]; chainId: Hex }> {
+  async connect({
+    account,
+    forceRequest,
+    chainIds = [DEFAULT_CHAIN_ID],
+  }: ConnectOptions = {}): Promise<{ accounts: Address[]; chainId: Hex }> {
     logger('request: connect', { account });
 
     if (!chainIds || chainIds.length === 0) {
@@ -503,8 +505,8 @@ export class MetamaskConnectEVM {
    *
    * @param options - The options for the switch chain request
    * @param options.chainId - The chain ID to switch to
-   * @param options.chainConfiguration - The chain configuration to use in case the chain is not present by the wallet
-   * @returns The result of the switch chain request
+   * @param [options.chainConfiguration] - The chain configuration to use in case the chain is not present by the wallet
+   * @returns A promise that resolves when the chain has been switched
    */
   async switchChain({
     chainId,
@@ -951,19 +953,19 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of hex chain IDs to RPC URLs for read-only requests
- * @param options.ui - UI configuration options
- * @param options.ui.headless - Whether to run without UI
- * @param options.ui.preferExtension - Whether to prefer browser extension
- * @param options.ui.showInstallModal - Whether to render installation modal for desktop extension
- * @param options.mobile - Mobile configuration options
- * @param options.mobile.preferredOpenLink - Custom handler for opening deeplinks (useful for React Native, etc.)
- * @param options.mobile.useDeeplink - Whether to use native deeplinks instead of universal links
- * @param options.transport - Optional transport configuration (e.g., extensionId, notification handler)
- * @param options.transport.extensionId - Extension ID for browser extension transport
- * @param options.transport.onNotification - Optional callback for receiving transport notifications
- * @param options.eventEmitter - The event emitter to use for the Metamask Connect/EVM layer
- * @param options.eventHandlers - The event handlers to use for the Metamask Connect/EVM layer
- * @returns The Metamask Connect/EVM layer instance
+ * @param [options.ui] - UI configuration options
+ * @param [options.ui.headless] - Whether to run without UI
+ * @param [options.ui.preferExtension] - Whether to prefer browser extension
+ * @param [options.ui.showInstallModal] - Whether to render installation modal for desktop extension
+ * @param [options.mobile] - Mobile configuration options
+ * @param [options.mobile.preferredOpenLink] - Custom handler for opening deeplinks (useful for React Native, etc.)
+ * @param [options.mobile.useDeeplink] - Whether to use native deeplinks instead of universal links
+ * @param [options.transport] - Transport configuration (e.g., extensionId, notification handler)
+ * @param [options.transport.extensionId] - Extension ID for browser extension transport
+ * @param [options.transport.onNotification] - Callback for receiving transport notifications
+ * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
+ * @param [options.debug] - Enable debug logging
+ * @returns The Metamask Connect/EVM client instance
  */
 export async function createEVMClient(
   options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
