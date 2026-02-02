@@ -12,6 +12,12 @@ import {
   useState,
 } from 'react';
 
+import {
+  isProviderActive,
+  setProviderActive,
+  removeProviderActive,
+} from '../utils/activeProviderStorage';
+
 /**
  * Converts CAIP-2 keyed RPC URLs map to hex-keyed format.
  * Example: { 'eip155:1': 'url' } -> { '0x1': 'url' }
@@ -107,6 +113,23 @@ export const LegacyEVMSDKProvider = ({
 
           setSDK(clientSDK);
           setProvider(providerInstance);
+
+          // Check if legacy-evm was previously active and restore connection state
+          // This handles page refresh scenarios where the SDK may have restored
+          // the session but didn't emit a connect event
+          if (isProviderActive('legacy-evm')) {
+            // Check if the SDK actually has a valid session
+            if (clientSDK.accounts.length > 0) {
+              setConnected(true);
+              setAccounts(clientSDK.accounts);
+              if (clientSDK.selectedChainId) {
+                setChainId(clientSDK.selectedChainId);
+              }
+            } else {
+              // SDK doesn't have accounts, clear stale localStorage state
+              removeProviderActive('legacy-evm');
+            }
+          }
         }
 
         return clientSDK;
@@ -125,6 +148,7 @@ export const LegacyEVMSDKProvider = ({
       // Ensure at least one chain ID is provided, default to mainnet if empty
       const chainIdsToUse = chainIds.length > 0 ? chainIds : ['0x1' as Hex];
       await sdkInstance.connect({ chainIds: chainIdsToUse });
+      setProviderActive('legacy-evm');
     } catch (error) {
       console.error('Failed to connect:', error);
     }
@@ -140,6 +164,7 @@ export const LegacyEVMSDKProvider = ({
       setConnected(false);
       setAccounts([]);
       setChainId(undefined);
+      removeProviderActive('legacy-evm');
     } catch (error) {
       console.error('Failed to disconnect:', error);
     }
