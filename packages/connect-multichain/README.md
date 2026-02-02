@@ -199,9 +199,7 @@ Connects to MetaMask with specified chain scopes.
 ```typescript
 await sdk.connect(
   ['eip155:1', 'eip155:137'], // Chain scopes to request
-  ['eip155:1:0x...'], // Optional: Specific accounts to request
-  undefined, // Optional: Session properties
-  false, // Optional: Force new connection
+  ['eip155:1:0x...'], // Specific accounts to request
 );
 ```
 
