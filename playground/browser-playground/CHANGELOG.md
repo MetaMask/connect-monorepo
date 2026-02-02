@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- lint: lint fix follow up to https://github.com/MetaMask/connect-monorepo/pull/145 ([#148](https://github.com/MetaMask/connect-monorepo/pull/148))
+- build: re-introduce lint step to ci workflow ([#145](https://github.com/MetaMask/connect-monorepo/pull/145))
+
 ### Added
 
 - Track active provider via local storage state ([#154](https://github.com/MetaMask/connect-monorepo/pull/154))
