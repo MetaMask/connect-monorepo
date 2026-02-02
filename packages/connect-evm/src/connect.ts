@@ -965,7 +965,7 @@ export class MetamaskConnectEVM {
  * @param [options.transport.onNotification] - Callback for receiving transport notifications
  * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
  * @param [options.debug] - Enable debug logging
- * @returns The Metamask Connect/EVM client instance
+ * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
   options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
