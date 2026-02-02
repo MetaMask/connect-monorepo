@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
-import { FEATURED_NETWORKS, convertCaipChainIdsToHex, TEST_IDS } from '@metamask/playground-ui';
+import {
+  FEATURED_NETWORKS,
+  convertCaipChainIdsToHex,
+  TEST_IDS,
+} from '@metamask/playground-ui';
 import { useSDK } from './sdk';
 import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
@@ -46,7 +50,11 @@ function App() {
   } = useLegacyEVMSDK();
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
   const wagmiChainId = useChainId();
-  const { connectors, connectAsync: wagmiConnectAsync, status: wagmiStatus } = useConnect();
+  const {
+    connectors,
+    connectAsync: wagmiConnectAsync,
+    status: wagmiStatus,
+  } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
 
   // On mount, check if wagmi is connected but not marked as active provider
@@ -80,7 +88,7 @@ function App() {
       for (const scope of scopes) {
         const { accounts } =
           session.sessionScopes?.[
-          scope as keyof typeof session.sessionScopes
+            scope as keyof typeof session.sessionScopes
           ] ?? {};
         if (accounts && accounts.length > 0) {
           allAccounts.push(...accounts);
@@ -123,7 +131,9 @@ function App() {
     const selectedScopesArray = customScopes.filter((scope) => scope.length);
     // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
     // Then convert hex chain IDs to numbers for the connect method
-    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map((id) =>
+      hexToNumber(id),
+    );
     // Use first chain or default to mainnet (1), ensuring it's a valid wagmi chain
     const chainId = (chainIds[0] || 1) as 1 | 10 | 11155111 | 42220;
 
@@ -160,7 +170,14 @@ function App() {
     if (wagmiConnected) {
       wagmiDisconnect();
     }
-  }, [sdkDisconnect, legacyDisconnect, wagmiDisconnect, isConnected, legacyConnected, wagmiConnected]);
+  }, [
+    sdkDisconnect,
+    legacyDisconnect,
+    wagmiDisconnect,
+    isConnected,
+    legacyConnected,
+    wagmiConnected,
+  ]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -173,9 +190,15 @@ function App() {
 
   const isConnecting = status === 'connecting';
   return (
-    <div data-testid={TEST_IDS.app.container} className="min-h-screen bg-gray-50 flex justify-center">
+    <div
+      data-testid={TEST_IDS.app.container}
+      className="min-h-screen bg-gray-50 flex justify-center"
+    >
       <div className="max-w-6xl w-full p-8">
-        <h1 data-testid={TEST_IDS.app.title} className="text-slate-800 text-4xl font-bold mb-8 text-center">
+        <h1
+          data-testid={TEST_IDS.app.title}
+          className="text-slate-800 text-4xl font-bold mb-8 text-center"
+        >
           MetaMask MultiChain API Test Dapp
         </h1>
         <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
@@ -230,14 +253,20 @@ function App() {
                 disabled={wagmiStatus === 'pending'}
                 className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {wagmiStatus === 'pending' ? 'Connecting...' : 'Connect (Wagmi)'}
+                {wagmiStatus === 'pending'
+                  ? 'Connecting...'
+                  : 'Connect (Wagmi)'}
               </button>
             )}
 
             {isConnected && (
               <button
                 type="button"
-                data-testid={scopesHaveChanged() ? TEST_IDS.app.btnReconnect : TEST_IDS.app.btnDisconnect}
+                data-testid={
+                  scopesHaveChanged()
+                    ? TEST_IDS.app.btnReconnect
+                    : TEST_IDS.app.btnDisconnect
+                }
                 onClick={scopesHaveChanged() ? connect : disconnect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
@@ -260,23 +289,39 @@ function App() {
           </div>
         </section>
         {(error || legacyError) && (
-          <section data-testid={TEST_IDS.app.sectionError} className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+          <section
+            data-testid={TEST_IDS.app.sectionError}
+            className="bg-white rounded-lg p-8 mb-6 shadow-sm"
+          >
             <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
             {error && (
               <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Multichain:</span> {error.message.toString()}
-                {(error as any).code && <span className="ml-2 text-sm text-gray-500">(code: {(error as any).code})</span>}
+                <span className="font-semibold">Multichain:</span>{' '}
+                {error.message.toString()}
+                {(error as any).code && (
+                  <span className="ml-2 text-sm text-gray-500">
+                    (code: {(error as any).code})
+                  </span>
+                )}
               </p>
             )}
             {legacyError && (
               <p className="text-gray-700">
-                <span className="font-semibold">Legacy EVM:</span> {legacyError.message.toString()}
-                {(legacyError as any).code && <span className="ml-2 text-sm text-gray-500">(code: {(legacyError as any).code})</span>}
+                <span className="font-semibold">Legacy EVM:</span>{' '}
+                {legacyError.message.toString()}
+                {(legacyError as any).code && (
+                  <span className="ml-2 text-sm text-gray-500">
+                    (code: {(legacyError as any).code})
+                  </span>
+                )}
               </p>
             )}
           </section>
         )}
-        <section data-testid={TEST_IDS.app.sectionConnected} className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <section
+          data-testid={TEST_IDS.app.sectionConnected}
+          className="bg-white rounded-lg p-8 mb-6 shadow-sm"
+        >
           {Object.keys(session?.sessionScopes ?? {}).length > 0 && (
             <section data-testid={TEST_IDS.app.sectionScopes} className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">

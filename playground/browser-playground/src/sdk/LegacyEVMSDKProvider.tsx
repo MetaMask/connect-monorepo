@@ -42,15 +42,15 @@ function convertCaipToHexKeys(
 
 const LegacyEVMSDKContext = createContext<
   | {
-    sdk: MetamaskConnectEVM | undefined;
-    connected: boolean;
-    provider: EIP1193Provider | undefined;
-    chainId: string | undefined;
-    accounts: string[];
-    error: Error | null;
-    connect: (chainIds: Hex[]) => Promise<void>;
-    disconnect: () => Promise<void>;
-  }
+      sdk: MetamaskConnectEVM | undefined;
+      connected: boolean;
+      provider: EIP1193Provider | undefined;
+      chainId: string | undefined;
+      accounts: string[];
+      error: Error | null;
+      connect: (chainIds: Hex[]) => Promise<void>;
+      disconnect: () => Promise<void>;
+    }
   | undefined
 >(undefined);
 
@@ -75,12 +75,12 @@ export const LegacyEVMSDKProvider = ({
         const caipNetworks = infuraApiKey
           ? getInfuraRpcUrls(infuraApiKey)
           : {
-            // Fallback public RPC endpoints if no Infura key is provided
-            'eip155:1': 'https://eth.llamarpc.com',
-            'eip155:5': 'https://goerli.infura.io/v3/demo',
-            'eip155:11155111': 'https://sepolia.infura.io/v3/demo',
-            'eip155:137': 'https://polygon-rpc.com',
-          };
+              // Fallback public RPC endpoints if no Infura key is provided
+              'eip155:1': 'https://eth.llamarpc.com',
+              'eip155:5': 'https://goerli.infura.io/v3/demo',
+              'eip155:11155111': 'https://sepolia.infura.io/v3/demo',
+              'eip155:137': 'https://polygon-rpc.com',
+            };
         const supportedNetworks = convertCaipToHexKeys(caipNetworks);
 
         const clientSDK = await createEVMClient({
