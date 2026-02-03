@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `createMultichainClient()` now accepts an optional `debug` param option which enables console debug logs when set to `true`. Defaults to `false`. ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
 
+### Fixed
+
+- Fix QR rejection handling: properly propagate user rejection errors from MetaMask Mobile to the dApp ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+- Close QR modal automatically when user rejects connection ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+- Use `@metamask/rpc-errors` for EIP-1193 compliant error handling ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+
 ## [0.5.2]
 
 ### Changed

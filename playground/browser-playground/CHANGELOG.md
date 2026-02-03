@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Display Wagmi connection errors in UI instead of only logging to console ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+
 ## [0.1.1]
 
 ### Added
