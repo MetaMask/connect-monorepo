@@ -73,7 +73,7 @@ export async function createSolanaClient(
     core,
     getWallet: (walletName?: string) =>
       getWalletStandard({ client, walletName }),
-    registerWallet: async (walletName = 'MetaMask') =>
+    registerWallet: async (walletName = 'MetaMask Connect') =>
       registerSolanaWalletStandard({ client, walletName }),
     disconnect: async () => await core.disconnect(),
   };

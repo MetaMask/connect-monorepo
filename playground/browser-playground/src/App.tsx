@@ -3,7 +3,11 @@ import type { Scope, SessionData } from '@metamask/connect';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { FEATURED_NETWORKS, convertCaipChainIdsToHex, TEST_IDS } from '@metamask/playground-ui';
+import {
+  FEATURED_NETWORKS,
+  convertCaipChainIdsToHex,
+  TEST_IDS,
+} from '@metamask/playground-ui';
 import { useSDK } from './sdk';
 import { useLegacyEVMSDK } from './sdk/LegacyEVMSDKProvider';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
@@ -47,7 +51,11 @@ function App() {
   } = useLegacyEVMSDK();
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
   const wagmiChainId = useChainId();
-  const { connectors, connectAsync: wagmiConnectAsync, status: wagmiStatus } = useConnect();
+  const {
+    connectors,
+    connectAsync: wagmiConnectAsync,
+    status: wagmiStatus,
+  } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
 
   // On mount, check if wagmi is connected but not marked as active provider
@@ -59,7 +67,14 @@ function App() {
       wagmiDisconnect();
     }
   }, []);
-  const { connected: solanaConnected, publicKey: solanaPublicKey, wallets, select, connect: solanaConnect, disconnect: solanaDisconnect } = useWallet();
+  const {
+    connected: solanaConnected,
+    publicKey: solanaPublicKey,
+    wallets,
+    select,
+    connect: solanaConnect,
+    disconnect: solanaDisconnect,
+  } = useWallet();
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -125,7 +140,9 @@ function App() {
     const selectedScopesArray = customScopes.filter((scope) => scope.length);
     // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
     // Then convert hex chain IDs to numbers for the connect method
-    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map(id => hexToNumber(id));
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray).map((id) =>
+      hexToNumber(id),
+    );
     // Use first chain or default to mainnet (1), ensuring it's a valid wagmi chain
     const chainId = (chainIds[0] || 1) as 1 | 10 | 11155111 | 42220;
 
@@ -147,7 +164,7 @@ function App() {
   const connectSolana = useCallback(async () => {
     // Find the MetaMask wallet in registered wallets
     const metamaskWallet = wallets.find((w) =>
-      w.adapter.name.toLowerCase().includes('metamask')
+      w.adapter.name.toLowerCase().includes('metamask connect'),
     );
     if (metamaskWallet) {
       try {
@@ -182,7 +199,16 @@ function App() {
     if (solanaConnected) {
       await solanaDisconnect();
     }
-  }, [sdkDisconnect, legacyDisconnect, wagmiDisconnect, solanaDisconnect, isConnected, legacyConnected, wagmiConnected, solanaConnected]);
+  }, [
+    sdkDisconnect,
+    legacyDisconnect,
+    wagmiDisconnect,
+    solanaDisconnect,
+    isConnected,
+    legacyConnected,
+    wagmiConnected,
+    solanaConnected,
+  ]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -195,9 +221,15 @@ function App() {
 
   const isConnecting = status === 'connecting';
   return (
-    <div data-testid={TEST_IDS.app.container} className="min-h-screen bg-gray-50 flex justify-center">
+    <div
+      data-testid={TEST_IDS.app.container}
+      className="min-h-screen bg-gray-50 flex justify-center"
+    >
       <div className="max-w-6xl w-full p-8">
-        <h1 data-testid={TEST_IDS.app.title} className="text-slate-800 text-4xl font-bold mb-8 text-center">
+        <h1
+          data-testid={TEST_IDS.app.title}
+          className="text-slate-800 text-4xl font-bold mb-8 text-center"
+        >
           MetaMask MultiChain API Test Dapp
         </h1>
         <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
@@ -252,7 +284,9 @@ function App() {
                 disabled={wagmiStatus === 'pending'}
                 className="bg-yellow-500 text-white px-5 py-2 rounded text-base hover:bg-yellow-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {wagmiStatus === 'pending' ? 'Connecting...' : 'Connect (Wagmi)'}
+                {wagmiStatus === 'pending'
+                  ? 'Connecting...'
+                  : 'Connect (Wagmi)'}
               </button>
             )}
 
@@ -269,7 +303,11 @@ function App() {
             {isConnected && (
               <button
                 type="button"
-                data-testid={scopesHaveChanged() ? TEST_IDS.app.btnReconnect : TEST_IDS.app.btnDisconnect}
+                data-testid={
+                  scopesHaveChanged()
+                    ? TEST_IDS.app.btnReconnect
+                    : TEST_IDS.app.btnDisconnect
+                }
                 onClick={scopesHaveChanged() ? connect : disconnect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
@@ -279,7 +317,10 @@ function App() {
               </button>
             )}
 
-            {(isConnected || legacyConnected || wagmiConnected || solanaConnected) && (
+            {(isConnected ||
+              legacyConnected ||
+              wagmiConnected ||
+              solanaConnected) && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnDisconnect}
@@ -292,12 +333,18 @@ function App() {
           </div>
         </section>
         {error && (
-          <section data-testid={TEST_IDS.app.sectionError} className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+          <section
+            data-testid={TEST_IDS.app.sectionError}
+            className="bg-white rounded-lg p-8 mb-6 shadow-sm"
+          >
             <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
             <p className="text-gray-700">{error.message.toString()}</p>
           </section>
         )}
-        <section data-testid={TEST_IDS.app.sectionConnected} className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <section
+          data-testid={TEST_IDS.app.sectionConnected}
+          className="bg-white rounded-lg p-8 mb-6 shadow-sm"
+        >
           {Object.keys(session?.sessionScopes ?? {}).length > 0 && (
             <section data-testid={TEST_IDS.app.sectionScopes} className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
