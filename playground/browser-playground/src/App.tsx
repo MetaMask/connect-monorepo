@@ -31,6 +31,9 @@ function App() {
     isProviderActive('wagmi'),
   );
 
+  // Track Wagmi connection errors
+  const [wagmiError, setWagmiError] = useState<Error | null>(null);
+
   const {
     error,
     status,
@@ -128,6 +131,9 @@ function App() {
   }, [customScopes, legacyConnect]);
 
   const connectWagmi = useCallback(async () => {
+    // Clear any previous error
+    setWagmiError(null);
+
     const selectedScopesArray = customScopes.filter((scope) => scope.length);
     // Convert CAIP-2 chain IDs to hex, filtering out Solana and other non-EVM networks
     // Then convert hex chain IDs to numbers for the connect method
@@ -146,8 +152,9 @@ function App() {
         });
         setProviderActive('wagmi');
         setWagmiIsActiveProvider(true);
-      } catch (error) {
-        console.error('Wagmi connection error:', error);
+      } catch (err) {
+        console.error('Wagmi connection error:', err);
+        setWagmiError(err instanceof Error ? err : new Error(String(err)));
       }
     }
   }, [customScopes, connectors, wagmiConnectAsync]);
@@ -288,7 +295,7 @@ function App() {
             )}
           </div>
         </section>
-        {(error || legacyError) && (
+        {(error || legacyError || wagmiError) && (
           <section
             data-testid={TEST_IDS.app.sectionError}
             className="bg-white rounded-lg p-8 mb-6 shadow-sm"
@@ -306,12 +313,23 @@ function App() {
               </p>
             )}
             {legacyError && (
-              <p className="text-gray-700">
+              <p className="text-gray-700 mb-2">
                 <span className="font-semibold">Legacy EVM:</span>{' '}
                 {legacyError.message.toString()}
                 {(legacyError as any).code && (
                   <span className="ml-2 text-sm text-gray-500">
                     (code: {(legacyError as any).code})
+                  </span>
+                )}
+              </p>
+            )}
+            {wagmiError && (
+              <p className="text-gray-700">
+                <span className="font-semibold">Wagmi:</span>{' '}
+                {wagmiError.message.toString()}
+                {(wagmiError as any).code && (
+                  <span className="ml-2 text-sm text-gray-500">
+                    (code: {(wagmiError as any).code})
                   </span>
                 )}
               </p>
