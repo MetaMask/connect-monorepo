@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@metamask/chain-agnostic-permission": "^1.2.2",
-    "@metamask/connect": "workspace:^",
+    "@metamask/connect-multichain": "workspace:^",
     "@metamask/connect-solana": "workspace:^",
     "@metamask/utils": "^11.8.1",
     "@solana/wallet-adapter-react": "^0.15.35",
