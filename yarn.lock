@@ -4010,7 +4010,9 @@ __metadata:
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
-    "@metamask/connect": "workspace:^"
+    "@metamask/connect-evm": "workspace:^"
+    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect-solana": "workspace:^"
     "@metamask/playground-ui": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
@@ -4185,7 +4187,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@metamask/connect@workspace:^, @metamask/connect@workspace:packages/connect":
+"@metamask/connect-solana@workspace:^, @metamask/connect-solana@workspace:packages/connect-solana":
+  version: 0.0.0-use.local
+  resolution: "@metamask/connect-solana@workspace:packages/connect-solana"
+  dependencies:
+    "@metamask/auto-changelog": "npm:^3.4.4"
+    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/solana-wallet-standard": "npm:^0.6.0"
+    "@types/jsdom": "npm:^21.1.7"
+    "@vitest/coverage-v8": "npm:^3.2.4"
+    "@wallet-standard/base": "npm:^1.1.0"
+    jsdom: "npm:^26.1.0"
+    prettier: "npm:^3.3.3"
+    tsup: "npm:^8.4.0"
+    typedoc: "npm:^0.28.14"
+    typedoc-plugin-missing-exports: "npm:^4.1.2"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^3.1.2"
+  languageName: unknown
+  linkType: soft
+
+"@metamask/connect@workspace:packages/connect":
   version: 0.0.0-use.local
   resolution: "@metamask/connect@workspace:packages/connect"
   dependencies:

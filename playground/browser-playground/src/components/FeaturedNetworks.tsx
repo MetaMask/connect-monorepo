@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { Scope } from '@metamask/connect';
+import type { Scope } from '@metamask/connect-multichain';
 import { FEATURED_NETWORKS, TEST_IDS } from '@metamask/playground-ui';
 import React from 'react';
 
