@@ -26,6 +26,7 @@ import {
   type TransportResponse,
   TransportTimeoutError,
 } from '@metamask/multichain-api-client';
+import { providerErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
 
 import {
@@ -158,19 +159,17 @@ export class MWPTransport implements ExtendedTransport {
 
             // Check if the message contains an error (e.g., user rejected)
             if ('error' in messagePayload && messagePayload.error) {
+              this.pendingRequests.delete(messagePayload.id);
               const errorData = messagePayload.error as {
                 message?: string;
                 code?: number;
               };
-              this.pendingRequests.delete(messagePayload.id);
-
-              // Create error with code property for EIP-1193 compliance
-              const error = new Error(
-                errorData.message ?? 'Request rejected by user',
+              request.reject(
+                providerErrors.custom({
+                  code: errorData.code ?? 4001,
+                  message: errorData.message ?? 'Request rejected by user',
+                }),
               );
-              (error as any).code = errorData.code ?? 4001; // 4001 = User rejected (EIP-1193 standard)
-
-              request.reject(error);
               return;
             }
 
@@ -417,74 +416,46 @@ export class MWPTransport implements ExtendedTransport {
             initialConnectionMessageHandler = async (
               message: unknown,
             ): Promise<void> => {
-              if (typeof message === 'object' && message !== null) {
-                if ('data' in message) {
-                  const messagePayload = message.data as Record<
-                    string,
-                    unknown
-                  >;
-
-                  // Check if this message is for our connection request (by ID)
-                  if (messagePayload.id === request.id) {
-                    // Check for error response (e.g., user rejected the connection)
-                    if (messagePayload.error) {
-                      if (initialConnectionMessageHandler) {
-                        this.dappClient.off(
-                          'message',
-                          initialConnectionMessageHandler,
-                        );
-                      }
-                      const errorData = messagePayload.error as {
-                        message?: string;
-                        code?: number;
-                      };
-                      const error = new Error(
-                        errorData.message ?? 'Connection rejected',
-                      );
-                      (error as any).code = errorData.code ?? 4001; // EIP-1193: User rejected request
-                      return rejectConnection(error);
-                    }
-
-                    // Success case
-                    await this.storeWalletSession(
-                      request,
-                      messagePayload as TransportResponse,
-                    );
-                    this.notifyCallbacks(messagePayload);
-                    return resolveConnection();
-                  }
-
-                  // Also handle by method for backward compatibility (notifications without ID)
-                  if (
-                    messagePayload.method === 'wallet_createSession' ||
-                    messagePayload.method === 'wallet_sessionChanged'
-                  ) {
-                    if (messagePayload.error) {
-                      if (initialConnectionMessageHandler) {
-                        this.dappClient.off(
-                          'message',
-                          initialConnectionMessageHandler,
-                        );
-                      }
-                      const errorData = messagePayload.error as {
-                        message?: string;
-                        code?: number;
-                      };
-                      const error = new Error(
-                        errorData.message ?? 'Connection rejected',
-                      );
-                      (error as any).code = errorData.code ?? 4001;
-                      return rejectConnection(error);
-                    }
-                    await this.storeWalletSession(
-                      request,
-                      messagePayload as TransportResponse,
-                    );
-                    this.notifyCallbacks(messagePayload);
-                    return resolveConnection();
-                  }
-                }
+              if (typeof message !== 'object' || message === null) {
+                return;
               }
+              if (!('data' in message)) {
+                return;
+              }
+
+              const messagePayload = message.data as Record<string, unknown>;
+
+              // Match by ID (preferred) or by method (backward compatibility for notifications without ID)
+              const isMatchingId = messagePayload.id === request.id;
+              const isMatchingMethod =
+                messagePayload.method === 'wallet_createSession' ||
+                messagePayload.method === 'wallet_sessionChanged';
+
+              if (!isMatchingId && !isMatchingMethod) {
+                return;
+              }
+
+              // Handle error response (e.g., user rejected the connection)
+              if (messagePayload.error) {
+                const errorData = messagePayload.error as {
+                  message?: string;
+                  code?: number;
+                };
+                return rejectConnection(
+                  providerErrors.custom({
+                    code: errorData.code ?? 4001,
+                    message: errorData.message ?? 'Connection rejected',
+                  }),
+                );
+              }
+
+              // Success case - store session, notify, and resolve
+              await this.storeWalletSession(
+                request,
+                messagePayload as TransportResponse,
+              );
+              this.notifyCallbacks(messagePayload);
+              return resolveConnection();
             };
 
             this.dappClient.on('message', initialConnectionMessageHandler);
