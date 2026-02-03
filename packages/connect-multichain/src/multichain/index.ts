@@ -260,25 +260,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   async #init(): Promise<void> {
     try {
-      // @ts-expect-error mmsdk should be accessible
-      if (typeof window !== 'undefined' && window.mmsdk?.isInitialized) {
-        logger('MetaMaskSDK: init already initialized');
-      } else {
-        await this.#setupAnalytics();
-        await this.#setupTransport();
-        try {
-          const baseProps = await getBaseAnalyticsProperties(
-            this.options,
-            this.storage,
-          );
-          analytics.track('mmconnect_initialized', baseProps);
-        } catch (error) {
-          logger('Error tracking initialized event', error);
-        }
-        if (typeof window !== 'undefined') {
-          // @ts-expect-error mmsdk should be accessible
-          window.mmsdk = this;
-        }
+      await this.#setupAnalytics();
+      await this.#setupTransport();
+      try {
+        const baseProps = await getBaseAnalyticsProperties(
+          this.options,
+          this.storage,
+        );
+        analytics.track('mmconnect_initialized', baseProps);
+      } catch (error) {
+        logger('Error tracking initialized event', error);
       }
     } catch (error) {
       await this.storage.removeTransport();
