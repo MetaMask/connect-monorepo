@@ -214,7 +214,7 @@ export class DefaultTransport implements ExtendedTransport {
       ),
       sessionProperties: options?.sessionProperties,
     };
-    
+
     if (walletSession && options && !options.forceRequest) {
       const currentScopes = Object.keys(
         walletSession?.sessionScopes ?? {},
@@ -227,7 +227,6 @@ export class DefaultTransport implements ExtendedTransport {
         walletSession,
         proposedCaipAccountIds,
       );
-
 
       if (!hasSameScopesAndAccounts) {
         await this.request(
@@ -244,7 +243,6 @@ export class DefaultTransport implements ExtendedTransport {
         walletSession = response.result as SessionData;
       }
     } else if (!walletSession || options?.forceRequest) {
-  
       const response = await this.request(
         { method: 'wallet_createSession', params: createSessionParams },
         this.#defaultRequestOptions,
