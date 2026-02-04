@@ -1,5 +1,5 @@
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
-import type { Scope, SessionData } from '@metamask/connect';
+import type { Scope, SessionData } from '@metamask/connect-multichain';
 import {
   injectParams,
   METHODS_REQUIRING_PARAM_INJECTION,

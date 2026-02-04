@@ -8,7 +8,7 @@
 /* eslint-disable id-length -- Short error variable */
 /* eslint-disable camelcase -- RPC method names */
 /* eslint-disable import-x/no-nodejs-modules -- Buffer polyfill */
-import type { EIP1193Provider } from '@metamask/connect/evm';
+import type { EIP1193Provider } from '@metamask/connect-evm';
 import {
   createSignTypedDataParams,
   getDefaultPersonalSignMessage,

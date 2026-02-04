@@ -4010,7 +4010,8 @@ __metadata:
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
-    "@metamask/connect": "workspace:^"
+    "@metamask/connect-evm": "workspace:^"
+    "@metamask/connect-multichain": "workspace:^"
     "@metamask/playground-ui": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
@@ -4185,7 +4186,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@metamask/connect@workspace:^, @metamask/connect@workspace:packages/connect":
+"@metamask/connect@workspace:packages/connect":
   version: 0.0.0-use.local
   resolution: "@metamask/connect@workspace:packages/connect"
   dependencies:
