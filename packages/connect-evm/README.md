@@ -29,7 +29,7 @@ npm install @metamask/connect-evm
 ```typescript
 import { createEVMClient, getInfuraRpcUrls } from '@metamask/connect-evm';
 
-const sdk = await createEVMClient({
+const client = await createEVMClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
@@ -49,7 +49,7 @@ const sdk = await createEVMClient({
 // Connect to MetaMask
 let accounts, chainId;
 try {
-  ({ accounts, chainId } = await sdk.connect({ chainIds: ['0x1', '0x89'] })); // Connect to Ethereum Mainnet and Polygon
+  ({ accounts, chainId } = await client.connect({ chainIds: ['0x1', '0x89'] })); // Connect to Ethereum Mainnet and Polygon
 } catch (error) {
   if (error.code === 4001) {
     console.log('User rejected the connection request');
@@ -61,7 +61,7 @@ console.log({ accounts }); // The connected accounts where the first account is 
 console.log({ chainId }); // The currently active chainId
 
 // Get the EIP-1193 provider
-const provider = sdk.getProvider();
+const provider = client.getProvider();
 
 // Sign a message
 const signedMessage = await provider.request({
@@ -78,7 +78,7 @@ When using `@metamask/connect-evm` in React Native, the standard browser deeplin
 import { Linking } from 'react-native';
 import { createEVMClient } from '@metamask/connect-evm';
 
-const sdk = await createEVMClient({
+const client = await createEVMClient({
   dapp: {
     name: 'My React Native DApp',
     url: 'https://mydapp.com',
@@ -105,7 +105,7 @@ The `mobile.preferredOpenLink` option is checked before falling back to browser-
 ### Using the Provider Directly
 
 ```typescript
-const provider = sdk.getProvider();
+const provider = client.getProvider();
 
 // Send transaction
 const txHash = await provider.request({
@@ -186,7 +186,7 @@ Factory function to create a new MetaMask Connect EVM instance.
 `Promise<MetamaskConnectEVM>` - A fully initialized SDK instance.
 
 ```typescript
-const sdk = await createEVMClient({
+const client = await createEVMClient({
   dapp: { name: 'My DApp', url: 'https://mydapp.com' },
   api: {
     supportedNetworks: {
@@ -227,7 +227,7 @@ Connects to MetaMask wallet.
 `Promise<{ accounts: Address[]; chainId: Hex }>` - The connected accounts and active chain ID.
 
 ```typescript
-const { accounts, chainId } = await sdk.connect({
+const { accounts, chainId } = await client.connect({
   chainIds: ['0x1', '0x89'], // Ethereum Mainnet and Polygon
   account: '0x...',
   forceRequest: false,
@@ -250,7 +250,7 @@ Connects and immediately signs a message using `personal_sign`.
 `Promise<string>` - The signature as a hex string.
 
 ```typescript
-const signature = await sdk.connectAndSign({
+const signature = await client.connectAndSign({
   message: 'Sign this message',
   chainIds: ['0x1'],
 });
@@ -275,7 +275,7 @@ Connects and immediately invokes a method with specified parameters.
 `Promise<unknown>` - The result of the method invocation.
 
 ```typescript
-const result = await sdk.connectWith({
+const result = await client.connectWith({
   method: 'eth_sendTransaction',
   params: (account) => [
     {
@@ -301,7 +301,7 @@ None.
 `Promise<void>`
 
 ```typescript
-await sdk.disconnect();
+await client.disconnect();
 ```
 
 ##### `switchChain(options)`
@@ -320,7 +320,7 @@ Switches to a different chain. Will attempt to add the chain if not configured i
 `Promise<void>`
 
 ```typescript
-await sdk.switchChain({
+await client.switchChain({
   chainId: '0x89',
   chainConfiguration: {
     chainId: '0x89',
@@ -344,7 +344,7 @@ None.
 `EIP1193Provider` - The EIP-1193 compliant provider.
 
 ```typescript
-const provider = sdk.getProvider();
+const provider = client.getProvider();
 ```
 
 ##### `getChainId()`
@@ -360,7 +360,7 @@ None.
 `Hex | undefined` - The currently selected chain ID as a hex string, or undefined if not connected.
 
 ```typescript
-const chainId = sdk.getChainId(); // e.g., '0x1'
+const chainId = client.getChainId(); // e.g., '0x1'
 ```
 
 ##### `getAccount()`
@@ -376,7 +376,7 @@ None.
 `Address | undefined` - The currently selected account address, or undefined if not connected.
 
 ```typescript
-const account = sdk.getAccount(); // e.g., '0x...'
+const account = client.getAccount(); // e.g., '0x...'
 ```
 
 #### Properties

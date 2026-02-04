@@ -24,7 +24,7 @@ import {
   getInfuraRpcUrls,
 } from '@metamask/connect-multichain';
 
-const sdk = await createMultichainClient({
+const client = await createMultichainClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
@@ -41,10 +41,10 @@ const sdk = await createMultichainClient({
 });
 
 // Connect to MetaMask with specific chain scopes
-await sdk.connect(['eip155:1', 'eip155:137'], []);
+await client.connect(['eip155:1', 'eip155:137'], []);
 
 // Invoke methods on specific chains
-const blockNumber = await sdk.invokeMethod({
+const blockNumber = await client.invokeMethod({
   scope: 'eip155:1',
   request: {
     method: 'eth_blockNumber',
@@ -60,7 +60,7 @@ const blockNumber = await sdk.invokeMethod({
 ```typescript
 import { createMultichainClient } from '@metamask/connect-multichain';
 
-const sdk = await createMultichainClient({
+const client = await createMultichainClient({
   dapp: {
     name: 'My Web DApp',
     url: 'https://mydapp.com',
@@ -84,7 +84,7 @@ const sdk = await createMultichainClient({
 ```typescript
 import { createMultichainClient } from '@metamask/connect-multichain';
 
-const sdk = await createMultichainClient({
+const client = await createMultichainClient({
   dapp: {
     name: 'My Node App',
     url: 'https://mydapp.com',
@@ -97,7 +97,7 @@ const sdk = await createMultichainClient({
 });
 
 // Connect will display QR code in terminal
-await sdk.connect(['eip155:1'], []);
+await client.connect(['eip155:1'], []);
 ```
 
 ### React Native
@@ -106,7 +106,7 @@ await sdk.connect(['eip155:1'], []);
 import { Linking } from 'react-native';
 import { createMultichainClient } from '@metamask/connect-multichain';
 
-const sdk = await createMultichainClient({
+const client = await createMultichainClient({
   dapp: {
     name: 'My RN App',
     url: 'https://mydapp.com',
@@ -160,7 +160,7 @@ Factory function to create a new Multichain SDK instance.
 `Promise<MetaMaskConnectMultichain>` - A fully initialized SDK instance.
 
 ```typescript
-const sdk = await createMultichainClient({
+const client = await createMultichainClient({
   dapp: { name: 'My DApp', url: 'https://mydapp.com' },
   api: {
     supportedNetworks: {
@@ -197,7 +197,7 @@ Connects to MetaMask with specified chain scopes.
 `Promise<void>`
 
 ```typescript
-await sdk.connect(
+await client.connect(
   ['eip155:1', 'eip155:137'], // Chain scopes to request
   ['eip155:1:0x...'], // Specific accounts to request
 );
@@ -216,7 +216,7 @@ None.
 `Promise<void>`
 
 ```typescript
-await sdk.disconnect();
+await client.disconnect();
 ```
 
 ##### `invokeMethod(options)`
@@ -236,7 +236,7 @@ Invokes an RPC method on a specific chain.
 `Promise<Json>` - The result of the RPC method call.
 
 ```typescript
-const result = await sdk.invokeMethod({
+const result = await client.invokeMethod({
   scope: 'eip155:1',
   request: {
     method: 'eth_getBalance',
@@ -257,17 +257,17 @@ const result = await sdk.invokeMethod({
 
 ```typescript
 // Session changes
-sdk.on('wallet_sessionChanged', (session) => {
+client.on('wallet_sessionChanged', (session) => {
   console.log('Session updated:', session);
 });
 
 // QR code display (for custom UI)
-sdk.on('display_uri', (uri) => {
+client.on('display_uri', (uri) => {
   console.log('Display QR code:', uri);
 });
 
 // Connection state changes
-sdk.on('stateChanged', (status) => {
+client.on('stateChanged', (status) => {
   console.log('Status:', status);
 });
 ```
@@ -369,7 +369,7 @@ The package exports various error classes for handling specific error conditions
 import { ProtocolError } from '@metamask/connect-multichain';
 
 try {
-  await sdk.connect(['eip155:1'], []);
+  await client.connect(['eip155:1'], []);
 } catch (error) {
   if (error instanceof ProtocolError) {
     console.log('Protocol error:', error.code, error.message);
@@ -384,19 +384,19 @@ try {
 For custom QR code implementations, use headless mode:
 
 ```typescript
-const sdk = await createMultichainClient({
+const client = await createMultichainClient({
   dapp: { name: 'My DApp' },
   api: { supportedNetworks: { 'eip155:1': 'https://...' } },
   ui: { headless: true },
 });
 
 // Listen for QR code URIs
-sdk.on('display_uri', (uri) => {
+client.on('display_uri', (uri) => {
   // Display your custom QR code with this URI
   displayMyCustomQRCode(uri);
 });
 
-await sdk.connect(['eip155:1'], []);
+await client.connect(['eip155:1'], []);
 ```
 
 ## Standards

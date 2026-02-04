@@ -21,7 +21,7 @@ npm install @metamask/connect
 ```typescript
 import { createEVMClient } from '@metamask/connect/evm';
 
-const sdk = await createEVMClient({
+const client = await createEVMClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
@@ -37,7 +37,7 @@ const sdk = await createEVMClient({
 // Connect to MetaMask
 let accounts, chainId;
 try {
-  ({ accounts, chainId } = await sdk.connect({ chainIds: [1] }));
+  ({ accounts, chainId } = await client.connect({ chainIds: [1] }));
 } catch (error) {
   if (error.code === 4001) {
     console.log('User rejected the connection request');
@@ -50,7 +50,7 @@ console.log({ accounts }); // The connected accounts where the first account is 
 console.log({ chainId }); // The currently active chainId
 
 // Get the EIP-1193 provider
-const provider = sdk.getProvider();
+const provider = client.getProvider();
 
 // Make requests
 const balance = await provider.request({
@@ -64,7 +64,7 @@ const balance = await provider.request({
 ```typescript
 import { createMultichainClient } from '@metamask/connect/multichain';
 
-const sdk = await createMultichainClient({
+const client = await createMultichainClient({
   dapp: {
     name: 'My DApp',
     url: 'https://mydapp.com',
@@ -78,10 +78,10 @@ const sdk = await createMultichainClient({
 });
 
 // Connect with multiple chain scopes
-await sdk.connect(['eip155:1', 'solana:mainnet'], []);
+await client.connect(['eip155:1', 'solana:mainnet'], []);
 
 // Invoke methods on specific chains
-const result = await sdk.invokeMethod({
+const result = await client.invokeMethod({
   scope: 'eip155:1',
   request: {
     method: 'eth_blockNumber',
