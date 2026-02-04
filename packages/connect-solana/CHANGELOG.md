@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add Solana wallet-standard integration for MetaMask Connect ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
+- Add Solana wallet-standard integration for MetaMask Connect
+
+### Fixed
+
+- Prevents MetaMask Connect from registering on the Solana wallet-standard registry when Metamask extension is installed ([#164](https://github.com/MetaMask/connect-monorepo/pull/164))
 
 [Unreleased]: https://github.com/MetaMask/connect-monorepo/
