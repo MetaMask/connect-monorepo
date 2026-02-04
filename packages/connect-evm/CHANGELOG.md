@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update `connect()` and `createEVMClient()` typings to be more accurate ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 - update `switchChain()` to return `Promise<void>` ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 
+### Fixed
+
+- Fix `display_uri` and `wallet_sessionChanged` events not firing on reconnect after disconnect in headless mode ([#TBD](https://github.com/MetaMask/connect-monorepo/pull/TBD))
+
 ## [0.4.1]
 
 ### Fixed

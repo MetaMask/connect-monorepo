@@ -41,3 +41,6 @@ playground/*/*.tsbuildinfo
 
 # env files
 **/.env
+
+# Local investigation/POC folder
+temp/

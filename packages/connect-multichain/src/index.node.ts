@@ -1,7 +1,10 @@
-import type { CreateMultichainFN, StoreClient } from './domain';
+import type { CreateMultichainFN } from './domain';
 import { enableDebug } from './domain';
 import { MetaMaskConnectMultichain } from './multichain';
-import { Store } from './store';
+import {
+  createIsolatedStorage,
+  generateInstanceId,
+} from './store/create-storage';
 import { ModalFactory } from './ui';
 
 export * from './domain';
@@ -12,14 +15,21 @@ export const createMultichainClient: CreateMultichainFN = async (options) => {
   }
 
   const uiModules = await import('./ui/modals/node');
-  let storage: StoreClient;
-  if (options.storage) {
-    storage = options.storage;
-  } else {
-    const { StoreAdapterNode } = await import('./store/adapters/node');
-    const adapter = new StoreAdapterNode();
-    storage = new Store(adapter);
-  }
+
+  // Generate deterministic instanceId if not provided
+  // Empty string means no prefixing (for backwards compatibility / testing)
+  const instanceId =
+    options.instanceId ?? generateInstanceId(options.dapp.name, 'multichain');
+
+  const storage = await createIsolatedStorage({
+    instanceId,
+    userStorage: options.storage,
+    createAdapter: async () => {
+      const { StoreAdapterNode } = await import('./store/adapters/node');
+      return new StoreAdapterNode();
+    },
+  });
+
   const factory = new ModalFactory(uiModules);
   return MetaMaskConnectMultichain.create({
     ...options,
