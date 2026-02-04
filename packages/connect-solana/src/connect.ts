@@ -10,6 +10,7 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
+import { isMetamaskExtensionRegistered } from './utils';
 
 /**
  * Creates a new Solana client for connecting to MetaMask via wallet-standard.
@@ -73,8 +74,16 @@ export async function createSolanaClient(
     core,
     getWallet: (walletName?: string) =>
       getWalletStandard({ client, walletName }),
-    registerWallet: async (walletName = 'MetaMask Connect') =>
-      registerSolanaWalletStandard({ client, walletName }),
+    registerWallet: async (walletName = 'MetaMask'): Promise<void> => {
+      if (isMetamaskExtensionRegistered()) {
+        console.debug(
+          '[MetaMask Connect] MetaMask Solana wallet already registered, skipping...',
+        );
+        return;
+      }
+
+      await registerSolanaWalletStandard({ client, walletName });
+    },
     disconnect: async () => await core.disconnect(),
   };
 }
