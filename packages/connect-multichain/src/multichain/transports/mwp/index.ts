@@ -382,7 +382,10 @@ export class MWPTransport implements ExtendedTransport {
             );
             const sessionRequest: CreateSessionParams<RPCAPI> = {
               optionalScopes,
-              sessionProperties: options?.sessionProperties,
+              // Only include sessionProperties if defined (undefined values cause wallet validation errors)
+              ...(options?.sessionProperties && {
+                sessionProperties: options.sessionProperties,
+              }),
             };
             const request = {
               jsonrpc: '2.0',

@@ -246,7 +246,11 @@ export class DefaultTransport implements ExtendedTransport {
       );
       const createSessionParams: CreateSessionParams<RPCAPI> = {
         optionalScopes,
-        sessionProperties: options?.sessionProperties,
+        // Only include sessionProperties if defined (undefined values are preserved
+        // by postMessage's structured clone algorithm and cause wallet validation errors)
+        ...(options?.sessionProperties && {
+          sessionProperties: options.sessionProperties,
+        }),
       };
       const response = await this.request(
         { method: 'wallet_createSession', params: createSessionParams },
