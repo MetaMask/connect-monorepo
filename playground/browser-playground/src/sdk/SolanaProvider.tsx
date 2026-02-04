@@ -1,4 +1,7 @@
-import { createSolanaClient, type SolanaClient } from '@metamask/connect-solana';
+import {
+  createSolanaClient,
+  type SolanaClient,
+} from '@metamask/connect-solana';
 import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import {
   ConnectionProvider,
@@ -50,6 +53,7 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
     initRef.current = true;
 
     createSolanaClient({
+      debug: true,
       dapp: {
         name: 'MetaMask Connect Playground',
         url: window.location.origin,
@@ -80,7 +84,10 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <SolanaSDKContext.Provider value={contextValue}>
-      <ConnectionProvider endpoint={endpoint} config={{ commitment: 'confirmed' }}>
+      <ConnectionProvider
+        endpoint={endpoint}
+        config={{ commitment: 'confirmed' }}
+      >
         <WalletProvider wallets={[]} autoConnect>
           <WalletModalProvider>{children}</WalletModalProvider>
         </WalletProvider>

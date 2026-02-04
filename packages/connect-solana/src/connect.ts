@@ -10,7 +10,7 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
-import { isMetamaskExtensionRegistered } from './utils';
+import { isMetamaskExtensionRegistered, logger, enableDebug } from './utils';
 
 /**
  * Creates a new Solana client for connecting to MetaMask via wallet-standard.
@@ -53,6 +53,10 @@ import { isMetamaskExtensionRegistered } from './utils';
 export async function createSolanaClient(
   options: SolanaConnectOptions,
 ): Promise<SolanaClient> {
+  if (options.debug) {
+    enableDebug();
+  }
+
   const defaultNetworks: SolanaSupportedNetworks = {
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
@@ -76,9 +80,7 @@ export async function createSolanaClient(
       getWalletStandard({ client, walletName }),
     registerWallet: async (walletName = 'MetaMask'): Promise<void> => {
       if (isMetamaskExtensionRegistered()) {
-        console.debug(
-          '[MetaMask Connect] MetaMask Solana wallet already registered, skipping...',
-        );
+        logger('MetaMask extension is already registered. Skipping...');
         return;
       }
 
