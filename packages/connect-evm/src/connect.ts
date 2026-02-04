@@ -70,13 +70,13 @@ type ConnectOptions = {
  *
  * @example
  * ```typescript
- * const sdk = await createEVMClient({
+ * const client = await createEVMClient({
  *   dapp: { name: 'My DApp', url: 'https://mydapp.com' }
  * });
  *
- * const { accounts, chainId } = await sdk.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
+ * const { accounts, chainId } = await client.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
  *
- * const provider = sdk.getProvider();
+ * const provider = client.getProvider();
  * const signedMessage = await provider.request({ method: 'personal_sign', params: ['0x0', accounts[0]] });
  * ```
  */
