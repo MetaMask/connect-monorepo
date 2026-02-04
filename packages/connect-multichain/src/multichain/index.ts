@@ -853,7 +853,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#transport?.disconnect();
     await this.storage.removeTransport();
 
-    this.emit('stateChanged', 'disconnected');
+    this.status = 'disconnected';
     this.emit('wallet_sessionChanged', { sessionScopes: {} });
 
     this.#listener = undefined;
