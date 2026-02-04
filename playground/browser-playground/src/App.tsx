@@ -164,7 +164,7 @@ function App() {
   const connectSolana = useCallback(async () => {
     // Find the MetaMask wallet in registered wallets
     const metamaskWallet = wallets.find((w) =>
-      w.adapter.name.toLowerCase().includes('metamask connect'),
+      w.adapter.name.toLowerCase().includes('metamask'),
     );
     if (metamaskWallet) {
       try {
