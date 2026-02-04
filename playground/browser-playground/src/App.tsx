@@ -195,7 +195,7 @@ function App() {
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
-                Connecting
+                Connecting (Multichain)
               </button>
             )}
 
@@ -206,7 +206,7 @@ function App() {
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
-                Connect
+                Connect (Multichain)
               </button>
             )}
 
@@ -241,8 +241,8 @@ function App() {
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
                 {scopesHaveChanged()
-                  ? `Re Establishing Connection`
-                  : `Disconnect`}
+                  ? `Re Establishing Connection (Multichain)`
+                  : `Disconnect (Multichain)`}
               </button>
             )}
 
@@ -253,7 +253,7 @@ function App() {
                 onClick={disconnect}
                 className="bg-red-500 text-white px-5 py-2 rounded text-base hover:bg-red-600 transition-colors"
               >
-                Disconnect
+                Disconnect All
               </button>
             )}
           </div>
