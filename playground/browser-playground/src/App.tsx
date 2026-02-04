@@ -293,6 +293,7 @@ function App() {
             {!solanaConnected && (
               <button
                 type="button"
+                data-testid={TEST_IDS.app.btnConnect('solana')}
                 onClick={connectSolana}
                 className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors"
               >
