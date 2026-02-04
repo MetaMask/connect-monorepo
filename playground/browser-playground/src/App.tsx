@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Scope, SessionData } from '@metamask/connect';
+import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
 import { useWallet } from '@solana/wallet-adapter-react';
