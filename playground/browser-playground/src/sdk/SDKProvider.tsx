@@ -21,12 +21,6 @@ import {
   useState,
 } from 'react';
 
-import {
-  isProviderActive,
-  setProviderActive,
-  removeProviderActive,
-} from '../utils/activeProviderStorage';
-
 const SDKContext = createContext<
   | {
       session: SessionData | undefined;
@@ -68,12 +62,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
               payload.method === 'wallet_createSession' ||
               payload.method === 'wallet_getSession'
             ) {
-              // Only restore session if 'multichain' is marked as active in localStorage
-              // This prevents showing multichain cards when the session was created
-              // by legacy-evm or wagmi connections
-              if (isProviderActive('multichain')) {
-                setSession(payload.params as SessionData);
-              }
+              setSession(payload.params as SessionData);
             } else if (payload.method === 'stateChanged') {
               setStatus(payload.params as ConnectionStatus);
             }
@@ -90,7 +79,6 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const sdkInstance = await sdkRef.current;
       setSession(undefined);
-      removeProviderActive('multichain');
       return sdkInstance.disconnect();
     } catch (error) {
       setError(error as Error);
@@ -106,11 +94,9 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
         const sdkInstance = await sdkRef.current;
         // Track this provider as active BEFORE connecting
         // This ensures the onNotification handler will accept the session
-        setProviderActive('multichain');
         await sdkInstance.connect(scopes, caipAccountIds);
       } catch (error) {
         // If connection fails, remove the active provider tracking
-        removeProviderActive('multichain');
         setError(error as Error);
       }
     },

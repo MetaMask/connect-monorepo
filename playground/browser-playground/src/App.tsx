@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
-import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { useWallet } from '@solana/wallet-adapter-react';
 import {
   FEATURED_NETWORKS,
@@ -14,11 +14,6 @@ import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
-import {
-  isProviderActive,
-  setProviderActive,
-  clearAllActiveProviders,
-} from './utils/activeProviderStorage';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { Buffer } from 'buffer';
 
@@ -27,11 +22,6 @@ global.Buffer = Buffer;
 function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
-
-  // Track whether wagmi should be shown based on localStorage
-  const [wagmiIsActiveProvider, setWagmiIsActiveProvider] = useState(() =>
-    isProviderActive('wagmi'),
-  );
 
   const {
     error,
@@ -50,7 +40,6 @@ function App() {
     disconnect: legacyDisconnect,
   } = useLegacyEVMSDK();
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
-  const wagmiChainId = useChainId();
   const {
     connectors,
     connectAsync: wagmiConnectAsync,
@@ -58,15 +47,6 @@ function App() {
   } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
 
-  // On mount, check if wagmi is connected but not marked as active provider
-  // If so, disconnect wagmi to clear stale state
-  useEffect(() => {
-    if (wagmiConnected && !isProviderActive('wagmi')) {
-      // Wagmi thinks it's connected but our localStorage says it shouldn't be
-      // Disconnect to clear stale state
-      wagmiDisconnect();
-    }
-  }, []);
   const {
     connected: solanaConnected,
     publicKey: solanaPublicKey,
@@ -153,8 +133,6 @@ function App() {
           connector: metaMaskConnector,
           chainId,
         });
-        setProviderActive('wagmi');
-        setWagmiIsActiveProvider(true);
       } catch (error) {
         console.error('Wagmi connection error:', error);
       }
@@ -183,10 +161,6 @@ function App() {
     status === 'disconnected' || status === 'pending' || status === 'loaded';
 
   const disconnect = useCallback(async () => {
-    clearAllActiveProviders();
-    setWagmiIsActiveProvider(false);
-
-    // Disconnect all connections if connected
     if (isConnected) {
       await sdkDisconnect();
     }
@@ -276,7 +250,7 @@ function App() {
               </button>
             )}
 
-            {(!wagmiConnected || !wagmiIsActiveProvider) && (
+            {(!wagmiConnected) && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect('wagmi')}
@@ -381,7 +355,7 @@ function App() {
               </div>
             </section>
           )}
-          {wagmiConnected && wagmiAddress && wagmiIsActiveProvider && (
+          {wagmiConnected && wagmiAddress && (
             <section className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Wagmi Connection
