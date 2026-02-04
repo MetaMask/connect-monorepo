@@ -1,5 +1,5 @@
-import { MetamaskConnectEVM, createEVMClient } from '@metamask/connect/evm';
-import type { EIP1193Provider } from '@metamask/connect/evm';
+import { MetamaskConnectEVM, createEVMClient } from '@metamask/connect-evm';
+import type { EIP1193Provider } from '@metamask/connect-evm';
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 import type { Hex } from '@metamask/utils';
 import type React from 'react';

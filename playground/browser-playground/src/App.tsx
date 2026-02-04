@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Scope, SessionData } from '@metamask/connect';
+import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 import {
   FEATURED_NETWORKS,
   convertCaipChainIdsToHex,
@@ -18,6 +19,7 @@ import {
   setProviderActive,
   clearAllActiveProviders,
 } from './utils/activeProviderStorage';
+import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -69,6 +71,14 @@ function App() {
       wagmiDisconnect();
     }
   }, []);
+  const {
+    connected: solanaConnected,
+    publicKey: solanaPublicKey,
+    wallets,
+    select,
+    connect: solanaConnect,
+    disconnect: solanaDisconnect,
+  } = useWallet();
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -159,6 +169,23 @@ function App() {
     }
   }, [customScopes, connectors, wagmiConnectAsync]);
 
+  const connectSolana = useCallback(async () => {
+    // Find the MetaMask wallet in registered wallets
+    const metamaskWallet = wallets.find((w) =>
+      w.adapter.name.toLowerCase().includes('metamask connect'),
+    );
+    if (metamaskWallet) {
+      try {
+        select(metamaskWallet.adapter.name);
+        await solanaConnect();
+      } catch (error) {
+        console.error('Solana connection error:', error);
+      }
+    } else {
+      console.error('MetaMask wallet not found in registered wallets');
+    }
+  }, [wallets, select, solanaConnect]);
+
   const isConnected = status === 'connected';
   const isDisconnected =
     status === 'disconnected' || status === 'pending' || status === 'loaded';
@@ -177,13 +204,18 @@ function App() {
     if (wagmiConnected) {
       wagmiDisconnect();
     }
+    if (solanaConnected) {
+      await solanaDisconnect();
+    }
   }, [
     sdkDisconnect,
     legacyDisconnect,
     wagmiDisconnect,
+    solanaDisconnect,
     isConnected,
     legacyConnected,
     wagmiConnected,
+    solanaConnected,
   ]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
@@ -226,7 +258,7 @@ function App() {
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
-                Connecting
+                Connecting (Multichain)
               </button>
             )}
 
@@ -237,7 +269,7 @@ function App() {
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
-                Connect
+                Connect (Multichain)
               </button>
             )}
 
@@ -258,11 +290,22 @@ function App() {
                 data-testid={TEST_IDS.app.btnConnect('wagmi')}
                 onClick={connectWagmi}
                 disabled={wagmiStatus === 'pending'}
-                className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-yellow-500 text-white px-5 py-2 rounded text-base hover:bg-yellow-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {wagmiStatus === 'pending'
                   ? 'Connecting...'
                   : 'Connect (Wagmi)'}
+              </button>
+            )}
+
+            {!solanaConnected && (
+              <button
+                type="button"
+                data-testid={TEST_IDS.app.btnConnect('solana')}
+                onClick={connectSolana}
+                className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors"
+              >
+                Connect (Solana)
               </button>
             )}
 
@@ -278,19 +321,22 @@ function App() {
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
               >
                 {scopesHaveChanged()
-                  ? `Re Establishing Connection`
-                  : `Disconnect`}
+                  ? `Re Establishing Connection (Multichain)`
+                  : `Disconnect (Multichain)`}
               </button>
             )}
 
-            {(isConnected || legacyConnected || wagmiConnected) && (
+            {(isConnected ||
+              legacyConnected ||
+              wagmiConnected ||
+              solanaConnected) && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnDisconnect}
                 onClick={disconnect}
                 className="bg-red-500 text-white px-5 py-2 rounded text-base hover:bg-red-600 transition-colors"
               >
-                Disconnect
+                Disconnect All
               </button>
             )}
           </div>
@@ -386,6 +432,16 @@ function App() {
             </section>
           )}
         </section>
+        {solanaConnected && solanaPublicKey && (
+          <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Solana Wallet Standard
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <SolanaWalletCard />
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

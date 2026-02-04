@@ -206,6 +206,15 @@ export class DefaultTransport implements ExtendedTransport {
       throw new Error(sessionRequest.error.message);
     }
     let walletSession = sessionRequest.result as SessionData;
+
+    const createSessionParams: CreateSessionParams<RPCAPI> = {
+      optionalScopes: addValidAccounts(
+        getOptionalScopes(options?.scopes ?? []),
+        getValidAccounts(options?.caipAccountIds ?? []),
+      ),
+      sessionProperties: options?.sessionProperties,
+    };
+
     if (walletSession && options && !options.forceRequest) {
       const currentScopes = Object.keys(
         walletSession?.sessionScopes ?? {},
@@ -218,18 +227,12 @@ export class DefaultTransport implements ExtendedTransport {
         walletSession,
         proposedCaipAccountIds,
       );
+
       if (!hasSameScopesAndAccounts) {
         await this.request(
           { method: 'wallet_revokeSession', params: walletSession },
           this.#defaultRequestOptions,
         );
-        const optionalScopes = addValidAccounts(
-          getOptionalScopes(options?.scopes ?? []),
-          getValidAccounts(options?.caipAccountIds ?? []),
-        );
-        const createSessionParams: CreateSessionParams<RPCAPI> = {
-          optionalScopes,
-        };
         const response = await this.request(
           { method: 'wallet_createSession', params: createSessionParams },
           this.#defaultRequestOptions,
@@ -240,14 +243,6 @@ export class DefaultTransport implements ExtendedTransport {
         walletSession = response.result as SessionData;
       }
     } else if (!walletSession || options?.forceRequest) {
-      const optionalScopes = addValidAccounts(
-        getOptionalScopes(options?.scopes ?? []),
-        getValidAccounts(options?.caipAccountIds ?? []),
-      );
-      const createSessionParams: CreateSessionParams<RPCAPI> = {
-        optionalScopes,
-        sessionProperties: options?.sessionProperties,
-      };
       const response = await this.request(
         { method: 'wallet_createSession', params: createSessionParams },
         this.#defaultRequestOptions,
