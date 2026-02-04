@@ -1,5 +1,4 @@
 import { createSolanaClient, type SolanaClient } from '@metamask/connect-solana';
-import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import {
   ConnectionProvider,
   WalletProvider,
@@ -10,7 +9,6 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import type React from 'react';
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,

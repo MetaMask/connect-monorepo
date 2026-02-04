@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING**: Update connect/disconnect button labels to include connector names ("Connect" → "Connect (Multichain)", "Disconnect" → "Disconnect (Multichain)" / "Disconnect All") for clarity and consistency with other connector buttons
 
+### Fixed
+
+- Fix Solana connect race condition that caused `WalletNotSelectedError` when extension not installed
+
 ## [0.1.1]
 
 ### Added
