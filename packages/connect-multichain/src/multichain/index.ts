@@ -260,25 +260,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   async #init(): Promise<void> {
     try {
-      // @ts-expect-error mmsdk should be accessible
-      if (typeof window !== 'undefined' && window.mmsdk?.isInitialized) {
-        logger('MetaMaskSDK: init already initialized');
-      } else {
-        await this.#setupAnalytics();
-        await this.#setupTransport();
-        try {
-          const baseProps = await getBaseAnalyticsProperties(
-            this.options,
-            this.storage,
-          );
-          analytics.track('mmconnect_initialized', baseProps);
-        } catch (error) {
-          logger('Error tracking initialized event', error);
-        }
-        if (typeof window !== 'undefined') {
-          // @ts-expect-error mmsdk should be accessible
-          window.mmsdk = this;
-        }
+      await this.#setupAnalytics();
+      await this.#setupTransport();
+      try {
+        const baseProps = await getBaseAnalyticsProperties(
+          this.options,
+          this.storage,
+        );
+        analytics.track('mmconnect_initialized', baseProps);
+      } catch (error) {
+        logger('Error tracking initialized event', error);
       }
     } catch (error) {
       await this.storage.removeTransport();
@@ -673,6 +664,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       });
   }
 
+  // TODO: Make this merge the existing session scopes with the new ones??
   // TODO: make this into param object
   async connect(
     scopes: Scope[],
@@ -721,18 +713,55 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       logger('Error tracking connection_initiated event', error);
     }
 
+    let sessionData: SessionData = {
+      sessionScopes: {},
+      sessionProperties: {},
+    };
+    if (this.status === 'connected') {
+      // Try to get current session scopes
+      const response = await this.transport.request({
+        method: 'wallet_getSession',
+      });
+      if (response.result) {
+        sessionData = response.result as SessionData;
+      } else {
+        // ???
+      }
+    }
+
+    // Get existing CAIP chain IDs and account IDs from sessionScopes
+    const existingCaipChainIds = Object.keys(sessionData.sessionScopes);
+    // For permitted account ids, try to find account address in scopes if possible
+    const existingCaipAccountIds: string[] = [];
+    Object.values(sessionData.sessionScopes).forEach((scopeObject) => {
+      if (scopeObject?.accounts && Array.isArray(scopeObject.accounts)) {
+        scopeObject.accounts.forEach((account) => {
+          existingCaipAccountIds.push(account);
+        });
+      }
+    });
+
+    // TODO: Fix these types
+    const requestedScopes = Array.from(new Set([...existingCaipChainIds, ...scopes])) as Scope[]
+    const requestedCaipAccountIds = Array.from(new Set([...existingCaipAccountIds, ...caipAccountIds])) as CaipAccountId[]
+    const requestedSessionProperites = {
+      ...sessionData.sessionProperties,
+      ...sessionProperties,
+    }
+
+
     // Needed because empty object will cause wallet_createSession to return an error
     const nonEmptySessionProperites =
-      Object.keys(sessionProperties ?? {}).length > 0
-        ? sessionProperties
+      Object.keys(requestedSessionProperites ?? {}).length > 0
+        ? requestedSessionProperites
         : undefined;
 
     if (this.#transport?.isConnected() && !secure) {
       return this.#handleConnection(
         this.#transport
           .connect({
-            scopes,
-            caipAccountIds,
+            scopes: requestedScopes,
+            caipAccountIds: requestedCaipAccountIds,
             sessionProperties: nonEmptySessionProperites,
             forceRequest,
           })
@@ -752,8 +781,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       const defaultTransport = await this.#setupDefaultTransport();
       return this.#handleConnection(
         defaultTransport.connect({
-          scopes,
-          caipAccountIds,
+          scopes: requestedScopes,
+          caipAccountIds: requestedCaipAccountIds,
           sessionProperties: nonEmptySessionProperites,
           forceRequest,
         }),
@@ -768,8 +797,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       // Web transport has no initial payload
       return this.#handleConnection(
         defaultTransport.connect({
-          scopes,
-          caipAccountIds,
+          scopes: requestedScopes,
+          caipAccountIds: requestedCaipAccountIds,
           sessionProperties: nonEmptySessionProperites,
           forceRequest,
         }),
@@ -803,8 +832,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.#handleConnection(
       this.#showInstallModal(
         shouldShowInstallModal,
-        scopes,
-        caipAccountIds,
+        requestedScopes,
+        requestedCaipAccountIds,
         nonEmptySessionProperites,
       ),
       scopes,
@@ -824,7 +853,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#transport?.disconnect();
     await this.storage.removeTransport();
 
-    this.emit('stateChanged', 'disconnected');
+    this.status = 'disconnected';
+    this.emit('wallet_sessionChanged', { sessionScopes: {} });
 
     this.#listener = undefined;
     this.#beforeUnloadListener = undefined;
@@ -863,6 +893,22 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           openDeeplink(this.options, url, METAMASK_CONNECT_BASE_URL);
         }
       }, 10); // small delay to ensure the message encryption and dispatch completes
+    }
+  }
+
+  async emitSessionChanged(): Promise<void> {
+    if (
+      this.status !== 'connected' &&
+      this.status !== 'connecting'
+    ) {
+      this.emit('wallet_sessionChanged', { sessionScopes: {} });
+    } else {
+      const response = await this.transport.request({ method: 'wallet_getSession' })
+      if (response.result) {
+        this.emit('wallet_sessionChanged', response.result);
+      } else {
+        this.emit('wallet_sessionChanged', { sessionScopes: {} });
+      }
     }
   }
 }

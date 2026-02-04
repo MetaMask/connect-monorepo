@@ -61,8 +61,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
 
   async connect(): Promise<void> {
     console.log('📚 connect');
-    // noop
-    return Promise.resolve();
+    return await this.metamaskConnectMultichain.emitSessionChanged();
   }
 
   async disconnect(): Promise<void> {
@@ -111,6 +110,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
       };
     }
 
+    // TODO: should not be two of these. Fix this
     return this.metamaskConnectMultichain.transport.onNotification(callback);
   }
 
