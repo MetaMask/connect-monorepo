@@ -137,22 +137,22 @@ export default function Page() {
 						<DynamicInputs availableOptions={availableOptions} inputArray={customScopes} handleCheckboxChange={handleCheckboxChange} label={INPUT_LABEL_TYPE.SCOPE} />
 					</View>
 
-					{isConnecting && (
-						<>
-							<TouchableOpacity testID={TEST_IDS.app.btnConnect()} onPress={connect} style={sharedStyles.button} disabled>
-								<Text style={sharedStyles.buttonText}>Connecting...</Text>
-							</TouchableOpacity>
-							<TouchableOpacity testID={TEST_IDS.app.btnCancel} onPress={disconnect} style={sharedStyles.buttonCancel}>
-								<Text style={sharedStyles.buttonText}>Cancel</Text>
-							</TouchableOpacity>
-						</>
-					)}
-
-					{isDisconnected && (
-						<TouchableOpacity testID={TEST_IDS.app.btnConnect()} onPress={connect} style={sharedStyles.button}>
-							<Text style={sharedStyles.buttonText}>Connect</Text>
+				{isConnecting && (
+					<>
+						<TouchableOpacity testID={TEST_IDS.app.btnConnect()} onPress={connect} style={sharedStyles.button} disabled>
+							<Text style={sharedStyles.buttonText}>Connecting (Multichain)...</Text>
 						</TouchableOpacity>
-					)}
+						<TouchableOpacity testID={TEST_IDS.app.btnCancel} onPress={disconnect} style={sharedStyles.buttonCancel}>
+							<Text style={sharedStyles.buttonText}>Cancel</Text>
+						</TouchableOpacity>
+					</>
+				)}
+
+				{isDisconnected && (
+					<TouchableOpacity testID={TEST_IDS.app.btnConnect()} onPress={connect} style={sharedStyles.button}>
+						<Text style={sharedStyles.buttonText}>Connect (Multichain)</Text>
+					</TouchableOpacity>
+				)}
 
 					{!legacyConnected && (
 						<TouchableOpacity testID={TEST_IDS.app.btnConnect('legacy')} onPress={connectLegacyEVM} style={[sharedStyles.button, styles.legacyButton]}>
@@ -180,17 +180,17 @@ export default function Page() {
 						</TouchableOpacity>
 					)}
 
-					{isConnected && (
-						<TouchableOpacity testID={scopesHaveChanged() ? TEST_IDS.app.btnReconnect : TEST_IDS.app.btnDisconnect} onPress={scopesHaveChanged() ? connect : disconnect} style={sharedStyles.button}>
-							<Text style={sharedStyles.buttonText}>{scopesHaveChanged() ? 'Re Establishing Connection' : 'Disconnect'}</Text>
-						</TouchableOpacity>
-					)}
+				{isConnected && (
+					<TouchableOpacity testID={scopesHaveChanged() ? TEST_IDS.app.btnReconnect : TEST_IDS.app.btnDisconnect} onPress={scopesHaveChanged() ? connect : disconnect} style={sharedStyles.button}>
+						<Text style={sharedStyles.buttonText}>{scopesHaveChanged() ? 'Re Establishing Connection (Multichain)' : 'Disconnect (Multichain)'}</Text>
+					</TouchableOpacity>
+				)}
 
-					{(isConnected || legacyConnected || wagmiConnected) && (
-						<TouchableOpacity testID={TEST_IDS.app.btnDisconnect} onPress={disconnect} style={sharedStyles.buttonCancel}>
-							<Text style={sharedStyles.buttonText}>Disconnect</Text>
-						</TouchableOpacity>
-					)}
+				{(isConnected || legacyConnected || wagmiConnected) && (
+					<TouchableOpacity testID={TEST_IDS.app.btnDisconnect} onPress={disconnect} style={sharedStyles.buttonCancel}>
+						<Text style={sharedStyles.buttonText}>Disconnect All</Text>
+					</TouchableOpacity>
+				)}
 				</View>
 
 				{error && (
