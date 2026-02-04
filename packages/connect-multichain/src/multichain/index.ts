@@ -664,6 +664,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       });
   }
 
+  // TODO: Make this merge the existing session scopes with the new ones??
   // TODO: make this into param object
   async connect(
     scopes: Scope[],
@@ -816,6 +817,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.storage.removeTransport();
 
     this.emit('stateChanged', 'disconnected');
+    this.emit('wallet_sessionChanged', { sessionScopes: {} });
 
     this.#listener = undefined;
     this.#beforeUnloadListener = undefined;
@@ -854,6 +856,22 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           openDeeplink(this.options, url, METAMASK_CONNECT_BASE_URL);
         }
       }, 10); // small delay to ensure the message encryption and dispatch completes
+    }
+  }
+
+  async emitSessionChanged(): Promise<void> {
+    if (
+      this.status !== 'connected' &&
+      this.status !== 'connecting'
+    ) {
+      this.emit('wallet_sessionChanged', { sessionScopes: {} });
+    } else {
+      const response = await this.transport.request({ method: 'wallet_getSession' })
+      if (response.result) {
+        this.emit('wallet_sessionChanged', response.result);
+      } else {
+        this.emit('wallet_sessionChanged', { sessionScopes: {} });
+      }
     }
   }
 }

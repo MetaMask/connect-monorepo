@@ -70,6 +70,8 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   abstract openDeeplinkIfNeeded(): void;
 
+  abstract emitSessionChanged(): Promise<void>;
+
   constructor(protected readonly options: MultichainOptions) {
     super();
   }
