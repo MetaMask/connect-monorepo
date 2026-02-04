@@ -111,6 +111,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
       };
     }
 
+    // TODO: should not be two of these. Fix this
     return this.metamaskConnectMultichain.transport.onNotification(callback);
   }
 
