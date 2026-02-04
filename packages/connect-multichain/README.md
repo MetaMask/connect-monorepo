@@ -341,7 +341,7 @@ Generates Infura RPC URLs for common networks keyed by CAIP Chain ID.
 
 **Returns**
 
-A Record of CAIP chain IDs to Infura RPC URLs. Includes Ethereum, Linea, Polygon, Optimism, Arbitrum, Palm, Avalanche, Aurora, and Celo networks.
+A map of hex chain IDs to Infura RPC URLs. See https://docs.metamask.io/services
 
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
