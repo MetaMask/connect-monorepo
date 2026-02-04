@@ -15,5 +15,5 @@
   },
   "references": [{ "path": "../connect-multichain/tsconfig.build.json" }],
   "include": ["./src", "./tests"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist"]
 }
