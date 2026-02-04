@@ -8,7 +8,7 @@ import {
   type Scope,
   type ConnectionStatus,
   type SessionData,
-} from '@metamask/connect';
+} from '@metamask/connect-multichain';
 import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `createMultichainClient()` now accepts an optional `debug` param option which enables console debug logs when set to `true`. Defaults to `false`. ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
 
+### Fixed
+
+- Fix `sessionProperties` not being passed to `wallet_createSession` when recreating a session after scope/account changes ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
+
 ## [0.5.2]
 
 ### Changed

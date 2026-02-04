@@ -70,13 +70,14 @@ type ConnectOptions = {
  *
  * @example
  * ```typescript
- * const sdk = await createEVMClient({
+ * const client = await createEVMClient({
  *   dapp: { name: 'My DApp', url: 'https://mydapp.com' }
  * });
  *
- * await sdk.connect({ chainId: 1 });
- * const provider = await sdk.getProvider();
- * const accounts = await provider.request({ method: 'eth_accounts' });
+ * const { accounts, chainId } = await client.connect({ chainIds: [1, 137] }); // Connect to Ethereum Mainnet, and Polygon
+ *
+ * const provider = client.getProvider();
+ * const signedMessage = await provider.request({ method: 'personal_sign', params: ['0x0', accounts[0]] });
  * ```
  */
 export class MetamaskConnectEVM {
@@ -324,8 +325,8 @@ export class MetamaskConnectEVM {
    * Connects to the wallet with the specified chain ID and optional account.
    *
    * @param options - The connection options
-   * @param [options.account] - Specific account to connect to
-   * @param [options.forceRequest] - Whether to force a request regardless of an existing session
+   * @param [options.account] - Optional param to specify an account to connect to
+   * @param [options.forceRequest] - Optional param to force a connection request regardless of whether there is a pre-existing session
    * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @returns A promise that resolves with the connected accounts and chain ID
    */
@@ -987,7 +988,7 @@ export class MetamaskConnectEVM {
  * @param [options.transport.onNotification] - Callback for receiving transport notifications
  * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
  * @param [options.debug] - Enable debug logging
- * @returns The Metamask Connect/EVM layer instance
+ * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
   options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
