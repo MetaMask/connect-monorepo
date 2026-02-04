@@ -177,6 +177,7 @@ function testSuite<T extends MultichainOptions>({
             method: 'wallet_createSession',
             params: {
               optionalScopes: mockedSessionUpgradeData.sessionScopes,
+              sessionProperties: {},
             },
           }),
           { timeout: 60 * 1000 },
@@ -257,6 +258,7 @@ function testSuite<T extends MultichainOptions>({
               method: 'wallet_createSession',
               params: {
                 optionalScopes: mockSessionData.sessionScopes,
+                sessionProperties: {},
               },
             }),
             { timeout: 60 * 1000 },
