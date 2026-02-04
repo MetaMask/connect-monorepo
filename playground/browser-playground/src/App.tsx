@@ -174,9 +174,17 @@ function App() {
   return (
     <div data-testid={TEST_IDS.app.container} className="min-h-screen bg-gray-50 flex justify-center">
       <div className="max-w-6xl w-full p-8">
-        <h1 data-testid={TEST_IDS.app.title} className="text-slate-800 text-4xl font-bold mb-8 text-center">
-          MetaMask MultiChain API Test Dapp
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 data-testid={TEST_IDS.app.title} className="text-slate-800 text-4xl font-bold text-center flex-1">
+            MetaMask MultiChain API Test Dapp
+          </h1>
+          <a
+            href="?experiments"
+            className="bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 transition-colors"
+          >
+            Isolation Experiments →
+          </a>
+        </div>
         <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
           <div className="mb-4">
             <DynamicInputs

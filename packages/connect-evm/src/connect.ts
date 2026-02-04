@@ -1009,6 +1009,7 @@ export async function createEVMClient(
   try {
     const core = await createMultichainClient({
       ...options,
+      sdkType: 'evm',
       api: {
         supportedNetworks: supportedNetworksCaipChainId,
       },

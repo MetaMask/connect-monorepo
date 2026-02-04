@@ -91,6 +91,16 @@ export type MultichainOptions = {
    * isolation between different SDK types (multichain, evm, solana, etc.)
    */
   instanceId?: string;
+
+  /**
+   * The SDK type identifier used for generating the instanceId suffix.
+   * This ensures different SDK types (multichain, evm, solana) are isolated
+   * even when using the same dapp.name.
+   *
+   * @default 'multichain'
+   * @example 'evm' for connect-evm, 'solana' for connect-solana
+   */
+  sdkType?: string;
 };
 
 type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {

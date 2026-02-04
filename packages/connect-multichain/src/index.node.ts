@@ -18,8 +18,9 @@ export const createMultichainClient: CreateMultichainFN = async (options) => {
 
   // Generate deterministic instanceId if not provided
   // Empty string means no prefixing (for backwards compatibility / testing)
+  const sdkType = options.sdkType ?? 'multichain';
   const instanceId =
-    options.instanceId ?? generateInstanceId(options.dapp.name, 'multichain');
+    options.instanceId ?? generateInstanceId(options.dapp.name, sdkType);
 
   const storage = await createIsolatedStorage({
     instanceId,

@@ -10,6 +10,7 @@ import App from './App';
 import { SDKProvider } from './sdk/SDKProvider';
 import { LegacyEVMSDKProvider } from './sdk/LegacyEVMSDKProvider';
 import { wagmiConfig } from './wagmi/config';
+import { ExperimentsApp } from './experiments';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,22 +31,38 @@ const persister = createSyncStoragePersister({
   deserialize,
 });
 
+// Check if we're on the experiments page
+// Uses URL search param: ?experiments or ?experiments=true
+const isExperimentsPage =
+  window.location.search.includes('experiments') ||
+  window.location.pathname.includes('experiments');
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
-root.render(
-  <React.StrictMode>
-    <WagmiProvider config={wagmiConfig}>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{ persister }}
-      >
-        <SDKProvider>
-          <LegacyEVMSDKProvider>
-            <App />
-          </LegacyEVMSDKProvider>
-        </SDKProvider>
-      </PersistQueryClientProvider>
-    </WagmiProvider>
-  </React.StrictMode>,
-);
+
+// Experiments page doesn't need the SDK providers (it creates its own)
+if (isExperimentsPage) {
+  root.render(
+    <React.StrictMode>
+      <ExperimentsApp />
+    </React.StrictMode>,
+  );
+} else {
+  root.render(
+    <React.StrictMode>
+      <WagmiProvider config={wagmiConfig}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{ persister }}
+        >
+          <SDKProvider>
+            <LegacyEVMSDKProvider>
+              <App />
+            </LegacyEVMSDKProvider>
+          </SDKProvider>
+        </PersistQueryClientProvider>
+      </WagmiProvider>
+    </React.StrictMode>,
+  );
+}
