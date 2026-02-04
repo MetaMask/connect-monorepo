@@ -212,7 +212,7 @@ export class DefaultTransport implements ExtendedTransport {
         getOptionalScopes(options?.scopes ?? []),
         getValidAccounts(options?.caipAccountIds ?? []),
       ),
-      sessionProperties: options?.sessionProperties ?? {},
+      sessionProperties: options?.sessionProperties,
     };
 
     if (walletSession && options && !options.forceRequest) {
