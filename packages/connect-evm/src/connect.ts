@@ -341,37 +341,13 @@ export class MetamaskConnectEVM {
       throw new Error('chainIds must be an array of at least one chain ID');
     }
 
-    // Get existing CAIP chain IDs and account IDs from sessionScopes
-    const existingCaipChainIds = Object.keys(this.#sessionScopes ?? {});
-    // For permitted account ids, try to find account address in scopes if possible
-    const existingCaipAccountIds: string[] = [];
-    if (this.#sessionScopes) {
-      for (const [caipChainId, accounts] of Object.entries(this.#sessionScopes)) {
-        if (accounts?.accounts && Array.isArray(accounts.accounts)) {
-          for (const acct of accounts.accounts) {
-            existingCaipAccountIds.push(`${caipChainId}:${acct}`);
-          }
-        }
-      }
-    }
-
-    // Generate requested CAIP chain IDs from input, ensuring default is present
-    const requestedCaipChainIds = Array.from(
+    const caipChainIds = Array.from(
       new Set(chainIds.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID]),
     ).map((id) => `eip155:${hexToNumber(id)}`);
 
-    // Merge existing and requested CAIP chain IDs, ensuring uniqueness
-    const caipChainIds = Array.from(
-      new Set([...existingCaipChainIds, ...requestedCaipChainIds])
-    );
-
-    // Compose CAIP account IDs with provided account, merged with existing account IDs
-    const requestedCaipAccountIds = account
+    const caipAccountIds = account
       ? caipChainIds.map((caipChainId) => `${caipChainId}:${account}`)
       : [];
-    const caipAccountIds = Array.from(
-      new Set([...existingCaipAccountIds, ...requestedCaipAccountIds])
-    );
 
     this.#status = 'connecting';
 
