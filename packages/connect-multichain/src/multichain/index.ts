@@ -664,7 +664,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       });
   }
 
-  // TODO: Make this merge the existing session scopes with the new ones??
   // TODO: make this into param object
   async connect(
     scopes: Scope[],
