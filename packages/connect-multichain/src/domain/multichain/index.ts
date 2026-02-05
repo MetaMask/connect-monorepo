@@ -2,6 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type {
   MultichainApiClient,
+  SessionData,
   SessionProperties,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
@@ -71,6 +72,22 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract openDeeplinkIfNeeded(): void;
 
   abstract emitSessionChanged(): Promise<void>;
+
+  /**
+   * Revokes specific scopes from the current session without full disconnect.
+   * Used for scope-aware disconnect in ecosystem-specific clients (EVM, Solana).
+   *
+   * @param scopes - The CAIP-2 scopes to revoke (e.g., ['eip155:1', 'eip155:137'])
+   * @returns Promise that resolves when revocation is complete
+   */
+  abstract revokeScopes(scopes: string[]): Promise<void>;
+
+  /**
+   * Gets the current session data without side effects.
+   *
+   * @returns Promise that resolves to the session data, or null if no session exists
+   */
+  abstract getSession(): Promise<SessionData | null>;
 
   constructor(protected readonly options: MultichainOptions) {
     super();

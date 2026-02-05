@@ -478,24 +478,43 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Disconnects from the wallet by revoking the session and cleaning up event listeners.
+   * Disconnects from the wallet by revoking EVM-specific scopes.
+   * This implements scope-aware disconnect - only EVM scopes (eip155:*) are revoked,
+   * preserving any other ecosystem connections (e.g., Solana).
    *
    * @returns A promise that resolves when disconnection is complete
    */
   async disconnect(): Promise<void> {
     logger('request: disconnect');
 
-    await this.#core.disconnect();
+    // Get current session to find EVM scopes
+    const session = await this.#core.getSession();
+    const sessionScopes = session?.sessionScopes ?? {};
+
+    // Filter to only EVM scopes (those starting with 'eip155:')
+    const evmScopes = Object.keys(sessionScopes).filter((scope) =>
+      scope.startsWith('eip155:'),
+    );
+
+    if (evmScopes.length > 0) {
+      // Partial revocation - only revoke EVM scopes
+      await this.#core.revokeScopes(evmScopes);
+      logger('revoked EVM scopes', evmScopes);
+    }
+
+    // Clean up EVM-specific state
     this.#onDisconnect();
     this.#clearConnectionState();
 
+    // Clean up notification handler
+    if (this.#removeNotificationHandler) {
+      this.#removeNotificationHandler();
+      this.#removeNotificationHandler = undefined;
+    }
+
+    // Remove event listeners
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
     this.#core.off('display_uri', this.#displayUriHandler);
-
-    // if (this.#removeNotificationHandler) {
-    //   this.#removeNotificationHandler();
-    //   this.#removeNotificationHandler = undefined;
-    // }
 
     logger('fulfilled-request: disconnect');
   }

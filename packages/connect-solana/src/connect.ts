@@ -75,6 +75,25 @@ export async function createSolanaClient(
       getWalletStandard({ client, walletName }),
     registerWallet: async (walletName = 'MetaMask Connect') =>
       registerSolanaWalletStandard({ client, walletName }),
-    disconnect: async () => await core.disconnect(),
+    /**
+     * Disconnects Solana-specific scopes from the wallet.
+     * This implements scope-aware disconnect - only Solana scopes are revoked,
+     * preserving any other ecosystem connections (e.g., EVM).
+     */
+    disconnect: async () => {
+      // Get current session to find Solana scopes
+      const session = await core.getSession();
+      const sessionScopes = session?.sessionScopes ?? {};
+
+      // Filter to only Solana scopes (those starting with 'solana:')
+      const solanaScopes = Object.keys(sessionScopes).filter((scope) =>
+        scope.startsWith('solana:'),
+      );
+
+      if (solanaScopes.length > 0) {
+        // Partial revocation - only revoke Solana scopes
+        await core.revokeScopes(solanaScopes);
+      }
+    },
   };
 }

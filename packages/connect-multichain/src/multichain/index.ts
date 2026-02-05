@@ -911,4 +911,45 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
     }
   }
+
+  async revokeScopes(scopes: string[]): Promise<void> {
+    if (scopes.length === 0) {
+      logger('revokeScopes called with empty scopes array, skipping');
+      return;
+    }
+
+    if (this.status !== 'connected') {
+      logger('revokeScopes called but not connected, skipping');
+      return;
+    }
+
+    try {
+      await this.transport.request({
+        method: 'wallet_revokeSession',
+        params: { scopes },
+      });
+
+      // Emit session changed to notify listeners of the updated session
+      await this.emitSessionChanged();
+    } catch (error) {
+      logger('Error revoking scopes', error);
+      throw error;
+    }
+  }
+
+  async getSession(): Promise<SessionData | null> {
+    if (this.status !== 'connected' && this.status !== 'connecting') {
+      return null;
+    }
+
+    try {
+      const response = await this.transport.request({
+        method: 'wallet_getSession',
+      });
+      return (response.result as SessionData) ?? null;
+    } catch (error) {
+      logger('Error getting session', error);
+      return null;
+    }
+  }
 }
