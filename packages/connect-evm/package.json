@@ -42,7 +42,7 @@
     "dist/"
   ],
   "scripts": {
-    "attw": "attw --pack .",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-evm",

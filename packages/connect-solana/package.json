@@ -12,21 +12,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "commonjs",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
         "default": "./dist/browser/es/connect-solana.mjs"
       },
-      "require": {
+      "default": {
         "types": "./dist/types/index.d.ts",
         "default": "./dist/browser/es/connect-solana.mjs"
-      },
-      "default": "./dist/browser/es/connect-solana.mjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -38,7 +38,7 @@
     "dist/"
   ],
   "scripts": {
-    "attw": "attw --pack .",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution cjs-resolves-to-esm",
     "build": "yarn tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-solana",

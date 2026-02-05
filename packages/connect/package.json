@@ -57,7 +57,7 @@
     "dist/"
   ],
   "scripts": {
-    "attw": "attw --pack .",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts src/evm/index.ts --format esm,cjs --external @metamask/connect-multichain --external @metamask/connect-evm",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect",

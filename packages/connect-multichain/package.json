@@ -51,7 +51,7 @@
   ],
   "scripts": {
     "allow-scripts": "",
-    "attw": "attw --pack .",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn clean && tsc -b tsconfig.build.json && npx tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-multichain",

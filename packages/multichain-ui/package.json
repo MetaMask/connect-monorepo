@@ -48,7 +48,7 @@
   ],
   "collection": "dist/collection/collection-manifest.json",
   "scripts": {
-    "attw": "attw --pack .",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution unexpected-module-syntax",
     "build:docs": "typedoc",
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly --outDir dist/types",
     "publint": "publint",
