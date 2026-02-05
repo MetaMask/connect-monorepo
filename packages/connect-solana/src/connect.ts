@@ -69,12 +69,33 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
+  // Generate a unique client ID for this Solana client instance
+  const clientId = `solana-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  let isRegistered = false;
+
   return {
     core,
     getWallet: (walletName?: string) =>
       getWalletStandard({ client, walletName }),
-    registerWallet: async (walletName = 'MetaMask Connect') =>
-      registerSolanaWalletStandard({ client, walletName }),
-    disconnect: async () => await core.disconnect(),
+    registerWallet: async (walletName = 'MetaMask Connect') => {
+      // Register this client when the wallet is registered (connects)
+      if (!isRegistered) {
+        core.registerClient(clientId, 'solana');
+        isRegistered = true;
+      }
+      return registerSolanaWalletStandard({ client, walletName });
+    },
+    disconnect: async () => {
+      // Unregister this client from the core
+      const isLastClient = isRegistered
+        ? core.unregisterClient(clientId)
+        : true;
+      isRegistered = false;
+
+      // Only actually disconnect if this was the last client
+      if (isLastClient) {
+        await core.disconnect();
+      }
+    },
   };
 }

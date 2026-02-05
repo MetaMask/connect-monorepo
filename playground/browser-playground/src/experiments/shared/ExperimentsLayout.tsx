@@ -8,7 +8,8 @@ export type ExperimentId =
   | 'exp4'
   | 'exp5'
   | 'exp6'
-  | 'exp7';
+  | 'exp7'
+  | 'exp8';
 
 type ExperimentInfo = {
   id: ExperimentId;
@@ -51,6 +52,11 @@ export const EXPERIMENTS: ExperimentInfo[] = [
     id: 'exp7',
     title: 'Exp 7: Core Sharing',
     description: 'Verify singleton core is shared across SDK types',
+  },
+  {
+    id: 'exp8',
+    title: 'Exp 8: Disconnect Coordination',
+    description: 'Verify disconnect only revokes session when last client disconnects',
   },
 ];
 

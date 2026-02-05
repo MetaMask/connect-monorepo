@@ -44,10 +44,11 @@ import {
   isEnabled as isLoggerEnabled,
 } from '../domain/logger';
 import {
+  type ClientInfo,
   type ConnectionRequest,
+  type ConnectionStatus,
   type ExtendedTransport,
   MultichainCore,
-  type ConnectionStatus,
 } from '../domain/multichain';
 import {
   getPlatformType,
@@ -82,6 +83,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   public _status: ConnectionStatus = 'pending';
 
   #listener: (() => void | Promise<void>) | undefined;
+
+  /** Tracks active clients using this core instance */
+  readonly #activeClients: Map<string, ClientInfo> = new Map();
 
   get status(): ConnectionStatus {
     return this._status;
@@ -839,6 +843,48 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     const requestRouter = new RequestRouter(transport, rpcClient, options);
     // TODO: need read only method support for solana
     return requestRouter.invokeMethod(request);
+  }
+
+  /**
+   * Registers a client with the core.
+   * Call this when a thin client (EVM, Solana) connects.
+   *
+   * @param clientId - Unique identifier for the client
+   * @param sdkType - The SDK type (e.g., 'evm', 'solana')
+   */
+  registerClient(clientId: string, sdkType: string): void {
+    logger(`Registering client: ${clientId} (${sdkType})`);
+    this.#activeClients.set(clientId, {
+      clientId,
+      sdkType,
+      registeredAt: Date.now(),
+    });
+    logger(`Active clients: ${this.#activeClients.size}`);
+  }
+
+  /**
+   * Unregisters a client from the core.
+   * Call this when a thin client disconnects.
+   * Returns true if this was the last client (actual disconnect should happen).
+   *
+   * @param clientId - The client ID to unregister
+   * @returns True if this was the last client, false if others remain
+   */
+  unregisterClient(clientId: string): boolean {
+    logger(`Unregistering client: ${clientId}`);
+    this.#activeClients.delete(clientId);
+    const remaining = this.#activeClients.size;
+    logger(`Remaining clients: ${remaining}`);
+    return remaining === 0;
+  }
+
+  /**
+   * Gets the number of currently registered clients.
+   *
+   * @returns The number of active clients
+   */
+  getClientCount(): number {
+    return this.#activeClients.size;
   }
 
   // DRY THIS WITH REQUEST ROUTER

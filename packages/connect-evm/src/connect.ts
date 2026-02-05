@@ -102,6 +102,12 @@ export class MetamaskConnectEVM {
   /** The clean-up function for the notification handler */
   #removeNotificationHandler?: () => void;
 
+  /** Unique identifier for this client instance */
+  readonly #clientId: string;
+
+  /** Whether this client is currently registered with the core */
+  #isRegistered = false;
+
   /**
    * Creates a new MetamaskConnectEVM instance.
    * Use the static `create()` method instead to ensure proper async initialization.
@@ -112,6 +118,7 @@ export class MetamaskConnectEVM {
    */
   private constructor({ core, eventHandlers }: MetamaskConnectEVMOptions) {
     this.#core = core;
+    this.#clientId = `evm-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
     this.#provider = new EIP1193Provider(
       core,
@@ -341,6 +348,12 @@ export class MetamaskConnectEVM {
       forceRequest,
     );
 
+    // Register this client with the core (for reference counting)
+    if (!this.#isRegistered) {
+      this.#core.registerClient(this.#clientId, 'evm');
+      this.#isRegistered = true;
+    }
+
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
 
     const initialAccounts = await this.#core.transport.sendEip1193Message<
@@ -479,13 +492,29 @@ export class MetamaskConnectEVM {
 
   /**
    * Disconnects from the wallet by revoking the session and cleaning up event listeners.
+   * Only actually revokes the session if this is the last client using the shared core.
    *
    * @returns A promise that resolves when disconnection is complete
    */
   async disconnect(): Promise<void> {
     logger('request: disconnect');
 
-    await this.#core.disconnect();
+    // Unregister this client from the core
+    const isLastClient = this.#isRegistered
+      ? this.#core.unregisterClient(this.#clientId)
+      : true;
+    this.#isRegistered = false;
+
+    // Only actually disconnect if this was the last client
+    if (isLastClient) {
+      logger('Last client disconnecting, revoking session');
+      await this.#core.disconnect();
+    } else {
+      logger(
+        `Other clients remain (${this.#core.getClientCount()}), skipping session revocation`,
+      );
+    }
+
     this.#onDisconnect();
     this.#clearConnectionState();
 

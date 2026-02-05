@@ -25,9 +25,21 @@ describe('createSolanaClient', () => {
     debug: true,
   };
 
+  // Track registered clients for testing
+  const registeredClients = new Map<string, { clientId: string; sdkType: string }>();
+
   const mockCore = {
     provider: {},
     disconnect: vi.fn().mockResolvedValue(undefined),
+    // Client registration methods (for singleton pattern)
+    registerClient: vi.fn((clientId: string, sdkType: string) => {
+      registeredClients.set(clientId, { clientId, sdkType });
+    }),
+    unregisterClient: vi.fn((clientId: string) => {
+      registeredClients.delete(clientId);
+      return registeredClients.size === 0;
+    }),
+    getClientCount: vi.fn(() => registeredClients.size),
   };
 
   const mockWallet = {
@@ -37,6 +49,7 @@ describe('createSolanaClient', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    registeredClients.clear();
     (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
       mockCore,
     );
@@ -154,12 +167,29 @@ describe('createSolanaClient', () => {
     });
 
     describe('disconnect', () => {
-      it('should disconnect using core.disconnect', async () => {
+      it('should disconnect using core.disconnect when no other clients registered', async () => {
         const client = await createSolanaClient(mockOptions);
 
         await client.disconnect();
 
+        // When not registered, disconnect should still call core.disconnect
         expect(mockCore.disconnect).toHaveBeenCalled();
+      });
+
+      it('should not disconnect core when other clients remain', async () => {
+        const client = await createSolanaClient(mockOptions);
+
+        // Register the wallet first (which registers the client)
+        await client.registerWallet();
+
+        // Manually add another client to simulate EVM being connected
+        registeredClients.set('evm-test', { clientId: 'evm-test', sdkType: 'evm' });
+
+        // Now disconnect - should unregister but not disconnect core
+        await client.disconnect();
+
+        expect(mockCore.unregisterClient).toHaveBeenCalled();
+        expect(mockCore.disconnect).not.toHaveBeenCalled();
       });
     });
   });

@@ -14,8 +14,8 @@
  * - Multi-tab: Tab A and Tab B show same state
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { MultichainCore, SessionData, Scope } from '@metamask/connect';
-import { createMultichainClient } from '@metamask/connect';
+import type { MultichainCore, SessionData, Scope } from '@metamask/connect-multichain';
+import { createMultichainClient } from '@metamask/connect-multichain';
 import { ConnectionCard, ActionButton } from './shared';
 
 const DAPP_CONFIG = {

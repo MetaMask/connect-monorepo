@@ -25,6 +25,18 @@ export enum TransportType {
 }
 
 /**
+ * Information about a registered client.
+ */
+export type ClientInfo = {
+  /** Unique identifier for the client */
+  clientId: string;
+  /** The SDK type (e.g., 'evm', 'solana', 'multichain') */
+  sdkType: string;
+  /** When the client was registered */
+  registeredAt: number;
+};
+
+/**
  * Abstract base class for the Multichain SDK implementation.
  *
  * This class defines the core interface that all Multichain SDK implementations
@@ -69,6 +81,32 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract invokeMethod(options: InvokeMethodOptions): Promise<Json>;
 
   abstract openDeeplinkIfNeeded(): void;
+
+  /**
+   * Registers a client with the core.
+   * Call this when a thin client (EVM, Solana) connects.
+   *
+   * @param clientId - Unique identifier for the client
+   * @param sdkType - The SDK type (e.g., 'evm', 'solana')
+   */
+  abstract registerClient(clientId: string, sdkType: string): void;
+
+  /**
+   * Unregisters a client from the core.
+   * Call this when a thin client disconnects.
+   * Returns true if this was the last client (actual disconnect should happen).
+   *
+   * @param clientId - The client ID to unregister
+   * @returns True if this was the last client, false if others remain
+   */
+  abstract unregisterClient(clientId: string): boolean;
+
+  /**
+   * Gets the number of currently registered clients.
+   *
+   * @returns The number of active clients
+   */
+  abstract getClientCount(): number;
 
   constructor(protected readonly options: MultichainOptions) {
     super();
