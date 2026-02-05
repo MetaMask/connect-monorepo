@@ -132,21 +132,26 @@ export class MetamaskConnectEVM {
      *
      * @param session - The session data
      */
-    this.#sessionChangedHandler = (session): void => {
+    this.#sessionChangedHandler = async (session): Promise<void> => {
       logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
       const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
       if (permittedChainIds.length === 0) {
         this.#onDisconnect();
       } else {
-        // Need to somehow make an eth_accounts call here
+
+        const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+
+        const initialAccounts = await this.#core.transport.sendEip1193Message<
+          { method: 'eth_accounts'; params: [] },
+          { result: string[]; id: number; jsonrpc: '2.0' }
+        >({ method: 'eth_accounts', params: [] });
+
+        const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
+
         this.#onConnect({
-          chainId: permittedChainIds[0], // fix this to use cached chainId too?
-          // Fix this type
-          accounts: getEthAccounts({
-            requiredScopes: {},
-            optionalScopes: this.#sessionScopes as InternalScopesObject,
-          }),
+          chainId,
+          accounts: initialAccounts.result as Address[],
         });
       }
     };
@@ -364,30 +369,20 @@ export class MetamaskConnectEVM {
         forceRequest,
       );
 
-      // const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
-
-      // const initialAccounts = await this.#core.transport.sendEip1193Message<
-      //   { method: 'eth_accounts'; params: [] },
-      //   { result: string[]; id: number; jsonrpc: '2.0' }
-      // >({ method: 'eth_accounts', params: [] });
-
-      // const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
-
-      // this.#onConnect({
-      //   chainId,
-      //   accounts: initialAccounts.result as Address[],
-      // });
-
       logger('fulfilled-request: connect', {
         chainId: chainIds[0],
         accounts: this.#provider.accounts,
       });
 
-      // TODO: verify the events that set the provider properties have fired by now
-      return {
-        accounts: this.#provider.accounts,
-        chainId: this.#provider.selectedChainId as Hex,
-      };
+      // Wait for the wallet_sessionChanged event to fire and set the provider properties
+      return new Promise((resolve) => {
+        this.#provider.once('connect', ({ chainId, accounts }) => {
+          resolve({
+            accounts,
+            chainId: chainId as Hex,
+          });
+        });
+      });
     } catch (error) {
       logger('Error connecting to wallet', error);
       throw error;

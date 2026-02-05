@@ -7,7 +7,7 @@ export type CaipAccountId = `${string}:${string}:${string}`;
 export type CaipChainId = `${string}:${string}`;
 
 export type EIP1193ProviderEvents = {
-  connect: [{ chainId: Hex }];
+  connect: [{ chainId: Hex; accounts: Address[] }];
   disconnect: [];
   accountsChanged: [Address[]];
   chainChanged: [Hex];
