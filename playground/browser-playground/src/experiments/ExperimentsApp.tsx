@@ -6,11 +6,12 @@ import { Experiment3 } from './Experiment3';
 import { Experiment4 } from './Experiment4';
 import { Experiment5 } from './Experiment5';
 import { Experiment6 } from './Experiment6';
+import { Experiment7 } from './Experiment7';
 
 // Get experiment from URL hash, default to exp1
 function getExperimentFromHash(): ExperimentId {
   const hash = window.location.hash.slice(1);
-  if (['exp1', 'exp2', 'exp3', 'exp4', 'exp5', 'exp6'].includes(hash)) {
+  if (['exp1', 'exp2', 'exp3', 'exp4', 'exp5', 'exp6', 'exp7'].includes(hash)) {
     return hash as ExperimentId;
   }
   return 'exp1';
@@ -56,6 +57,8 @@ export function ExperimentsApp() {
         return <Experiment5 />;
       case 'exp6':
         return <Experiment6 />;
+      case 'exp7':
+        return <Experiment7 />;
       default:
         return <Experiment1 />;
     }

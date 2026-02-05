@@ -4,6 +4,13 @@
 // Setup file to handle unhandled promise rejections in tests
 // This prevents CI failures from expected unhandled rejections in web-mobile timeout tests
 
+import { beforeEach } from 'vitest';
+
+// Clear any cached core before each test (uses globalThis which works in all environments)
+beforeEach(() => {
+  delete (globalThis as Record<string, unknown>).__metamaskCore;
+});
+
 const originalUnhandledRejection = process.listeners('unhandledRejection');
 
 process.removeAllListeners('unhandledRejection');

@@ -7,7 +7,8 @@ export type ExperimentId =
   | 'exp3'
   | 'exp4'
   | 'exp5'
-  | 'exp6';
+  | 'exp6'
+  | 'exp7';
 
 type ExperimentInfo = {
   id: ExperimentId;
@@ -45,6 +46,11 @@ export const EXPERIMENTS: ExperimentInfo[] = [
     id: 'exp6',
     title: 'Exp 6: All Three',
     description: 'Multichain + EVM + Wagmi together',
+  },
+  {
+    id: 'exp7',
+    title: 'Exp 7: Core Sharing',
+    description: 'Verify singleton core is shared across SDK types',
   },
 ];
 
