@@ -1,6 +1,6 @@
 {
   "name": "@metamask/browser-playground",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A browser test dapp for multichain api",
   "keywords": [
     "MetaMask",
@@ -50,41 +50,35 @@
       "last 1 safari version"
     ]
   },
-  "dependencies": {
-    "@metamask/chain-agnostic-permission": "^1.2.2",
-    "@metamask/connect-evm": "workspace:^",
-    "@metamask/connect-multichain": "workspace:^",
-    "@metamask/utils": "^11.8.1",
-    "@solana/wallet-adapter-react": "^0.15.35",
-    "@solana/wallet-adapter-react-ui": "^0.9.35",
-    "@solana/wallet-standard-chains": "^1.1.1",
-    "@solana/web3.js": "^1.98.0",
-    "@tanstack/query-sync-storage-persister": "5.0.5",
-    "@tanstack/react-query": ">=5.45.1",
-    "@tanstack/react-query-persist-client": "5.0.5",
-    "@wagmi/core": "^2.22.1",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "viem": "2.*",
-    "wagmi": "^2.19.2"
-  },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
     "@lavamoat/allow-scripts": "^3.0.4",
     "@lavamoat/preinstall-always-fail": "^2.0.0",
     "@metamask/api-specs": "^0.14.0",
     "@metamask/auto-changelog": "^3.4.4",
+    "@metamask/chain-agnostic-permission": "^1.2.2",
+    "@metamask/connect-evm": "workspace:^",
+    "@metamask/connect-multichain": "workspace:^",
     "@metamask/playground-ui": "workspace:^",
+    "@metamask/utils": "^11.8.1",
     "@open-rpc/meta-schema": "^1.14.9",
     "@open-rpc/schema-utils-js": "^2.0.5",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-standard-chains": "^1.1.1",
+    "@solana/web3.js": "^1.98.0",
     "@tailwindcss/postcss": "^4.0.0",
+    "@tanstack/query-sync-storage-persister": "5.0.5",
+    "@tanstack/react-query": ">=5.45.1",
     "@tanstack/react-query-devtools": "5.0.5",
+    "@tanstack/react-query-persist-client": "5.0.5",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@types/chrome": "^0.0.279",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",
     "@types/react": "19.1.0",
+    "@wagmi/core": "^2.22.1",
     "@yarnpkg/types": "^4.0.0",
     "autoprefixer": "^10.4.21",
     "buffer": "^6.0.3",
@@ -96,6 +90,8 @@
     "prettier": "^3.3.3",
     "prettier-plugin-packagejson": "^2.4.5",
     "process": "^0.11.10",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-scripts": "5.0.1",
     "serve": "^14.2.5",
     "tailwindcss": "^4.1.11",
@@ -103,7 +99,9 @@
     "ts-node": "^10.9.1",
     "typedoc": "^0.28.14",
     "typedoc-plugin-missing-exports": "^4.1.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "viem": "2.*",
+    "wagmi": "^2.19.2"
   },
   "packageManager": "yarn@4.1.1",
   "engines": {
@@ -122,7 +120,13 @@
       "@solana/web3.js>rpc-websockets>bufferutil": false,
       "@solana/web3.js>rpc-websockets>utf-8-validate": false,
       "@metamask/connect>@metamask/mobile-wallet-protocol-dapp-client>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
-      "@metamask/connect>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false
+      "@metamask/connect>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
+      "@metamask/connect-multichain>@metamask/mobile-wallet-protocol-core>centrifuge>protobufjs": false,
+      "@tailwindcss/postcss>@tailwindcss/oxide": false,
+      "react-scripts>tailwindcss>postcss-load-config>tsx>esbuild": false,
+      "viem>ws>bufferutil": false,
+      "viem>ws>utf-8-validate": false,
+      "wagmi>@wagmi/connectors>cbw-sdk>keccak": false
     }
   }
 }
