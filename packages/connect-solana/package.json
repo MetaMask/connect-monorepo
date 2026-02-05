@@ -38,6 +38,7 @@
     "dist/"
   ],
   "scripts": {
+    "attw": "attw --pack .",
     "build": "yarn tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-solana",
@@ -45,6 +46,7 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-solana",
     "clean": "npx rimraf ./dist",
     "dev": "tsup --watch",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",
