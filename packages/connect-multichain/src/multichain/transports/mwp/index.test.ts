@@ -44,16 +44,10 @@ t.describe('MWPTransport', () => {
 
           const requestId = 'test-request-123';
           transport.pendingRequests.set(requestId, {
-            request: {
-              jsonrpc: '2.0',
-              id: requestId,
-              method: 'wallet_createSession',
-            } as any,
-            method: 'wallet_createSession',
             resolve: mockResolve,
             reject: mockReject,
             timeout: mockTimeout,
-          });
+          } as any);
 
           // Simulate error message from mobile wallet (user rejection)
           const errorMessage = {
@@ -103,16 +97,10 @@ t.describe('MWPTransport', () => {
 
           const requestId = 'test-request-456';
           transport.pendingRequests.set(requestId, {
-            request: {
-              jsonrpc: '2.0',
-              id: requestId,
-              method: 'wallet_createSession',
-            } as any,
-            method: 'wallet_createSession',
             resolve: mockResolve,
             reject: mockReject,
             timeout: mockTimeout,
-          });
+          } as any);
 
           // Simulate success message from mobile wallet
           const successMessage = {
@@ -161,16 +149,10 @@ t.describe('MWPTransport', () => {
 
           const requestId = 'test-request-789';
           transport.pendingRequests.set(requestId, {
-            request: {
-              jsonrpc: '2.0',
-              id: requestId,
-              method: 'wallet_createSession',
-            } as any,
-            method: 'wallet_createSession',
             resolve: mockResolve,
             reject: mockReject,
             timeout: mockTimeout,
-          });
+          } as any);
 
           // Error without message field (invalid format per EIP-1193)
           const errorMessage = {
@@ -208,16 +190,10 @@ t.describe('MWPTransport', () => {
 
         const requestId = 'test-request-custom';
         transport.pendingRequests.set(requestId, {
-          request: {
-            jsonrpc: '2.0',
-            id: requestId,
-            method: 'wallet_createSession',
-          } as any,
-          method: 'wallet_createSession',
           resolve: mockResolve,
           reject: mockReject,
           timeout: mockTimeout,
-        });
+        } as any);
 
         // Error with custom code (e.g., 4100 = Unauthorized)
         const errorMessage = {
