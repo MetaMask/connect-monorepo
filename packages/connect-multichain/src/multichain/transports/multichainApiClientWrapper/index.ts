@@ -31,6 +31,8 @@ export class MultichainApiClientWrapperTransport implements Transport {
 
   readonly #notificationCallbacks = new Set<(data: unknown) => void>();
 
+  notificationListener: (() => void) | undefined;
+
   constructor(
     private readonly metamaskConnectMultichain: MetaMaskConnectMultichain,
   ) {}
@@ -53,10 +55,19 @@ export class MultichainApiClientWrapperTransport implements Transport {
     });
   }
 
-  setupNotifcationListener(): void {
-    this.metamaskConnectMultichain.transport.onNotification(
-      this.notifyCallbacks.bind(this),
-    );
+  clearTransportNotifcationListener(): void {
+    this.notificationListener?.();
+    this.notificationListener = undefined;
+  }
+
+  setupTransportNotifcationListener(): void {
+    if (!this.isTransportDefined() || this.notificationListener) {
+      return;
+    }
+    this.notificationListener =
+      this.metamaskConnectMultichain.transport.onNotification(
+        this.notifyCallbacks.bind(this),
+      );
   }
 
   async connect(): Promise<void> {
@@ -103,15 +114,11 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   onNotification(callback: (data: unknown) => void): () => void {
-    if (!this.isTransportDefined()) {
-      this.#notificationCallbacks.add(callback);
-      return () => {
-        this.#notificationCallbacks.delete(callback);
-      };
-    }
-
-    // TODO: should not be two of these. Fix this
-    return this.metamaskConnectMultichain.transport.onNotification(callback);
+    this.setupTransportNotifcationListener();
+    this.#notificationCallbacks.add(callback);
+    return () => {
+      this.#notificationCallbacks.delete(callback);
+    };
   }
 
   async #walletCreateSession(request: TransportRequestWithId) {

@@ -215,7 +215,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
           this.#transport = apiTransport;
-          this.#providerTransportWrapper.setupNotifcationListener();
+          this.#providerTransportWrapper.setupTransportNotifcationListener();
           this.#listener = apiTransport.onNotification(
             this.#onTransportNotification.bind(this),
           );
@@ -227,7 +227,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         const apiTransport = new MWPTransport(dappClient, kvstore);
         this.#dappClient = dappClient;
         this.#transport = apiTransport;
-        this.#providerTransportWrapper.setupNotifcationListener();
+        this.#providerTransportWrapper.setupTransportNotifcationListener();
         this.#listener = apiTransport.onNotification(
           this.#onTransportNotification.bind(this),
         );
@@ -305,7 +305,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#dappClient = dappClient;
     const apiTransport = new MWPTransport(dappClient, kvstore);
     this.#transport = apiTransport;
-    this.#providerTransportWrapper.setupNotifcationListener();
+    this.#providerTransportWrapper.setupTransportNotifcationListener();
     this.#listener = this.transport.onNotification(
       this.#onTransportNotification.bind(this),
     );
@@ -523,7 +523,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#onTransportNotification.bind(this),
     );
     this.#transport = transport;
-    this.#providerTransportWrapper.setupNotifcationListener();
+    this.#providerTransportWrapper.setupTransportNotifcationListener();
     return transport;
   }
 
@@ -859,7 +859,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#listener = undefined;
     this.#beforeUnloadListener = undefined;
     this.#transport = undefined;
-    this.#providerTransportWrapper.clearNotificationCallbacks();
+    this.#providerTransportWrapper.clearTransportNotifcationListener();
     this.#dappClient = undefined;
   }
 
