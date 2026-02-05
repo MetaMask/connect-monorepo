@@ -369,14 +369,14 @@ export class MetamaskConnectEVM {
         forceRequest,
       );
 
-      logger('fulfilled-request: connect', {
-        chainId: chainIds[0],
-        accounts: this.#provider.accounts,
-      });
 
       // Wait for the wallet_sessionChanged event to fire and set the provider properties
       return new Promise((resolve) => {
         this.#provider.once('connect', ({ chainId, accounts }) => {
+          logger('fulfilled-request: connect', {
+            chainId,
+            accounts,
+          });
           resolve({
             accounts,
             chainId: chainId as Hex,
