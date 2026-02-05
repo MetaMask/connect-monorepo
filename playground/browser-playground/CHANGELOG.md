@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING**: Update connect/disconnect button labels to include connector names ("Connect" → "Connect (Multichain)", "Disconnect" → "Disconnect (Multichain)" / "Disconnect All") for clarity and consistency with other connector buttons ([#161](https://github.com/MetaMask/connect-monorepo/pull/161))
 
+### Fixed
+
+- Display Wagmi connection errors in UI instead of only logging to console ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+
 ## [0.1.1]
 
 ### Added

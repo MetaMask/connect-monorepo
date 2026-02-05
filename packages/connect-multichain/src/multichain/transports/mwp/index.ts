@@ -26,6 +26,7 @@ import {
   type TransportResponse,
   TransportTimeoutError,
 } from '@metamask/multichain-api-client';
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
 
 import {
@@ -145,13 +146,46 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  private parseWalletError(errorPayload: unknown): Error {
+    const errorData = errorPayload as Record<string, unknown>;
+
+    if (
+      typeof errorData.code === 'number' &&
+      typeof errorData.message === 'string'
+    ) {
+      return providerErrors.custom({
+        code: errorData.code,
+        message: errorData.message,
+      });
+    }
+
+    const message =
+      errorPayload instanceof Error
+        ? errorPayload.message
+        : JSON.stringify(errorPayload);
+
+    return rpcErrors.internal({ message });
+  }
+
   private handleMessage(message: unknown): void {
     if (typeof message === 'object' && message !== null) {
       if ('data' in message) {
         const messagePayload = message.data as Record<string, unknown>;
+
         if ('id' in messagePayload && typeof messagePayload.id === 'string') {
           const request = this.pendingRequests.get(messagePayload.id);
+
           if (request) {
+            clearTimeout(request.timeout);
+
+            // Check if the message contains an error (e.g., user rejected)
+            if ('error' in messagePayload && messagePayload.error) {
+              this.pendingRequests.delete(messagePayload.id);
+              request.reject(this.parseWalletError(messagePayload.error));
+              return;
+            }
+
+            // Success case - resolve the promise
             const requestWithName = {
               ...messagePayload,
               method:
@@ -174,8 +208,6 @@ export class MWPTransport implements ExtendedTransport {
               params: requestWithName.result,
             };
 
-            clearTimeout(request.timeout);
-            // Might need to handle the evm case?
             this.notifyCallbacks(notification);
             request.resolve(requestWithName);
             this.pendingRequests.delete(messagePayload.id);
@@ -391,38 +423,44 @@ export class MWPTransport implements ExtendedTransport {
               params: sessionRequest,
             };
 
-            // just used for initial connection
+            // Handler for initial connection messages - checks for error responses
+            // and properly rejects the connection promise with EIP-1193 error codes
             initialConnectionMessageHandler = async (
               message: unknown,
             ): Promise<void> => {
-              if (typeof message === 'object' && message !== null) {
-                if ('data' in message) {
-                  const messagePayload = message.data as Record<
-                    string,
-                    unknown
-                  >;
-                  if (
-                    messagePayload.method === 'wallet_createSession' ||
-                    messagePayload.method === 'wallet_sessionChanged'
-                  ) {
-                    if (messagePayload.error) {
-                      if (initialConnectionMessageHandler) {
-                        this.dappClient.off(
-                          'message',
-                          initialConnectionMessageHandler,
-                        );
-                      }
-                      return rejectConnection(messagePayload.error);
-                    }
-                    await this.storeWalletSession(
-                      request,
-                      messagePayload as TransportResponse,
-                    );
-                    this.notifyCallbacks(messagePayload);
-                    return resolveConnection();
-                  }
-                }
+              if (typeof message !== 'object' || message === null) {
+                return;
               }
+              if (!('data' in message)) {
+                return;
+              }
+
+              const messagePayload = message.data as Record<string, unknown>;
+
+              // Match by ID (preferred) or by method (backward compatibility for notifications without ID)
+              const isMatchingId = messagePayload.id === request.id;
+              const isMatchingMethod =
+                messagePayload.method === 'wallet_createSession' ||
+                messagePayload.method === 'wallet_sessionChanged';
+
+              if (!isMatchingId && !isMatchingMethod) {
+                return;
+              }
+
+              // Handle error response (e.g., user rejected the connection)
+              if (messagePayload.error) {
+                return rejectConnection(
+                  this.parseWalletError(messagePayload.error),
+                );
+              }
+
+              // Success case - store session, notify, and resolve
+              await this.storeWalletSession(
+                request,
+                messagePayload as TransportResponse,
+              );
+              this.notifyCallbacks(messagePayload);
+              return resolveConnection();
             };
 
             this.dappClient.on('message', initialConnectionMessageHandler);

@@ -10,6 +10,7 @@ import {
   useWallet,
 } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import type { WalletError } from '@solana/wallet-adapter-base';
 import type React from 'react';
 import {
   createContext,
@@ -31,6 +32,8 @@ type SolanaSDKContextType = {
   isRegistered: boolean;
   endpoint: string;
   setEndpoint: (endpoint: string) => void;
+  walletError: Error | null;
+  clearWalletError: () => void;
 };
 
 const SolanaSDKContext = createContext<SolanaSDKContextType | undefined>(
@@ -46,7 +49,10 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
   const [client, setClient] = useState<SolanaClient | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [endpoint, setEndpoint] = useState(SOLANA_DEVNET_ENDPOINT);
+  const [walletError, setWalletError] = useState<Error | null>(null);
   const initRef = useRef(false);
+
+  const clearWalletError = useCallback(() => setWalletError(null), []);
 
   useEffect(() => {
     if (initRef.current) return;
@@ -78,9 +84,26 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const contextValue = useMemo(
-    () => ({ client, isRegistered, endpoint, setEndpoint }),
-    [client, isRegistered, endpoint],
+    () => ({
+      client,
+      isRegistered,
+      endpoint,
+      setEndpoint,
+      walletError,
+      clearWalletError,
+    }),
+    [client, isRegistered, endpoint, walletError, clearWalletError],
   );
+
+  // Handle wallet adapter errors (connection rejections, etc.)
+  // Skip WalletNotSelectedError as it's a transient state during wallet selection
+  const onWalletError = useCallback((error: WalletError) => {
+    console.error('Solana wallet error:', error.name, error.message);
+    // Only set meaningful errors (not WalletNotSelectedError which is transient)
+    if (error.name !== 'WalletNotSelectedError') {
+      setWalletError(error);
+    }
+  }, []);
 
   return (
     <SolanaSDKContext.Provider value={contextValue}>
@@ -88,7 +111,7 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
         endpoint={endpoint}
         config={{ commitment: 'confirmed' }}
       >
-        <WalletProvider wallets={[]} autoConnect>
+        <WalletProvider wallets={[]} autoConnect onError={onWalletError}>
           <WalletModalProvider>{children}</WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>

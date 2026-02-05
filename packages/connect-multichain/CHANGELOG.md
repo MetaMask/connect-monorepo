@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix QR rejection handling: properly propagate user rejection errors from MetaMask Mobile to the dApp ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+- Close QR modal automatically when user rejects connection ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+- Use `@metamask/rpc-errors` for EIP-1193 compliant error handling ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
 - Fix `sessionProperties` not being passed to `wallet_createSession` when recreating a session after scope/account changes ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
 
 ## [0.5.2]
