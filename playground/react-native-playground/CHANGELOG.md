@@ -7,12 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- update browser playground button names ([#161](https://github.com/MetaMask/connect-monorepo/pull/161))
-- lint: lint fix follow up to https://github.com/MetaMask/connect-monorepo/pull/145 ([#148](https://github.com/MetaMask/connect-monorepo/pull/148))
-- build: re-introduce lint step to ci workflow ([#145](https://github.com/MetaMask/connect-monorepo/pull/145))
-
 ### Changed
 
 - **BREAKING**: Update connect/disconnect button labels to include connector names ("Connect" → "Connect (Multichain)", "Disconnect" → "Disconnect (Multichain)" / "Disconnect All") for clarity and consistency with other connector buttons
