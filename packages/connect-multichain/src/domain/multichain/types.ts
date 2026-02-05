@@ -118,4 +118,6 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   ) => Promise<TResponse>;
 
   getActiveSession: () => Promise<Session | undefined>;
+
+  disconnect: (scopes: Scope[]) => Promise<void>;
 };

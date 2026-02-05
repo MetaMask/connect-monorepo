@@ -1,6 +1,9 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 import { analytics } from '@metamask/analytics';
-import { getEthAccounts, InternalScopesObject, type Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
+import {
+  type InternalScopesObject,
+  getEthAccounts,
+} from '@metamask/chain-agnostic-permission';
 import type {
   ConnectionStatus,
   MultichainCore,
@@ -135,13 +138,15 @@ export class MetamaskConnectEVM {
       const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
       if (permittedChainIds.length === 0) {
         this.#onDisconnect();
-      }
-      else {
+      } else {
         // Need to somehow make an eth_accounts call here
         this.#onConnect({
           chainId: permittedChainIds[0],
           // Fix this type
-          accounts: getEthAccounts({requiredScopes: {}, optionalScopes: this.#sessionScopes as InternalScopesObject}),
+          accounts: getEthAccounts({
+            requiredScopes: {},
+            optionalScopes: this.#sessionScopes as InternalScopesObject,
+          }),
         });
       }
     };
@@ -352,44 +357,41 @@ export class MetamaskConnectEVM {
     this.#status = 'connecting';
 
     try {
-    await this.#core.connect(
-      caipChainIds as Scope[],
-      caipAccountIds as CaipAccountId[],
-      undefined,
-      forceRequest,
-    );
+      await this.#core.connect(
+        caipChainIds as Scope[],
+        caipAccountIds as CaipAccountId[],
+        undefined,
+        forceRequest,
+      );
 
-    // const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+      // const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
 
-    // const initialAccounts = await this.#core.transport.sendEip1193Message<
-    //   { method: 'eth_accounts'; params: [] },
-    //   { result: string[]; id: number; jsonrpc: '2.0' }
-    // >({ method: 'eth_accounts', params: [] });
+      // const initialAccounts = await this.#core.transport.sendEip1193Message<
+      //   { method: 'eth_accounts'; params: [] },
+      //   { result: string[]; id: number; jsonrpc: '2.0' }
+      // >({ method: 'eth_accounts', params: [] });
 
-    // const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
+      // const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
 
-    // this.#onConnect({
-    //   chainId,
-    //   accounts: initialAccounts.result as Address[],
-    // });
+      // this.#onConnect({
+      //   chainId,
+      //   accounts: initialAccounts.result as Address[],
+      // });
 
+      logger('fulfilled-request: connect', {
+        chainId: chainIds[0],
+        accounts: this.#provider.accounts,
+      });
 
-    logger('fulfilled-request: connect', {
-      chainId: chainIds[0],
-      accounts: this.#provider.accounts,
-    });
-
-    // TODO: verify the events that set the provider properties have fired by now
-    return {
-      accounts: this.#provider.accounts,
-      chainId: this.#provider.selectedChainId as Hex,
-    };
-
+      // TODO: verify the events that set the provider properties have fired by now
+      return {
+        accounts: this.#provider.accounts,
+        chainId: this.#provider.selectedChainId as Hex,
+      };
     } catch (error) {
       logger('Error connecting to wallet', error);
       throw error;
-    }
-    finally {
+    } finally {
       this.#status = 'disconnected';
     }
   }
@@ -485,7 +487,12 @@ export class MetamaskConnectEVM {
   async disconnect(): Promise<void> {
     logger('request: disconnect');
 
-    await this.#core.disconnect();
+    const sessionScopes = this.#sessionScopes;
+    const eip155Scopes = Object.keys(sessionScopes).filter(
+      (scope) => scope.startsWith('eip155:'),
+    );
+
+    await this.#core.disconnect(eip155Scopes as Scope[]);
     this.#onDisconnect();
     this.#clearConnectionState();
 
@@ -877,7 +884,7 @@ export class MetamaskConnectEVM {
    * and trigger an accountsChanged event if the results are valid accounts.
    */
   async #attemptSessionRecovery(): Promise<void> {
-    return this.#core.emitSessionChanged()
+    return this.#core.emitSessionChanged();
   }
 
   /**

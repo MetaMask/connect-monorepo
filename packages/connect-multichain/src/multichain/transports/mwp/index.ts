@@ -475,20 +475,46 @@ export class MWPTransport implements ExtendedTransport {
    *
    * @returns Nothing
    */
-  async disconnect(): Promise<void> {
-    // Clean up window focus event listener
-    if (
-      typeof window !== 'undefined' &&
-      typeof window.removeEventListener !== 'undefined' &&
-      this.windowFocusHandler
-    ) {
-      window.removeEventListener('focus', this.windowFocusHandler);
-      this.windowFocusHandler = undefined;
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    const cachedSession = await this.getCachedResponse({ jsonrpc: '2.0', id: '0', method: 'wallet_getSession' });
+    const cachedSessionScopes = (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
+
+    const remainingScopes = scopes.length === 0 ? [] : Object.keys(cachedSessionScopes).filter(
+      (scope) => !scopes.includes(scope as Scope),
+    );
+
+    if (remainingScopes.length === 0) {
+      // Clean up window focus event listener
+      if (
+        typeof window !== 'undefined' &&
+        typeof window.removeEventListener !== 'undefined' &&
+        this.windowFocusHandler
+      ) {
+        window.removeEventListener('focus', this.windowFocusHandler);
+        this.windowFocusHandler = undefined;
+      }
+      this.kvstore.delete(SESSION_STORE_KEY);
+      this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      this.kvstore.delete(CHAIN_STORE_KEY);
+      return this.dappClient.disconnect();
+    } else {
+      // TODO actually call wallet_revokeSession
+      // wallet_revokeSession might not survive the TTL though...
+
+      const newSessionScopes = Object.fromEntries(
+        Object.entries(cachedSessionScopes).filter(([key]) =>
+          remainingScopes.includes(key)
+        )
+      );
+
+      this.kvstore.set(SESSION_STORE_KEY, JSON.stringify({
+        result: {
+          sessionScopes: newSessionScopes,
+        },
+      }));
+
+      // TODO: update chain_store too. Emit chainChanged
     }
-    this.kvstore.delete(SESSION_STORE_KEY);
-    this.kvstore.delete(ACCOUNTS_STORE_KEY);
-    this.kvstore.delete(CHAIN_STORE_KEY);
-    return this.dappClient.disconnect();
   }
 
   /**

@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises -- Promise is intentionally not awaited */
 import type {
   CreateSessionParams,
+  RevokeSessionParams,
   Transport,
   TransportRequest,
   TransportResponse,
@@ -175,8 +176,13 @@ export class MultichainApiClientWrapperTransport implements Transport {
       return { jsonrpc: '2.0', id: request.id, result: true };
     }
 
+    const revokeSessionParams = request.params as
+      | RevokeSessionParams<RPCAPI>
+      | undefined;
+    const scopes = revokeSessionParams?.scopes ?? [];
+
     try {
-      this.metamaskConnectMultichain.disconnect();
+      this.metamaskConnectMultichain.disconnect(scopes as unknown as Scope[]);
       return { jsonrpc: '2.0', id: request.id, result: true };
     } catch (_error) {
       return { jsonrpc: '2.0', id: request.id, result: false };

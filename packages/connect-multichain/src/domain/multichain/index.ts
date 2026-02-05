@@ -58,7 +58,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    *
    * @returns Promise that resolves when disconnection is complete
    */
-  abstract disconnect(): Promise<void>;
+  abstract disconnect(scopes?: Scope[]): Promise<void>;
 
   /**
    * Invokes an RPC method with the specified options.

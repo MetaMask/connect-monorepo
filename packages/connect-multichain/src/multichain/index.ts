@@ -846,21 +846,51 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     super.emit(event, args);
   }
 
-  async disconnect(): Promise<void> {
-    await this.#listener?.();
-    this.#beforeUnloadListener?.();
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    let sessionData: SessionData = {
+      sessionScopes: {},
+      sessionProperties: {},
+    };
+    if (this.status === 'connected') {
+      // Try to get current session scopes
+      const response = await this.transport.request({
+        method: 'wallet_getSession',
+      });
+      if (response.result) {
+        sessionData = response.result as SessionData;
+      } else {
+        // ???
+      }
+    }
 
-    await this.#transport?.disconnect();
-    await this.storage.removeTransport();
+    const remainingScopes = scopes.length === 0 ? [] : Object.keys(sessionData.sessionScopes).filter(
+      (scope) => !scopes.includes(scope as Scope),
+    );
 
-    this.status = 'disconnected';
-    this.emit('wallet_sessionChanged', { sessionScopes: {} });
+    await this.#transport?.disconnect(scopes);
 
-    this.#listener = undefined;
-    this.#beforeUnloadListener = undefined;
-    this.#transport = undefined;
-    this.#providerTransportWrapper.clearTransportNotifcationListener();
-    this.#dappClient = undefined;
+    if (remainingScopes.length === 0) {
+      await this.#listener?.();
+      this.#beforeUnloadListener?.();
+
+      await this.storage.removeTransport();
+
+      this.#listener = undefined;
+      this.#beforeUnloadListener = undefined;
+      this.#transport = undefined;
+      this.#providerTransportWrapper.clearTransportNotifcationListener();
+      this.#dappClient = undefined;
+      this.status = 'disconnected';
+    }
+
+    const newSessionScopes = Object.fromEntries(
+      Object.entries(sessionData.sessionScopes).filter(([key]) =>
+        remainingScopes.includes(key)
+      )
+    );
+
+    // in theory this is only needed for MWP
+    this.emit('wallet_sessionChanged', { sessionScopes: newSessionScopes });
   }
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {

@@ -258,10 +258,17 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
-  async disconnect(): Promise<void> {
-    this.#notificationCallbacks.clear();
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    await this.request({ method: 'wallet_revokeSession', params: { scopes } });
 
-    await this.request({ method: 'wallet_revokeSession', params: {} });
+    const response = await this.request({ method: 'wallet_getSession '});
+    let {sessionScopes} = response.result as SessionData;
+
+    if (Object.keys(sessionScopes).length > 0) {
+      return;
+    }
+
+    this.#notificationCallbacks.clear();
 
     // Remove the message listener when disconnecting
     if (this.#handleResponseListener) {
