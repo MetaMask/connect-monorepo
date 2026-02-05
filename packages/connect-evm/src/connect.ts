@@ -494,10 +494,8 @@ export class MetamaskConnectEVM {
     this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
     this.#core.off('display_uri', this.#displayUriHandler);
 
-    // if (this.#removeNotificationHandler) {
-    //   this.#removeNotificationHandler();
-    //   this.#removeNotificationHandler = undefined;
-    // }
+    this.#removeNotificationHandler?.();
+    this.#removeNotificationHandler = undefined;
 
     logger('fulfilled-request: disconnect');
   }
