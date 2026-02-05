@@ -498,8 +498,9 @@ export class MWPTransport implements ExtendedTransport {
       this.kvstore.delete(CHAIN_STORE_KEY);
       return this.dappClient.disconnect();
     } else {
-      // TODO actually call wallet_revokeSession
-      // wallet_revokeSession might not survive the TTL though...
+      // This might not actually get excuted on the wallet if the user doesn't open
+      // their wallet before the message TTL
+      this.request({ method: 'wallet_revokeSession', params: { scopes } });
 
       const newSessionScopes = Object.fromEntries(
         Object.entries(cachedSessionScopes).filter(([key]) =>

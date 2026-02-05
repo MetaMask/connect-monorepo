@@ -288,7 +288,6 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       }
 
       const chainId = Number(connectInfo.chainId);
-      console.log('WAGMI onConnect', { accounts, chainId });
       config.emitter.emit('connect', { accounts, chainId });
     },
     async onDisconnect(error) {

@@ -141,7 +141,7 @@ export class MetamaskConnectEVM {
       } else {
         // Need to somehow make an eth_accounts call here
         this.#onConnect({
-          chainId: permittedChainIds[0],
+          chainId: permittedChainIds[0], // fix this to use cached chainId too?
           // Fix this type
           accounts: getEthAccounts({
             requiredScopes: {},
@@ -818,6 +818,7 @@ export class MetamaskConnectEVM {
             // @ts-expect-error TODO: address this
             const accounts = notification?.params;
             logger('transport-event: accountsChanged', accounts);
+            // why are we not caching the accounts here?
             this.#onAccountsChanged(accounts);
           }
 
