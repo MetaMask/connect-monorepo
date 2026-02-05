@@ -10,7 +10,8 @@ export type ExperimentId =
   | 'exp6'
   | 'exp7'
   | 'exp8'
-  | 'exp9';
+  | 'exp9'
+  | 'exp10';
 
 type ExperimentInfo = {
   id: ExperimentId;
@@ -63,6 +64,11 @@ export const EXPERIMENTS: ExperimentInfo[] = [
     id: 'exp9',
     title: 'Exp 9: Scope Merging',
     description: 'Verify scopes are merged when connecting clients with different chains',
+  },
+  {
+    id: 'exp10',
+    title: 'Exp 10: Partial Disconnect',
+    description: 'Verify scopes are partially revoked when one client disconnects',
   },
 ];
 

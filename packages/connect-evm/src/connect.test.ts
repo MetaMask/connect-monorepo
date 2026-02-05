@@ -84,6 +84,7 @@ function createMockCore() {
       }
       return Array.from(allScopes);
     }),
+    updateSessionScopes: vi.fn().mockResolvedValue(undefined),
 
     transport: mockTransport as any,
     storage: mockStorage as any,

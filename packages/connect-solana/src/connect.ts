@@ -99,6 +99,10 @@ export async function createSolanaClient(
       // Only actually disconnect if this was the last client
       if (isLastClient) {
         await core.disconnect();
+      } else {
+        // Other clients remain - update session to only have their scopes
+        const remainingScopes = core.getUnionScopes();
+        await core.updateSessionScopes(remainingScopes);
       }
     },
   };

@@ -904,6 +904,45 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.#activeClients.size;
   }
 
+  /**
+   * Updates the session scopes when a client disconnects but others remain.
+   *
+   * NOTE: There is no CAIP standard for partial scope revocation (CAIP-285
+   * only supports full session revocation). This means the wallet will
+   * keep all previously granted scopes - calling wallet_createSession with
+   * fewer scopes does not reduce the wallet's session, it's additive only.
+   *
+   * This method updates the SDK's internal tracking of scopes but the wallet
+   * side will retain all previously granted permissions until a full
+   * disconnect (wallet_revokeSession) occurs.
+   *
+   * If no scopes remain, this performs a full disconnect.
+   *
+   * @param scopes - The scopes that remaining clients need
+   * @returns Promise that resolves when complete
+   */
+  async updateSessionScopes(scopes: Scope[]): Promise<void> {
+    if (this.status !== 'connected' || !this.#transport) {
+      logger('updateSessionScopes: Not connected or no transport, skipping');
+      return;
+    }
+
+    if (scopes.length === 0) {
+      // No scopes remaining means we should fully disconnect
+      logger('updateSessionScopes: No scopes remaining, performing full disconnect');
+      await this.disconnect();
+      return;
+    }
+
+    // NOTE: Due to CAIP limitations, we cannot actually reduce wallet scopes.
+    // The wallet will keep all previously granted permissions.
+    // We just log and acknowledge - the SDK tracks remaining scopes internally.
+    logger(
+      `updateSessionScopes: SDK tracking reduced to [${scopes.join(', ')}], ` +
+        'but wallet retains all previously granted scopes (no CAIP partial revocation)',
+    );
+  }
+
   // DRY THIS WITH REQUEST ROUTER
   openDeeplinkIfNeeded(): void {
     const { ui, mobile } = this.options;

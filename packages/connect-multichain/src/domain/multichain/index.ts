@@ -118,6 +118,19 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    */
   abstract getClientCount(): number;
 
+  /**
+   * Updates the session scopes when a client disconnects but others remain.
+   *
+   * NOTE: There is no CAIP standard for partial scope revocation.
+   * The wallet keeps all previously granted scopes. This method updates
+   * the SDK's internal tracking only. Full disconnect requires
+   * wallet_revokeSession when all clients disconnect.
+   *
+   * @param scopes - The scopes that remaining clients need
+   * @returns Promise that resolves when complete
+   */
+  abstract updateSessionScopes(scopes: Scope[]): Promise<void>;
+
   constructor(protected readonly options: MultichainOptions) {
     super();
   }

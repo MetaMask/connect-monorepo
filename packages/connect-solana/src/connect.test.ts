@@ -49,6 +49,7 @@ describe('createSolanaClient', () => {
       }
       return Array.from(allScopes);
     }),
+    updateSessionScopes: vi.fn().mockResolvedValue(undefined),
   };
 
   const mockWallet = {

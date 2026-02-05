@@ -510,9 +510,12 @@ export class MetamaskConnectEVM {
       logger('Last client disconnecting, revoking session');
       await this.#core.disconnect();
     } else {
+      // Other clients remain - update session to only have their scopes
+      const remainingScopes = this.#core.getUnionScopes();
       logger(
-        `Other clients remain (${this.#core.getClientCount()}), skipping session revocation`,
+        `Other clients remain (${this.#core.getClientCount()}), updating session to scopes: ${remainingScopes.join(', ')}`,
       );
+      await this.#core.updateSessionScopes(remainingScopes);
     }
 
     this.#onDisconnect();
