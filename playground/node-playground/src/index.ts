@@ -1,17 +1,26 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Interactive CLI demo */
+/* eslint-disable no-restricted-globals -- Node.js playground uses process */
+/* eslint-disable require-atomic-updates -- Interactive CLI state updates are sequential */
+
+/* eslint-disable import-x/no-extraneous-dependencies -- Playground dependencies */
+/* eslint-disable import-x/no-named-as-default-member -- Library APIs */
+/* eslint-disable @typescript-eslint/no-use-before-define -- Function hoisting in CLI */
+/* eslint-disable guard-for-in -- CLI demo iteration */
+
 import {
-  createMetamaskConnect,
+  createEVMClient,
+  type MetamaskConnectEVM,
+} from '@metamask/connect-evm';
+import {
+  createMultichainClient,
   getInfuraRpcUrls,
   type SessionData,
 } from '@metamask/connect-multichain';
-import {
-  createMetamaskConnectEVM,
-  type MetamaskConnectEVM,
-} from '@metamask/connect-evm';
-import { hexToNumber } from '@metamask/utils';
+import { hexToNumber, type Hex } from '@metamask/utils';
 import chalk from 'chalk';
+import dotenv from 'dotenv';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';
-import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -19,18 +28,57 @@ dotenv.config();
 type AppState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SIGNING';
 type ConnectorType = 'multichain' | 'evm';
 
+const AVAILABLE_CHAINS = [
+  { id: 1, hexId: '0x1' as Hex, name: 'Ethereum Mainnet', caip: 'eip155:1' },
+  { id: 137, hexId: '0x89' as Hex, name: 'Polygon', caip: 'eip155:137' },
+  { id: 59144, hexId: '0xe708' as Hex, name: 'Linea', caip: 'eip155:59144' },
+  {
+    id: 11155111,
+    hexId: '0xaa36a7' as Hex,
+    name: 'Sepolia Testnet',
+    caip: 'eip155:11155111',
+  },
+] as const;
+
+/**
+ * Converts CAIP-2 keyed RPC URLs map to hex-keyed format.
+ * Example: { 'eip155:1': 'url' } -> { '0x1': 'url' }
+ *
+ * @param caipMap - A map of CAIP-2 chain IDs to RPC URLs
+ * @returns A map of hex chain IDs to RPC URLs
+ */
+function convertCaipToHexKeys(
+  caipMap: Record<string, string>,
+): Record<Hex, string> {
+  return Object.entries(caipMap).reduce<Record<Hex, string>>(
+    (acc, [caipChainId, url]) => {
+      // Extract the numeric part from CAIP-2 format (e.g., 'eip155:1' -> 1)
+      const match = caipChainId.match(/^eip155:(\d+)$/u);
+      if (match?.[1]) {
+        const decimalChainId = parseInt(match[1], 10);
+        const hexChainId: Hex = `0x${decimalChainId.toString(16)}`;
+        acc[hexChainId] = url;
+      }
+      return acc;
+    },
+    {},
+  );
+}
+
 // Store our application state in a simple object
 const state: {
   app: AppState;
   connectorType: ConnectorType | null;
-  multichainSdk: Awaited<ReturnType<typeof createMetamaskConnect>> | null;
+  metamaskConnectMultichain: Awaited<
+    ReturnType<typeof createMultichainClient>
+  > | null;
   evmSdk: MetamaskConnectEVM | null;
   accounts: { [chainId: string]: string[] }; // Group accounts by chain
   spinner: Ora | null;
 } = {
   app: 'DISCONNECTED',
   connectorType: null,
-  multichainSdk: null,
+  metamaskConnectMultichain: null,
   evmSdk: null,
   accounts: {}, // Initialize as an empty object
   spinner: null,
@@ -69,6 +117,20 @@ const showMenu = async () => {
     }
   } else if (state.app === 'CONNECTED') {
     console.log(chalk.green('✓ Connected!'));
+
+    // Display current chain for EVM connector
+    if (state.connectorType === 'evm' && state.evmSdk?.selectedChainId) {
+      const currentChainId = parseInt(state.evmSdk.selectedChainId, 16);
+      const currentChain = AVAILABLE_CHAINS.find(
+        (chain) => chain.id === currentChainId,
+      );
+      if (currentChain) {
+        console.log(
+          chalk.bold(`Current Chain: ${chalk.cyan(currentChain.name)}`),
+        );
+      }
+    }
+
     console.log(chalk.bold('Accounts:'));
     for (const chainId in state.accounts) {
       console.log(
@@ -81,6 +143,11 @@ const showMenu = async () => {
     // Only show Solana signing option for multichain connector
     if (state.connectorType === 'multichain') {
       choices.splice(1, 0, 'Sign Solana Message');
+    }
+
+    // Only show Switch Chain option for EVM connector
+    if (state.connectorType === 'evm') {
+      choices.splice(1, 0, 'Switch Chain');
     }
 
     const { action } = await inquirer.prompt([
@@ -96,6 +163,8 @@ const showMenu = async () => {
       await handleEthereumSign();
     } else if (action === 'Sign Solana Message') {
       await handleSolanaSign();
+    } else if (action === 'Switch Chain') {
+      await handleSwitchChain();
     } else if (action === 'Disconnect') {
       await handleDisconnect();
     }
@@ -113,13 +182,13 @@ const handleConnect = async () => {
   try {
     if (state.connectorType === 'multichain') {
       // Requesting accounts for Ethereum Mainnet and Solana Mainnet
-      await state.multichainSdk?.connect(
+      await state.metamaskConnectMultichain?.connect(
         ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
         [],
       );
     } else if (state.connectorType === 'evm') {
       // Connect using EVM connector (Ethereum Mainnet only)
-      await state.evmSdk?.connect({ chainIds: [1] });
+      await state.evmSdk?.connect({ chainIds: ['0x1'] });
     }
   } catch (error: unknown) {
     if (state.spinner) {
@@ -140,7 +209,7 @@ const handleDisconnect = async () => {
   state.spinner = ora('Disconnecting...').start();
   try {
     if (state.connectorType === 'multichain') {
-      await state.multichainSdk?.disconnect();
+      await state.metamaskConnectMultichain?.disconnect();
     } else if (state.connectorType === 'evm') {
       await state.evmSdk?.disconnect();
     }
@@ -182,7 +251,7 @@ const handleEthereumSign = async () => {
 
   try {
     if (state.connectorType === 'multichain') {
-      const result = await state.multichainSdk?.invokeMethod({
+      const result = await state.metamaskConnectMultichain?.invokeMethod({
         scope: chain,
         request: {
           method: 'personal_sign',
@@ -210,6 +279,60 @@ const handleEthereumSign = async () => {
     );
   } finally {
     state.app = 'CONNECTED';
+    state.spinner = null;
+  }
+};
+
+const handleSwitchChain = async () => {
+  if (state.connectorType !== 'evm' || !state.evmSdk) {
+    console.log(
+      chalk.red('Switch chain is only available with Legacy EVM Connector.'),
+    );
+    return;
+  }
+
+  const currentChainId = state.evmSdk.selectedChainId
+    ? parseInt(state.evmSdk.selectedChainId, 16)
+    : null;
+
+  // Filter out current chain from choices
+  const availableChains = AVAILABLE_CHAINS.filter(
+    (chain) => chain.id !== currentChainId,
+  );
+
+  if (availableChains.length === 0) {
+    console.log(chalk.yellow('No other chains available to switch to.'));
+    return;
+  }
+
+  const { chain } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'chain',
+      message: 'Select a chain to switch to:',
+      choices: availableChains.map((chainOption) => ({
+        name: chainOption.name,
+        value: chainOption.hexId,
+      })),
+    },
+  ]);
+
+  state.spinner = ora(
+    'Switching chain... Please check your MetaMask Mobile app.',
+  ).start();
+
+  try {
+    await state.evmSdk.switchChain({ chainId: chain });
+    const chainName =
+      AVAILABLE_CHAINS.find((chainOption) => chainOption.hexId === chain)
+        ?.name ?? 'chain';
+    state.spinner.succeed(`Successfully switched to ${chainName}.`);
+  } catch (error: unknown) {
+    state.spinner.fail('Failed to switch chain.');
+    console.error(
+      chalk.red(error instanceof Error ? error.message : String(error)),
+    );
+  } finally {
     state.spinner = null;
   }
 };
@@ -250,7 +373,7 @@ const handleSolanaSign = async () => {
   ).start();
 
   try {
-    const result = await state.multichainSdk?.invokeMethod({
+    const result = await state.metamaskConnectMultichain?.invokeMethod({
       scope: chain,
       request: {
         method: 'signMessage',
@@ -281,10 +404,13 @@ const main = async (): Promise<void> => {
   console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
   console.log('------------------------------------');
 
-  const supportedNetworks = getInfuraRpcUrls(process.env.INFURA_API_KEY || '');
+  const infuraApiKey = process.env.INFURA_API_KEY ?? 'demo';
+  const supportedNetworks = getInfuraRpcUrls(infuraApiKey);
+  // Convert CAIP-keyed RPC URLs to hex-keyed format for EVM SDK
+  const hexKeyedNetworks = convertCaipToHexKeys(supportedNetworks);
 
   // Initialize Multichain SDK
-  state.multichainSdk = await createMetamaskConnect({
+  state.metamaskConnectMultichain = await createMultichainClient({
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',
@@ -295,13 +421,13 @@ const main = async (): Promise<void> => {
   });
 
   // Initialize EVM SDK
-  state.evmSdk = await createMetamaskConnectEVM({
+  state.evmSdk = await createEVMClient({
     dapp: {
       name: 'Node.js Playground',
       url: 'https://playground.metamask.io',
     },
     api: {
-      supportedNetworks,
+      supportedNetworks: hexKeyedNetworks,
     },
     eventHandlers: {
       connect: ({ accounts, chainId }) => {
@@ -311,10 +437,12 @@ const main = async (): Promise<void> => {
           console.log('------------------------------------');
         }
 
-        if (state.spinner && state.app === 'CONNECTING') {
+        if (state.spinner) {
           state.spinner.stop();
           state.spinner = null;
         }
+
+        state.connectorType = 'evm';
 
         // Group accounts by chain ID for EVM connector
         // chainId is a hex string, convert to number for CAIP format
@@ -367,47 +495,50 @@ const main = async (): Promise<void> => {
   });
 
   // --- Multichain SDK Event Handler ---
-  state.multichainSdk.on('wallet_sessionChanged', (session?: SessionData) => {
-    if (state.app !== 'CONNECTING') {
-      // Only clear the console if we are not in the middle of a connection flow
-      console.clear();
-      console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
-      console.log('------------------------------------');
-    }
+  state.metamaskConnectMultichain.on(
+    'wallet_sessionChanged',
+    (session?: SessionData) => {
+      if (state.app !== 'CONNECTING') {
+        // Only clear the console if we are not in the middle of a connection flow
+        console.clear();
+        console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
+        console.log('------------------------------------');
+      }
 
-    if (state.spinner && state.app === 'CONNECTING') {
-      state.spinner.stop();
-      state.spinner = null;
-    }
+      if (state.spinner && state.app === 'CONNECTING') {
+        state.spinner.stop();
+        state.spinner = null;
+      }
 
-    if (session?.sessionScopes) {
-      const groupedAccounts: { [chainId: string]: string[] } = {};
-      for (const scope of Object.values(session.sessionScopes) as {
-        accounts?: string[];
-      }[]) {
-        if (scope.accounts) {
-          for (const acc of scope.accounts) {
-            const [namespace, reference] = acc.split(':');
-            const chainId = `${namespace}:${reference}`;
-            if (!groupedAccounts[chainId]) {
-              groupedAccounts[chainId] = [];
+      if (session?.sessionScopes) {
+        const groupedAccounts: { [chainId: string]: string[] } = {};
+        for (const scope of Object.values(session.sessionScopes) as {
+          accounts?: string[];
+        }[]) {
+          if (scope.accounts) {
+            for (const acc of scope.accounts) {
+              const [namespace, reference] = acc.split(':');
+              const chainId = `${namespace}:${reference}`;
+              if (!groupedAccounts[chainId]) {
+                groupedAccounts[chainId] = [];
+              }
+              groupedAccounts[chainId].push(acc);
             }
-            groupedAccounts[chainId].push(acc);
           }
         }
+        state.accounts = groupedAccounts;
+        state.app = 'CONNECTED';
+      } else {
+        state.accounts = {};
+        state.app = 'DISCONNECTED';
+        state.connectorType = null;
+        console.log(chalk.yellow('Session ended. You are now disconnected.'));
       }
-      state.accounts = groupedAccounts;
-      state.app = 'CONNECTED';
-    } else {
-      state.accounts = {};
-      state.app = 'DISCONNECTED';
-      state.connectorType = null;
-      console.log(chalk.yellow('Session ended. You are now disconnected.'));
-    }
-  });
+    },
+  );
 
   // --- Main application loop ---
-  // eslint-disable-next-line no-constant-condition
+
   while (true) {
     try {
       await showMenu();

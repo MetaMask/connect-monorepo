@@ -1,5 +1,17 @@
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
-import type { Scope, SessionData } from '@metamask/connect';
+import type { Scope, SessionData } from '@metamask/connect-multichain';
+import {
+  injectParams,
+  METHODS_REQUIRING_PARAM_INJECTION,
+  getNetworkName,
+  openRPCExampleToJSON,
+  truncateJSON,
+  extractRequestForStorage,
+  extractRequestParams,
+  normalizeMethodParams,
+  updateInvokeMethodResults,
+  TEST_IDS,
+} from '@metamask/playground-ui';
 import {
   type CaipAccountAddress,
   type CaipAccountId,
@@ -9,19 +21,6 @@ import {
 } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  injectParams,
-  METHODS_REQUIRING_PARAM_INJECTION,
-} from '../constants/methods';
-import { getNetworkName } from '../constants/networks';
-import { escapeHtmlId } from '../helpers/IdHelpers';
-import { openRPCExampleToJSON, truncateJSON } from '../helpers/JsonHelpers';
-import {
-  extractRequestForStorage,
-  extractRequestParams,
-  normalizeMethodParams,
-  updateInvokeMethodResults,
-} from '../helpers/MethodInvocationHelpers';
 import { generateSolanaMethodExamples } from '../helpers/solana-method-signatures';
 import { useSDK } from '../sdk';
 
@@ -261,12 +260,13 @@ export function ScopeCard({
   };
   return (
     <div
-      data-testid={`scope-card-${escapeHtmlId(scope)}`}
+      data-testid={TEST_IDS.scopeCard.card(scope)}
       key={scope}
       className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200"
     >
       <div className="flex items-center justify-between mb-4">
         <h3
+          data-testid={TEST_IDS.scopeCard.networkName(scope)}
           title={`${networkName} (${scope})`}
           className="text-lg font-semibold text-gray-800 truncate"
         >
@@ -276,8 +276,8 @@ export function ScopeCard({
 
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium text-gray-600">Accounts:</span>
-          <span className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+          <span data-testid={TEST_IDS.scopeCard.accountsLabel(scope)} className="text-sm font-medium text-gray-600">Accounts:</span>
+          <span data-testid={TEST_IDS.scopeCard.accountsBadge(scope)} className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
             {accountCount} available
           </span>
         </div>
@@ -292,8 +292,8 @@ export function ScopeCard({
               [scope]: selectedAccountValue,
             }));
           }}
-          data-testid={`accounts-select-${escapeHtmlId(scope)}`}
-          id={`accounts-select-${escapeHtmlId(scope)}`}
+          data-testid={TEST_IDS.scopeCard.accountSelect(scope)}
+          id={TEST_IDS.scopeCard.accountSelect(scope)}
           className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         >
           <option value="">Select an account</option>
@@ -301,7 +301,7 @@ export function ScopeCard({
             const { address } = parseCaipAccountId(account);
             return (
               <option
-                data-testid={`${escapeHtmlId(String(account))}-option`}
+                data-testid={TEST_IDS.scopeCard.accountOption(scope, String(account))}
                 key={address}
                 value={account}
               >
@@ -313,7 +313,7 @@ export function ScopeCard({
       </div>
 
       {selectedAccount && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+        <div data-testid={TEST_IDS.scopeCard.activeAccount(scope)} className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
           <p className="text-sm text-green-800 font-medium">Active Account:</p>
           <p className="text-sm text-green-700 font-mono break-all">
             {parseCaipAccountId(selectedAccount).address}
@@ -323,27 +323,27 @@ export function ScopeCard({
 
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium text-gray-600">
+          <span data-testid={TEST_IDS.scopeCard.methodsLabel(scope)} className="text-sm font-medium text-gray-600">
             Available Methods:
           </span>
-          <span className="text-sm text-gray-500 bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
+          <span data-testid={TEST_IDS.scopeCard.methodsBadge(scope)} className="text-sm text-gray-500 bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
             {details.methods?.length ?? 0} available
           </span>
         </div>
 
         <select
-          data-testid={`${escapeHtmlId(scope)}-select`}
+          data-testid={TEST_IDS.scopeCard.methodSelect(scope)}
           value={selectedMethods[scope] ?? ''}
           onChange={async (evt) => {
             await handleMethodSelect(evt, scope);
           }}
-          id={`method-select-${escapeHtmlId(scope)}`}
+          id={TEST_IDS.scopeCard.methodSelect(scope)}
           className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors bg-white hover:border-gray-400"
         >
           <option value="">Select a method to invoke</option>
           {(details.methods ?? []).map((method: string) => (
             <option
-              data-testid={`${escapeHtmlId(scope)}-${method}-option`}
+              data-testid={TEST_IDS.scopeCard.methodOption(scope, method)}
               key={method}
               value={method}
             >
@@ -354,7 +354,7 @@ export function ScopeCard({
       </div>
 
       {selectedMethods[scope] && (
-        <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-md">
+        <div data-testid={TEST_IDS.scopeCard.selectedMethod(scope)} className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-md">
           <p className="text-sm text-purple-800 font-medium">
             Selected Method:
           </p>
@@ -366,8 +366,8 @@ export function ScopeCard({
 
       <details
         className="mt-4 border border-gray-200 rounded-lg"
-        data-testid={`invoke-method-details-${escapeHtmlId(scope)}`}
-        id={`invoke-method-details-${escapeHtmlId(scope)}`}
+        data-testid={TEST_IDS.scopeCard.invokeCollapsible(scope)}
+        id={TEST_IDS.scopeCard.invokeCollapsible(scope)}
       >
         <summary className="px-4 py-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors duration-150 rounded-t-lg flex items-center gap-2 font-medium text-gray-700">
           <svg
@@ -389,14 +389,14 @@ export function ScopeCard({
         <div className="p-4 bg-white border-t border-gray-200">
           <div className="mb-2">
             <label
-              htmlFor={`invoke-method-request-${escapeHtmlId(scope)}`}
+              htmlFor={TEST_IDS.scopeCard.invokeTextarea(scope)}
               className="block text-sm font-medium text-gray-600 mb-1"
             >
               JSON Request:
             </label>
           </div>
           <textarea
-            data-testid={`${escapeHtmlId(scope)}-collapsible-content-textarea`}
+            data-testid={TEST_IDS.scopeCard.invokeTextarea(scope)}
             value={invokeMethodRequests[scope] ?? ''}
             onChange={(evt) =>
               setInvokeMethodRequests((prev) => ({
@@ -405,7 +405,7 @@ export function ScopeCard({
               }))
             }
             rows={12}
-            id={`invoke-method-request-${escapeHtmlId(scope)}`}
+            id={TEST_IDS.scopeCard.invokeTextarea(scope)}
             className="w-full p-3 font-mono text-sm border border-gray-300 rounded-md resize-y min-h-[200px] max-h-[400px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
             placeholder="Method request will appear here..."
             spellCheck={false}
@@ -419,14 +419,14 @@ export function ScopeCard({
 
       <button
         type="button"
-        data-testid={`invoke-method-${escapeHtmlId(scope)}-btn`}
+        data-testid={TEST_IDS.scopeCard.invokeBtn(scope)}
         onClick={async () => {
           const method = selectedMethods[scope];
           if (method) {
             await handleInvokeMethod(scope as Scope, method);
           }
         }}
-        id={`invoke-method-${escapeHtmlId(scope)}-btn`}
+        id={TEST_IDS.scopeCard.invokeBtn(scope)}
         disabled={!selectedMethods[scope] || !invokeMethodRequests[scope]}
         className={`
             w-full mt-4 px-6 py-3 rounded-lg font-medium text-white transition-all duration-200
@@ -465,12 +465,8 @@ export function ScopeCard({
               <details
                 // biome-ignore lint/suspicious/noArrayIndexKey: Needed
                 key={`${method}-${index}`}
-                data-testid={`method-result-details-${escapeHtmlId(
-                  scope,
-                )}-${method}-${index}`}
-                id={`method-result-details-${escapeHtmlId(
-                  scope,
-                )}-${method}-${index}`}
+                data-testid={TEST_IDS.scopeCard.resultContainer(scope, method, index)}
+                id={TEST_IDS.scopeCard.resultContainer(scope, method, index)}
                 className="mt-4 border border-gray-200 rounded-lg"
               >
                 <summary
@@ -531,9 +527,8 @@ export function ScopeCard({
                   <div className="relative">
                     <pre className="bg-gray-50 p-4 rounded-md text-sm font-mono overflow-x-auto max-h-96 overflow-y-auto border border-gray-200 text-left">
                       <code
-                        id={`invoke-method-${escapeHtmlId(
-                          scope,
-                        )}-${method}-result-${index}`}
+                        data-testid={TEST_IDS.scopeCard.resultCode(scope, method, index)}
+                        id={TEST_IDS.scopeCard.resultCode(scope, method, index)}
                         className={isError ? 'text-red-600' : 'text-gray-800'}
                       >
                         {JSON.stringify(result, null, 2)}
@@ -547,12 +542,8 @@ export function ScopeCard({
                 // biome-ignore lint/suspicious/noArrayIndexKey: Needed
                 key={`${method}-${index}`}
                 className="mt-4 border border-gray-200 rounded-lg bg-white"
-                data-testid={`method-result-item-${escapeHtmlId(
-                  scope,
-                )}-${method}-${index}`}
-                id={`method-result-item-${escapeHtmlId(
-                  scope,
-                )}-${method}-${index}`}
+                data-testid={TEST_IDS.scopeCard.resultContainer(scope, method, index)}
+                id={TEST_IDS.scopeCard.resultContainer(scope, method, index)}
               >
                 <div
                   className={`px-4 py-3 border-b border-gray-200 ${
@@ -582,9 +573,8 @@ export function ScopeCard({
                   <div className="relative">
                     <pre className="bg-gray-50 p-4 rounded-md text-sm font-mono overflow-x-auto border border-gray-200 text-left">
                       <code
-                        id={`invoke-method-${escapeHtmlId(
-                          scope,
-                        )}-${method}-result-${index}`}
+                        data-testid={TEST_IDS.scopeCard.resultCode(scope, method, index)}
+                        id={TEST_IDS.scopeCard.resultCode(scope, method, index)}
                         className={isError ? 'text-red-600' : 'text-gray-800'}
                       >
                         {text}

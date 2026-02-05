@@ -1,4 +1,19 @@
+/* eslint-disable @typescript-eslint/no-unused-vars -- Test types */
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable jsdoc/require-param-description -- Test helpers */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test functions */
+/* eslint-disable @typescript-eslint/naming-convention -- Test naming */
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
+/* eslint-disable no-plusplus -- Test loops */
+/* eslint-disable promise/param-names -- Test promise patterns */
+/* eslint-disable no-negated-condition -- Test assertions */
+/* eslint-disable @typescript-eslint/unbound-method -- Mock assertions */
+/* eslint-disable prefer-const -- Incremental test variables */
+/* eslint-disable @typescript-eslint/no-floating-promises -- Test assertions */
+/* eslint-disable no-restricted-globals -- Test environment mocks */
+import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import * as t from 'vitest';
+
 import type {
   MultichainOptions,
   MultichainCore,
@@ -6,17 +21,20 @@ import type {
   SessionData,
 } from './domain';
 // Careful, order of import matters to keep mocks working
+import { Store } from './store';
+import { mockSessionData, mockSessionRequestData } from '../tests/data';
 import {
   runTestsInNodeEnv,
   runTestsInRNEnv,
   runTestsInWebEnv,
   runTestsInWebMobileEnv,
 } from '../tests/fixtures.test';
-import { Store } from './store';
-import { mockSessionData, mockSessionRequestData } from '../tests/data';
 import type { TestSuiteOptions, MockedData } from '../tests/types';
-import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 
+/**
+ *
+ * @param sdk
+ */
 async function waitForInstallModal(sdk: MultichainCore) {
   // Spy on the UI factory's renderInstallModal instead of the private #showInstallModal
   const onRenderInstallModal = t.vi.spyOn(
@@ -37,6 +55,10 @@ async function waitForInstallModal(sdk: MultichainCore) {
   t.expect(onRenderInstallModal).toHaveBeenCalled();
 }
 
+/**
+ *
+ * @param sdk
+ */
 async function expectUIFactoryRenderInstallModal(sdk: MultichainCore) {
   const onRenderInstallModal = t.vi.spyOn(
     (sdk as any).options.ui.factory,
@@ -56,6 +78,13 @@ async function expectUIFactoryRenderInstallModal(sdk: MultichainCore) {
   t.expect(onRenderInstallModal).toHaveBeenCalled();
 }
 
+/**
+ *
+ * @param options0
+ * @param options0.platform
+ * @param options0.createSDK
+ * @param options0.options
+ */
 function testSuite<T extends MultichainOptions>({
   platform,
   createSDK,
@@ -97,15 +126,15 @@ function testSuite<T extends MultichainOptions>({
         ui: uiOptions,
         storage: new Store({
           platform: platform as 'web' | 'rn' | 'node',
-          get(key) {
+          async get(key) {
             return Promise.resolve(mockedData.nativeStorageStub.getItem(key));
           },
-          set(key, value) {
+          async set(key, value) {
             return Promise.resolve(
               mockedData.nativeStorageStub.setItem(key, value),
             );
           },
-          delete(key) {
+          async delete(key) {
             return Promise.resolve(
               mockedData.nativeStorageStub.removeItem(key),
             );
@@ -121,11 +150,11 @@ function testSuite<T extends MultichainOptions>({
     t.it(`${platform} should handle transport connection errors`, async () => {
       const connectionError = new Error('Failed to connect transport');
 
-      //Mock defaultTransport for Extension + Browser
+      // Mock defaultTransport for Extension + Browser
       mockedData.mockDefaultTransport.connect.mockRejectedValue(
         connectionError,
       );
-      //Mock dappClient for MWP
+      // Mock dappClient for MWP
       mockedData.mockDappClient.connect.mockRejectedValue(connectionError);
 
       const scopes = ['eip155:1'] as Scope[];
@@ -134,8 +163,9 @@ function testSuite<T extends MultichainOptions>({
       ] as any;
       sdk = await createSDK(testOptions);
 
-      t.expect(sdk.state).toBe('loaded');
-      t.expect(() => sdk.provider).toThrow();
+      t.expect(sdk.status).toBe('loaded');
+      // Provider is always available via wrapper transport (handles connection state internally)
+      t.expect(sdk.provider).toBeDefined();
       t.expect(() => sdk.transport).toThrow();
 
       // Expect sdk.connect to reject if transport cannot connect
@@ -144,9 +174,9 @@ function testSuite<T extends MultichainOptions>({
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => reject(new Error('Test timeout')), 3000);
       });
-      
+
       const connectPromise = sdk.connect(scopes, caipAccountIds);
-      
+
       // Ensure both promises have catch handlers BEFORE racing to prevent unhandled rejections
       // This ensures that even if one promise rejects after the race resolves, it won't be unhandled
       connectPromise.catch(() => {
@@ -155,16 +185,16 @@ function testSuite<T extends MultichainOptions>({
       timeoutPromise.catch(() => {
         // Silently handle - timeout will be processed by race or ignored if connect wins
       });
-      
+
       let connectError: any;
       let timedOut = false;
-      
+
       try {
         await Promise.race([connectPromise, timeoutPromise]);
         t.expect.fail('Expected connect to throw an error');
       } catch (error) {
         clearTimeout(timeoutId);
-        
+
         if (error instanceof Error && error.message === 'Test timeout') {
           timedOut = true;
         } else {
@@ -177,21 +207,23 @@ function testSuite<T extends MultichainOptions>({
       // For web-mobile, timeout might be expected due to deeplink hanging
       if (!timedOut) {
         t.expect(connectError).toBe(connectionError);
-        //Expect to find all the transport mocks DISCONNECTED
+        // Expect to find all the transport mocks DISCONNECTED
         t.expect(mockedData.mockDefaultTransport.__isConnected).toBe(false);
         t.expect(mockedData.mockDappClient.state).toBe('DISCONNECTED');
-        t.expect(sdk.state === 'disconnected').toBe(true);
+        t.expect(sdk.status === 'disconnected').toBe(true);
       } else {
         // If timed out, at least verify it's not connected
-        t.expect(['loaded', 'disconnected', 'connecting']).toContain(sdk.state);
+        t.expect(['loaded', 'disconnected', 'connecting']).toContain(
+          sdk.status,
+        );
       }
-      
+
       // Ensure both promises are fully handled to prevent unhandled rejections
       await new Promise((resolve) => setTimeout(resolve, 0));
-      
+
       // Disconnect SDK to clean up any ongoing async operations
       try {
-        if (sdk.state !== 'disconnected' && sdk.state !== 'pending') {
+        if (sdk.status !== 'disconnected' && sdk.status !== 'pending') {
           await sdk.disconnect().catch(() => {
             // Ignore disconnect errors
           });
@@ -212,7 +244,7 @@ function testSuite<T extends MultichainOptions>({
           'eip155:1:0x1234567890abcdef1234567890abcdef12345678',
         ] as any;
 
-        //Empty initial session
+        // Empty initial session
         mockedData.mockWalletGetSession.mockImplementation(
           async () => undefined as any,
         );
@@ -225,16 +257,17 @@ function testSuite<T extends MultichainOptions>({
 
         sdk = await createSDK(testOptions);
 
-        t.expect(sdk.state).toBe('loaded');
-        t.expect(() => sdk.provider).toThrow();
+        t.expect(sdk.status).toBe('loaded');
+        // Provider is always available via wrapper transport (handles connection state internally)
+        t.expect(sdk.provider).toBeDefined();
         t.expect(() => sdk.transport).toThrow();
 
         await sdk.connect(scopes, caipAccountIds);
 
-        t.expect(sdk.state).toBe('connected');
+        t.expect(sdk.status).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
         t.expect(sdk.transport).toBeDefined();
-        t.expect(sdk.provider).toBeDefined();;
+        t.expect(sdk.provider).toBeDefined();
 
         if (isMWPPlatform) {
           t.expect(mockedData.mockDappClient.state).toBe('CONNECTED');
@@ -264,9 +297,9 @@ function testSuite<T extends MultichainOptions>({
         );
 
         sdk = await createSDK(testOptions);
-        t.expect(sdk.state).toBe('connected');
+        t.expect(sdk.status).toBe('connected');
         t.expect(sdk.transport).toBeDefined();
-        t.expect(sdk.provider).toBeDefined();;
+        t.expect(sdk.provider).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
 
         await t
@@ -299,9 +332,9 @@ function testSuite<T extends MultichainOptions>({
 
         sdk = await createSDK(testOptions);
         t.expect(sdk.transport).toBeDefined();
-        t.expect(sdk.provider).toBeDefined();;
+        t.expect(sdk.provider).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
-        t.expect(sdk.state).toBe('connected');
+        t.expect(sdk.status).toBe('connected');
 
         if (isWebEnv) {
           t.expect(mockedData.mockDefaultTransport.__isConnected).toBe(true);
@@ -343,7 +376,7 @@ function testSuite<T extends MultichainOptions>({
 
         unloadSpy = t.vi.spyOn((sdk as any).options.ui.factory, 'unload');
 
-        t.expect(sdk.state).toBe('loaded');
+        t.expect(sdk.status).toBe('loaded');
         t.expect(() => sdk.transport).toThrow();
 
         if (platform !== 'web' && platform !== 'web-mobile') {
@@ -357,7 +390,7 @@ function testSuite<T extends MultichainOptions>({
         if (isMWPPlatform) {
           if (platform !== 'web-mobile') {
             (mockedData.mockDappClient as any).__state = 'CONNECTED';
-            //For MWP we simulate a connection with DappClient after showing the QRCode
+            // For MWP we simulate a connection with DappClient after showing the QRCode
             await expectUIFactoryRenderInstallModal(sdk);
           }
 
@@ -378,9 +411,9 @@ function testSuite<T extends MultichainOptions>({
           ),
         ]);
 
-        t.expect(sdk.state).toBe('connected');
+        t.expect(sdk.status).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
-        t.expect(sdk.provider).toBeDefined();;
+        t.expect(sdk.provider).toBeDefined();
         t.expect(sdk.transport).toBeDefined();
 
         if (isMWPPlatform) {
@@ -412,7 +445,7 @@ function testSuite<T extends MultichainOptions>({
 
       sdk = await createSDK(testOptions);
 
-      t.expect(sdk.state).toBe('loaded');
+      t.expect(sdk.status).toBe('loaded');
       t.expect(() => sdk.transport).toThrow();
 
       // Add timeout wrapper for web-mobile platform to prevent hanging
@@ -420,9 +453,9 @@ function testSuite<T extends MultichainOptions>({
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => reject(new Error('Test timeout')), 3000);
       });
-      
+
       const connectPromise = sdk.connect(scopes, caipAccountIds);
-      
+
       // Ensure both promises have catch handlers BEFORE racing to prevent unhandled rejections
       // This ensures that even if one promise rejects after the race resolves, it won't be unhandled
       connectPromise.catch(() => {
@@ -431,16 +464,16 @@ function testSuite<T extends MultichainOptions>({
       timeoutPromise.catch(() => {
         // Silently handle - timeout will be processed by race or ignored if connect wins
       });
-      
+
       let connectError: any;
       let timedOut = false;
-      
+
       try {
         await Promise.race([connectPromise, timeoutPromise]);
         t.expect.fail('Expected connect to throw an error');
       } catch (error) {
         clearTimeout(timeoutId);
-        
+
         if (error instanceof Error && error.message === 'Test timeout') {
           timedOut = true;
         } else {
@@ -449,22 +482,24 @@ function testSuite<T extends MultichainOptions>({
       } finally {
         clearTimeout(timeoutId);
       }
-      
+
       // For web-mobile, timeout might be expected due to deeplink hanging
       if (!timedOut) {
         t.expect(connectError).toBe(sessionError);
-        t.expect(sdk.state === 'disconnected').toBe(true);
+        t.expect(sdk.status === 'disconnected').toBe(true);
       } else {
         // If timed out, at least verify it's not connected
-        t.expect(['loaded', 'disconnected', 'connecting']).toContain(sdk.state);
+        t.expect(['loaded', 'disconnected', 'connecting']).toContain(
+          sdk.status,
+        );
       }
-      
+
       // Ensure both promises are fully handled to prevent unhandled rejections
       await new Promise((resolve) => setTimeout(resolve, 0));
-      
+
       // Disconnect SDK to clean up any ongoing async operations
       try {
-        if (sdk.state !== 'disconnected' && sdk.state !== 'pending') {
+        if (sdk.status !== 'disconnected' && sdk.status !== 'pending') {
           await sdk.disconnect().catch(() => {
             // Ignore disconnect errors
           });
@@ -517,8 +552,8 @@ function testSuite<T extends MultichainOptions>({
 
       sdk = await createSDK(testOptions);
       await sdk.connect(scopes, caipAccountIds);
-      t.expect(sdk.state).toBe('connected');
-      t.expect(sdk.provider).toBeDefined();;
+      t.expect(sdk.status).toBe('connected');
+      t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.transport).toBeDefined();
 
       await t
@@ -540,8 +575,8 @@ function testSuite<T extends MultichainOptions>({
 
           sdk = await createSDK(testOptions);
 
-          t.expect(sdk.state).toBe('connected');
-          t.expect(sdk.provider).toBeDefined();;
+          t.expect(sdk.status).toBe('connected');
+          t.expect(sdk.provider).toBeDefined();
           t.expect(sdk.transport).toBeDefined();
 
           t.expect(mockedData.mockDappClient.state).toBe('CONNECTED');

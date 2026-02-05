@@ -1,5 +1,5 @@
-import { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
-import { SessionData } from '@metamask/multichain-api-client';
+import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
+import type { SessionData } from '@metamask/multichain-api-client';
 
 // Mock session data for testing
 export const mockSessionData: SessionData = {

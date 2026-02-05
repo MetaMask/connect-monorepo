@@ -1,5 +1,9 @@
-import type { Session, SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type {
+  Session,
+  SessionRequest,
+} from '@metamask/mobile-wallet-protocol-core';
+import type {
+  SessionProperties,
   Transport,
   TransportRequest,
   TransportResponse,
@@ -75,6 +79,8 @@ export type MultichainOptions = {
     extensionId?: string;
     onNotification?: (notification: unknown) => void;
   };
+  /** Enable debug logging */
+  debug?: boolean;
 };
 
 type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
@@ -97,6 +103,7 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   connect: (props?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
+    sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }) => Promise<void>;
 

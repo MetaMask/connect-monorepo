@@ -1,6 +1,23 @@
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/naming-convention -- Test naming */
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
+/* eslint-disable jsdoc/require-param-description -- Test helpers */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Test functions */
+/* eslint-disable @typescript-eslint/no-misused-promises -- Test handlers */
+/* eslint-disable id-denylist -- Test error patterns */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- Test assertions */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Test assertions */
+/* eslint-disable import-x/no-unassigned-import -- Polyfill imports */
+/* eslint-disable @typescript-eslint/no-unused-vars -- Test helper types */
+/* eslint-disable import-x/order -- Mock imports need specific order */
+/* eslint-disable @typescript-eslint/no-use-before-define -- Function hoisting */
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors -- Test rejection patterns */
+/* eslint-disable jsdoc/require-returns -- Test helpers */
+/* eslint-disable no-plusplus -- Test loops */
+/* eslint-disable no-invalid-this -- Test context */
+/* eslint-disable no-useless-catch -- Test error handling */
 
 /** biome-ignore-all lint/suspicious/noAsyncPromiseExecutor: ok for tests */
-
 
 /**
  * Fixtures files, allows us to create a standardized test configuration for each platform
@@ -16,28 +33,12 @@
  */
 
 import './mocks';
+import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
+import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
+import type { TransportResponse } from '@metamask/multichain-api-client';
+import { getDefaultTransport } from '@metamask/multichain-api-client';
 import * as t from 'vitest';
 import { vi } from 'vitest';
-import type { MultichainOptions } from '../src/domain';
-import { MultichainSDK } from '../src/multichain';
-
-// Import createSDK functions for convenience
-import { createMetamaskConnect as createMetamaskSDKWeb } from '../src/index.browser';
-import { createMetamaskConnect as createMetamaskSDKRN } from '../src/index.native';
-import { createMetamaskConnect as createMetamaskSDKNode } from '../src/index.node';
-import type {
-  NativeStorageStub,
-  MockedData,
-  TestSuiteOptions,
-  CreateTestFN,
-} from '../tests/types';
-
-import {
-  getDefaultTransport,
-  TransportResponse,
-} from '@metamask/multichain-api-client';
-import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
-import { MULTICHAIN_PROVIDER_STREAM_NAME } from '../src/multichain/transports/constants';
 
 import {
   setupNodeMocks,
@@ -45,7 +46,20 @@ import {
   setupWebMobileMocks,
   setupWebMocks,
 } from './env';
-import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
+import type {
+  NativeStorageStub,
+  MockedData,
+  TestSuiteOptions,
+  CreateTestFN,
+} from './types';
+import type { MultichainOptions } from '../src/domain';
+
+// Import createSDK functions for convenience
+import { createMultichainClient as createMetamaskSDKWeb } from '../src/index.browser';
+import { createMultichainClient as createMetamaskSDKRN } from '../src/index.native';
+import { createMultichainClient as createMetamaskSDKNode } from '../src/index.node';
+import { MetaMaskConnectMultichain } from '../src/multichain';
+import { MULTICHAIN_PROVIDER_STREAM_NAME } from '../src/multichain/transports/constants';
 
 export const TRANSPORT_REQUEST_RESPONSE_DELAY = 50;
 
@@ -113,16 +127,16 @@ export const createTest: CreateTestFN = ({
   cleanupMocks,
   tests,
 }) => {
-  const mockWalletGetSession = t.vi.fn(() =>
+  const mockWalletGetSession = t.vi.fn(async () =>
     Promise.reject('Please mock mockWalletGetSession'),
   ) as any;
-  const mockWalletCreateSession = t.vi.fn(() =>
+  const mockWalletCreateSession = t.vi.fn(async () =>
     Promise.reject('Please mock mockWalletCreateSession'),
   ) as any;
-  const mockSessionRequest = t.vi.fn(() =>
+  const mockSessionRequest = t.vi.fn(async () =>
     Promise.reject('Please mock mockSessionRequest'),
   ) as any;
-  const mockWalletInvokeMethod = t.vi.fn(() =>
+  const mockWalletInvokeMethod = t.vi.fn(async () =>
     Promise.reject('Please mock mockWalletInvokeMethod'),
   ) as any;
   const mockWalletRevokeSession = t.vi.fn() as any;
@@ -142,7 +156,7 @@ export const createTest: CreateTestFN = ({
   };
   let setupAnalyticsSpy!: t.MockInstance<any>;
   let initSpy!: t.MockInstance<any>;
-  let emitSpy!: t.MockInstance<MultichainSDK['emit']>;
+  let emitSpy!: t.MockInstance<MetaMaskConnectMultichain['emit']>;
   let showInstallModalSpy!: t.MockInstance<any>;
   let mockLogger!: t.MockInstance<debug.Debugger>;
   let mockDefaultTransport!: t.Mocked<any>;
@@ -150,12 +164,15 @@ export const createTest: CreateTestFN = ({
   let pendingRequests: Map<
     string,
     {
-      resolve: (value: TransportResponse<unknown>) => void;
+      resolve: (value: TransportResponse) => void;
       reject: (error: Error) => void;
       timeout: NodeJS.Timeout;
     }
   >;
 
+  /**
+   *
+   */
   async function beforeEach() {
     try {
       pendingRequests = new Map();
@@ -260,14 +277,14 @@ export const createTest: CreateTestFN = ({
       // We'll spy on public methods or verify behavior through the public API instead
       initSpy = t.vi.fn() as any; // Placeholder - tests should verify behavior through public API
       setupAnalyticsSpy = t.vi.fn() as any; // Placeholder - tests should verify behavior through public API
-      emitSpy = t.vi.spyOn(MultichainSDK.prototype as any, 'emit');
+      emitSpy = t.vi.spyOn(MetaMaskConnectMultichain.prototype as any, 'emit');
       showInstallModalSpy = t.vi.fn() as any; // Placeholder - tests should verify behavior through public API
 
       mwpCoreActual.__mockStorage = nativeStorageStub.data;
 
       const eventListeners = new Map<
         string,
-        Array<{ handler: (...args: any[]) => void; once: boolean }>
+        { handler: (...args: any[]) => void; once: boolean }[]
       >();
       const mockDappClient = {
         __state: 'DISCONNECTED' as any,
@@ -297,11 +314,11 @@ export const createTest: CreateTestFN = ({
           return Promise.resolve();
         }),
         connect: t.vi.fn(async (data: any) => {
-          //Establish the connection automatically
+          // Establish the connection automatically
           mockDappClient.emit('connected');
-          (mockDappClient as any).state = 'CONNECTED' as any;
+          mockDappClient.state = 'CONNECTED' as any;
 
-          //Send session request for mwp
+          // Send session request for mwp
           const sessionRequest = mockSessionRequest();
           mockDappClient.emit('session_request', sessionRequest);
 
@@ -319,7 +336,9 @@ export const createTest: CreateTestFN = ({
             // Handle new nested structure: { name: MULTICHAIN_PROVIDER_STREAM_NAME, data: request }
             const { name, data: request } = message;
             if (name !== MULTICHAIN_PROVIDER_STREAM_NAME) {
-              return Promise.reject('only MULTICHAIN_PROVIDER_STREAM_NAME is supported in the mock');
+              return Promise.reject(
+                'only MULTICHAIN_PROVIDER_STREAM_NAME is supported in the mock',
+              );
             }
             const id = `${request.id ?? requestId++}`;
             if (request.method === 'wallet_getSession') {
@@ -336,7 +355,7 @@ export const createTest: CreateTestFN = ({
                     });
                     resolve();
                   },
-                  reject: reject,
+                  reject,
                   timeout: null as any,
                 };
                 pendingRequests.set(id, req);
@@ -403,7 +422,7 @@ export const createTest: CreateTestFN = ({
                     });
                     resolve();
                   },
-                  reject: reject,
+                  reject,
                   timeout: null as any,
                 };
                 pendingRequests.set(id, req);
@@ -432,7 +451,7 @@ export const createTest: CreateTestFN = ({
                     });
                     resolve();
                   },
-                  reject: reject,
+                  reject,
                   timeout: null as any,
                 };
                 pendingRequests.set(id, req);
@@ -469,7 +488,9 @@ export const createTest: CreateTestFN = ({
         }),
 
         off: t.vi.fn((event: string, handler?: (...args: any[]) => void) => {
-          if (!eventListeners.has(event)) return;
+          if (!eventListeners.has(event)) {
+            return;
+          }
 
           if (handler) {
             // Remove specific handler
@@ -488,7 +509,9 @@ export const createTest: CreateTestFN = ({
 
         // Method to emit events (for testing purposes)
         emit: t.vi.fn((event: string, ...args: any[]) => {
-          if (!eventListeners.has(event)) return;
+          if (!eventListeners.has(event)) {
+            return;
+          }
 
           const listeners = eventListeners.get(event)!;
           // Create a copy to iterate over, as 'once' handlers will modify the original array
@@ -557,6 +580,10 @@ export const createTest: CreateTestFN = ({
     }
   }
 
+  /**
+   *
+   * @param mocks
+   */
   async function afterEach(mocks: MockedData) {
     // Clear storage
     mocks.nativeStorageStub.data.clear();

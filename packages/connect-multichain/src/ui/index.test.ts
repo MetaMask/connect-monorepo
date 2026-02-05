@@ -1,5 +1,17 @@
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/naming-convention -- Test naming and JSDOM alias */
+/* eslint-disable @typescript-eslint/no-unused-vars -- Test imports */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- Test patterns */
+/* eslint-disable no-restricted-globals -- Test DOM mocking */
+/* eslint-disable no-empty-function -- Empty mock functions */
+/* eslint-disable @typescript-eslint/unbound-method -- Mock assertions */
+/* eslint-disable @typescript-eslint/no-shadow -- Test scopes */
+import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import { JSDOM as Page } from 'jsdom';
+import { v4 } from 'uuid';
 import * as t from 'vitest';
+
+import { ModalFactory } from '.';
 import {
   type ConnectionRequest,
   getPlatformType,
@@ -11,10 +23,8 @@ import {
   PlatformType,
   type QRLink,
 } from '../domain';
-import { ModalFactory } from './index';
-import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
 import type { FactoryModals } from './modals/types';
-import { v4 } from 'uuid';
+
 // Mock external dependencies
 t.vi.mock('@metamask/onboarding', () => ({
   default: class MockMetaMaskOnboarding {
@@ -41,9 +51,7 @@ t.vi.mock('../domain', async () => {
 });
 
 t.describe('ModalFactory', () => {
-  let mockModal:
-    | Modal<InstallWidgetProps, QRLink>
-    | Modal<OTPCodeWidgetProps, OTPCode>;
+  let mockModal: Modal<InstallWidgetProps> | Modal<OTPCodeWidgetProps>;
   let mockModalOptions: t.Mock<() => InstallWidgetProps | OTPCodeWidgetProps>;
   let mockData: t.Mock<() => QRLink | OTPCode>;
 
@@ -198,7 +206,7 @@ t.describe('ModalFactory', () => {
         mockGetPlatformType.mockReturnValue(PlatformType.ReactNative);
 
         t.vi.resetModules();
-        const { ModalFactory: TestModalFactory } = await import('./index');
+        const { ModalFactory: TestModalFactory } = await import('.');
         const modalFactory = new TestModalFactory(mockFactoryOptions);
         t.expect(modalFactory.isMobile).toBe(true);
       },
@@ -208,7 +216,7 @@ t.describe('ModalFactory', () => {
       mockGetPlatformType.mockReturnValue(PlatformType.NonBrowser);
 
       t.vi.resetModules();
-      const { ModalFactory: TestModalFactory } = await import('./index');
+      const { ModalFactory: TestModalFactory } = await import('.');
       const modalFactory = new TestModalFactory(mockFactoryOptions);
       t.expect(modalFactory.isNode).toBe(true);
     });
@@ -224,7 +232,7 @@ t.describe('ModalFactory', () => {
         mockGetPlatformType.mockReturnValue(platform);
 
         t.vi.resetModules();
-        const { ModalFactory: TestModalFactory } = await import('./index');
+        const { ModalFactory: TestModalFactory } = await import('.');
         const modalFactory = new TestModalFactory(mockFactoryOptions);
         t.expect(modalFactory.isWeb).toBe(true);
       }
@@ -258,7 +266,6 @@ t.describe('ModalFactory', () => {
         },
       };
       uiModule = new ModalFactory(mockFactoryOptions);
-      //uiModule.modal = mockModal;
       mockContainer = document.createElement('div');
     });
 
@@ -271,7 +278,7 @@ t.describe('ModalFactory', () => {
 
         await uiModule.renderInstallModal(
           showInstallModal,
-          () => Promise.resolve(connectionRequest),
+          async () => Promise.resolve(connectionRequest),
           async () => {},
         );
 
@@ -311,7 +318,7 @@ t.describe('ModalFactory', () => {
             },
           };
 
-          const createSessionRequestMock = t.vi.fn(() => {
+          const createSessionRequestMock = t.vi.fn(async () => {
             connectionRequest = {
               ...connectionRequest,
               sessionRequest: {
@@ -366,7 +373,7 @@ t.describe('ModalFactory', () => {
 
         await uiModule.renderInstallModal(
           false,
-          () => Promise.resolve(connectionRequest),
+          async () => Promise.resolve(connectionRequest),
           async () => {},
         );
 
@@ -402,7 +409,7 @@ t.describe('ModalFactory', () => {
 
         await uiModule.renderInstallModal(
           false,
-          () => Promise.resolve(connectionRequest),
+          async () => Promise.resolve(connectionRequest),
           async () => {},
         );
 
@@ -418,7 +425,7 @@ t.describe('ModalFactory', () => {
     t.describe('renderOTPCodeModal', () => {
       t.it('should render OTP code modal with placeholder props', async () => {
         await uiModule.renderOTPCodeModal(
-          () => Promise.resolve('123456' as OTPCode),
+          async () => Promise.resolve('123456' as OTPCode),
           async () => {},
           () => {},
         );
@@ -468,7 +475,7 @@ t.describe('ModalFactory', () => {
         .expect(
           uiModule.renderInstallModal(
             false,
-            () => Promise.resolve(connectionRequest),
+            async () => Promise.resolve(connectionRequest),
             async () => {},
           ),
         )
@@ -508,7 +515,7 @@ t.describe('ModalFactory', () => {
         };
         await uiModule.renderInstallModal(
           false,
-          () => Promise.resolve(connectionRequest),
+          async () => Promise.resolve(connectionRequest),
           async () => {},
         );
         const firstModal = mockModal;
@@ -522,7 +529,7 @@ t.describe('ModalFactory', () => {
 
         // Render second modal
         await uiModule.renderOTPCodeModal(
-          () => Promise.resolve('123456' as OTPCode),
+          async () => Promise.resolve('123456' as OTPCode),
           async () => {},
           () => {},
         );
@@ -553,7 +560,7 @@ t.describe('ModalFactory', () => {
         });
 
         t.vi.resetModules();
-        const { preload: TestPreload } = await import('./index');
+        const { preload: TestPreload } = await import('.');
         await TestPreload();
 
         // Verify that the error was logged
@@ -577,7 +584,7 @@ t.describe('ModalFactory', () => {
       });
 
       t.vi.resetModules();
-      const { preload: TestPreload } = await import('./index');
+      const { preload: TestPreload } = await import('.');
       await TestPreload();
 
       // Verify the exact format: first argument should be the message string,
@@ -585,9 +592,7 @@ t.describe('ModalFactory', () => {
       t.expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
       const [firstArg, secondArg] = consoleErrorSpy.mock.calls[0];
 
-      t.expect(firstArg).toBe(
-        'Failed to load customElements:',
-      );
+      t.expect(firstArg).toBe('Failed to load customElements:');
       t.expect(secondArg).toBeInstanceOf(Error);
       t.expect(secondArg).toBe(testError);
 
@@ -628,7 +633,7 @@ t.describe('ModalFactory', () => {
         .expect(
           uiModule.renderInstallModal(
             false,
-            () => Promise.resolve(connectionRequest),
+            async () => Promise.resolve(connectionRequest),
             async () => {},
           ),
         )

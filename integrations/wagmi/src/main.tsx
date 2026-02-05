@@ -2,15 +2,12 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
-import { Buffer } from 'buffer'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { deserialize, serialize, WagmiProvider } from 'wagmi'
 
 import './index.css'
 
-// `@coinbase-wallet/sdk` uses `Buffer`
-globalThis.Buffer = Buffer
 
 import App from './App.tsx'
 import { config } from './wagmi.ts'

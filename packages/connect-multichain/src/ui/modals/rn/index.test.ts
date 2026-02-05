@@ -1,14 +1,15 @@
-
-
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/unbound-method -- Mock assertions */
+/* eslint-disable @typescript-eslint/naming-convention -- RNModals import */
+import { v4 } from 'uuid';
 import * as t from 'vitest';
 
+import * as RNModals from '.';
 import {
   type ConnectionRequest,
   PlatformType,
   type Modal,
 } from '../../../domain';
-import * as RNModals from './';
-import { v4 } from 'uuid';
 
 t.describe('RN Modals', () => {
   let connectionRequest: ConnectionRequest;
@@ -61,7 +62,7 @@ t.describe('RN Modals', () => {
   });
 
   t.it('Rendering OTPCodeModal on RN', async () => {
-    //TODO: Modal is currently not doing much but will be a placeholder for the future 2fa modal
+    // TODO: Modal is currently not doing much but will be a placeholder for the future 2fa modal
     const otpCodeModal = new RNModals.OTPCodeModal({
       sdkVersion: '1.0.0',
       onClose: t.vi.fn(),

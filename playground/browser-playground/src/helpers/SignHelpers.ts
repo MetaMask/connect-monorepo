@@ -1,70 +1,32 @@
-import type { EIP1193Provider } from '@metamask/connect/evm';
+/* eslint-disable @typescript-eslint/naming-convention -- Method names match RPC methods */
+/* eslint-disable @typescript-eslint/explicit-function-return-type -- Demo helpers */
+/* eslint-disable id-denylist -- 'err' is clear in catch context */
+/* eslint-disable @typescript-eslint/restrict-template-expressions -- Error logging */
+/* eslint-disable no-alert -- Browser playground uses alert */
+/* eslint-disable no-restricted-globals -- Browser uses alert for feedback */
+/* eslint-disable consistent-return -- Error handling */
+/* eslint-disable id-length -- Short error variable */
+/* eslint-disable camelcase -- RPC method names */
+/* eslint-disable import-x/no-nodejs-modules -- Buffer polyfill */
+import type { EIP1193Provider } from '@metamask/connect-evm';
+import {
+  createSignTypedDataParams,
+  getDefaultPersonalSignMessage,
+} from '@metamask/playground-ui/helpers';
 import { Buffer } from 'buffer';
 
+/**
+ * Sends an eth_signTypedData_v4 request to the provider.
+ *
+ * @param provider - The EIP-1193 provider
+ * @param chainId - The chain ID to use in the typed data domain
+ * @returns The signature result or an error string
+ */
 export const send_eth_signTypedData_v4 = async (
   provider: EIP1193Provider,
   chainId: string,
 ) => {
-  const msgParams = JSON.stringify({
-    domain: {
-      // Defining the chain aka Sepolia testnet or Ethereum Main Net
-      chainId,
-      // Give a user-friendly name to the specific contract you are signing for.
-      name: 'Ether Mail',
-      // If name isn't enough add verifying contract to make sure you are establishing contracts with the proper entity
-      verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
-      // Just lets you know the latest version. Definitely make sure the field name is correct.
-      version: '1',
-    },
-
-    message: {
-      contents: 'Hello, Bob!',
-      attachedMoneyInEth: 4.2,
-      from: {
-        name: 'Cow',
-        wallets: [
-          '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
-          '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
-        ],
-      },
-      to: [
-        {
-          name: 'Bob',
-          wallets: [
-            '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
-            '0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
-            '0xB0B0b0b0b0b0B000000000000000000000000000',
-          ],
-        },
-      ],
-    },
-    // Refers to the keys of the *types* object below.
-    primaryType: 'Mail',
-    types: {
-      EIP712Domain: [
-        { name: 'name', type: 'string' },
-        { name: 'version', type: 'string' },
-        { name: 'chainId', type: 'uint256' },
-        { name: 'verifyingContract', type: 'address' },
-      ],
-      // Not an EIP712Domain definition
-      Group: [
-        { name: 'name', type: 'string' },
-        { name: 'members', type: 'Person[]' },
-      ],
-      // Refer to PrimaryType
-      Mail: [
-        { name: 'from', type: 'Person' },
-        { name: 'to', type: 'Person[]' },
-        { name: 'contents', type: 'string' },
-      ],
-      // Not an EIP712Domain definition
-      Person: [
-        { name: 'name', type: 'string' },
-        { name: 'wallets', type: 'address[]' },
-      ],
-    },
-  });
+  const msgParams = JSON.stringify(createSignTypedDataParams(chainId));
 
   const from = provider.selectedAccount;
 
@@ -84,15 +46,21 @@ export const send_eth_signTypedData_v4 = async (
     return await provider?.request({ method, params });
   } catch (e: unknown) {
     console.log(`eth_signTypedData_v4 error: ${e}`);
-    return 'Error: ' + e;
+    return `Error: ${e}`;
   }
 };
 
+/**
+ * Sends a personal_sign request to the provider.
+ *
+ * @param provider - The EIP-1193 provider
+ * @returns The signature result or an error string
+ */
 export const send_personal_sign = async (provider: EIP1193Provider) => {
   try {
     const from = provider.selectedAccount;
-    const message = 'Hello World from the Create React dapp!';
-    const hexMessage = '0x' + Buffer.from(message, 'utf8').toString('hex');
+    const message = getDefaultPersonalSignMessage('Create React dapp');
+    const hexMessage = `0x${Buffer.from(message, 'utf8').toString('hex')}`;
 
     const sign = await provider.request({
       method: 'personal_sign',
@@ -101,6 +69,6 @@ export const send_personal_sign = async (provider: EIP1193Provider) => {
     return sign;
   } catch (err: unknown) {
     console.log(`personal_sign error: ${err}`);
-    return 'Error: ' + err;
+    return `Error: ${err}`;
   }
 };

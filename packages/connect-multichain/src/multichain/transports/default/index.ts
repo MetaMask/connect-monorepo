@@ -1,4 +1,6 @@
+import type { Session } from '@metamask/mobile-wallet-protocol-core';
 import {
+  type SessionProperties,
   type CreateSessionParams,
   getDefaultTransport,
   type Transport,
@@ -14,7 +16,6 @@ import {
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
-import { Session } from '@metamask/mobile-wallet-protocol-core';
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 
@@ -188,6 +189,7 @@ export class DefaultTransport implements ExtendedTransport {
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
+    sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
     // Ensure message listener is set up before connecting
@@ -204,6 +206,15 @@ export class DefaultTransport implements ExtendedTransport {
       throw new Error(sessionRequest.error.message);
     }
     let walletSession = sessionRequest.result as SessionData;
+
+    const createSessionParams: CreateSessionParams<RPCAPI> = {
+      optionalScopes: addValidAccounts(
+        getOptionalScopes(options?.scopes ?? []),
+        getValidAccounts(options?.caipAccountIds ?? []),
+      ),
+      sessionProperties: options?.sessionProperties,
+    };
+
     if (walletSession && options && !options.forceRequest) {
       const currentScopes = Object.keys(
         walletSession?.sessionScopes ?? {},
@@ -216,18 +227,12 @@ export class DefaultTransport implements ExtendedTransport {
         walletSession,
         proposedCaipAccountIds,
       );
+
       if (!hasSameScopesAndAccounts) {
         await this.request(
           { method: 'wallet_revokeSession', params: walletSession },
           this.#defaultRequestOptions,
         );
-        const optionalScopes = addValidAccounts(
-          getOptionalScopes(options?.scopes ?? []),
-          getValidAccounts(options?.caipAccountIds ?? []),
-        );
-        const createSessionParams: CreateSessionParams<RPCAPI> = {
-          optionalScopes,
-        };
         const response = await this.request(
           { method: 'wallet_createSession', params: createSessionParams },
           this.#defaultRequestOptions,
@@ -238,13 +243,6 @@ export class DefaultTransport implements ExtendedTransport {
         walletSession = response.result as SessionData;
       }
     } else if (!walletSession || options?.forceRequest) {
-      const optionalScopes = addValidAccounts(
-        getOptionalScopes(options?.scopes ?? []),
-        getValidAccounts(options?.caipAccountIds ?? []),
-      );
-      const createSessionParams: CreateSessionParams<RPCAPI> = {
-        optionalScopes,
-      };
       const response = await this.request(
         { method: 'wallet_createSession', params: createSessionParams },
         this.#defaultRequestOptions,
@@ -311,10 +309,12 @@ export class DefaultTransport implements ExtendedTransport {
     };
   }
 
-  getActiveSession(): Promise<Session | undefined> {
+  async getActiveSession(): Promise<Session | undefined> {
     // This code path should never be triggered when the DefaultTransport is being used
     // It's only purpose is for exposing the session ID used for deeplinking to the mobile app
     // and so it is only implemented for the MWPTransport.
-    throw new Error('getActiveSession is purposely not implemented for the DefaultTransport');
+    throw new Error(
+      'getActiveSession is purposely not implemented for the DefaultTransport',
+    );
   }
 }

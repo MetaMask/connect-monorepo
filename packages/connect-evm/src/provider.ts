@@ -1,6 +1,11 @@
+/* eslint-disable promise/always-return -- Legacy callback patterns */
+/* eslint-disable promise/no-callback-in-promise -- Legacy sendAsync/send API */
+/* eslint-disable consistent-return -- Legacy method returns void or Promise */
+/* eslint-disable @typescript-eslint/no-floating-promises -- Legacy fire-and-forget pattern */
+/* eslint-disable jsdoc/require-returns -- Inherited from abstract class */
 import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { EventEmitter } from '@metamask/connect-multichain';
-import { hexToNumber, numberToHex } from '@metamask/utils';
+import { hexToNumber } from '@metamask/utils';
 
 import { INTERCEPTABLE_METHODS } from './constants';
 import { logger } from './logger';
@@ -74,8 +79,8 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
       throw new Error('No chain ID selected');
     }
 
-    const chainId = hexToNumber(this.#selectedChainId);
-    const scope: Scope = `eip155:${chainId}`;
+    const decimalChainId = hexToNumber(this.#selectedChainId);
+    const scope: Scope = `eip155:${decimalChainId}`;
 
     // Validate that the chain is configured in supportedNetworks
     // This check is performed here to provide better error messages
@@ -115,16 +120,8 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
     return this.#selectedChainId;
   }
 
-  public set selectedChainId(chainId: Hex | number | undefined) {
-    const hexChainId =
-      chainId && typeof chainId === 'number' ? numberToHex(chainId) : chainId;
-
-    // Don't overwrite the selected chain ID with an undefined value
-    if (!hexChainId) {
-      return;
-    }
-
-    this.#selectedChainId = hexChainId as Hex;
+  public set selectedChainId(chainId: Hex | undefined) {
+    this.#selectedChainId = chainId;
   }
 
   // ==========================================
@@ -141,6 +138,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
 
   /**
    * Legacy method for sending JSON-RPC requests.
+   *
    * @deprecated Use `request` instead. This method is provided for backwards compatibility.
    * @param request - The JSON-RPC request object
    * @param callback - Optional callback function. If provided, the method returns void.
@@ -195,6 +193,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
 
   /**
    * Legacy method for sending JSON-RPC requests synchronously (callback-based).
+   *
    * @deprecated Use `request` instead. This method is provided for backwards compatibility.
    * @param request - The JSON-RPC request object
    * @param callback - The callback function to receive the response

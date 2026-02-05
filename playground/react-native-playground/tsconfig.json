@@ -1,18 +1,22 @@
 {
-	"extends": "expo/tsconfig.base",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-		"composite": true,
-		"noEmit": false,
-		"strict": true,
-		"jsx": "react-native",
+    "composite": true,
+    "noEmit": false,
+    "strict": true,
+    "jsx": "react-native",
     "paths": {
-			"@/*": ["./*"],
-      "@metamask/connect-multichain": ["../../packages/connect-multichain/src/index.native.ts"],
+      "@/*": ["./*"],
+      "@metamask/connect-multichain": [
+        "../../packages/connect-multichain/src/index.native.ts"
+      ],
+      "@metamask/playground-ui": [
+        "../playground-ui/dist/es/playground-ui.d.mts"
+      ],
+      "@metamask/playground-ui/*": ["../playground-ui/dist/es/*.d.mts"],
       "@metamask/*": ["../../*/src"]
     }
-	},
-  "references": [
-    { "path": "../../packages/connect-multichain" }
-  ],
-	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  },
+  "references": [{ "path": "../../packages/connect-multichain" }],
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

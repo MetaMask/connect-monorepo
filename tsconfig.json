@@ -5,6 +5,7 @@
     { "path": "./packages/analytics" },
     { "path": "./packages/connect" },
     { "path": "./packages/connect-multichain" },
+    { "path": "./packages/connect-solana" },
     { "path": "./playground/node-playground" },
     { "path": "./playground/react-native-playground" },
     { "path": "./playground/browser-playground" },

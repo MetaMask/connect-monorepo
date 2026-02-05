@@ -1,22 +1,28 @@
-
-
+/* eslint-disable id-length -- vitest alias */
+/* eslint-disable @typescript-eslint/naming-convention -- JSDOM alias */
+/* eslint-disable @typescript-eslint/unbound-method -- Mock assertions */
+/* eslint-disable no-restricted-globals -- DOM testing */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Test assertions */
+/* eslint-disable @typescript-eslint/no-shadow -- CustomEvent shadows global */
+/* eslint-disable n/no-unsupported-features/node-builtins -- CustomEvent for testing */
 import { JSDOM as Page } from 'jsdom';
+import { v4 } from 'uuid';
 import * as t from 'vitest';
 import { vi } from 'vitest';
 
+import * as WebModals from '.';
 import {
   type ConnectionRequest,
   PlatformType,
   type Modal,
 } from '../../../domain';
-import * as WebModals from './';
-import { v4 } from 'uuid';
 
 const dom = new Page("<!DOCTYPE html><div id='root'></div>", {
   url: 'https://dapp.io/',
 });
 class CustomEvent extends dom.window.Event {
   detail: any;
+
   constructor(type: string, options?: CustomEventInit) {
     super(type, options);
     this.detail = options?.detail;

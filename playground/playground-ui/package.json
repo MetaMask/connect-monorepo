@@ -1,0 +1,134 @@
+{
+  "name": "@metamask/playground-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared UI logic and utilities for MetaMask playground applications",
+  "keywords": [
+    "MetaMask",
+    "Ethereum",
+    "playground",
+    "UI"
+  ],
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/playground-ui#readme",
+  "bugs": {
+    "url": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/connect-monorepo.git"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/es/playground-ui.d.mts",
+        "default": "./dist/es/playground-ui.mjs"
+      },
+      "require": {
+        "types": "./dist/es/playground-ui.d.mts",
+        "default": "./dist/cjs/playground-ui.cjs"
+      },
+      "default": "./dist/es/playground-ui.mjs"
+    },
+    "./constants": {
+      "import": {
+        "types": "./dist/es/constants.d.mts",
+        "default": "./dist/es/constants.mjs"
+      },
+      "require": {
+        "types": "./dist/es/constants.d.mts",
+        "default": "./dist/cjs/constants.cjs"
+      }
+    },
+    "./helpers": {
+      "import": {
+        "types": "./dist/es/helpers.d.mts",
+        "default": "./dist/es/helpers.mjs"
+      },
+      "require": {
+        "types": "./dist/es/helpers.d.mts",
+        "default": "./dist/cjs/helpers.cjs"
+      }
+    },
+    "./types": {
+      "import": {
+        "types": "./dist/es/types.d.mts",
+        "default": "./dist/es/types.mjs"
+      },
+      "require": {
+        "types": "./dist/es/types.d.mts",
+        "default": "./dist/cjs/types.cjs"
+      }
+    },
+    "./config": {
+      "import": {
+        "types": "./dist/es/config.d.mts",
+        "default": "./dist/es/config.mjs"
+      },
+      "require": {
+        "types": "./dist/es/config.d.mts",
+        "default": "./dist/cjs/config.cjs"
+      }
+    },
+    "./testIds": {
+      "import": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/es/testIds.mjs"
+      },
+      "require": {
+        "types": "./dist/es/testIds.d.mts",
+        "default": "./dist/cjs/testIds.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/cjs/playground-ui.cjs",
+  "module": "./dist/es/playground-ui.mjs",
+  "types": "./dist/es/playground-ui.d.mts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "yarn tsup",
+    "build:docs": "typedoc",
+    "changelog:format": "../../scripts/format-changelog.sh @metamask/playground-ui",
+    "changelog:update": "../../scripts/update-changelog.sh @metamask/playground-ui",
+    "changelog:validate": "../../scripts/validate-changelog.sh @metamask/playground-ui",
+    "clean": "npx rimraf ./dist",
+    "dev": "tsup --watch",
+    "since-latest-release": "../../scripts/since-latest-release.sh",
+    "test": "vitest run",
+    "test:ci": "vitest run --coverage --coverage.reporter=text --silent",
+    "test:unit": "vitest run",
+    "test:verbose": "vitest run --reporter=verbose",
+    "test:watch": "vitest watch"
+  },
+  "dependencies": {
+    "@metamask/api-specs": "^0.14.0",
+    "@metamask/chain-agnostic-permission": "^1.2.2",
+    "@metamask/utils": "^11.8.1",
+    "@open-rpc/meta-schema": "^1.14.9"
+  },
+  "devDependencies": {
+    "@metamask/auto-changelog": "^3.4.4",
+    "@vitest/coverage-v8": "^3.2.4",
+    "prettier": "^3.3.3",
+    "tsup": "^8.4.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-missing-exports": "^4.1.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.1.2"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

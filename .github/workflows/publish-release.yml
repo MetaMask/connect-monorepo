@@ -32,6 +32,7 @@ jobs:
           retention-days: 4
           path: |
             ./packages/**/dist
+            ./playground/**/dist
             ./node_modules/.yarn-state.yml
 
   publish-npm-dry-run:
@@ -110,10 +111,32 @@ jobs:
 
   publish-wagmi-to-latest-gh-pages:
     name: Publish Wagmi Integration to `latest` directory of `gh-pages` branch
-    needs: publish-npm
+    needs: publish-wagmi-to-gh-pages
     permissions:
       contents: write
     uses: ./.github/workflows/deploy-wagmi-to-gh-pages.yml
+    with:
+      destination_dir: latest
+    secrets:
+      PUBLISH_DOCS_TOKEN: ${{ secrets.PUBLISH_DOCS_TOKEN }}
+
+  publish-browser-playground-to-gh-pages:
+    name: Publish Browser Playground to `${{ needs.get-release-version.outputs.RELEASE_VERSION }}` directory of `gh-pages` branch
+    needs: get-release-version
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy-browser-playground-to-gh-pages.yml
+    with:
+      destination_dir: ${{ needs.get-release-version.outputs.RELEASE_VERSION }}
+    secrets:
+      PUBLISH_DOCS_TOKEN: ${{ secrets.PUBLISH_DOCS_TOKEN }}
+
+  publish-browser-playground-to-latest-gh-pages:
+    name: Publish Browser Playground to `latest` directory of `gh-pages` branch
+    needs: publish-browser-playground-to-gh-pages
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy-browser-playground-to-gh-pages.yml
     with:
       destination_dir: latest
     secrets:

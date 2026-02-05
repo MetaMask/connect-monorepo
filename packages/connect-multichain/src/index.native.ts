@@ -1,22 +1,31 @@
+/* eslint-disable import-x/no-unassigned-import -- Polyfill must be imported first */
+// Buffer polyfill must be imported first to set up global.Buffer
+import './polyfills/buffer-shim';
+
 import type { CreateMultichainFN, StoreClient } from './domain';
-import { MultichainSDK } from './multichain';
+import { enableDebug } from './domain';
+import { MetaMaskConnectMultichain } from './multichain';
 import { Store } from './store';
 import { ModalFactory } from './ui/index.native';
 
 export * from './domain';
 
-export const createMetamaskConnect: CreateMultichainFN = async (options) => {
+export const createMultichainClient: CreateMultichainFN = async (options) => {
+  if (options.debug) {
+    enableDebug('metamask-sdk:*');
+  }
+
   const uiModules = await import('./ui/modals/rn');
   let storage: StoreClient;
-  if (!options.storage) {
+  if (options.storage) {
+    storage = options.storage;
+  } else {
     const { StoreAdapterRN } = await import('./store/adapters/rn');
     const adapter = new StoreAdapterRN();
     storage = new Store(adapter);
-  } else {
-    storage = options.storage;
   }
   const factory = new ModalFactory(uiModules);
-  return MultichainSDK.create({
+  return MetaMaskConnectMultichain.create({
     ...options,
     storage,
     ui: {

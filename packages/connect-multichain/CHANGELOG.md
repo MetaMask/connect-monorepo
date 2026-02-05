@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3]
+
+### Added
+
+- `createMultichainClient()` now accepts an optional `debug` param option which enables console debug logs when set to `true`. Defaults to `false`. ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
+
+### Fixed
+
+- Fix `sessionProperties` not being passed to `wallet_createSession` when recreating a session after scope/account changes ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
+
+## [0.5.2]
+
+### Changed
+
+- `ConnectMultichain.connect()` will send `sessionProperties` as undefined when called with an empty object `{}` in order to ensure that the initial `wallet_createSession` request does not fail immediately ([#138](https://github.com/MetaMask/connect-monorepo/pull/138))
+
+## [0.5.1]
+
+### Fixed
+
+- fix: Resolve Buffer polyfill requirement for browser/React Native consumers ([#121](https://github.com/MetaMask/connect-monorepo/pull/121))
+
+## [0.5.0]
+
+### Added
+
+- Add `display_uri` event emission for QR code links to support custom UI implementations ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
+  - Emitted when QR code link is generated during connection
+  - Emitted when QR code is regenerated on expiration
+  - Emitted for deeplink connections on mobile web
+- Add `onDisplayUri` callback to `InstallWidgetProps` for notifying when QR codes are generated/regenerated ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
+- Add headless mode support that emits `display_uri` without rendering modal UI ([#130](https://github.com/MetaMask/connect-monorepo/pull/130))
+- Add `sessionProperties` parameter to `connect()` method for passing custom session configuration to wallets([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
+- Introduce `MultichainApiClientWrapperTransport` to provide the provider interface before connection is established([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
+
+### Changed
+
+- **BREAKING** Rename `state` property to `status` on `MultichainCore` for improved clarity ([#125](https://github.com/MetaMask/connect-monorepo/pull/125))
+- **BREAKING** Rename `createMetamaskConnect` to `createMultichainClient` for a cleaner naming convention ([#114](https://github.com/MetaMask/connect-monorepo/pull/114))
+- Provider is now always available via `sdk.provider` regardless of connection state (wrapper handles disconnected state internally)([#80](https://github.com/MetaMask/connect-monorepo/pull/80))
+
 ### Fixed
 
 - Fix `wallet_sessionChanged` events subsequent to the initial connection not being persisted ([#100](https://github.com/MetaMask/connect-monorepo/pull/100))
@@ -91,7 +132,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...HEAD
+[0.5.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.2...@metamask/connect-multichain@0.5.3
+[0.5.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.1...@metamask/connect-multichain@0.5.2
+[0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.0...@metamask/connect-multichain@0.5.1
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.4.0...@metamask/connect-multichain@0.5.0
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.3.2...@metamask/connect-multichain@0.4.0
 [0.3.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.3.1...@metamask/connect-multichain@0.3.2
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.3.0...@metamask/connect-multichain@0.3.1

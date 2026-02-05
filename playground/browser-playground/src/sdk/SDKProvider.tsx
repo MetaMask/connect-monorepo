@@ -1,14 +1,15 @@
 /* eslint-disable */
 
 import {
-  createMetamaskConnect,
+  createMultichainClient,
   getInfuraRpcUrls,
   type InvokeMethodOptions,
   type MultichainCore,
   type Scope,
-  type SDKState,
+  type ConnectionStatus,
   type SessionData,
-} from '@metamask/connect';
+} from '@metamask/connect-multichain';
+import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
 import {
@@ -16,16 +17,20 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
-import { METAMASK_PROD_CHROME_ID } from '../constants';
+
+import {
+  isProviderActive,
+  setProviderActive,
+  removeProviderActive,
+} from '../utils/activeProviderStorage';
 
 const SDKContext = createContext<
   | {
       session: SessionData | undefined;
-      state: SDKState;
+      status: ConnectionStatus;
       error: Error | null;
       connect: (
         scopes: Scope[],
@@ -38,7 +43,7 @@ const SDKContext = createContext<
 >(undefined);
 
 export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, setState] = useState<SDKState>('pending');
+  const [status, setStatus] = useState<ConnectionStatus>('pending');
   const [session, setSession] = useState<SessionData | undefined>(undefined);
   const [error, setError] = useState<Error | null>(null);
 
@@ -46,7 +51,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!sdkRef.current) {
-      sdkRef.current = createMetamaskConnect({
+      sdkRef.current = createMultichainClient({
         dapp: {
           name: 'playground',
           url: 'https://playground.metamask.io',
@@ -63,9 +68,14 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
               payload.method === 'wallet_createSession' ||
               payload.method === 'wallet_getSession'
             ) {
-              setSession(payload.params as SessionData);
+              // Only restore session if 'multichain' is marked as active in localStorage
+              // This prevents showing multichain cards when the session was created
+              // by legacy-evm or wagmi connections
+              if (isProviderActive('multichain')) {
+                setSession(payload.params as SessionData);
+              }
             } else if (payload.method === 'stateChanged') {
-              setState(payload.params as SDKState);
+              setStatus(payload.params as ConnectionStatus);
             }
           },
         },
@@ -79,6 +89,8 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('SDK not initialized');
       }
       const sdkInstance = await sdkRef.current;
+      setSession(undefined);
+      removeProviderActive('multichain');
       return sdkInstance.disconnect();
     } catch (error) {
       setError(error as Error);
@@ -92,8 +104,13 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error('SDK not initialized');
         }
         const sdkInstance = await sdkRef.current;
+        // Track this provider as active BEFORE connecting
+        // This ensures the onNotification handler will accept the session
+        setProviderActive('multichain');
         await sdkInstance.connect(scopes, caipAccountIds);
       } catch (error) {
+        // If connection fails, remove the active provider tracking
+        removeProviderActive('multichain');
         setError(error as Error);
       }
     },
@@ -116,7 +133,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
     <SDKContext.Provider
       value={{
         session,
-        state,
+        status,
         error,
         connect,
         disconnect,
