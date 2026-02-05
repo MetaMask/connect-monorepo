@@ -42,11 +42,11 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
-    esbuildOptions: (o) => {
-      o.platform = 'node';
-      o.mainFields = ['module', 'main'];
-      o.conditions = ['node'];
-      o.outExtension = { '.js': '.js' };
+    esbuildOptions: (options) => {
+      options.platform = 'node';
+      options.mainFields = ['module', 'main'];
+      options.conditions = ['node'];
+      options.outExtension = { '.js': '.js' };
     },
   },
   {
