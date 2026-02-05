@@ -730,30 +730,38 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
 
     // Get existing CAIP chain IDs and account IDs from sessionScopes
-    const existingCaipChainIds = Object.keys(sessionData.sessionScopes);
+    const existingCaipChainIds: Scope[] = Object.keys(
+      sessionData.sessionScopes,
+    ) as Scope[];
+
     // For permitted account ids, try to find account address in scopes if possible
-    const existingCaipAccountIds: string[] = [];
+    const existingCaipAccountIds: CaipAccountId[] = [];
     Object.values(sessionData.sessionScopes).forEach((scopeObject) => {
       if (scopeObject?.accounts && Array.isArray(scopeObject.accounts)) {
         scopeObject.accounts.forEach((account) => {
-          existingCaipAccountIds.push(account);
+          existingCaipAccountIds.push(account as CaipAccountId);
         });
       }
     });
 
-    // TODO: Fix these types
-    const requestedScopes = Array.from(new Set([...existingCaipChainIds, ...scopes])) as Scope[]
-    const requestedCaipAccountIds = Array.from(new Set([...existingCaipAccountIds, ...caipAccountIds])) as CaipAccountId[]
-    const requestedSessionProperites = {
+    // Merge existing scopes with new requested scopes (deduplicated)
+    const requestedScopes: Scope[] = [
+      ...new Set([...existingCaipChainIds, ...scopes]),
+    ] as Scope[];
+
+    const requestedCaipAccountIds: CaipAccountId[] = [
+      ...new Set([...existingCaipAccountIds, ...caipAccountIds]),
+    ] as CaipAccountId[];
+
+    const requestedSessionProperties: SessionProperties = {
       ...sessionData.sessionProperties,
       ...sessionProperties,
-    }
-
+    };
 
     // Needed because empty object will cause wallet_createSession to return an error
-    const nonEmptySessionProperites =
-      Object.keys(requestedSessionProperites ?? {}).length > 0
-        ? requestedSessionProperites
+    const nonEmptySessionProperties =
+      Object.keys(requestedSessionProperties).length > 0
+        ? requestedSessionProperties
         : undefined;
 
     if (this.#transport?.isConnected() && !secure) {
@@ -762,7 +770,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           .connect({
             scopes: requestedScopes,
             caipAccountIds: requestedCaipAccountIds,
-            sessionProperties: nonEmptySessionProperites,
+            sessionProperties: nonEmptySessionProperties,
             forceRequest,
           })
           .then(async () => {
@@ -783,7 +791,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         defaultTransport.connect({
           scopes: requestedScopes,
           caipAccountIds: requestedCaipAccountIds,
-          sessionProperties: nonEmptySessionProperites,
+          sessionProperties: nonEmptySessionProperties,
           forceRequest,
         }),
         scopes,
@@ -799,7 +807,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         defaultTransport.connect({
           scopes: requestedScopes,
           caipAccountIds: requestedCaipAccountIds,
-          sessionProperties: nonEmptySessionProperites,
+          sessionProperties: nonEmptySessionProperties,
           forceRequest,
         }),
         scopes,
@@ -821,7 +829,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         this.#deeplinkConnect(
           scopes,
           caipAccountIds,
-          nonEmptySessionProperites,
+          nonEmptySessionProperties,
         ),
         scopes,
         transportType,
@@ -834,7 +842,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         shouldShowInstallModal,
         requestedScopes,
         requestedCaipAccountIds,
-        nonEmptySessionProperites,
+        nonEmptySessionProperties,
       ),
       scopes,
       transportType,

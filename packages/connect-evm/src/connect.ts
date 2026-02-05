@@ -352,45 +352,29 @@ export class MetamaskConnectEVM {
     this.#status = 'connecting';
 
     try {
-    await this.#core.connect(
-      caipChainIds as Scope[],
-      caipAccountIds as CaipAccountId[],
-      undefined,
-      forceRequest,
-    );
+      await this.#core.connect(
+        caipChainIds as Scope[],
+        caipAccountIds as CaipAccountId[],
+        undefined,
+        forceRequest,
+      );
 
-    // const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+      logger('fulfilled-request: connect', {
+        chainId: chainIds[0],
+        accounts: this.#provider.accounts,
+      });
 
-    // const initialAccounts = await this.#core.transport.sendEip1193Message<
-    //   { method: 'eth_accounts'; params: [] },
-    //   { result: string[]; id: number; jsonrpc: '2.0' }
-    // >({ method: 'eth_accounts', params: [] });
-
-    // const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
-
-    // this.#onConnect({
-    //   chainId,
-    //   accounts: initialAccounts.result as Address[],
-    // });
-
-
-    logger('fulfilled-request: connect', {
-      chainId: chainIds[0],
-      accounts: this.#provider.accounts,
-    });
-
-    // TODO: verify the events that set the provider properties have fired by now
-    return {
-      accounts: this.#provider.accounts,
-      chainId: this.#provider.selectedChainId as Hex,
-    };
-
+      // TODO: verify the events that set the provider properties have fired by now
+      return {
+        accounts: this.#provider.accounts,
+        chainId: this.#provider.selectedChainId as Hex,
+      };
     } catch (error) {
+      // Only reset status to disconnected on failure
+      // On success, status is set to 'connected' by the sessionChanged event handler
+      this.#status = 'disconnected';
       logger('Error connecting to wallet', error);
       throw error;
-    }
-    finally {
-      this.#status = 'disconnected';
     }
   }
 
