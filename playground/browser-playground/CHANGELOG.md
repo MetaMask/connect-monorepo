@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Change Solana wallet standard query to Metamask instead of Metamask Connect ([#164](https://github.com/MetaMask/connect-monorepo/pull/164))
+
 ## [0.2.0]
 
 ### Added
