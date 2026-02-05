@@ -851,15 +851,32 @@ export class MetaMaskConnectMultichain extends MultichainCore {
    *
    * @param clientId - Unique identifier for the client
    * @param sdkType - The SDK type (e.g., 'evm', 'solana')
+   * @param scopes - The scopes this client has requested
    */
-  registerClient(clientId: string, sdkType: string): void {
-    logger(`Registering client: ${clientId} (${sdkType})`);
+  registerClient(clientId: string, sdkType: string, scopes: Scope[]): void {
+    logger(`Registering client: ${clientId} (${sdkType}) with scopes: ${scopes.join(', ')}`);
     this.#activeClients.set(clientId, {
       clientId,
       sdkType,
       registeredAt: Date.now(),
+      scopes,
     });
     logger(`Active clients: ${this.#activeClients.size}`);
+  }
+
+  /**
+   * Gets the union of all scopes from all registered clients.
+   *
+   * @returns Array of unique scopes from all clients
+   */
+  getUnionScopes(): Scope[] {
+    const allScopes = new Set<Scope>();
+    for (const client of this.#activeClients.values()) {
+      for (const scope of client.scopes) {
+        allScopes.add(scope);
+      }
+    }
+    return Array.from(allScopes);
   }
 
   /**

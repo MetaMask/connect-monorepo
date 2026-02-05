@@ -164,10 +164,13 @@ function testSuite<T extends MultichainOptions>({
 
           { timeout: 60 * 1000 },
         );
-        t.expect(mockedData.mockDefaultTransport.request).toHaveBeenCalledWith(
+        // With scope merging, we no longer revoke before creating a new session.
+        // Instead, we call wallet_createSession with the merged scopes.
+        t.expect(
+          mockedData.mockDefaultTransport.request,
+        ).not.toHaveBeenCalledWith(
           t.expect.objectContaining({
             method: 'wallet_revokeSession',
-            params: mockSessionData,
           }),
           { timeout: 60 * 1000 },
         );

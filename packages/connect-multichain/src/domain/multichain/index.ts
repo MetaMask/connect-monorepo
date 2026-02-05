@@ -34,6 +34,8 @@ export type ClientInfo = {
   sdkType: string;
   /** When the client was registered */
   registeredAt: number;
+  /** The scopes this client has requested */
+  scopes: Scope[];
 };
 
 /**
@@ -88,8 +90,16 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    *
    * @param clientId - Unique identifier for the client
    * @param sdkType - The SDK type (e.g., 'evm', 'solana')
+   * @param scopes - The scopes this client has requested
    */
-  abstract registerClient(clientId: string, sdkType: string): void;
+  abstract registerClient(clientId: string, sdkType: string, scopes: Scope[]): void;
+
+  /**
+   * Gets the union of all scopes from all registered clients.
+   *
+   * @returns Array of unique scopes from all clients
+   */
+  abstract getUnionScopes(): Scope[];
 
   /**
    * Unregisters a client from the core.

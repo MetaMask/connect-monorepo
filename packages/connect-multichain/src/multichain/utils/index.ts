@@ -243,6 +243,37 @@ export function isSameScopesAndAccounts(
 }
 
 /**
+ * Checks if proposed scopes are already covered by current session scopes.
+ * This is used to determine if we need to request additional permissions.
+ *
+ * @param currentScopes - Current scopes from the existing session
+ * @param proposedScopes - Proposed scopes from the connect options
+ * @returns true if all proposed scopes are already in current scopes
+ */
+export function areScopesCovered(
+  currentScopes: Scope[],
+  proposedScopes: Scope[],
+): boolean {
+  return proposedScopes.every((scope) => currentScopes.includes(scope));
+}
+
+/**
+ * Computes the union of current and proposed scopes.
+ * Used when merging scopes from multiple clients.
+ *
+ * @param currentScopes - Current scopes from the existing session
+ * @param proposedScopes - Proposed scopes from the connect options
+ * @returns Array of unique scopes combining both sets
+ */
+export function mergeScopes(
+  currentScopes: Scope[],
+  proposedScopes: Scope[],
+): Scope[] {
+  const scopeSet = new Set<Scope>([...currentScopes, ...proposedScopes]);
+  return Array.from(scopeSet);
+}
+
+/**
  *
  * @param caipAccountIds
  */

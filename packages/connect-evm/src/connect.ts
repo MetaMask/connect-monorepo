@@ -348,9 +348,9 @@ export class MetamaskConnectEVM {
       forceRequest,
     );
 
-    // Register this client with the core (for reference counting)
+    // Register this client with the core (for reference counting and scope tracking)
     if (!this.#isRegistered) {
-      this.#core.registerClient(this.#clientId, 'evm');
+      this.#core.registerClient(this.#clientId, 'evm', caipChainIds as Scope[]);
       this.#isRegistered = true;
     }
 

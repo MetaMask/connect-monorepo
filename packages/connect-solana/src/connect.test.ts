@@ -25,21 +25,30 @@ describe('createSolanaClient', () => {
     debug: true,
   };
 
-  // Track registered clients for testing
-  const registeredClients = new Map<string, { clientId: string; sdkType: string }>();
+  // Track registered clients for testing (with scopes)
+  const registeredClients = new Map<string, { clientId: string; sdkType: string; scopes: string[] }>();
 
   const mockCore = {
     provider: {},
     disconnect: vi.fn().mockResolvedValue(undefined),
-    // Client registration methods (for singleton pattern)
-    registerClient: vi.fn((clientId: string, sdkType: string) => {
-      registeredClients.set(clientId, { clientId, sdkType });
+    // Client registration methods (for singleton pattern with scope tracking)
+    registerClient: vi.fn((clientId: string, sdkType: string, scopes: string[]) => {
+      registeredClients.set(clientId, { clientId, sdkType, scopes });
     }),
     unregisterClient: vi.fn((clientId: string) => {
       registeredClients.delete(clientId);
       return registeredClients.size === 0;
     }),
     getClientCount: vi.fn(() => registeredClients.size),
+    getUnionScopes: vi.fn(() => {
+      const allScopes = new Set<string>();
+      for (const client of registeredClients.values()) {
+        for (const scope of client.scopes) {
+          allScopes.add(scope);
+        }
+      }
+      return Array.from(allScopes);
+    }),
   };
 
   const mockWallet = {
@@ -183,7 +192,7 @@ describe('createSolanaClient', () => {
         await client.registerWallet();
 
         // Manually add another client to simulate EVM being connected
-        registeredClients.set('evm-test', { clientId: 'evm-test', sdkType: 'evm' });
+        registeredClients.set('evm-test', { clientId: 'evm-test', sdkType: 'evm', scopes: ['eip155:1'] });
 
         // Now disconnect - should unregister but not disconnect core
         await client.disconnect();

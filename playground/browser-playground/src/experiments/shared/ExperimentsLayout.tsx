@@ -9,7 +9,8 @@ export type ExperimentId =
   | 'exp5'
   | 'exp6'
   | 'exp7'
-  | 'exp8';
+  | 'exp8'
+  | 'exp9';
 
 type ExperimentInfo = {
   id: ExperimentId;
@@ -57,6 +58,11 @@ export const EXPERIMENTS: ExperimentInfo[] = [
     id: 'exp8',
     title: 'Exp 8: Disconnect Coordination',
     description: 'Verify disconnect only revokes session when last client disconnects',
+  },
+  {
+    id: 'exp9',
+    title: 'Exp 9: Scope Merging',
+    description: 'Verify scopes are merged when connecting clients with different chains',
   },
 ];
 

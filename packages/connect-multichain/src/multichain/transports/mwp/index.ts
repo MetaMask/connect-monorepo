@@ -38,9 +38,10 @@ import {
 } from '../../../domain';
 import {
   addValidAccounts,
+  areScopesCovered,
   getOptionalScopes,
   getValidAccounts,
-  isSameScopesAndAccounts,
+  mergeScopes,
 } from '../../utils';
 import { MULTICHAIN_PROVIDER_STREAM_NAME } from '../constants';
 
@@ -249,33 +250,41 @@ export class MWPTransport implements ExtendedTransport {
           walletSession?.sessionScopes ?? {},
         ) as Scope[];
         const proposedScopes = options?.scopes ?? [];
-        const proposedCaipAccountIds = options?.caipAccountIds ?? [];
-        const hasSameScopesAndAccounts = isSameScopesAndAccounts(
+
+        // Check if all proposed scopes are already covered by current session
+        const scopesAlreadyCovered = areScopesCovered(
           currentScopes,
           proposedScopes,
-          walletSession,
-          proposedCaipAccountIds,
         );
-        if (!hasSameScopesAndAccounts) {
-          const optionalScopes = addValidAccounts(
-            getOptionalScopes(options?.scopes ?? []),
-            getValidAccounts(options?.caipAccountIds ?? []),
-          );
-          const sessionRequest: CreateSessionParams<RPCAPI> = {
-            optionalScopes,
-          };
-          const response = await this.request({
-            method: 'wallet_createSession',
-            params: sessionRequest,
+
+        if (scopesAlreadyCovered) {
+          // Scopes already covered by existing session - just notify and return
+          // No need to prompt user again since the wallet already has these permissions
+          this.notifyCallbacks({
+            method: 'wallet_sessionChanged',
+            params: walletSession,
           });
-          if (response.error) {
-            return resumeReject(new Error(response.error.message));
-          }
-          // TODO: Maybe find a better way to revoke sessions on wallet without triggering an empty notification
-          // Issue of this is it will send a session update event with an empty session and right after we may get the session recovered
-          // await this.request({ method: 'wallet_revokeSession', params: walletSession });
-          walletSession = response.result as SessionData;
+          return resumeResolve();
         }
+
+        // Need to expand scopes - merge current and proposed scopes
+        // instead of revoking and recreating (for singleton/multi-client support)
+        const mergedScopes = mergeScopes(currentScopes, proposedScopes);
+        const optionalScopes = addValidAccounts(
+          getOptionalScopes(mergedScopes),
+          getValidAccounts(options?.caipAccountIds ?? []),
+        );
+        const createSessionRequest: CreateSessionParams<RPCAPI> = {
+          optionalScopes,
+        };
+        const response = await this.request({
+          method: 'wallet_createSession',
+          params: createSessionRequest,
+        });
+        if (response.error) {
+          return resumeReject(new Error(response.error.message));
+        }
+        walletSession = response.result as SessionData;
       } else if (!walletSession) {
         // TODO: verify if this branching logic can ever be hit
         const optionalScopes = addValidAccounts(
