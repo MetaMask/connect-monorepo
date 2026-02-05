@@ -7,7 +7,11 @@ export type ExperimentId =
   | 'exp3'
   | 'exp4'
   | 'exp5'
-  | 'exp6';
+  | 'exp6'
+  | 'exp7'
+  | 'exp8'
+  | 'exp9'
+  | 'exp10';
 
 type ExperimentInfo = {
   id: ExperimentId;
@@ -45,6 +49,26 @@ export const EXPERIMENTS: ExperimentInfo[] = [
     id: 'exp6',
     title: 'Exp 6: All Three',
     description: 'Multichain + EVM + Wagmi together',
+  },
+  {
+    id: 'exp7',
+    title: 'Exp 7: Core Sharing',
+    description: 'Verify singleton core is shared across SDK types',
+  },
+  {
+    id: 'exp8',
+    title: 'Exp 8: Disconnect Coordination',
+    description: 'Verify disconnect only revokes session when last client disconnects',
+  },
+  {
+    id: 'exp9',
+    title: 'Exp 9: Scope Merging',
+    description: 'Verify scopes are merged when connecting clients with different chains',
+  },
+  {
+    id: 'exp10',
+    title: 'Exp 10: Partial Disconnect',
+    description: 'Verify scopes are partially revoked when one client disconnects',
   },
 ];
 

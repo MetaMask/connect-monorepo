@@ -15,10 +15,10 @@
  * - Different storage key prefixes visible
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { MultichainCore, SessionData, Scope } from '@metamask/connect';
-import { createMultichainClient } from '@metamask/connect';
-import type { MetamaskConnectEVM } from '@metamask/connect/evm';
-import { createEVMClient } from '@metamask/connect/evm';
+import type { MultichainCore, SessionData, Scope } from '@metamask/connect-multichain';
+import { createMultichainClient } from '@metamask/connect-multichain';
+import type { MetamaskConnectEVM } from '@metamask/connect-evm';
+import { createEVMClient } from '@metamask/connect-evm';
 import { ConnectionCard, ActionButton } from './shared';
 
 const DAPP_CONFIG = {

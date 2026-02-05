@@ -28,6 +28,9 @@ function createMockCore() {
     },
   };
 
+  // Track registered clients for testing (with scopes)
+  const registeredClients = new Map<string, { clientId: string; sdkType: string; scopes: string[] }>();
+
   const mockCore: Partial<MultichainCore> = {
     // Delegate event methods to the real emitter
     on: vi.fn((event: string, handler: (...args: any[]) => void) => {
@@ -62,6 +65,26 @@ function createMockCore() {
     }),
 
     disconnect: vi.fn().mockResolvedValue(undefined),
+
+    // Client registration methods (for singleton pattern with scope tracking)
+    registerClient: vi.fn((clientId: string, sdkType: string, scopes: string[]) => {
+      registeredClients.set(clientId, { clientId, sdkType, scopes });
+    }),
+    unregisterClient: vi.fn((clientId: string) => {
+      registeredClients.delete(clientId);
+      return registeredClients.size === 0;
+    }),
+    getClientCount: vi.fn(() => registeredClients.size),
+    getUnionScopes: vi.fn(() => {
+      const allScopes = new Set<string>();
+      for (const client of registeredClients.values()) {
+        for (const scope of client.scopes) {
+          allScopes.add(scope);
+        }
+      }
+      return Array.from(allScopes);
+    }),
+    updateSessionScopes: vi.fn().mockResolvedValue(undefined),
 
     transport: mockTransport as any,
     storage: mockStorage as any,

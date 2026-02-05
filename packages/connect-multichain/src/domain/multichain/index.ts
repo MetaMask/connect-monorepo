@@ -25,6 +25,20 @@ export enum TransportType {
 }
 
 /**
+ * Information about a registered client.
+ */
+export type ClientInfo = {
+  /** Unique identifier for the client */
+  clientId: string;
+  /** The SDK type (e.g., 'evm', 'solana', 'multichain') */
+  sdkType: string;
+  /** When the client was registered */
+  registeredAt: number;
+  /** The scopes this client has requested */
+  scopes: Scope[];
+};
+
+/**
  * Abstract base class for the Multichain SDK implementation.
  *
  * This class defines the core interface that all Multichain SDK implementations
@@ -69,6 +83,53 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract invokeMethod(options: InvokeMethodOptions): Promise<Json>;
 
   abstract openDeeplinkIfNeeded(): void;
+
+  /**
+   * Registers a client with the core.
+   * Call this when a thin client (EVM, Solana) connects.
+   *
+   * @param clientId - Unique identifier for the client
+   * @param sdkType - The SDK type (e.g., 'evm', 'solana')
+   * @param scopes - The scopes this client has requested
+   */
+  abstract registerClient(clientId: string, sdkType: string, scopes: Scope[]): void;
+
+  /**
+   * Gets the union of all scopes from all registered clients.
+   *
+   * @returns Array of unique scopes from all clients
+   */
+  abstract getUnionScopes(): Scope[];
+
+  /**
+   * Unregisters a client from the core.
+   * Call this when a thin client disconnects.
+   * Returns true if this was the last client (actual disconnect should happen).
+   *
+   * @param clientId - The client ID to unregister
+   * @returns True if this was the last client, false if others remain
+   */
+  abstract unregisterClient(clientId: string): boolean;
+
+  /**
+   * Gets the number of currently registered clients.
+   *
+   * @returns The number of active clients
+   */
+  abstract getClientCount(): number;
+
+  /**
+   * Updates the session scopes when a client disconnects but others remain.
+   *
+   * NOTE: There is no CAIP standard for partial scope revocation.
+   * The wallet keeps all previously granted scopes. This method updates
+   * the SDK's internal tracking only. Full disconnect requires
+   * wallet_revokeSession when all clients disconnect.
+   *
+   * @param scopes - The scopes that remaining clients need
+   * @returns Promise that resolves when complete
+   */
+  abstract updateSessionScopes(scopes: Scope[]): Promise<void>;
 
   constructor(protected readonly options: MultichainOptions) {
     super();

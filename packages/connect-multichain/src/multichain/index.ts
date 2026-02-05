@@ -44,10 +44,11 @@ import {
   isEnabled as isLoggerEnabled,
 } from '../domain/logger';
 import {
+  type ClientInfo,
   type ConnectionRequest,
+  type ConnectionStatus,
   type ExtendedTransport,
   MultichainCore,
-  type ConnectionStatus,
 } from '../domain/multichain';
 import {
   getPlatformType,
@@ -82,6 +83,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   public _status: ConnectionStatus = 'pending';
 
   #listener: (() => void | Promise<void>) | undefined;
+
+  /** Tracks active clients using this core instance */
+  readonly #activeClients: Map<string, ClientInfo> = new Map();
 
   get status(): ConnectionStatus {
     return this._status;
@@ -839,6 +843,104 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     const requestRouter = new RequestRouter(transport, rpcClient, options);
     // TODO: need read only method support for solana
     return requestRouter.invokeMethod(request);
+  }
+
+  /**
+   * Registers a client with the core.
+   * Call this when a thin client (EVM, Solana) connects.
+   *
+   * @param clientId - Unique identifier for the client
+   * @param sdkType - The SDK type (e.g., 'evm', 'solana')
+   * @param scopes - The scopes this client has requested
+   */
+  registerClient(clientId: string, sdkType: string, scopes: Scope[]): void {
+    logger(`Registering client: ${clientId} (${sdkType}) with scopes: ${scopes.join(', ')}`);
+    this.#activeClients.set(clientId, {
+      clientId,
+      sdkType,
+      registeredAt: Date.now(),
+      scopes,
+    });
+    logger(`Active clients: ${this.#activeClients.size}`);
+  }
+
+  /**
+   * Gets the union of all scopes from all registered clients.
+   *
+   * @returns Array of unique scopes from all clients
+   */
+  getUnionScopes(): Scope[] {
+    const allScopes = new Set<Scope>();
+    for (const client of this.#activeClients.values()) {
+      for (const scope of client.scopes) {
+        allScopes.add(scope);
+      }
+    }
+    return Array.from(allScopes);
+  }
+
+  /**
+   * Unregisters a client from the core.
+   * Call this when a thin client disconnects.
+   * Returns true if this was the last client (actual disconnect should happen).
+   *
+   * @param clientId - The client ID to unregister
+   * @returns True if this was the last client, false if others remain
+   */
+  unregisterClient(clientId: string): boolean {
+    logger(`Unregistering client: ${clientId}`);
+    this.#activeClients.delete(clientId);
+    const remaining = this.#activeClients.size;
+    logger(`Remaining clients: ${remaining}`);
+    return remaining === 0;
+  }
+
+  /**
+   * Gets the number of currently registered clients.
+   *
+   * @returns The number of active clients
+   */
+  getClientCount(): number {
+    return this.#activeClients.size;
+  }
+
+  /**
+   * Updates the session scopes when a client disconnects but others remain.
+   *
+   * NOTE: There is no CAIP standard for partial scope revocation (CAIP-285
+   * only supports full session revocation). This means the wallet will
+   * keep all previously granted scopes - calling wallet_createSession with
+   * fewer scopes does not reduce the wallet's session, it's additive only.
+   *
+   * This method updates the SDK's internal tracking of scopes but the wallet
+   * side will retain all previously granted permissions until a full
+   * disconnect (wallet_revokeSession) occurs.
+   *
+   * If no scopes remain, this performs a full disconnect.
+   *
+   * @param scopes - The scopes that remaining clients need
+   * @returns Promise that resolves when complete
+   */
+  async updateSessionScopes(scopes: Scope[]): Promise<void> {
+    if (this.status !== 'connected' || !this.#transport) {
+      logger('updateSessionScopes: Not connected or no transport, skipping');
+      return;
+    }
+
+    if (scopes.length === 0) {
+      // No scopes remaining means we should fully disconnect
+      logger('updateSessionScopes: No scopes remaining, performing full disconnect');
+      await this.disconnect();
+      return;
+    }
+
+    // NOTE: Due to CAIP limitations, we cannot actually reduce wallet scopes.
+    // The wallet will keep all previously granted permissions.
+    // We just log and acknowledge - the SDK tracks remaining scopes internally.
+    logger(
+      `updateSessionScopes: SDK tracking reduced to [${scopes.join(', ')}], ` +
+        'but wallet retains all previously granted scopes (no CAIP partial revocation)',
+    );
   }
 
   // DRY THIS WITH REQUEST ROUTER
