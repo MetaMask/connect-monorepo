@@ -109,10 +109,10 @@ export class MWPTransport implements ExtendedTransport {
       connectionTimeout: number;
       resumeTimeout: number;
     } = {
-        requestTimeout: DEFAULT_REQUEST_TIMEOUT,
-        connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
-        resumeTimeout: DEFAULT_RESUME_TIMEOUT,
-      },
+      requestTimeout: DEFAULT_REQUEST_TIMEOUT,
+      connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
+      resumeTimeout: DEFAULT_RESUME_TIMEOUT,
+    },
   ) {
     this.dappClient.on('message', this.handleMessage.bind(this));
     if (
@@ -190,7 +190,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -202,7 +202,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                  request.method === 'wallet_createSession'
+                request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
@@ -449,7 +449,9 @@ export class MWPTransport implements ExtendedTransport {
 
               // Handle error response (e.g., user rejected the connection)
               if (messagePayload.error) {
-                return rejectConnection(this.parseWalletError(messagePayload.error));
+                return rejectConnection(
+                  this.parseWalletError(messagePayload.error),
+                );
               }
 
               // Success case - store session, notify, and resolve
