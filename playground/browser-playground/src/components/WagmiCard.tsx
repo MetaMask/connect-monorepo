@@ -7,6 +7,7 @@ import {
   useBlockNumber,
   useChainId,
   useConnectorClient,
+  useDisconnect,
   useSendTransaction,
   useSignMessage,
   useSwitchChain,
@@ -17,6 +18,7 @@ import { TEST_IDS } from '@metamask/playground-ui';
 export function WagmiCard() {
   const account = useAccount();
   const chainId = useChainId();
+  const { disconnect } = useDisconnect();
   const { chains, switchChain } = useSwitchChain();
   const { data: balance } = useBalance({ address: account.address });
   const { data: blockNumber } = useBlockNumber({ watch: true });
@@ -60,6 +62,13 @@ export function WagmiCard() {
         <h3 data-testid={TEST_IDS.wagmi.title} className="text-lg font-semibold text-gray-800 truncate">
           Wagmi Connection
         </h3>
+        <button
+          type="button"
+          onClick={() => disconnect()}
+          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+        >
+          Disconnect
+        </button>
       </div>
 
       <div className="mb-4">

@@ -164,15 +164,6 @@ function App() {
     if (isConnected) {
       await sdkDisconnect();
     }
-    if (legacyConnected) {
-      await legacyDisconnect();
-    }
-    if (wagmiConnected) {
-      wagmiDisconnect();
-    }
-    if (solanaConnected) {
-      await solanaDisconnect();
-    }
   }, [
     sdkDisconnect,
     legacyDisconnect,
@@ -351,6 +342,7 @@ function App() {
                   chainId={legacyChainId}
                   accounts={legacyAccounts}
                   sdk={legacySDK}
+                  disconnect={legacyDisconnect}
                 />
               </div>
             </section>
