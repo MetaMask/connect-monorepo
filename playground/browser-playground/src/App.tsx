@@ -71,10 +71,25 @@ function App() {
     connected: solanaConnected,
     publicKey: solanaPublicKey,
     wallets,
+    wallet: solanaWallet,
     select,
     connect: solanaConnect,
     disconnect: solanaDisconnect,
   } = useWallet();
+
+  // Track when user has requested a Solana connection
+  const [solanaPendingConnect, setSolanaPendingConnect] = useState(false);
+
+  // Effect to connect once wallet is selected (avoids race condition between select and connect)
+  useEffect(() => {
+    if (solanaPendingConnect && solanaWallet && !solanaConnected) {
+      solanaConnect().catch((error) => {
+        console.error('Solana connection error:', error);
+      }).finally(() => {
+        setSolanaPendingConnect(false);
+      });
+    }
+  }, [solanaPendingConnect, solanaWallet, solanaConnected, solanaConnect]);
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -161,22 +176,21 @@ function App() {
     }
   }, [customScopes, connectors, wagmiConnectAsync]);
 
-  const connectSolana = useCallback(async () => {
+  const connectSolana = useCallback(() => {
     // Find the MetaMask wallet in registered wallets
     const metamaskWallet = wallets.find((w) =>
       w.adapter.name.toLowerCase().includes('metamask connect'),
     );
     if (metamaskWallet) {
-      try {
-        select(metamaskWallet.adapter.name);
-        await solanaConnect();
-      } catch (error) {
-        console.error('Solana connection error:', error);
-      }
+      // Select the wallet and set pending connect flag.
+      // The useEffect will call connect() once the wallet state updates,
+      // avoiding the race condition between select() and connect().
+      select(metamaskWallet.adapter.name);
+      setSolanaPendingConnect(true);
     } else {
       console.error('MetaMask wallet not found in registered wallets');
     }
-  }, [wallets, select, solanaConnect]);
+  }, [wallets, select]);
 
   const isConnected = status === 'connected';
   const isDisconnected =
