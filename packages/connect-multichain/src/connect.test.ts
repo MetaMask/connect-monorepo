@@ -485,7 +485,8 @@ function testSuite<T extends MultichainOptions>({
 
       // For web-mobile, timeout might be expected due to deeplink hanging
       if (!timedOut) {
-        t.expect(connectError).toBe(sessionError);
+        // Check error message matches (error object may be wrapped with EIP-1193 code)
+        t.expect(connectError.message).toBe(sessionError.message);
         t.expect(sdk.status === 'disconnected').toBe(true);
       } else {
         // If timed out, at least verify it's not connected

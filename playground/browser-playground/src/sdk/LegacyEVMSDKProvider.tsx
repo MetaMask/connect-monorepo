@@ -47,6 +47,7 @@ const LegacyEVMSDKContext = createContext<
       provider: EIP1193Provider | undefined;
       chainId: string | undefined;
       accounts: string[];
+      error: Error | null;
       connect: (chainIds: Hex[]) => Promise<void>;
       disconnect: () => Promise<void>;
     }
@@ -63,6 +64,7 @@ export const LegacyEVMSDKProvider = ({
   const [provider, setProvider] = useState<EIP1193Provider>();
   const [chainId, setChainId] = useState<string>();
   const [accounts, setAccounts] = useState<string[]>([]);
+  const [error, setError] = useState<Error | null>(null);
   const sdkRef = useRef<Promise<MetamaskConnectEVM>>(undefined);
 
   useEffect(() => {
@@ -140,6 +142,7 @@ export const LegacyEVMSDKProvider = ({
   }, []);
 
   const connect = useCallback(async (chainIds: Hex[]) => {
+    setError(null);
     try {
       if (!sdkRef.current) {
         throw new Error('SDK not initialized');
@@ -149,8 +152,9 @@ export const LegacyEVMSDKProvider = ({
       const chainIdsToUse = chainIds.length > 0 ? chainIds : ['0x1' as Hex];
       await sdkInstance.connect({ chainIds: chainIdsToUse });
       setProviderActive('legacy-evm');
-    } catch (error) {
-      console.error('Failed to connect:', error);
+    } catch (err) {
+      console.error('Failed to connect:', err);
+      setError(err as Error);
     }
   }, []);
 
@@ -178,6 +182,7 @@ export const LegacyEVMSDKProvider = ({
         provider,
         chainId,
         accounts,
+        error,
         connect,
         disconnect,
       }}
