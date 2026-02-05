@@ -52,7 +52,7 @@ jobs:
         run: |
           # Build all packages (workspace dependencies) in topological order
           # This ensures @metamask/connect and other dependencies are built first
-          yarn workspaces foreach --all --topological-dev --verbose --no-private run build
+          yarn workspaces foreach --all --topological-dev --verbose run build
 
       - name: Build browser playground
         working-directory: playground/browser-playground
