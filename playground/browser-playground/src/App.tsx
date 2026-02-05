@@ -20,6 +20,7 @@ import {
   clearAllActiveProviders,
 } from './utils/activeProviderStorage';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
+import { useSolanaSDK } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -35,6 +36,9 @@ function App() {
 
   // Track Wagmi connection errors
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
+
+  // Get Solana wallet error from provider context
+  const { walletError: solanaError, clearWalletError: clearSolanaError } = useSolanaSDK();
 
   const {
     error,
@@ -170,21 +174,21 @@ function App() {
   }, [customScopes, connectors, wagmiConnectAsync]);
 
   const connectSolana = useCallback(async () => {
+    // Clear any previous error
+    clearSolanaError();
+
     // Find the MetaMask wallet in registered wallets
     const metamaskWallet = wallets.find((w) =>
       w.adapter.name.toLowerCase().includes('metamask connect'),
     );
     if (metamaskWallet) {
-      try {
-        select(metamaskWallet.adapter.name);
-        await solanaConnect();
-      } catch (error) {
-        console.error('Solana connection error:', error);
-      }
+      // Just select the wallet - autoConnect in WalletProvider will handle connection
+      // Errors will be captured via onError callback in SolanaProvider
+      select(metamaskWallet.adapter.name);
     } else {
       console.error('MetaMask wallet not found in registered wallets');
     }
-  }, [wallets, select, solanaConnect]);
+  }, [wallets, select, clearSolanaError]);
 
   const isConnected = status === 'connected';
   const isDisconnected =
@@ -341,7 +345,7 @@ function App() {
             )}
           </div>
         </section>
-        {(error || legacyError || wagmiError) && (
+        {(error || legacyError || wagmiError || solanaError) && (
           <section
             data-testid={TEST_IDS.app.sectionError}
             className="bg-white rounded-lg p-8 mb-6 shadow-sm"
@@ -370,12 +374,23 @@ function App() {
               </p>
             )}
             {wagmiError && (
-              <p className="text-gray-700">
+              <p className="text-gray-700 mb-2">
                 <span className="font-semibold">Wagmi:</span>{' '}
                 {wagmiError.message.toString()}
                 {(wagmiError as any).code && (
                   <span className="ml-2 text-sm text-gray-500">
                     (code: {(wagmiError as any).code})
+                  </span>
+                )}
+              </p>
+            )}
+            {solanaError && (
+              <p className="text-gray-700">
+                <span className="font-semibold">Solana:</span>{' '}
+                {solanaError.message.toString()}
+                {(solanaError as any).code && (
+                  <span className="ml-2 text-sm text-gray-500">
+                    (code: {(solanaError as any).code})
                   </span>
                 )}
               </p>
