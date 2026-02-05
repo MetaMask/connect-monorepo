@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Change Solana wallet standard query to Metamask instead of Metamask Connect ([#164](https://github.com/MetaMask/connect-monorepo/pull/164))
+
+## [0.2.0]
+
 ### Added
 
 - Add Solana wallet standard integration ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
 
 ### Changed
 
-- **BREAKING**: Update connect/disconnect button labels to include connector names ("Connect" → "Connect (Multichain)", "Disconnect" → "Disconnect (Multichain)" / "Disconnect All") for clarity and consistency with other connector buttons
+- **BREAKING**: Update connect/disconnect button labels to include connector names ("Connect" → "Connect (Multichain)", "Disconnect" → "Disconnect (Multichain)" / "Disconnect All") for clarity and consistency with other connector buttons ([#161](https://github.com/MetaMask/connect-monorepo/pull/161))
 
 ## [0.1.1]
 
@@ -31,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.1.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.2.0...HEAD
+[0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.1.1...@metamask/browser-playground@0.2.0
 [0.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.1.0...@metamask/browser-playground@0.1.1
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/browser-playground@0.1.0
