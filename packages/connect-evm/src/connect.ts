@@ -800,8 +800,6 @@ export class MetamaskConnectEVM {
 
       this.#removeNotificationHandler?.();
 
-      // transport doesn't exist (throws) if we aren't connected. Should that be a
-      // required for using onNotification?...
       // TODO: Verify if #core.on('metamask_accountsChanged') and #core.on('metamask_chainChanged')
       // would work here instead
       this.#removeNotificationHandler = this.#core.transport.onNotification(
