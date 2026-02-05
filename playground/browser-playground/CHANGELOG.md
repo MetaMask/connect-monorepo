@@ -9,12 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0]
 
-### Uncategorized
-
-- fix: move browser-playground deps to devDependencies ([#165](https://github.com/MetaMask/connect-monorepo/pull/165))
-- remove dangling instance of unified connect package in playground ([#162](https://github.com/MetaMask/connect-monorepo/pull/162))
-- do not use @metamask/connect (unified package) for playground deps ([#158](https://github.com/MetaMask/connect-monorepo/pull/158))
-
 ### Added
 
 - Add Solana wallet standard integration ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
