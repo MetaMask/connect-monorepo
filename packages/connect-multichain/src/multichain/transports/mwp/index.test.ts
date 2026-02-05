@@ -152,7 +152,7 @@ t.describe('MWPTransport', () => {
     );
 
     t.it(
-      'should use default error message when error.message is missing',
+      'should return internal error when error format is invalid (missing message)',
       async () => {
         return new Promise<void>((resolve) => {
           const mockResolve = t.vi.fn();
@@ -172,7 +172,7 @@ t.describe('MWPTransport', () => {
             timeout: mockTimeout,
           });
 
-          // Error without message field
+          // Error without message field (invalid format per EIP-1193)
           const errorMessage = {
             data: {
               id: requestId,
@@ -188,11 +188,11 @@ t.describe('MWPTransport', () => {
 
           messageHandler?.(errorMessage);
 
-          // Verify: Should use default error message and code
+          // Verify: Should return internal error for malformed error payload
           t.expect(mockReject).toHaveBeenCalled();
           const rejectedError = mockReject.mock.calls[0][0];
-          t.expect(rejectedError.message).toBe('Request rejected by user');
-          t.expect(rejectedError.code).toBe(4001); // Should use provided code or default to 4001
+          t.expect(rejectedError.code).toBe(-32603); // Internal JSON-RPC error
+          t.expect(rejectedError.message).toContain('4001'); // Original error info preserved
 
           clearTimeout(mockTimeout);
           resolve();

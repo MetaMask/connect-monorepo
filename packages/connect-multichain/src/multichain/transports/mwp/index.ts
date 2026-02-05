@@ -26,7 +26,7 @@ import {
   type TransportResponse,
   TransportTimeoutError,
 } from '@metamask/multichain-api-client';
-import { providerErrors } from '@metamask/rpc-errors';
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
 
 import {
@@ -109,10 +109,10 @@ export class MWPTransport implements ExtendedTransport {
       connectionTimeout: number;
       resumeTimeout: number;
     } = {
-      requestTimeout: DEFAULT_REQUEST_TIMEOUT,
-      connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
-      resumeTimeout: DEFAULT_RESUME_TIMEOUT,
-    },
+        requestTimeout: DEFAULT_REQUEST_TIMEOUT,
+        connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
+        resumeTimeout: DEFAULT_RESUME_TIMEOUT,
+      },
   ) {
     this.dappClient.on('message', this.handleMessage.bind(this));
     if (
@@ -146,6 +146,27 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  private parseWalletError(errorPayload: unknown): Error {
+    const errorData = errorPayload as Record<string, unknown>;
+
+    if (
+      typeof errorData.code === 'number' &&
+      typeof errorData.message === 'string'
+    ) {
+      return providerErrors.custom({
+        code: errorData.code,
+        message: errorData.message,
+      });
+    }
+
+    const message =
+      errorPayload instanceof Error
+        ? errorPayload.message
+        : JSON.stringify(errorPayload);
+
+    return rpcErrors.internal({ message });
+  }
+
   private handleMessage(message: unknown): void {
     if (typeof message === 'object' && message !== null) {
       if ('data' in message) {
@@ -160,16 +181,7 @@ export class MWPTransport implements ExtendedTransport {
             // Check if the message contains an error (e.g., user rejected)
             if ('error' in messagePayload && messagePayload.error) {
               this.pendingRequests.delete(messagePayload.id);
-              const errorData = messagePayload.error as {
-                message?: string;
-                code?: number;
-              };
-              request.reject(
-                providerErrors.custom({
-                  code: errorData.code ?? 4001,
-                  message: errorData.message ?? 'Request rejected by user',
-                }),
-              );
+              request.reject(this.parseWalletError(messagePayload.error));
               return;
             }
 
@@ -178,7 +190,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                request.method === 'wallet_createSession'
+                  request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
             } as unknown as {
@@ -190,7 +202,7 @@ export class MWPTransport implements ExtendedTransport {
               ...messagePayload,
               method:
                 request.method === 'wallet_getSession' ||
-                request.method === 'wallet_createSession'
+                  request.method === 'wallet_createSession'
                   ? 'wallet_sessionChanged'
                   : request.method,
               params: requestWithName.result,
@@ -437,16 +449,7 @@ export class MWPTransport implements ExtendedTransport {
 
               // Handle error response (e.g., user rejected the connection)
               if (messagePayload.error) {
-                const errorData = messagePayload.error as {
-                  message?: string;
-                  code?: number;
-                };
-                return rejectConnection(
-                  providerErrors.custom({
-                    code: errorData.code ?? 4001,
-                    message: errorData.message ?? 'Connection rejected',
-                  }),
-                );
+                return rejectConnection(this.parseWalletError(messagePayload.error));
               }
 
               // Success case - store session, notify, and resolve
