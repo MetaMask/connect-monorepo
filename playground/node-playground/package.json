@@ -33,6 +33,7 @@
   "dependencies": {
     "@metamask/connect-evm": "workspace:^",
     "@metamask/connect-multichain": "workspace:^",
+    "@metamask/connect-solana": "workspace:^",
     "chalk": "^4.1.2",
     "inquirer": "^8.2.4",
     "ora": "^5.4.1"
