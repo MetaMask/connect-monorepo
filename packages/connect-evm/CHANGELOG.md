@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- Fix `display_uri` and `wallet_sessionChanged` events not firing after disconnect and reconnect in headless mode ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))
-
 ### Changed
 
 - **BREAKING** Standardize `chainId` to use `Hex` format throughout the public API ([#150](https://github.com/MetaMask/connect-monorepo/pull/150))
@@ -23,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `debug` option param used by `createEVMClient()` now enables console debug logs of the underlying `MultichainClient` instance ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
 - update `connect()` and `createEVMClient()` typings to be more accurate ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 - update `switchChain()` to return `Promise<void>` ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
+
+### Fixed
+
+- Fix `display_uri` and `wallet_sessionChanged` events not firing after disconnect and reconnect in headless mode ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))
 
 ## [0.4.1]
 
