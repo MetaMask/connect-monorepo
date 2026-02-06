@@ -28,8 +28,11 @@
     "lint:dependencies": "depcheck && yarn dedupe --check",
     "lint:dependencies:fix": "depcheck && yarn dedupe",
     "lint:eslint": "yarn build:only-clean && eslint . --cache",
+    "lint:exports": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run publint",
     "lint:fix": "yarn lint:eslint --fix && echo && yarn lint:misc --write && yarn constraints --fix && yarn lint:dependencies:fix",
     "lint:misc": "prettier --no-error-on-unmatched-pattern '**/*.json' '**/*.md' '**/*.yml' '!.yarnrc.yml' '!merged-packages/**' --ignore-path .gitignore",
+    "lint:package-config": "yarn lint:exports; yarn lint:types",
+    "lint:types": "yarn workspaces foreach --all --no-private --parallel --interlaced --verbose run attw",
     "prepare-preview-builds": "./scripts/prepare-preview-builds.sh",
     "prepare-release": "yarn create-release-branch -i && yarn bump-playground-versions",
     "publish-previews": "yarn workspaces foreach --all --no-private --parallel --verbose run publish:preview",
@@ -41,12 +44,14 @@
     "workspaces:list-versions": "./scripts/list-workspace-versions.sh"
   },
   "simple-git-hooks": {
+    "pre-commit": "yarn lint:package-config",
     "pre-push": "yarn lint"
   },
   "resolutions": {
     "bs58": "4.0.1"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@babel/core": "^7.28.4",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
@@ -85,6 +90,7 @@
     "prettier": "^3.3.3",
     "prettier-2": "npm:prettier@^2.8.8",
     "prettier-plugin-packagejson": "^2.4.5",
+    "publint": "^0.2.9",
     "rimraf": "^5.0.5",
     "semver": "^7.6.3",
     "simple-git-hooks": "^2.8.0",
