@@ -12,9 +12,10 @@ import type { ExtendedTransport, RPCAPI, Scope, SessionData } from 'src/domain';
 
 import {
   addValidAccounts,
+  areScopesCovered,
   getOptionalScopes,
   getValidAccounts,
-  isSameScopesAndAccounts,
+  mergeScopes,
 } from '../../utils';
 
 const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
@@ -220,28 +221,42 @@ export class DefaultTransport implements ExtendedTransport {
         walletSession?.sessionScopes ?? {},
       ) as Scope[];
       const proposedScopes = options?.scopes ?? [];
-      const proposedCaipAccountIds = options?.caipAccountIds ?? [];
-      const hasSameScopesAndAccounts = isSameScopesAndAccounts(
+
+      // Check if all proposed scopes are already covered by current session
+      const scopesAlreadyCovered = areScopesCovered(
         currentScopes,
         proposedScopes,
-        walletSession,
-        proposedCaipAccountIds,
       );
 
-      if (!hasSameScopesAndAccounts) {
-        await this.request(
-          { method: 'wallet_revokeSession', params: walletSession },
-          this.#defaultRequestOptions,
-        );
-        const response = await this.request(
-          { method: 'wallet_createSession', params: createSessionParams },
-          this.#defaultRequestOptions,
-        );
-        if (response.error) {
-          throw new Error(response.error.message);
-        }
-        walletSession = response.result as SessionData;
+      if (scopesAlreadyCovered) {
+        // Scopes already covered by existing session - just notify and return
+        // No need to prompt user again since the wallet already has these permissions
+        this.#notifyCallbacks({
+          method: 'wallet_sessionChanged',
+          params: walletSession,
+        });
+        return;
       }
+
+      // Need to expand scopes - merge current and proposed scopes
+      // instead of revoking and recreating (for singleton/multi-client support)
+      const mergedScopes = mergeScopes(currentScopes, proposedScopes);
+      const mergedSessionParams: CreateSessionParams<RPCAPI> = {
+        optionalScopes: addValidAccounts(
+          getOptionalScopes(mergedScopes),
+          getValidAccounts(options?.caipAccountIds ?? []),
+        ),
+        sessionProperties: options?.sessionProperties,
+      };
+
+      const response = await this.request(
+        { method: 'wallet_createSession', params: mergedSessionParams },
+        this.#defaultRequestOptions,
+      );
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      walletSession = response.result as SessionData;
     } else if (!walletSession || options?.forceRequest) {
       const response = await this.request(
         { method: 'wallet_createSession', params: createSessionParams },

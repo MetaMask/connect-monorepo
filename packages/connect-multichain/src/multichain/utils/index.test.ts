@@ -496,4 +496,114 @@ t.describe('Utils', () => {
       t.expect(result).toBe(true);
     });
   });
+
+  t.describe('areScopesCovered', () => {
+    t.it('should return true when proposed scopes are a subset of current scopes', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137', 'solana:mainnet'];
+      const proposedScopes: Scope[] = ['eip155:1'];
+
+      const result = utils.areScopesCovered(currentScopes, proposedScopes);
+
+      t.expect(result).toBe(true);
+    });
+
+    t.it('should return true when proposed scopes equal current scopes', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
+
+      const result = utils.areScopesCovered(currentScopes, proposedScopes);
+
+      t.expect(result).toBe(true);
+    });
+
+    t.it('should return false when proposed scopes include new scopes', () => {
+      const currentScopes: Scope[] = ['eip155:1'];
+      const proposedScopes: Scope[] = ['eip155:1', 'solana:mainnet'];
+
+      const result = utils.areScopesCovered(currentScopes, proposedScopes);
+
+      t.expect(result).toBe(false);
+    });
+
+    t.it('should return false when proposed scopes are entirely different', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedScopes: Scope[] = ['solana:mainnet'];
+
+      const result = utils.areScopesCovered(currentScopes, proposedScopes);
+
+      t.expect(result).toBe(false);
+    });
+
+    t.it('should return true when proposed scopes are empty', () => {
+      const currentScopes: Scope[] = ['eip155:1'];
+      const proposedScopes: Scope[] = [];
+
+      const result = utils.areScopesCovered(currentScopes, proposedScopes);
+
+      t.expect(result).toBe(true);
+    });
+
+    t.it('should return true when both are empty', () => {
+      const currentScopes: Scope[] = [];
+      const proposedScopes: Scope[] = [];
+
+      const result = utils.areScopesCovered(currentScopes, proposedScopes);
+
+      t.expect(result).toBe(true);
+    });
+  });
+
+  t.describe('mergeScopes', () => {
+    t.it('should merge non-overlapping scopes', () => {
+      const currentScopes: Scope[] = ['eip155:1'];
+      const proposedScopes: Scope[] = ['solana:mainnet'];
+
+      const result = utils.mergeScopes(currentScopes, proposedScopes);
+
+      t.expect(result).toHaveLength(2);
+      t.expect(result).toContain('eip155:1');
+      t.expect(result).toContain('solana:mainnet');
+    });
+
+    t.it('should deduplicate overlapping scopes', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedScopes: Scope[] = ['eip155:1', 'solana:mainnet'];
+
+      const result = utils.mergeScopes(currentScopes, proposedScopes);
+
+      t.expect(result).toHaveLength(3);
+      t.expect(result).toContain('eip155:1');
+      t.expect(result).toContain('eip155:137');
+      t.expect(result).toContain('solana:mainnet');
+    });
+
+    t.it('should return current scopes when proposed is empty', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedScopes: Scope[] = [];
+
+      const result = utils.mergeScopes(currentScopes, proposedScopes);
+
+      t.expect(result).toEqual(['eip155:1', 'eip155:137']);
+    });
+
+    t.it('should return proposed scopes when current is empty', () => {
+      const currentScopes: Scope[] = [];
+      const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
+
+      const result = utils.mergeScopes(currentScopes, proposedScopes);
+
+      t.expect(result).toEqual(['eip155:1', 'eip155:137']);
+    });
+
+    t.it('should return same scopes when both are identical', () => {
+      const currentScopes: Scope[] = ['eip155:1', 'eip155:137'];
+      const proposedScopes: Scope[] = ['eip155:1', 'eip155:137'];
+
+      const result = utils.mergeScopes(currentScopes, proposedScopes);
+
+      t.expect(result).toHaveLength(2);
+      t.expect(result).toContain('eip155:1');
+      t.expect(result).toContain('eip155:137');
+    });
+  });
 });

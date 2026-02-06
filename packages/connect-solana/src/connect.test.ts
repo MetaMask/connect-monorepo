@@ -25,9 +25,31 @@ describe('createSolanaClient', () => {
     debug: true,
   };
 
+  // Track registered clients for testing (with scopes)
+  const registeredClients = new Map<string, { clientId: string; sdkType: string; scopes: string[] }>();
+
   const mockCore = {
     provider: {},
     disconnect: vi.fn().mockResolvedValue(undefined),
+    // Client registration methods (for singleton pattern with scope tracking)
+    registerClient: vi.fn((clientId: string, sdkType: string, scopes: string[]) => {
+      registeredClients.set(clientId, { clientId, sdkType, scopes });
+    }),
+    unregisterClient: vi.fn((clientId: string) => {
+      registeredClients.delete(clientId);
+      return registeredClients.size === 0;
+    }),
+    getClientCount: vi.fn(() => registeredClients.size),
+    getUnionScopes: vi.fn(() => {
+      const allScopes = new Set<string>();
+      for (const client of registeredClients.values()) {
+        for (const scope of client.scopes) {
+          allScopes.add(scope);
+        }
+      }
+      return Array.from(allScopes);
+    }),
+    updateSessionScopes: vi.fn().mockResolvedValue(undefined),
   };
 
   const mockWallet = {
@@ -37,6 +59,7 @@ describe('createSolanaClient', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    registeredClients.clear();
     (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
       mockCore,
     );
@@ -154,12 +177,29 @@ describe('createSolanaClient', () => {
     });
 
     describe('disconnect', () => {
-      it('should disconnect using core.disconnect', async () => {
+      it('should disconnect using core.disconnect when no other clients registered', async () => {
         const client = await createSolanaClient(mockOptions);
 
         await client.disconnect();
 
+        // When not registered, disconnect should still call core.disconnect
         expect(mockCore.disconnect).toHaveBeenCalled();
+      });
+
+      it('should not disconnect core when other clients remain', async () => {
+        const client = await createSolanaClient(mockOptions);
+
+        // Register the wallet first (which registers the client)
+        await client.registerWallet();
+
+        // Manually add another client to simulate EVM being connected
+        registeredClients.set('evm-test', { clientId: 'evm-test', sdkType: 'evm', scopes: ['eip155:1'] });
+
+        // Now disconnect - should unregister but not disconnect core
+        await client.disconnect();
+
+        expect(mockCore.unregisterClient).toHaveBeenCalled();
+        expect(mockCore.disconnect).not.toHaveBeenCalled();
       });
     });
   });

@@ -69,12 +69,41 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
+  // Generate a unique client ID for this Solana client instance
+  const clientId = `solana-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  let isRegistered = false;
+  
+  // Get the scopes (CAIP chain IDs) from supported networks
+  // These are already in CAIP format (e.g., 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp')
+  const solanaScopes = Object.keys(supportedNetworks) as Array<`solana:${string}`>;
+
   return {
     core,
     getWallet: (walletName?: string) =>
       getWalletStandard({ client, walletName }),
-    registerWallet: async (walletName = 'MetaMask Connect') =>
-      registerSolanaWalletStandard({ client, walletName }),
-    disconnect: async () => await core.disconnect(),
+    registerWallet: async (walletName = 'MetaMask Connect') => {
+      // Register this client when the wallet is registered (connects)
+      if (!isRegistered) {
+        core.registerClient(clientId, 'solana', solanaScopes);
+        isRegistered = true;
+      }
+      return registerSolanaWalletStandard({ client, walletName });
+    },
+    disconnect: async () => {
+      // Unregister this client from the core
+      const isLastClient = isRegistered
+        ? core.unregisterClient(clientId)
+        : true;
+      isRegistered = false;
+
+      // Only actually disconnect if this was the last client
+      if (isLastClient) {
+        await core.disconnect();
+      } else {
+        // Other clients remain - update session to only have their scopes
+        const remainingScopes = core.getUnionScopes();
+        await core.updateSessionScopes(remainingScopes);
+      }
+    },
   };
 }
