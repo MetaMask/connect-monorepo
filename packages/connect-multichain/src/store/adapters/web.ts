@@ -31,9 +31,12 @@ export class StoreAdapterWeb extends StoreAdapter {
     super();
 
     const dbName = `${StoreAdapterWeb.DB_NAME}${dbNameSuffix}`;
+    // Version 2: Added 'sdk-kv-store' and 'key-value-pairs' object stores
+    // (version 1 may have had different stores in older codebase versions)
+    const dbVersion = 2;
     this.dbPromise = new Promise((resolve, reject) => {
       try {
-        const request = this.internal.open(dbName, 1);
+        const request = this.internal.open(dbName, dbVersion);
         request.onerror = () => reject(new Error('Failed to open IndexedDB.'));
         request.onsuccess = () => resolve(request.result);
         request.onupgradeneeded = () => {

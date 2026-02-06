@@ -81,6 +81,26 @@ export type MultichainOptions = {
   };
   /** Enable debug logging */
   debug?: boolean;
+  /**
+   * Optional instance identifier for storage isolation.
+   * When provided, all storage keys will be prefixed with this ID,
+   * enabling multiple SDK instances to coexist without interference.
+   *
+   * If not provided, a deterministic ID based on dapp.name and SDK type
+   * will be generated to ensure multi-tab consistency while maintaining
+   * isolation between different SDK types (multichain, evm, solana, etc.)
+   */
+  instanceId?: string;
+
+  /**
+   * The SDK type identifier used for generating the instanceId suffix.
+   * This ensures different SDK types (multichain, evm, solana) are isolated
+   * even when using the same dapp.name.
+   *
+   * @default 'multichain'
+   * @example 'evm' for connect-evm, 'solana' for connect-solana
+   */
+  sdkType?: string;
 };
 
 type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {

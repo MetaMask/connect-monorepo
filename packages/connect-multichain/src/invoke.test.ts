@@ -106,10 +106,10 @@ function testSuite<T extends MultichainOptions>({
       const uiOptions: MultichainOptions['ui'] =
         platform === 'web-mobile'
           ? {
-              ...originalSdkOptions.ui,
-              showInstallModal: false,
-              preferExtension: false,
-            }
+            ...originalSdkOptions.ui,
+            showInstallModal: false,
+            preferExtension: false,
+          }
           : originalSdkOptions.ui;
       mockedData = await beforeEach();
       // Set the transport type as a string in storage (this is how it's stored)
@@ -358,7 +358,8 @@ function testSuite<T extends MultichainOptions>({
 
 const exampleDapp = { name: 'Test Dapp', url: 'https://test.dapp' };
 
-const baseTestOptions = { dapp: exampleDapp } as any;
+// instanceId: '' disables storage key prefixing for backwards-compatible test behavior
+const baseTestOptions = { dapp: exampleDapp, instanceId: '' } as any;
 
 runTestsInNodeEnv(baseTestOptions, testSuite);
 runTestsInRNEnv(baseTestOptions, testSuite);
