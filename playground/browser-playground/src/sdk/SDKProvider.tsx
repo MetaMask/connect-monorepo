@@ -55,19 +55,17 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
         },
         transport: {
           extensionId: METAMASK_PROD_CHROME_ID,
-          onNotification: (notification: unknown) => {
-            const payload = notification as Record<string, unknown>;
-            if (
-              payload.method === 'wallet_sessionChanged' ||
-              payload.method === 'wallet_createSession' ||
-              payload.method === 'wallet_getSession'
-            ) {
-              setSession(payload.params as SessionData);
-            } else if (payload.method === 'stateChanged') {
-              setStatus(payload.params as ConnectionStatus);
-            }
-          },
         },
+      });
+
+      // TODO: Check if we can get rid of transport.onNotification constructor param
+      sdkRef.current.then((sdkInstance) => {
+        sdkInstance.on('wallet_sessionChanged', (session: unknown) => {
+          setSession(session as SessionData);
+        });
+        sdkInstance .on('stateChanged', (status: unknown) => {
+          setStatus(status as ConnectionStatus);
+        });
       });
     }
   }, []);
