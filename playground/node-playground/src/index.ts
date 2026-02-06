@@ -16,17 +16,27 @@ import {
   getInfuraRpcUrls,
   type SessionData,
 } from '@metamask/connect-multichain';
+import type { SolanaClient } from '@metamask/connect-solana';
 import { hexToNumber, type Hex } from '@metamask/utils';
 import chalk from 'chalk';
 import dotenv from 'dotenv';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';
 
+import {
+  initSolanaClient,
+  setupSolanaEventHandlers,
+  connectSolana,
+  signSolanaMessage,
+  disconnectSolana,
+  SOLANA_CHAINS,
+} from './solana';
+
 dotenv.config();
 
 // Define the states our application can be in
 type AppState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SIGNING';
-type ConnectorType = 'multichain' | 'evm';
+type ConnectorType = 'multichain' | 'evm' | 'solana';
 
 const AVAILABLE_CHAINS = [
   { id: 1, hexId: '0x1' as Hex, name: 'Ethereum Mainnet', caip: 'eip155:1' },
@@ -73,6 +83,7 @@ const state: {
     ReturnType<typeof createMultichainClient>
   > | null;
   evmSdk: MetamaskConnectEVM | null;
+  solanaClient: SolanaClient | null;
   accounts: { [chainId: string]: string[] }; // Group accounts by chain
   spinner: Ora | null;
 } = {
@@ -80,6 +91,7 @@ const state: {
   connectorType: null,
   metamaskConnectMultichain: null,
   evmSdk: null,
+  solanaClient: null,
   accounts: {}, // Initialize as an empty object
   spinner: null,
 };
@@ -102,6 +114,7 @@ const showMenu = async () => {
         choices: [
           'Connect with Multichain API',
           'Connect with Legacy EVM Connector',
+          'Connect with Solana Client',
           'Exit',
         ],
       },
@@ -111,6 +124,9 @@ const showMenu = async () => {
       await handleConnect();
     } else if (action === 'Connect with Legacy EVM Connector') {
       state.connectorType = 'evm';
+      await handleConnect();
+    } else if (action === 'Connect with Solana Client') {
+      state.connectorType = 'solana';
       await handleConnect();
     } else {
       process.exit(0);
@@ -138,16 +154,24 @@ const showMenu = async () => {
       );
     }
 
-    const choices = ['Sign Ethereum Message', 'Disconnect'];
+    // Build menu choices based on connector type
+    let choices: string[];
 
-    // Only show Solana signing option for multichain connector
-    if (state.connectorType === 'multichain') {
-      choices.splice(1, 0, 'Sign Solana Message');
-    }
+    if (state.connectorType === 'solana') {
+      // Solana connector: only Solana signing and disconnect
+      choices = ['Sign Solana Message', 'Disconnect'];
+    } else {
+      choices = ['Sign Ethereum Message', 'Disconnect'];
 
-    // Only show Switch Chain option for EVM connector
-    if (state.connectorType === 'evm') {
-      choices.splice(1, 0, 'Switch Chain');
+      // Only show Solana signing option for multichain connector
+      if (state.connectorType === 'multichain') {
+        choices.splice(1, 0, 'Sign Solana Message');
+      }
+
+      // Only show Switch Chain option for EVM connector
+      if (state.connectorType === 'evm') {
+        choices.splice(1, 0, 'Switch Chain');
+      }
     }
 
     const { action } = await inquirer.prompt([
@@ -189,6 +213,11 @@ const handleConnect = async () => {
     } else if (state.connectorType === 'evm') {
       // Connect using EVM connector (Ethereum Mainnet only)
       await state.evmSdk?.connect({ chainIds: ['0x1'] });
+    } else if (state.connectorType === 'solana') {
+      // Connect using Solana connector (Solana Mainnet only)
+      if (state.solanaClient) {
+        await connectSolana(state.solanaClient);
+      }
     }
   } catch (error: unknown) {
     if (state.spinner) {
@@ -212,6 +241,10 @@ const handleDisconnect = async () => {
       await state.metamaskConnectMultichain?.disconnect();
     } else if (state.connectorType === 'evm') {
       await state.evmSdk?.disconnect();
+    } else if (state.connectorType === 'solana') {
+      if (state.solanaClient) {
+        await disconnectSolana(state.solanaClient);
+      }
     }
     state.spinner.succeed('Disconnected successfully.');
   } catch (error: unknown) {
@@ -338,17 +371,20 @@ const handleSwitchChain = async () => {
 };
 
 const handleSolanaSign = async () => {
-  const chain = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
+  const chain = SOLANA_CHAINS.mainnet;
   if (!state.accounts[chain] || state.accounts[chain].length === 0) {
     console.log(chalk.red('No Solana account connected.'));
     return;
   }
 
-  // Solana signing is only available with multichain connector
-  if (state.connectorType !== 'multichain') {
+  // Solana signing is only available with multichain or solana connector
+  if (
+    state.connectorType !== 'multichain' &&
+    state.connectorType !== 'solana'
+  ) {
     console.log(
       chalk.red(
-        'Solana signing is only available with Multichain API connector.',
+        'Solana signing is only available with Multichain API or Solana connector.',
       ),
     );
     return;
@@ -365,24 +401,36 @@ const handleSolanaSign = async () => {
     },
   ]);
 
-  const messageBase64 = Buffer.from(message, 'utf8').toString('base64');
-
   state.app = 'SIGNING';
   state.spinner = ora(
     'Waiting for Solana signature... Please check your MetaMask Mobile app.',
   ).start();
 
   try {
-    const result = await state.metamaskConnectMultichain?.invokeMethod({
-      scope: chain,
-      request: {
-        method: 'signMessage',
-        params: {
-          account: { address: accountAddress },
-          message: messageBase64,
+    let result: unknown;
+
+    if (state.connectorType === 'solana' && state.solanaClient) {
+      // Use the Solana client module
+      result = await signSolanaMessage(
+        state.solanaClient,
+        accountAddress,
+        message,
+      );
+    } else {
+      // Use the multichain client
+      const messageBase64 = Buffer.from(message, 'utf8').toString('base64');
+      result = await state.metamaskConnectMultichain?.invokeMethod({
+        scope: chain,
+        request: {
+          method: 'signMessage',
+          params: {
+            account: { address: accountAddress },
+            message: messageBase64,
+          },
         },
-      },
-    });
+      });
+    }
+
     state.spinner.succeed('Solana message signed successfully!');
     console.log(chalk.bold('Signature:'), result);
   } catch (error: unknown) {
@@ -491,6 +539,37 @@ const main = async (): Promise<void> => {
           state.accounts = groupedAccounts;
         }
       },
+    },
+  });
+
+  // Initialize Solana SDK
+  state.solanaClient = await initSolanaClient();
+
+  // --- Solana SDK Event Handler ---
+  setupSolanaEventHandlers(state.solanaClient, {
+    onConnect: (accounts) => {
+      if (state.app !== 'CONNECTING') {
+        console.clear();
+        console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
+        console.log('------------------------------------');
+      }
+
+      if (state.spinner) {
+        state.spinner.stop();
+        state.spinner = null;
+      }
+
+      state.accounts = accounts;
+      state.app = 'CONNECTED';
+    },
+    onDisconnect: () => {
+      state.accounts = {};
+      state.app = 'DISCONNECTED';
+      state.connectorType = null;
+      console.clear();
+      console.log(chalk.bold.cyan('MetaMask SDK Node.js Playground'));
+      console.log('------------------------------------');
+      console.log(chalk.yellow('Session ended. You are now disconnected.'));
     },
   });
 
