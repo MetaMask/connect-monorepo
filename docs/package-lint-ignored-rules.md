@@ -51,7 +51,7 @@ with the "import" condition. Consider using the .mts extension.
    - Running in Node.js directly (not through a bundler like webpack/vite/esbuild)
    - Using `moduleResolution: "node16"` or `"nodenext"` in tsconfig (stricter than the common `"bundler"` setting)
    - TypeScript then interprets the `.d.ts` types as CJS while the `.mjs` runtime is ESM
-   
+
    Most real-world consumers use bundlers, which handle module interop seamlessly regardless of file extensions.
 
 3. **The fix is complex:** Properly fixing this requires:
@@ -167,11 +167,11 @@ and the "browser" condition
 
 ## Summary Table
 
-| Rule                       | Issue                                    | Impact                                           | Why Ignore                                           | Affected Packages |
-| -------------------------- | ---------------------------------------- | ------------------------------------------------ | ---------------------------------------------------- | ----------------- |
+| Rule                       | Issue                                    | Impact                                           | Why Ignore                                                   | Affected Packages |
+| -------------------------- | ---------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------ | ----------------- |
 | `false-cjs`                | Types interpreted as CJS for ESM imports | Theoretical type ambiguity in strict Node.js ESM | Bundlers handle correctly; fix is complex; industry standard | All packages      |
-| `no-resolution`            | Subpaths fail on Node 10                 | None                                             | Node 10 is EOL (2021); never supported               | All packages      |
-| `unexpected-module-syntax` | ESM syntax in CJS-typed files            | Node.js would reject if run directly             | Stencil limitation; bundlers work fine; browser-only | multichain-ui     |
+| `no-resolution`            | Subpaths fail on Node 10                 | None                                             | Node 10 is EOL (2021); never supported                       | All packages      |
+| `unexpected-module-syntax` | ESM syntax in CJS-typed files            | Node.js would reject if run directly             | Stencil limitation; bundlers work fine; browser-only         | multichain-ui     |
 
 ---
 
