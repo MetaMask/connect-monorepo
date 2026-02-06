@@ -89,6 +89,25 @@ type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
 };
 
 /**
+ * Options that can be merged/overwritten when createMultichainClient is called
+ * with an existing singleton.
+ */
+export type MergeableMultichainOptions = {
+  api?: { supportedNetworks?: RpcUrlsMap };
+  ui?: {
+    headless?: boolean;
+    preferExtension?: boolean;
+    showInstallModal?: boolean;
+  };
+  mobile?: {
+    preferredOpenLink?: (deeplink: string, target?: string) => void;
+    useDeeplink?: boolean;
+  };
+  transport?: { extensionId?: string };
+  debug?: boolean;
+};
+
+/**
  * Complete options for Multichain SDK configuration.
  *
  * This type extends the base options with storage configuration,

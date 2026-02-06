@@ -24,10 +24,15 @@ declare global {
 }
 
 export const createMultichainClient: CreateMultichainFN = async (options) => {
-  // Return existing singleton if available
+  // Return existing singleton if available, merging in the new param options
   const existingSingleton = global[SINGLETON_KEY];
   if (existingSingleton) {
-    return existingSingleton;
+    const instance = await existingSingleton;
+    instance.mergeOptions(options);
+    if (options.debug) {
+      enableDebug('metamask-sdk:*');
+    }
+    return instance;
   }
 
   // Store the promise immediately to prevent concurrent calls from creating multiple instances
