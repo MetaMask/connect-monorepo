@@ -378,7 +378,10 @@ const handleSolanaSign = async () => {
   }
 
   // Solana signing is only available with multichain or solana connector
-  if (state.connectorType !== 'multichain' && state.connectorType !== 'solana') {
+  if (
+    state.connectorType !== 'multichain' &&
+    state.connectorType !== 'solana'
+  ) {
     console.log(
       chalk.red(
         'Solana signing is only available with Multichain API or Solana connector.',
@@ -408,7 +411,11 @@ const handleSolanaSign = async () => {
 
     if (state.connectorType === 'solana' && state.solanaClient) {
       // Use the Solana client module
-      result = await signSolanaMessage(state.solanaClient, accountAddress, message);
+      result = await signSolanaMessage(
+        state.solanaClient,
+        accountAddress,
+        message,
+      );
     } else {
       // Use the multichain client
       const messageBase64 = Buffer.from(message, 'utf8').toString('base64');

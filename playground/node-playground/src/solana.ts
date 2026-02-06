@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Interactive CLI demo */
 
+import type { SessionData } from '@metamask/connect-multichain';
 import {
   createSolanaClient,
   type SolanaClient,
 } from '@metamask/connect-solana';
-import type { SessionData } from '@metamask/connect-multichain';
 
 /**
  * Solana CAIP-2 chain IDs for supported networks.
@@ -114,6 +114,7 @@ export async function signSolanaMessage(
   accountAddress: string,
   message: string,
 ): Promise<unknown> {
+  // eslint-disable-next-line no-restricted-globals -- Node.js Buffer is available in Node.js environment
   const messageBase64 = Buffer.from(message, 'utf8').toString('base64');
 
   const result = await client.core.invokeMethod({
