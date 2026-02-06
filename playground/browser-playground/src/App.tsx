@@ -45,7 +45,6 @@ function App() {
     connectAsync: wagmiConnectAsync,
     status: wagmiStatus,
   } = useConnect();
-  const { disconnect: wagmiDisconnect } = useDisconnect();
 
   const {
     connected: solanaConnected,
@@ -53,7 +52,6 @@ function App() {
     wallets,
     select,
     connect: solanaConnect,
-    disconnect: solanaDisconnect,
   } = useWallet();
 
   const handleCheckboxChange = useCallback(
@@ -161,18 +159,9 @@ function App() {
     status === 'disconnected' || status === 'pending' || status === 'loaded';
 
   const disconnect = useCallback(async () => {
-    if (isConnected) {
-      await sdkDisconnect();
-    }
+    await sdkDisconnect();
   }, [
     sdkDisconnect,
-    legacyDisconnect,
-    wagmiDisconnect,
-    solanaDisconnect,
-    isConnected,
-    legacyConnected,
-    wagmiConnected,
-    solanaConnected,
   ]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
