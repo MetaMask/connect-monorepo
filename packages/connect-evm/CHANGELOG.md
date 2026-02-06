@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `display_uri` and `wallet_sessionChanged` events not firing after disconnect and reconnect in headless mode ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))
+
 ### Changed
 
 - **BREAKING** Standardize `chainId` to use `Hex` format throughout the public API ([#150](https://github.com/MetaMask/connect-monorepo/pull/150))
