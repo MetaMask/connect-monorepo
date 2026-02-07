@@ -77,6 +77,7 @@ export type MultichainOptions = {
   transport?: {
     /** Extension ID for browser extension transport */
     extensionId?: string;
+    onNotification?: (notification: unknown) => void;
   };
   /** Enable debug logging */
   debug?: boolean;
