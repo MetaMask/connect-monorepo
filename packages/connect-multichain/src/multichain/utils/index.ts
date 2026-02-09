@@ -22,6 +22,23 @@ import {
 export type OptionalScopes = Record<Scope, SessionData['sessionScopes'][Scope]>;
 
 /**
+ * Returns the global object for the current JS environment.
+ *
+ * @returns The global object as a record for indexing
+ */
+export function getGlobalObject(): Record<string, unknown> {
+  if (typeof globalThis !== 'undefined')
+    return globalThis as unknown as Record<string, unknown>;
+  if (typeof global !== 'undefined')
+    return global as unknown as Record<string, unknown>;
+  if (typeof self !== 'undefined')
+    return self as unknown as Record<string, unknown>;
+  if (typeof window !== 'undefined')
+    return window as unknown as Record<string, unknown>;
+  throw new Error('Unable to locate global object');
+}
+
+/**
  * Cross-platform base64 encoding
  * Works in browser, Node.js, and React Native environments
  *

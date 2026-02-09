@@ -61,12 +61,19 @@ import { DefaultTransport } from './transports/default';
 import { MultichainApiClientWrapperTransport } from './transports/multichainApiClientWrapper';
 import { MWPTransport } from './transports/mwp';
 import { keymanager } from './transports/mwp/KeyManager';
-import { getDappId, openDeeplink, setupDappMetadata } from './utils';
+import {
+  getDappId,
+  getGlobalObject,
+  openDeeplink,
+  setupDappMetadata,
+} from './utils';
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
+
+const SINGLETON_KEY = '__METAMASK_CONNECT_MULTICHAIN_SINGLETON__';
 
 export class MetaMaskConnectMultichain extends MultichainCore {
   readonly #provider: MultichainApiClient<RPCAPI>;
@@ -155,16 +162,34 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   static async create(
     options: MultichainOptions,
   ): Promise<MetaMaskConnectMultichain> {
-    const instance = new MetaMaskConnectMultichain(options);
-    const isEnabled = await isLoggerEnabled(
-      'metamask-sdk:core',
-      instance.options.storage,
-    );
-    if (isEnabled) {
-      enableDebug('metamask-sdk:core');
+    const globalObject = getGlobalObject();
+    const existing = globalObject[SINGLETON_KEY] as
+      | Promise<MetaMaskConnectMultichain>
+      | undefined;
+    if (existing) {
+      const instance = await existing;
+      instance.mergeOptions(options);
+      if (options.debug) {
+        enableDebug('metamask-sdk:*');
+      }
+      return instance;
     }
-    await instance.#init();
-    return instance;
+
+    const instancePromise = (async (): Promise<MetaMaskConnectMultichain> => {
+      const instance = new MetaMaskConnectMultichain(options);
+      const isEnabled = await isLoggerEnabled(
+        'metamask-sdk:core',
+        instance.options.storage,
+      );
+      if (isEnabled) {
+        enableDebug('metamask-sdk:core');
+      }
+      await instance.#init();
+      return instance;
+    })();
+
+    globalObject[SINGLETON_KEY] = instancePromise;
+    return instancePromise;
   }
 
   async #setupAnalytics(): Promise<void> {
