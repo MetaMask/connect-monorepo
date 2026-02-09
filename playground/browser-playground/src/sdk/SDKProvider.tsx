@@ -63,7 +63,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
         sdkInstance.on('wallet_sessionChanged', (session: unknown) => {
           setSession(session as SessionData);
         });
-        sdkInstance .on('stateChanged', (status: unknown) => {
+        sdkInstance.on('stateChanged', (status: unknown) => {
           setStatus(status as ConnectionStatus);
         });
       });
