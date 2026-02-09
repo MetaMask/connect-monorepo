@@ -28,6 +28,7 @@ import {
 } from '@metamask/multichain-api-client';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
+import { getPermittedEthChainIds, getEthAccounts, InternalScopeObject, InternalScopesObject } from '@metamask/chain-agnostic-permission';
 
 import {
   createLogger,
@@ -564,7 +565,12 @@ export class MWPTransport implements ExtendedTransport {
       }),
     );
 
-    // TODO: update chain_store too. Emit chainChanged
+    // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
+    const remainingScopesIncludeEip155 = remainingScopes.some((scope) => scope.includes('eip155'));
+    if (!remainingScopesIncludeEip155) {
+      this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      this.kvstore.delete(CHAIN_STORE_KEY);
+    }
   }
 
   /**
