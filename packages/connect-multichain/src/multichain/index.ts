@@ -716,21 +716,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       logger('Error tracking connection_initiated event', error);
     }
 
-    let sessionData: SessionData = {
-      sessionScopes: {},
-      sessionProperties: {},
-    };
-    if (this.status === 'connected') {
-      // Try to get current session scopes
-      const response = await this.transport.request({
-        method: 'wallet_getSession',
-      });
-      if (response.result) {
-        sessionData = response.result as SessionData;
-      } else {
-        // ???
-      }
-    }
+    const sessionData = await this.#getCaipSession();
 
     // Get existing CAIP chain IDs and account IDs from sessionScopes
     const existingCaipChainIds = Object.keys(sessionData.sessionScopes);
@@ -852,7 +838,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     super.emit(event, args);
   }
 
-  async disconnect(scopes: Scope[] = []): Promise<void> {
+  async #getCaipSession(): Promise<SessionData> {
     let sessionData: SessionData = {
       sessionScopes: {},
       sessionProperties: {},
@@ -864,10 +850,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       });
       if (response.result) {
         sessionData = response.result as SessionData;
-      } else {
-        // ???
       }
     }
+    return sessionData;
+  }
+
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    const sessionData = await this.#getCaipSession();
 
     const remainingScopes =
       scopes.length === 0
