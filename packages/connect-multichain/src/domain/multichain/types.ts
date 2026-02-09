@@ -93,18 +93,11 @@ type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
  * Options that can be merged/overwritten when createMultichainClient is called
  * with an existing singleton.
  */
-export type MergeableMultichainOptions = {
-  api?: { supportedNetworks?: RpcUrlsMap };
-  ui?: {
-    headless?: boolean;
-    preferExtension?: boolean;
-    showInstallModal?: boolean;
-  };
-  mobile?: {
-    preferredOpenLink?: (deeplink: string, target?: string) => void;
-    useDeeplink?: boolean;
-  };
-  transport?: { extensionId?: string };
+export type MergeableMultichainOptions = Omit<MultichainOptions, 'storage' | 'api' | 'ui' | 'transport'> &
+{
+  api?: MultichainOptions['api'];
+  ui?: Pick<MultichainOptions['ui'], 'headless' | 'preferExtension' | 'showInstallModal'>;
+  transport?: Pick<NonNullable<MultichainOptions['transport']>, 'extensionId'>;
   debug?: boolean;
 };
 
