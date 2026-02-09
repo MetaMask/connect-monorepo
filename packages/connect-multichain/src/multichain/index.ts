@@ -730,7 +730,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
     });
 
-    // TODO: Fix these types
     const requestedScopes = Array.from(
       new Set([...existingCaipChainIds, ...scopes]),
     ) as Scope[];
@@ -843,8 +842,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       sessionScopes: {},
       sessionProperties: {},
     };
-    if (this.status === 'connected') {
-      // Try to get current session scopes
+    if (this.status !== 'connected') {
       const response = await this.transport.request({
         method: 'wallet_getSession',
       });
