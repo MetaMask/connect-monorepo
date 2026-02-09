@@ -511,15 +511,24 @@ export class MWPTransport implements ExtendedTransport {
   /**
    * Disconnects from the Mobile Wallet Protocol
    *
+   * @param [scopes] - The scopes to revoke
    * @returns Nothing
    */
   async disconnect(scopes: Scope[] = []): Promise<void> {
-    const cachedSession = await this.getCachedResponse({ jsonrpc: '2.0', id: '0', method: 'wallet_getSession' });
-    const cachedSessionScopes = (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
+    const cachedSession = await this.getCachedResponse({
+      jsonrpc: '2.0',
+      id: '0',
+      method: 'wallet_getSession',
+    });
+    const cachedSessionScopes =
+      (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
 
-    const remainingScopes = scopes.length === 0 ? [] : Object.keys(cachedSessionScopes).filter(
-      (scope) => !scopes.includes(scope as Scope),
-    );
+    const remainingScopes =
+      scopes.length === 0
+        ? []
+        : Object.keys(cachedSessionScopes).filter(
+            (scope) => !scopes.includes(scope as Scope),
+          );
 
     if (remainingScopes.length === 0) {
       // Clean up window focus event listener
@@ -535,25 +544,27 @@ export class MWPTransport implements ExtendedTransport {
       this.kvstore.delete(ACCOUNTS_STORE_KEY);
       this.kvstore.delete(CHAIN_STORE_KEY);
       return this.dappClient.disconnect();
-    } else {
-      // This might not actually get excuted on the wallet if the user doesn't open
-      // their wallet before the message TTL
-      this.request({ method: 'wallet_revokeSession', params: { scopes } });
+    }
+    // This might not actually get excuted on the wallet if the user doesn't open
+    // their wallet before the message TTL
+    this.request({ method: 'wallet_revokeSession', params: { scopes } });
 
-      const newSessionScopes = Object.fromEntries(
-        Object.entries(cachedSessionScopes).filter(([key]) =>
-          remainingScopes.includes(key)
-        )
-      );
+    const newSessionScopes = Object.fromEntries(
+      Object.entries(cachedSessionScopes).filter(([key]) =>
+        remainingScopes.includes(key),
+      ),
+    );
 
-      this.kvstore.set(SESSION_STORE_KEY, JSON.stringify({
+    this.kvstore.set(
+      SESSION_STORE_KEY,
+      JSON.stringify({
         result: {
           sessionScopes: newSessionScopes,
         },
-      }));
+      }),
+    );
 
-      // TODO: update chain_store too. Emit chainChanged
-    }
+    // TODO: update chain_store too. Emit chainChanged
   }
 
   /**

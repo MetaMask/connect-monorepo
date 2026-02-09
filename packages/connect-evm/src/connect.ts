@@ -1,9 +1,5 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 import { analytics } from '@metamask/analytics';
-import {
-  type InternalScopesObject,
-  getEthAccounts,
-} from '@metamask/chain-agnostic-permission';
 import type {
   ConnectionStatus,
   MultichainCore,
@@ -132,6 +128,7 @@ export class MetamaskConnectEVM {
      *
      * @param session - The session data
      */
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.#sessionChangedHandler = async (session): Promise<void> => {
       logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
@@ -139,8 +136,9 @@ export class MetamaskConnectEVM {
       if (permittedChainIds.length === 0) {
         this.#onDisconnect();
       } else {
-
-        const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+        const hexPermittedChainIds = getPermittedEthChainIds(
+          this.#sessionScopes,
+        );
 
         const initialAccounts = await this.#core.transport.sendEip1193Message<
           { method: 'eth_accounts'; params: [] },
@@ -185,7 +183,7 @@ export class MetamaskConnectEVM {
     options: MetamaskConnectEVMOptions,
   ): Promise<MetamaskConnectEVM> {
     const instance = new MetamaskConnectEVM(options);
-    await instance.#attemptSessionRecovery();
+    await instance.#core.emitSessionChanged();
     return instance;
   }
 
@@ -369,7 +367,6 @@ export class MetamaskConnectEVM {
         forceRequest,
       );
 
-
       // Wait for the wallet_sessionChanged event to fire and set the provider properties
       return new Promise((resolve) => {
         this.#provider.once('connect', ({ chainId, accounts }) => {
@@ -483,8 +480,8 @@ export class MetamaskConnectEVM {
     logger('request: disconnect');
 
     const sessionScopes = this.#sessionScopes;
-    const eip155Scopes = Object.keys(sessionScopes).filter(
-      (scope) => scope.startsWith('eip155:'),
+    const eip155Scopes = Object.keys(sessionScopes).filter((scope) =>
+      scope.startsWith('eip155:'),
     );
 
     await this.#core.disconnect(eip155Scopes as Scope[]);
@@ -807,10 +804,10 @@ export class MetamaskConnectEVM {
           // @ts-expect-error TODO: address this
           if (notification?.method === 'metamask_accountsChanged') {
             // @ts-expect-error TODO: address this
-            const accounts = notification?.params;
-            logger('transport-event: accountsChanged', accounts);
+            const notificationAccounts = notification?.params;
+            logger('transport-event: accountsChanged', notificationAccounts);
             // why are we not caching the accounts here?
-            this.#onAccountsChanged(accounts);
+            this.#onAccountsChanged(notificationAccounts);
           }
 
           // @ts-expect-error TODO: address this
@@ -864,19 +861,6 @@ export class MetamaskConnectEVM {
     logger('handler: display_uri', uri);
     this.#provider.emit('display_uri', uri);
     this.#eventHandlers?.displayUri?.(uri);
-  }
-
-  /**
-   * Will trigger an accountsChanged event if there's a valid previous session.
-   * This is needed because the accountsChanged event is not triggered when
-   * revising, reloading or opening the app in a new tab.
-   *
-   * This works by checking by checking events received during MultichainCore initialization,
-   * and if there's a wallet_sessionChanged event, it will add a 1-time listener for eth_accounts results
-   * and trigger an accountsChanged event if the results are valid accounts.
-   */
-  async #attemptSessionRecovery(): Promise<void> {
-    return this.#core.emitSessionChanged();
   }
 
   /**

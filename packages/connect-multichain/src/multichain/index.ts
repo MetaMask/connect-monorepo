@@ -745,13 +745,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
 
     // TODO: Fix these types
-    const requestedScopes = Array.from(new Set([...existingCaipChainIds, ...scopes])) as Scope[]
-    const requestedCaipAccountIds = Array.from(new Set([...existingCaipAccountIds, ...caipAccountIds])) as CaipAccountId[]
+    const requestedScopes = Array.from(
+      new Set([...existingCaipChainIds, ...scopes]),
+    ) as Scope[];
+    const requestedCaipAccountIds = Array.from(
+      new Set([...existingCaipAccountIds, ...caipAccountIds]),
+    ) as CaipAccountId[];
     const requestedSessionProperites = {
       ...sessionData.sessionProperties,
       ...sessionProperties,
-    }
-
+    };
 
     // Needed because empty object will cause wallet_createSession to return an error
     const nonEmptySessionProperites =
@@ -866,9 +869,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
     }
 
-    const remainingScopes = scopes.length === 0 ? [] : Object.keys(sessionData.sessionScopes).filter(
-      (scope) => !scopes.includes(scope as Scope),
-    );
+    const remainingScopes =
+      scopes.length === 0
+        ? []
+        : Object.keys(sessionData.sessionScopes).filter(
+            (scope) => !scopes.includes(scope as Scope),
+          );
 
     await this.#transport?.disconnect(scopes);
 
@@ -888,8 +894,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     const newSessionScopes = Object.fromEntries(
       Object.entries(sessionData.sessionScopes).filter(([key]) =>
-        remainingScopes.includes(key)
-      )
+        remainingScopes.includes(key),
+      ),
     );
 
     // in theory this is only needed for MWP
@@ -930,13 +936,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async emitSessionChanged(): Promise<void> {
-    if (
-      this.status !== 'connected' &&
-      this.status !== 'connecting'
-    ) {
+    if (this.status !== 'connected' && this.status !== 'connecting') {
       this.emit('wallet_sessionChanged', { sessionScopes: {} });
     } else {
-      const response = await this.transport.request({ method: 'wallet_getSession' })
+      const response = await this.transport.request({
+        method: 'wallet_getSession',
+      });
       if (response.result) {
         this.emit('wallet_sessionChanged', response.result);
       } else {

@@ -106,11 +106,15 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
     }
     if (partial.ui !== undefined) {
       const uiUpdates: Partial<MultichainOptions['ui']> = {};
-      if (partial.ui.headless !== undefined) uiUpdates.headless = partial.ui.headless;
-      if (partial.ui.preferExtension !== undefined)
+      if (partial.ui.headless !== undefined) {
+        uiUpdates.headless = partial.ui.headless;
+      }
+      if (partial.ui.preferExtension !== undefined) {
         uiUpdates.preferExtension = partial.ui.preferExtension;
-      if (partial.ui.showInstallModal !== undefined)
+      }
+      if (partial.ui.showInstallModal !== undefined) {
         uiUpdates.showInstallModal = partial.ui.showInstallModal;
+      }
       if (Object.keys(uiUpdates).length > 0) {
         opts.ui = { ...opts.ui, ...uiUpdates };
       }

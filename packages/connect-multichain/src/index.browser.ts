@@ -2,11 +2,7 @@
 // Buffer polyfill must be imported first to set up globalThis.Buffer
 import './polyfills/buffer-shim';
 
-import type {
-  CreateMultichainFN,
-  MultichainCore,
-  StoreClient,
-} from './domain';
+import type { CreateMultichainFN, MultichainCore, StoreClient } from './domain';
 import { enableDebug } from './domain';
 import { MetaMaskConnectMultichain } from './multichain';
 import { Store } from './store';
@@ -17,7 +13,6 @@ export * from './domain';
 const SINGLETON_KEY = '__METAMASK_CONNECT_MULTICHAIN_SINGLETON__';
 
 declare global {
-  // eslint-disable-next-line no-var
   var __METAMASK_CONNECT_MULTICHAIN_SINGLETON__:
     | Promise<MultichainCore>
     | undefined;
