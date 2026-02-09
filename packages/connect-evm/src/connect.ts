@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 import { analytics } from '@metamask/analytics';
+import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
   ConnectionStatus,
   MultichainCore,
@@ -37,7 +38,6 @@ import {
   isSwitchChainRequest,
   validSupportedChainsUrls,
 } from './utils/type-guards';
-import { parseScopeString } from '@metamask/chain-agnostic-permission';
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -768,7 +768,7 @@ export class MetamaskConnectEVM {
   #onAccountsChanged(accounts: Address[]): void {
     const accountsUnchanged =
       accounts.length === this.#provider.accounts.length &&
-      accounts.every((acct, idx) => acct === this.#provider.accounts[idx])
+      accounts.every((acct, idx) => acct === this.#provider.accounts[idx]);
     if (accountsUnchanged) {
       return;
     }
