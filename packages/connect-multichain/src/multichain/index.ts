@@ -390,14 +390,18 @@ export class MetaMaskConnectMultichain extends MultichainCore {
                     // Ignore Request expired errors to allow modal to regenerate expired qr codes
                     if (error.code !== ErrorCode.REQUEST_EXPIRED) {
                       this.status = 'disconnected';
+                      // Close the modal on error
+                      await this.options.ui.factory.unload(error);
                       reject(error);
                     }
                     // If request is expires, the QRCode will automatically be regenerated we can ignore this case
                   } else {
                     this.status = 'disconnected';
-                    reject(
-                      error instanceof Error ? error : new Error(String(error)),
-                    );
+                    const normalizedError =
+                      error instanceof Error ? error : new Error(String(error));
+                    // Close the modal on error
+                    await this.options.ui.factory.unload(normalizedError);
+                    reject(normalizedError);
                   }
                 }
               })().catch(() => {

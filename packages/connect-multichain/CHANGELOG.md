@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3]
+
 ### Added
 
 - `createMultichainClient()` now accepts an optional `debug` param option which enables console debug logs when set to `true`. Defaults to `false`. ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
 
 ### Fixed
 
+- Fix QR rejection handling: properly propagate user rejection errors from MetaMask Mobile to the dApp ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+- Close QR modal automatically when user rejects connection ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
+- Use `@metamask/rpc-errors` for EIP-1193 compliant error handling ([#156](https://github.com/MetaMask/connect-monorepo/pull/156))
 - Fix `sessionProperties` not being passed to `wallet_createSession` when recreating a session after scope/account changes ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
 
 ## [0.5.2]
@@ -130,7 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.2...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...HEAD
+[0.5.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.2...@metamask/connect-multichain@0.5.3
 [0.5.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.1...@metamask/connect-multichain@0.5.2
 [0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.0...@metamask/connect-multichain@0.5.1
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.4.0...@metamask/connect-multichain@0.5.0

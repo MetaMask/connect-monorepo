@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add Solana wallet-standard integration for MetaMask Connect ([#123](https://github.com/MetaMask/connect-monorepo/pull/123))
+- Add node.js builds [#169](https://github.com/MetaMask/connect-monorepo/pull/169)
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/
+## [0.1.0]
+
+### Added
+
+- Initial release
+
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.1.0...HEAD
+[0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/connect-solana@0.1.0
