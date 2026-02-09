@@ -37,6 +37,7 @@ import {
   isSwitchChainRequest,
   validSupportedChainsUrls,
 } from './utils/type-guards';
+import { parseScopeString } from '@metamask/chain-agnostic-permission';
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -480,9 +481,10 @@ export class MetamaskConnectEVM {
     logger('request: disconnect');
 
     const sessionScopes = this.#sessionScopes;
-    const eip155Scopes = Object.keys(sessionScopes).filter((scope) =>
-      scope.startsWith('eip155:'),
-    );
+    const eip155Scopes = Object.keys(sessionScopes).filter((scope) => {
+      const { namespace } = parseScopeString(scope as Scope);
+      return namespace === 'eip155';
+    });
 
     await this.#core.disconnect(eip155Scopes as Scope[]);
     this.#onDisconnect();
