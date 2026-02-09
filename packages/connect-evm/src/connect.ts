@@ -766,6 +766,12 @@ export class MetamaskConnectEVM {
    * @param accounts - The new list of permitted accounts
    */
   #onAccountsChanged(accounts: Address[]): void {
+    const accountsUnchanged =
+      accounts.length === this.#provider.accounts.length &&
+      accounts.every((acct, idx) => acct === this.#provider.accounts[idx])
+    if (accountsUnchanged) {
+      return;
+    }
     logger('handler: accountsChanged', accounts);
     this.#provider.accounts = accounts;
     this.#provider.emit('accountsChanged', accounts);
@@ -827,7 +833,6 @@ export class MetamaskConnectEVM {
       );
     }
 
-    // TODO: check if chain has changed and accounts have changed
     this.#onChainChanged(chainId);
     this.#onAccountsChanged(accounts);
   }
