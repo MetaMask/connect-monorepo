@@ -511,7 +511,7 @@ export class MWPTransport implements ExtendedTransport {
   /**
    * Disconnects from the Mobile Wallet Protocol
    *
-   * @param [scopes] - The scopes to revoke
+   * @param [scopes] - The scopes to revoke. If not provided or empty, all scopes will be revoked.
    * @returns Nothing
    */
   async disconnect(scopes: Scope[] = []): Promise<void> {
