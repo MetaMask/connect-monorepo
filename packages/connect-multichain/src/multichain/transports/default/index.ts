@@ -229,12 +229,6 @@ export class DefaultTransport implements ExtendedTransport {
       );
 
       if (!hasSameScopesAndAccounts) {
-        // MWPTransport does not reset the whole session. Why are we doing so here?
-        // Passing in walletSession here is wrong as it's not an array of scope strings
-        // await this.request(
-        //   { method: 'wallet_revokeSession', params: walletSession },
-        //   this.#defaultRequestOptions,
-        // );
         const response = await this.request(
           { method: 'wallet_createSession', params: createSessionParams },
           this.#defaultRequestOptions,
