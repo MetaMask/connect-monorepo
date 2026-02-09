@@ -27,14 +27,18 @@ export type OptionalScopes = Record<Scope, SessionData['sessionScopes'][Scope]>;
  * @returns The global object as a record for indexing
  */
 export function getGlobalObject(): Record<string, unknown> {
-  if (typeof globalThis !== 'undefined')
+  if (typeof globalThis !== 'undefined') {
     return globalThis as unknown as Record<string, unknown>;
-  if (typeof global !== 'undefined')
+  }
+  if (typeof global !== 'undefined') {
     return global as unknown as Record<string, unknown>;
-  if (typeof self !== 'undefined')
+  }
+  if (typeof self !== 'undefined') {
     return self as unknown as Record<string, unknown>;
-  if (typeof window !== 'undefined')
+  }
+  if (typeof window !== 'undefined') {
     return window as unknown as Record<string, unknown>;
+  }
   throw new Error('Unable to locate global object');
 }
 
