@@ -133,14 +133,11 @@ export class MetamaskConnectEVM {
     this.#sessionChangedHandler = async (session): Promise<void> => {
       logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
-      const permittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
-      if (permittedChainIds.length === 0) {
+      const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+      if (hexPermittedChainIds.length === 0) {
         this.#onDisconnect();
       } else {
-        const hexPermittedChainIds = getPermittedEthChainIds(
-          this.#sessionScopes,
-        );
-
+     
         const initialAccounts = await this.#core.transport.sendEip1193Message<
           { method: 'eth_accounts'; params: [] },
           { result: string[]; id: number; jsonrpc: '2.0' }
