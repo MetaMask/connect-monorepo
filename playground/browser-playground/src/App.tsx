@@ -266,21 +266,13 @@ function App() {
               </button>
             )}
 
-            {isConnected && (
+            {isConnected && scopesHaveChanged() && (
               <button
                 type="button"
-                data-testid={
-                  scopesHaveChanged()
-                    ? TEST_IDS.app.btnReconnect
-                    : TEST_IDS.app.btnDisconnect
-                }
-                onClick={scopesHaveChanged() ? connect : disconnect}
+                data-testid={TEST_IDS.app.btnReconnect}
+                onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
-              >
-                {scopesHaveChanged()
-                  ? `Re Establishing Connection (Multichain)`
-                  : `Disconnect (Multichain)`}
-              </button>
+              > Reconnect (Multichain) </button>
             )}
 
             {(isConnected ||
