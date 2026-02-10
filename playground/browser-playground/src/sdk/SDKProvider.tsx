@@ -60,11 +60,12 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 
       // TODO: Check if we can get rid of transport.onNotification constructor param
       sdkRef.current.then((sdkInstance) => {
-        sdkInstance.on('wallet_sessionChanged', (session: unknown) => {
-          setSession(session as SessionData);
-        });
+        setStatus(sdkInstance.status);
         sdkInstance.on('stateChanged', (status: unknown) => {
           setStatus(status as ConnectionStatus);
+        });
+        sdkInstance.on('wallet_sessionChanged', (session: unknown) => {
+          setSession(session as SessionData);
         });
       });
     }
