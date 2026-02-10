@@ -856,7 +856,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       sessionScopes: {},
       sessionProperties: {},
     };
-    if (this.status !== 'connected') {
+    if (this.status === 'connected') {
       const response = await this.transport.request({
         method: 'wallet_getSession',
       });
