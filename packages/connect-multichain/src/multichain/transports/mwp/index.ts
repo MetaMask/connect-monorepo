@@ -531,7 +531,35 @@ export class MWPTransport implements ExtendedTransport {
             (scope) => !scopes.includes(scope as Scope),
           );
 
-    if (remainingScopes.length === 0) {
+    const newSessionScopes = Object.fromEntries(
+      Object.entries(cachedSessionScopes).filter(([key]) =>
+        remainingScopes.includes(key),
+      ),
+    );
+
+    // This might not actually get excuted on the wallet if the user doesn't open
+    // their wallet before the message TTL
+    this.request({ method: 'wallet_revokeSession', params: { scopes } });
+
+    // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
+    const remainingScopesIncludeEip155 = remainingScopes.some((scope) => scope.includes('eip155'));
+    if (!remainingScopesIncludeEip155) {
+      this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      this.kvstore.delete(CHAIN_STORE_KEY);
+    }
+
+    if (remainingScopes.length > 0) {
+      this.kvstore.set(
+        SESSION_STORE_KEY,
+        JSON.stringify({
+          result: {
+            sessionScopes: newSessionScopes,
+          },
+        }),
+      );
+    } else {
+      this.kvstore.delete(SESSION_STORE_KEY);
+
       // Clean up window focus event listener
       if (
         typeof window !== 'undefined' &&
@@ -541,36 +569,16 @@ export class MWPTransport implements ExtendedTransport {
         window.removeEventListener('focus', this.windowFocusHandler);
         this.windowFocusHandler = undefined;
       }
-      this.kvstore.delete(SESSION_STORE_KEY);
-      this.kvstore.delete(ACCOUNTS_STORE_KEY);
-      this.kvstore.delete(CHAIN_STORE_KEY);
-      return this.dappClient.disconnect();
+
+      this.dappClient.disconnect();
     }
-    // This might not actually get excuted on the wallet if the user doesn't open
-    // their wallet before the message TTL
-    this.request({ method: 'wallet_revokeSession', params: { scopes } });
 
-    const newSessionScopes = Object.fromEntries(
-      Object.entries(cachedSessionScopes).filter(([key]) =>
-        remainingScopes.includes(key),
-      ),
-    );
-
-    this.kvstore.set(
-      SESSION_STORE_KEY,
-      JSON.stringify({
-        result: {
-          sessionScopes: newSessionScopes,
-        },
-      }),
-    );
-
-    // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
-    const remainingScopesIncludeEip155 = remainingScopes.some((scope) => scope.includes('eip155'));
-    if (!remainingScopesIncludeEip155) {
-      this.kvstore.delete(ACCOUNTS_STORE_KEY);
-      this.kvstore.delete(CHAIN_STORE_KEY);
-    }
+    this.notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: {
+        sessionScopes: newSessionScopes,
+      },
+    });
   }
 
   /**

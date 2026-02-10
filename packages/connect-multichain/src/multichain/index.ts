@@ -892,15 +892,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#dappClient = undefined;
       this.status = 'disconnected';
     }
-
-    const newSessionScopes = Object.fromEntries(
-      Object.entries(sessionData.sessionScopes).filter(([key]) =>
-        remainingScopes.includes(key),
-      ),
-    );
-
-    // in theory this is only needed for MWP
-    this.emit('wallet_sessionChanged', { sessionScopes: newSessionScopes });
   }
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
