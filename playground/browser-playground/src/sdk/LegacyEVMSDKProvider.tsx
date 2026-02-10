@@ -89,7 +89,9 @@ export const LegacyEVMSDKProvider = ({
         const providerInstance = await clientSDK.getProvider();
 
         if (providerInstance) {
-          providerInstance.on('connect', () => {
+          providerInstance.on('connect', ({ chainId, accounts }: { chainId: string; accounts: string[] }) => {
+            setChainId(chainId);
+            setAccounts(accounts);
             setConnected(true);
           });
 
