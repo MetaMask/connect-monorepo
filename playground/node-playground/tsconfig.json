@@ -16,6 +16,9 @@
       "@metamask/connect-multichain": [
         "../../packages/connect-multichain/src/index.node.ts"
       ],
+      "@metamask/connect-solana": [
+        "../../packages/connect-solana/src/index.ts"
+      ],
       "@metamask/multichain-ui/loader": [
         "../../packages/multichain-ui/dist/loader"
       ],

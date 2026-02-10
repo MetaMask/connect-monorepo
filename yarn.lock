@@ -4189,7 +4189,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@metamask/connect-solana@workspace:packages/connect-solana":
+"@metamask/connect-solana@workspace:^, @metamask/connect-solana@workspace:packages/connect-solana":
   version: 0.0.0-use.local
   resolution: "@metamask/connect-solana@workspace:packages/connect-solana"
   dependencies:
@@ -4603,6 +4603,7 @@ __metadata:
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect-solana": "workspace:^"
     "@types/inquirer": "npm:^8.2.1"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.9.0"

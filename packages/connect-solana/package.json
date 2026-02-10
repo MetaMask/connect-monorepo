@@ -18,19 +18,23 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "browser": {
+        "types": "./dist/types/index.d.ts",
+        "import": "./dist/browser/es/connect-solana.mjs"
+      },
       "import": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/browser/es/connect-solana.mjs"
+        "default": "./dist/node/es/connect-solana.mjs"
       },
       "require": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/browser/es/connect-solana.mjs"
+        "default": "./dist/node/cjs/connect-solana.js"
       },
-      "default": "./dist/browser/es/connect-solana.mjs"
+      "default": "./dist/node/cjs/connect-solana.js"
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/browser/es/connect-solana.mjs",
+  "main": "./dist/node/cjs/connect-solana.js",
   "module": "./dist/browser/es/connect-solana.mjs",
   "browser": "./dist/browser/es/connect-solana.mjs",
   "types": "./dist/types/index.d.ts",
