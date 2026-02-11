@@ -150,10 +150,7 @@ export class MetamaskConnectEVM {
         });
       }
     };
-    this.#core.on(
-      'wallet_sessionChanged',
-      this.#sessionChangedHandler.bind(this),
-    );
+    this.#core.on('wallet_sessionChanged', this.#sessionChangedHandler);
 
     /**
      * Handles the display_uri event.
