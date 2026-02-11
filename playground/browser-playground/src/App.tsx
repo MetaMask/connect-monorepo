@@ -154,7 +154,7 @@ function App() {
 
     // Find the MetaMask wallet in registered wallets
     const metamaskWallet = wallets.find((w) =>
-      w.adapter.name.toLowerCase().includes('metamask connect'),
+      w.adapter.name.toLowerCase().includes('metamask'),
     );
     if (metamaskWallet) {
       // Just select the wallet - autoConnect in WalletProvider will handle connection
