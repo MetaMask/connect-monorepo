@@ -29,7 +29,7 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getPermittedEthChainIds } from './utils/caip';
+import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -137,17 +137,22 @@ export class MetamaskConnectEVM {
       if (hexPermittedChainIds.length === 0) {
         this.#onDisconnect();
       } else {
-     
-        const initialAccounts = await this.#core.transport.sendEip1193Message<
-          { method: 'eth_accounts'; params: [] },
-          { result: string[]; id: number; jsonrpc: '2.0' }
-        >({ method: 'eth_accounts', params: [] });
+        let initialAccounts: Address[] = [];
+        if (this.#core.status === 'connected') {
+          const ethAccountsResponse = await this.#core.transport.sendEip1193Message<
+            { method: 'eth_accounts'; params: [] },
+            { result: string[]; id: number; jsonrpc: '2.0' }
+          >({ method: 'eth_accounts', params: [] });
+          initialAccounts = ethAccountsResponse.result as Address[];
+        } else {
+          initialAccounts = getEthAccounts(this.#sessionScopes);
+        }
 
         const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
 
         this.#onConnect({
           chainId,
-          accounts: initialAccounts.result as Address[],
+          accounts: initialAccounts as Address[],
         });
       }
     };
