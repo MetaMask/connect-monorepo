@@ -129,7 +129,6 @@ export class MetamaskConnectEVM {
      *
      * @param session - The session data
      */
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.#sessionChangedHandler = async (session): Promise<void> => {
       logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
