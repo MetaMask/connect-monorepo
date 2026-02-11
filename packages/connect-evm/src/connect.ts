@@ -129,7 +129,6 @@ export class MetamaskConnectEVM {
      *
      * @param session - The session data
      */
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.#sessionChangedHandler = async (session): Promise<void> => {
       logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
@@ -156,10 +155,7 @@ export class MetamaskConnectEVM {
         });
       }
     };
-    this.#core.on(
-      'wallet_sessionChanged',
-      this.#sessionChangedHandler.bind(this),
-    );
+    this.#core.on('wallet_sessionChanged', this.#sessionChangedHandler);
 
     /**
      * Handles the display_uri event.
