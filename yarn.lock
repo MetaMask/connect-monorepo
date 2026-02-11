@@ -4198,6 +4198,7 @@ __metadata:
     "@metamask/solana-wallet-standard": "npm:^0.6.0"
     "@types/jsdom": "npm:^21.1.7"
     "@vitest/coverage-v8": "npm:^3.2.4"
+    "@wallet-standard/app": "npm:~1.1.0"
     "@wallet-standard/base": "npm:^1.1.0"
     jsdom: "npm:^26.1.0"
     prettier: "npm:^3.3.3"
@@ -9641,7 +9642,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wallet-standard/app@npm:^1.1.0":
+"@wallet-standard/app@npm:^1.1.0, @wallet-standard/app@npm:~1.1.0":
   version: 1.1.0
   resolution: "@wallet-standard/app@npm:1.1.0"
   dependencies:
