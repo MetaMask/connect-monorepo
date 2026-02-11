@@ -384,10 +384,9 @@ export class MetamaskConnectEVM {
         });
       });
     } catch (error) {
+      this.#status = 'disconnected';
       logger('Error connecting to wallet', error);
       throw error;
-    } finally {
-      this.#status = 'disconnected';
     }
   }
 
