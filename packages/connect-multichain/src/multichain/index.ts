@@ -329,21 +329,20 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   #createBeforeUnloadListener(): () => void {
+    const handler = this.#onBeforeUnload.bind(this);
+
     if (
       typeof window !== 'undefined' &&
       typeof window.addEventListener !== 'undefined'
     ) {
-      window.addEventListener('beforeunload', this.#onBeforeUnload.bind(this));
+      window.addEventListener('beforeunload', handler);
     }
     return () => {
       if (
         typeof window !== 'undefined' &&
         typeof window.removeEventListener !== 'undefined'
       ) {
-        window.removeEventListener(
-          'beforeunload',
-          this.#onBeforeUnload.bind(this),
-        );
+        window.removeEventListener('beforeunload', handler);
       }
     };
   }

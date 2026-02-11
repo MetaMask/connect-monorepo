@@ -489,8 +489,10 @@ export class MetamaskConnectEVM {
     this.#onDisconnect();
     this.#clearConnectionState();
 
-    this.#core.off('wallet_sessionChanged', this.#sessionChangedHandler);
-    this.#core.off('display_uri', this.#displayUriHandler);
+    // Note: We intentionally do NOT remove the display_uri and wallet_sessionChanged
+    // listeners here. These are instance-scoped listeners that should remain active
+    // for the lifetime of the SDK instance, allowing reconnection to work properly.
+    // Session-scoped listeners (like the notification handler below) are removed.
 
     if (this.#removeNotificationHandler) {
       this.#removeNotificationHandler();
