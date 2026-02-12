@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Change Solana Wallet Standard filter to find wallet name 'Metamask' rather than 'Metamask Connect' ([#164](https://github.com/MetaMask/connect-monorepo/pull/164))
-
 ## [0.2.0]
 
 ### Added
