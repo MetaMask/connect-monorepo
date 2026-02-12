@@ -11,15 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add node.js builds [#169](https://github.com/MetaMask/connect-monorepo/pull/169)
 
-### Fixed
-
-- Prevents MetaMask Connect from registering on the Solana wallet-standard registry when Metamask extension is installed ([#164](https://github.com/MetaMask/connect-monorepo/pull/164))
-
 ## [0.1.0]
 
 ### Added
 
-- Initial Release
+- Initial release
 
 [Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.1.0...HEAD
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/connect-solana@0.1.0
