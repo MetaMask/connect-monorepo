@@ -28,6 +28,7 @@ import {
 } from '@metamask/multichain-api-client';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
+import { getPermittedEthChainIds, getEthAccounts, InternalScopeObject, InternalScopesObject } from '@metamask/chain-agnostic-permission';
 
 import {
   createLogger,
@@ -511,22 +512,73 @@ export class MWPTransport implements ExtendedTransport {
   /**
    * Disconnects from the Mobile Wallet Protocol
    *
+   * @param [scopes] - The scopes to revoke. If not provided or empty, all scopes will be revoked.
    * @returns Nothing
    */
-  async disconnect(): Promise<void> {
-    // Clean up window focus event listener
-    if (
-      typeof window !== 'undefined' &&
-      typeof window.removeEventListener !== 'undefined' &&
-      this.windowFocusHandler
-    ) {
-      window.removeEventListener('focus', this.windowFocusHandler);
-      this.windowFocusHandler = undefined;
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    const cachedSession = await this.getCachedResponse({
+      jsonrpc: '2.0',
+      id: '0',
+      method: 'wallet_getSession',
+    });
+    const cachedSessionScopes =
+      (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
+
+    const remainingScopes =
+      scopes.length === 0
+        ? []
+        : Object.keys(cachedSessionScopes).filter(
+            (scope) => !scopes.includes(scope as Scope),
+          );
+
+    const newSessionScopes = Object.fromEntries(
+      Object.entries(cachedSessionScopes).filter(([key]) =>
+        remainingScopes.includes(key),
+      ),
+    );
+
+    // This might not actually get excuted on the wallet if the user doesn't open
+    // their wallet before the message TTL
+    this.request({ method: 'wallet_revokeSession', params: { scopes } });
+
+    // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
+    const remainingScopesIncludeEip155 = remainingScopes.some((scope) => scope.includes('eip155'));
+    if (!remainingScopesIncludeEip155) {
+      this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      this.kvstore.delete(CHAIN_STORE_KEY);
     }
-    this.kvstore.delete(SESSION_STORE_KEY);
-    this.kvstore.delete(ACCOUNTS_STORE_KEY);
-    this.kvstore.delete(CHAIN_STORE_KEY);
-    return this.dappClient.disconnect();
+
+    if (remainingScopes.length > 0) {
+      this.kvstore.set(
+        SESSION_STORE_KEY,
+        JSON.stringify({
+          result: {
+            sessionScopes: newSessionScopes,
+          },
+        }),
+      );
+    } else {
+      this.kvstore.delete(SESSION_STORE_KEY);
+
+      // Clean up window focus event listener
+      if (
+        typeof window !== 'undefined' &&
+        typeof window.removeEventListener !== 'undefined' &&
+        this.windowFocusHandler
+      ) {
+        window.removeEventListener('focus', this.windowFocusHandler);
+        this.windowFocusHandler = undefined;
+      }
+
+      this.dappClient.disconnect();
+    }
+
+    this.notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: {
+        sessionScopes: newSessionScopes,
+      },
+    });
   }
 
   /**

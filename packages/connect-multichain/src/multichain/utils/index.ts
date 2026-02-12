@@ -10,6 +10,8 @@ import {
 } from '@metamask/utils';
 import { deflate } from 'pako';
 
+import type { SessionProperties } from '@metamask/multichain-api-client';
+
 import {
   type DappSettings,
   getPlatformType,
@@ -20,6 +22,27 @@ import {
 } from '../../domain';
 
 export type OptionalScopes = Record<Scope, SessionData['sessionScopes'][Scope]>;
+
+/**
+ * Returns the global object for the current JS environment.
+ *
+ * @returns The global object as a record for indexing
+ */
+export function getGlobalObject(): Record<string, unknown> {
+  if (typeof globalThis !== 'undefined') {
+    return globalThis as unknown as Record<string, unknown>;
+  }
+  if (typeof global !== 'undefined') {
+    return global as unknown as Record<string, unknown>;
+  }
+  if (typeof self !== 'undefined') {
+    return self as unknown as Record<string, unknown>;
+  }
+  if (typeof window !== 'undefined') {
+    return window as unknown as Record<string, unknown>;
+  }
+  throw new Error('Unable to locate global object');
+}
 
 /**
  * Cross-platform base64 encoding
@@ -95,6 +118,53 @@ export function openDeeplink(
     link.rel = 'noreferrer noopener';
     link.click();
   }
+}
+
+/**
+ * Merges existing session (from getCaipSession) with newly requested scopes, accounts, and session properties.
+ * Derives existing scopes/accounts from sessionData.sessionScopes, then merges with requested values.
+ *
+ * @param sessionData - Current CAIP session data
+ * @param scopes - Newly requested scopes
+ * @param caipAccountIds - Newly requested account IDs
+ * @param sessionProperties - New session properties to merge over existing
+ * @returns requestedScopes, requestedCaipAccountIds, and requestedSessionProperties
+ */
+export function mergeRequestedSessionWithExisting(
+  sessionData: SessionData,
+  scopes: Scope[],
+  caipAccountIds: CaipAccountId[],
+  sessionProperties?: SessionProperties,
+): {
+  requestedScopes: Scope[];
+  requestedCaipAccountIds: CaipAccountId[];
+  requestedSessionProperties: SessionProperties;
+} {
+  const existingCaipChainIds = Object.keys(sessionData.sessionScopes);
+  const existingCaipAccountIds: string[] = [];
+  Object.values(sessionData.sessionScopes).forEach((scopeObject) => {
+    if (scopeObject?.accounts && Array.isArray(scopeObject.accounts)) {
+      scopeObject.accounts.forEach((account) => {
+        existingCaipAccountIds.push(account);
+      });
+    }
+  });
+
+  const requestedScopes = Array.from(
+    new Set([...existingCaipChainIds, ...scopes]),
+  ) as Scope[];
+  const requestedCaipAccountIds = Array.from(
+    new Set([...existingCaipAccountIds, ...caipAccountIds]),
+  ) as CaipAccountId[];
+  const requestedSessionProperties = {
+    ...sessionData.sessionProperties,
+    ...sessionProperties,
+  };
+  return {
+    requestedScopes,
+    requestedCaipAccountIds,
+    requestedSessionProperties,
+  };
 }
 
 /**

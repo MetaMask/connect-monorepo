@@ -229,10 +229,6 @@ export class DefaultTransport implements ExtendedTransport {
       );
 
       if (!hasSameScopesAndAccounts) {
-        await this.request(
-          { method: 'wallet_revokeSession', params: walletSession },
-          this.#defaultRequestOptions,
-        );
         const response = await this.request(
           { method: 'wallet_createSession', params: createSessionParams },
           this.#defaultRequestOptions,
@@ -258,10 +254,17 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
-  async disconnect(): Promise<void> {
-    this.#notificationCallbacks.clear();
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    await this.request({ method: 'wallet_revokeSession', params: { scopes } });
 
-    await this.request({ method: 'wallet_revokeSession', params: {} });
+    const response = await this.request({ method: 'wallet_getSession' });
+    const { sessionScopes } = response.result as SessionData;
+
+    if (Object.keys(sessionScopes).length > 0) {
+      return;
+    }
+
+    this.#notificationCallbacks.clear();
 
     // Remove the message listener when disconnecting
     if (this.#handleResponseListener) {
@@ -284,7 +287,7 @@ export class DefaultTransport implements ExtendedTransport {
     }
     this.#pendingRequests.clear();
 
-    return this.#transport.disconnect();
+    await this.#transport.disconnect();
   }
 
   isConnected(): boolean {

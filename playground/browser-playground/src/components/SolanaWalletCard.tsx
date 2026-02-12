@@ -1,8 +1,5 @@
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import {
-  WalletDisconnectButton,
-  WalletMultiButton,
-} from '@solana/wallet-adapter-react-ui';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { useCallback, useState } from 'react';
 
@@ -12,7 +9,7 @@ import { useCallback, useState } from 'react';
  */
 export const SolanaWalletCard: React.FC = () => {
   const { connection } = useConnection();
-  const { publicKey, connected, signMessage, signTransaction, sendTransaction } =
+  const { publicKey, connected, disconnect, signMessage, signTransaction, sendTransaction } =
     useWallet();
 
   const [message, setMessage] = useState('Hello from MetaMask Connect!');
@@ -115,10 +112,21 @@ export const SolanaWalletCard: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <span className="text-2xl">☀️</span>
-        Solana Wallet
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <span className="text-2xl">☀️</span>
+          Solana Wallet
+        </h3>
+        {connected && (
+          <button
+            type="button"
+            onClick={disconnect}
+            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+          >
+            Disconnect
+          </button>
+        )}
+      </div>
 
       <div className="space-y-4">
         {/* Connection Status */}
@@ -140,13 +148,11 @@ export const SolanaWalletCard: React.FC = () => {
         )}
 
         {/* Wallet Buttons */}
-        <div className="flex gap-2 flex-wrap">
-          {!connected ? (
+        {!connected && (
+          <div className="flex gap-2 flex-wrap">
             <WalletMultiButton className="!bg-blue-500 hover:!bg-blue-600" />
-          ) : (
-            <WalletDisconnectButton className="!bg-red-500 hover:!bg-red-600" />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Sign Message Section */}
         {connected && (
