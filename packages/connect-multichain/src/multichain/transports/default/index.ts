@@ -113,9 +113,10 @@ export class DefaultTransport implements ExtendedTransport {
     const responseData = event?.data?.data?.data;
 
     if (
-      (typeof responseData === 'object' &&
-        responseData.method === 'metamask_chainChanged') ||
-      responseData.method === 'metamask_accountsChanged'
+      typeof responseData === 'object' &&
+      (responseData.method === 'metamask_chainChanged' ||
+        responseData.method === 'metamask_accountsChanged' ||
+        responseData.method === 'wallet_sessionChanged')
     ) {
       this.#notifyCallbacks(responseData);
     }
@@ -302,11 +303,42 @@ export class DefaultTransport implements ExtendedTransport {
   }
 
   onNotification(callback: (data: unknown) => void): () => void {
+    // Ensure window.postMessage listeners are active so that extension
+    // notifications (e.g., wallet_sessionChanged) are captured even before
+    // connect() is called.
+    this.#setupMessageListener();
     this.#transport.onNotification(callback);
     this.#notificationCallbacks.add(callback);
     return () => {
       this.#notificationCallbacks.delete(callback);
     };
+  }
+
+  /**
+   * Cleans up message listeners and pending requests without sending
+   * wallet_revokeSession. Used when tearing down a passive transport
+   * that was set up for event listening without an SDK-managed connection.
+   */
+  teardown(): void {
+    this.#notificationCallbacks.clear();
+
+    if (this.#handleResponseListener) {
+      // eslint-disable-next-line no-restricted-globals
+      window.removeEventListener('message', this.#handleResponseListener);
+      this.#handleResponseListener = undefined;
+    }
+
+    if (this.#handleNotificationListener) {
+      // eslint-disable-next-line no-restricted-globals
+      window.removeEventListener('message', this.#handleNotificationListener);
+      this.#handleNotificationListener = undefined;
+    }
+
+    for (const [, request] of this.#pendingRequests) {
+      clearTimeout(request.timeout);
+      request.reject(new Error('Transport disconnected'));
+    }
+    this.#pendingRequests.clear();
   }
 
   async getActiveSession(): Promise<Session | undefined> {
