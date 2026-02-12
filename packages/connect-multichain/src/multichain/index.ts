@@ -83,6 +83,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   #listener: (() => void | Promise<void>) | undefined;
 
+  /**
+   * Tracks whether the current transport was set up passively for event
+   * listening (no SDK-managed connection). When true, disconnect() will
+   * clean up listeners without sending wallet_revokeSession.
+   */
+  #isPassiveTransport = false;
+
   get status(): ConnectionStatus {
     return this._status;
   }
@@ -248,12 +255,35 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.transport.connect();
       }
       this.status = 'connected';
+      this.#isPassiveTransport = false;
       if (this.transport instanceof MWPTransport) {
         await this.storage.setTransport(TransportType.MWP);
       } else {
         await this.storage.setTransport(TransportType.Browser);
       }
     } else {
+      // No stored transport — set up a passive DefaultTransport for event
+      // listening when the extension is available. This enables receiving
+      // wallet_sessionChanged events before connect() is called, supporting
+      // configurations where the dapp uses the wallet's own injected provider
+      // (e.g., window.ethereum or native wallet-standard adapter) but wants
+      // SDK event notifications.
+      const platformType = getPlatformType();
+      const isWeb =
+        platformType === PlatformType.MetaMaskMobileWebview ||
+        platformType === PlatformType.DesktopWeb;
+      const hasExtensionInstalled = await hasExtension();
+
+      if (isWeb && hasExtensionInstalled) {
+        const passiveTransport = new DefaultTransport();
+        this.#transport = passiveTransport;
+        this.#providerTransportWrapper.setupNotifcationListener();
+        this.#listener = passiveTransport.onNotification(
+          this.#onTransportNotification.bind(this),
+        );
+        this.#isPassiveTransport = true;
+      }
+
       this.status = 'loaded';
     }
   }
@@ -529,6 +559,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {
     this.status = 'connecting';
+    this.#isPassiveTransport = false;
     await this.storage.setTransport(TransportType.Browser);
     const transport = new DefaultTransport();
     this.#listener = transport.onNotification(
@@ -824,7 +855,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#listener?.();
     this.#beforeUnloadListener?.();
 
-    await this.#transport?.disconnect();
+    if (
+      this.#isPassiveTransport &&
+      this.#transport instanceof DefaultTransport
+    ) {
+      // Passive transport: clean up listeners without sending
+      // wallet_revokeSession, since the SDK did not create the session.
+      this.#transport.teardown();
+    } else {
+      await this.#transport?.disconnect();
+    }
     await this.storage.removeTransport();
 
     this.emit('stateChanged', 'disconnected');
@@ -832,6 +872,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#listener = undefined;
     this.#beforeUnloadListener = undefined;
     this.#transport = undefined;
+    this.#isPassiveTransport = false;
     this.#providerTransportWrapper.clearNotificationCallbacks();
     this.#dappClient = undefined;
   }

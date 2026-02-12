@@ -137,7 +137,14 @@ function testSuite<T extends MultichainOptions>({
       async () => {
         sdk = await createSDK(testOptions);
         t.expect(sdk.status).toBe('loaded');
-        t.expect(() => sdk.transport).toThrow();
+        if (platform === 'web') {
+          // In web environments with the extension installed, a passive
+          // DefaultTransport is created for event listening (e.g., wallet_sessionChanged)
+          // even before connect() is called.
+          t.expect(sdk.transport).toBeDefined();
+        } else {
+          t.expect(() => sdk.transport).toThrow();
+        }
       },
     );
 
