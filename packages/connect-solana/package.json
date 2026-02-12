@@ -60,7 +60,6 @@
   "dependencies": {
     "@metamask/connect-multichain": "workspace:^",
     "@metamask/solana-wallet-standard": "^0.6.0",
-    "@wallet-standard/app": "~1.1.0",
     "@wallet-standard/base": "^1.1.0"
   },
   "devDependencies": {
