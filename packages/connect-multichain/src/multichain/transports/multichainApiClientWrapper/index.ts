@@ -73,7 +73,8 @@ export class MultichainApiClientWrapperTransport implements Transport {
 
   async connect(): Promise<void> {
     console.log('📚 connect');
-    await this.metamaskConnectMultichain.emitSessionChanged();
+    // DOES THIS NEED TO BE FIRED?...
+    // await this.metamaskConnectMultichain.emitSessionChanged();
   }
 
   async disconnect(): Promise<void> {

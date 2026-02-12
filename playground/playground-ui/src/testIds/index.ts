@@ -210,6 +210,27 @@ export const TEST_IDS = {
   },
 
   // ============================================
+  // SOLANA CARD
+  // ============================================
+  solana: {
+    card: 'solana-card',
+    title: 'solana-title',
+    btnConnect: 'solana-btn-connect',
+    btnDisconnect: 'solana-btn-disconnect',
+    status: 'solana-status',
+    addressContainer: 'solana-address-container',
+    signMessageSection: 'solana-section-sign-message',
+    inputMessage: 'solana-input-message',
+    btnSignMessage: 'solana-btn-sign-message',
+    signedMessageResult: 'solana-signed-message-result',
+    transactionsSection: 'solana-section-transactions',
+    btnSignTransaction: 'solana-btn-sign-transaction',
+    btnSendTransaction: 'solana-btn-send-transaction',
+    transactionSignatureResult: 'solana-transaction-signature-result',
+    errorContainer: 'solana-error-container',
+  },
+
+  // ============================================
   // WALLET LIST (Browser only)
   // ============================================
   walletList: {
