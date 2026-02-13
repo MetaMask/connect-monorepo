@@ -53,7 +53,10 @@ module.exports = defineConfig({
 
     for (const workspace of Yarn.workspaces()) {
       // We skip playground and integration checks, as these are not user facing packages
-      if (workspace.cwd.includes('playground') || workspace.cwd.includes('integrations')) {
+      if (
+        workspace.cwd.includes('playground') ||
+        workspace.cwd.includes('integrations')
+      ) {
         continue;
       }
       const workspaceBasename = getWorkspaceBasename(workspace);
@@ -101,7 +104,7 @@ module.exports = defineConfig({
         expectWorkspaceField(
           workspace,
           'repository.url',
-          `${repositoryUri}.git`,
+          `git+${repositoryUri}.git`,
         );
 
         // All non-root packages must have a license, defaulting to MIT.

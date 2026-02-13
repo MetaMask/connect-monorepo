@@ -12,10 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "commonjs",
   "exports": {
     ".": {
       "browser": {
@@ -42,6 +43,7 @@
     "dist/"
   ],
   "scripts": {
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-solana",
@@ -49,6 +51,7 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-solana",
     "clean": "npx rimraf ./dist",
     "dev": "tsup --watch",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",
