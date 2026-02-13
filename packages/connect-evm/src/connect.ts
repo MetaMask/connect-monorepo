@@ -359,15 +359,8 @@ export class MetamaskConnectEVM {
     this.#status = 'connecting';
 
     try {
-      await this.#core.connect(
-        caipChainIds as Scope[],
-        caipAccountIds as CaipAccountId[],
-        undefined,
-        forceRequest,
-      );
-
       // Wait for the wallet_sessionChanged event to fire and set the provider properties
-      return new Promise((resolve) => {
+      const result = new Promise((resolve) => {
         this.#provider.once('connect', ({ chainId, accounts }) => {
           logger('fulfilled-request: connect', {
             chainId,
@@ -379,6 +372,15 @@ export class MetamaskConnectEVM {
           });
         });
       });
+
+      await this.#core.connect(
+        caipChainIds as Scope[],
+        caipAccountIds as CaipAccountId[],
+        undefined,
+        forceRequest,
+      );
+
+      return result as Promise<{ accounts: Address[]; chainId: Hex }>;
     } catch (error) {
       this.#status = 'disconnected';
       logger('Error connecting to wallet', error);
