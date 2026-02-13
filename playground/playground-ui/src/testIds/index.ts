@@ -133,6 +133,7 @@ export const TEST_IDS = {
   legacyEvm: {
     card: 'legacy-evm-card',
     title: 'legacy-evm-title',
+    btnDisconnect: 'legacy-evm-btn-disconnect',
 
     // Status display
     chainIdLabel: 'legacy-evm-chain-id-label',
@@ -170,6 +171,7 @@ export const TEST_IDS = {
   wagmi: {
     card: 'wagmi-card',
     title: 'wagmi-title',
+    btnDisconnect: 'wagmi-btn-disconnect',
 
     // Status display
     chainIdLabel: 'wagmi-chain-id-label',
