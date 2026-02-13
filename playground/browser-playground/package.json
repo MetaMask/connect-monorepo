@@ -63,7 +63,7 @@
     "@metamask/utils": "^11.8.1",
     "@open-rpc/meta-schema": "^1.14.9",
     "@open-rpc/schema-utils-js": "^2.0.5",
-    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react": "patch:@solana/wallet-adapter-react@npm%3A0.15.39#~/.yarn/patches/@solana-wallet-adapter-react-npm-0.15.39-86277fdcc0.patch",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-standard-chains": "^1.1.1",
     "@solana/web3.js": "^1.98.0",
