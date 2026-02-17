@@ -130,33 +130,7 @@ export class MetamaskConnectEVM {
      * @param session - The session data
      */
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.#sessionChangedHandler = async (session): Promise<void> => {
-      logger('event: wallet_sessionChanged', session);
-      this.#sessionScopes = session?.sessionScopes ?? {};
-      const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
-      if (hexPermittedChainIds.length === 0) {
-        this.#onDisconnect();
-      } else {
-        let initialAccounts: Address[] = [];
-        if (this.#core.status === 'connected') {
-          const ethAccountsResponse =
-            await this.#core.transport.sendEip1193Message<
-              { method: 'eth_accounts'; params: [] },
-              { result: Address[]; id: number; jsonrpc: '2.0' }
-            >({ method: 'eth_accounts', params: [] });
-          initialAccounts = ethAccountsResponse.result;
-        } else {
-          initialAccounts = getEthAccounts(this.#sessionScopes);
-        }
-
-        const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
-
-        this.#onConnect({
-          chainId,
-          accounts: initialAccounts,
-        });
-      }
-    };
+    this.#sessionChangedHandler = this.#onSessionChanged.bind(this);
     this.#core.on('wallet_sessionChanged', this.#sessionChangedHandler);
 
     /**
@@ -745,6 +719,34 @@ export class MetamaskConnectEVM {
       );
     } catch (error) {
       logger('Error caching chainId', error);
+    }
+  }
+
+  async #onSessionChanged(session?: SessionData): Promise<void> {
+    logger('event: wallet_sessionChanged', session);
+    this.#sessionScopes = session?.sessionScopes ?? {};
+    const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+    if (hexPermittedChainIds.length === 0) {
+      this.#onDisconnect();
+    } else {
+      let initialAccounts: Address[] = [];
+      if (this.#core.status === 'connected') {
+        const ethAccountsResponse =
+          await this.#core.transport.sendEip1193Message<
+            { method: 'eth_accounts'; params: [] },
+            { result: Address[]; id: number; jsonrpc: '2.0' }
+          >({ method: 'eth_accounts', params: [] });
+        initialAccounts = ethAccountsResponse.result;
+      } else {
+        initialAccounts = getEthAccounts(this.#sessionScopes);
+      }
+
+      const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
+
+      this.#onConnect({
+        chainId,
+        accounts: initialAccounts,
+      });
     }
   }
 
