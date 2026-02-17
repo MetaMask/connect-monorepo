@@ -62,8 +62,6 @@ function App() {
     select,
   } = useWallet();
 
-  console.log({solanaConnected, solanaConnecting, solanaDisconnecting, solanaPublicKey, wallets});
-
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
       if (isChecked) {
