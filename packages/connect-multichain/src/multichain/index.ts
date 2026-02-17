@@ -927,17 +927,17 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async emitSessionChanged(): Promise<void> {
+    const emptySession = { sessionScopes: {} };
+
     if (this.status !== 'connected' && this.status !== 'connecting') {
-      this.emit('wallet_sessionChanged', { sessionScopes: {} });
-    } else {
-      const response = await this.transport.request({
-        method: 'wallet_getSession',
-      });
-      if (response.result) {
-        this.emit('wallet_sessionChanged', response.result);
-      } else {
-        this.emit('wallet_sessionChanged', { sessionScopes: {} });
-      }
+      this.emit('wallet_sessionChanged', emptySession);
+      return;
     }
-  }
+
+    const response = await this.transport.request({
+      method: 'wallet_getSession',
+    });
+
+    this.emit('wallet_sessionChanged', response.result ?? emptySession);
+}
 }
