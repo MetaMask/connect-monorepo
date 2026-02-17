@@ -1,12 +1,9 @@
 /* eslint-disable id-length -- vitest alias */
 import type { MultichainApiClient } from '@metamask/multichain-api-client';
+import type { Json } from '@metamask/utils';
 import * as t from 'vitest';
 
-import {
-  MultichainCore,
-  TransportType,
-  type ConnectionStatus,
-} from './index';
+import { MultichainCore, TransportType, type ConnectionStatus } from '.';
 import type { RPCAPI, RpcUrlsMap } from './api/types';
 import type {
   ExtendedTransport,
@@ -26,21 +23,31 @@ class MockMultichainCore extends MultichainCore {
 
   transportType = TransportType.UNKNOWN;
 
-  connect = () => Promise.resolve();
+  connect = async (): Promise<void> => Promise.resolve();
 
-  disconnect = () => Promise.resolve();
+  disconnect = async (): Promise<void> => Promise.resolve();
 
-  invokeMethod = () => Promise.resolve({});
+  invokeMethod = async (): Promise<Json> => Promise.resolve({});
 
-  openDeeplinkIfNeeded = () => {};
+  openDeeplinkIfNeeded = (): void => undefined;
 
-  emitSessionChanged = () => Promise.resolve();
+  emitSessionChanged = async (): Promise<void> => Promise.resolve();
 
+  /**
+   * Exposes options for test assertions.
+   *
+   * @returns Current merged options.
+   */
   getOptions(): MultichainOptions {
     return this.options;
   }
 }
 
+/**
+ * Creates base multichain options for tests.
+ *
+ * @returns Default MultichainOptions used in mergeOptions tests.
+ */
 function createBaseOptions(): MultichainOptions {
   return {
     dapp: { name: 'Test Dapp', url: 'https://example.com' },
@@ -94,44 +101,57 @@ t.describe('MultichainCore', () => {
       );
     });
 
-    t.it('leaves api.supportedNetworks unchanged when partial.api is omitted', () => {
-      const base = createBaseOptions();
-      const core = new MockMultichainCore(base);
+    t.it(
+      'leaves api.supportedNetworks unchanged when partial.api is omitted',
+      () => {
+        const base = createBaseOptions();
+        const core = new MockMultichainCore(base);
 
-      core.mergeOptions({});
+        core.mergeOptions({});
 
-      const opts = core.getOptions();
-      t.expect(opts.api.supportedNetworks).toEqual(base.api.supportedNetworks);
-    });
+        const opts = core.getOptions();
+        t.expect(opts.api.supportedNetworks).toEqual(
+          base.api.supportedNetworks,
+        );
+      },
+    );
 
-    t.it('leaves api.supportedNetworks unchanged when partial.api.supportedNetworks is empty', () => {
-      const base = createBaseOptions();
-      const core = new MockMultichainCore(base);
+    t.it(
+      'leaves api.supportedNetworks unchanged when partial.api.supportedNetworks is empty',
+      () => {
+        const base = createBaseOptions();
+        const core = new MockMultichainCore(base);
 
-      core.mergeOptions({ api: { supportedNetworks: {} } });
+        core.mergeOptions({ api: { supportedNetworks: {} } });
 
-      const opts = core.getOptions();
-      t.expect(opts.api.supportedNetworks).toEqual(base.api.supportedNetworks);
-    });
+        const opts = core.getOptions();
+        t.expect(opts.api.supportedNetworks).toEqual(
+          base.api.supportedNetworks,
+        );
+      },
+    );
 
-    t.it('merges ui.headless, preferExtension, showInstallModal from partial', () => {
-      const base = createBaseOptions();
-      const core = new MockMultichainCore(base);
+    t.it(
+      'merges ui.headless, preferExtension, showInstallModal from partial',
+      () => {
+        const base = createBaseOptions();
+        const core = new MockMultichainCore(base);
 
-      core.mergeOptions({
-        ui: {
-          headless: true,
-          preferExtension: false,
-          showInstallModal: true,
-        },
-      });
+        core.mergeOptions({
+          ui: {
+            headless: true,
+            preferExtension: false,
+            showInstallModal: true,
+          },
+        });
 
-      const opts = core.getOptions();
-      t.expect(opts.ui.headless).toBe(true);
-      t.expect(opts.ui.preferExtension).toBe(false);
-      t.expect(opts.ui.showInstallModal).toBe(true);
-      t.expect(opts.ui.factory).toBe(base.ui.factory);
-    });
+        const opts = core.getOptions();
+        t.expect(opts.ui.headless).toBe(true);
+        t.expect(opts.ui.preferExtension).toBe(false);
+        t.expect(opts.ui.showInstallModal).toBe(true);
+        t.expect(opts.ui.factory).toBe(base.ui.factory);
+      },
+    );
 
     t.it('keeps existing ui values when partial.ui fields are omitted', () => {
       const base = createBaseOptions();
@@ -184,15 +204,18 @@ t.describe('MultichainCore', () => {
       t.expect(opts.transport?.extensionId).toBe('new-ext-456');
     });
 
-    t.it('preserves existing transport when partial.transport is omitted', () => {
-      const base = createBaseOptions();
-      const core = new MockMultichainCore(base);
+    t.it(
+      'preserves existing transport when partial.transport is omitted',
+      () => {
+        const base = createBaseOptions();
+        const core = new MockMultichainCore(base);
 
-      core.mergeOptions({});
+        core.mergeOptions({});
 
-      const opts = core.getOptions();
-      t.expect(opts.transport).toEqual(base.transport);
-    });
+        const opts = core.getOptions();
+        t.expect(opts.transport).toEqual(base.transport);
+      },
+    );
 
     t.it('sets transport when initial options had no transport', () => {
       const base = createBaseOptions();

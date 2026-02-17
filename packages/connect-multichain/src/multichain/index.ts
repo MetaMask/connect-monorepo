@@ -945,5 +945,5 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
 
     this.emit('wallet_sessionChanged', response.result ?? emptySession);
-}
+  }
 }

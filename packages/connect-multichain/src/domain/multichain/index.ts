@@ -88,7 +88,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    * @param partial - Options to merge/overwrite onto the current instance
    */
   mergeOptions(partial: MergeableMultichainOptions): void {
-    let opts = this.options;
+    const opts = this.options;
     this.options = {
       ...opts,
       api: {
@@ -102,7 +102,8 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
         ...opts.ui,
         headless: partial.ui?.headless ?? opts.ui.headless,
         preferExtension: partial.ui?.preferExtension ?? opts.ui.preferExtension,
-        showInstallModal: partial.ui?.showInstallModal ?? opts.ui.showInstallModal,
+        showInstallModal:
+          partial.ui?.showInstallModal ?? opts.ui.showInstallModal,
       },
       mobile: {
         ...opts.mobile,
@@ -110,10 +111,11 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
       },
       transport: {
         ...(opts.transport ?? {}),
-        extensionId: partial.transport?.extensionId ?? opts.transport?.extensionId,
+        extensionId:
+          partial.transport?.extensionId ?? opts.transport?.extensionId,
       },
       debug: partial.debug ?? opts.debug,
-    }
+    };
   }
 }
 /* c8 ignore end */
