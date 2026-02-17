@@ -95,7 +95,7 @@ type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
  */
 export type MergeableMultichainOptions = Omit<
   MultichainOptions,
-  'storage' | 'api' | 'ui' | 'transport'
+  'dapp' | 'analytics' | 'storage' | 'api' | 'ui' | 'transport'
 > & {
   api?: MultichainOptions['api'];
   ui?: Pick<
