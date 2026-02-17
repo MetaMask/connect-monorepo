@@ -537,9 +537,9 @@ export class MWPTransport implements ExtendedTransport {
       ),
     );
 
-    // This might not actually get excuted on the wallet if the user doesn't open
+    // NOTE: Purposely not awaiting this to avoid blocking the disconnect flow.
+    // This might not actually get executed on the wallet if the user doesn't open
     // their wallet before the message TTL or if the underlying transport isn't actually connected
-    // Purposely not awaiting this to avoid blocking the disconnect flow
     this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch((err) => {
       console.error('error revoking session', err);
     });
@@ -622,7 +622,7 @@ export class MWPTransport implements ExtendedTransport {
       });
     } catch (error) {
       return Promise.reject(
-        new Error(`Failed to resume session: ${error.message}`), //
+        new Error(`Failed to resume session: ${error.message}`),
       );
     }
   }
@@ -704,7 +704,6 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     if (!this.isConnected()) {
-      console.log('attempting to resume session', payload);
       await this.attemptResumeSession();
     }
 
