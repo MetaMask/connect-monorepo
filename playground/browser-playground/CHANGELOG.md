@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add `data-testid` attributes to Solana components ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
+- Add `data-testid` attributes to Legacy EVM and Wagmi disconnect buttons ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
+
+### Changed
+- Patch `@solana/wallet-adapter-react` to work with android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
+
 ## [0.2.0]
 
 ### Added
