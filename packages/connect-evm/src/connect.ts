@@ -142,9 +142,9 @@ export class MetamaskConnectEVM {
           const ethAccountsResponse =
             await this.#core.transport.sendEip1193Message<
               { method: 'eth_accounts'; params: [] },
-              { result: string[]; id: number; jsonrpc: '2.0' }
+              { result: Address[]; id: number; jsonrpc: '2.0' }
             >({ method: 'eth_accounts', params: [] });
-          initialAccounts = ethAccountsResponse.result as Address[];
+          initialAccounts = ethAccountsResponse.result;
         } else {
           initialAccounts = getEthAccounts(this.#sessionScopes);
         }
