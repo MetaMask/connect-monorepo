@@ -76,7 +76,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   abstract emitSessionChanged(): Promise<void>;
 
-  constructor(protected readonly options: MultichainOptions) {
+  constructor(protected options: MultichainOptions) {
     super();
   }
 
@@ -88,48 +88,31 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    * @param partial - Options to merge/overwrite onto the current instance
    */
   mergeOptions(partial: MergeableMultichainOptions): void {
-    const opts = this.options as MultichainOptions & {
-      api: { supportedNetworks: MultichainOptions['api']['supportedNetworks'] };
-      ui: MultichainOptions['ui'];
-      mobile?: MultichainOptions['mobile'];
-      transport?: MultichainOptions['transport'];
-      debug?: boolean;
-    };
-    if (partial.api?.supportedNetworks !== undefined) {
-      opts.api = {
+    let opts = this.options;
+    this.options = {
+      ...opts,
+      api: {
         ...opts.api,
         supportedNetworks: {
           ...opts.api.supportedNetworks,
-          ...partial.api.supportedNetworks,
+          ...(partial.api?.supportedNetworks ?? {}),
         },
-      };
-    }
-    if (partial.ui !== undefined) {
-      const uiUpdates: Partial<MultichainOptions['ui']> = {};
-      if (partial.ui.headless !== undefined) {
-        uiUpdates.headless = partial.ui.headless;
-      }
-      if (partial.ui.preferExtension !== undefined) {
-        uiUpdates.preferExtension = partial.ui.preferExtension;
-      }
-      if (partial.ui.showInstallModal !== undefined) {
-        uiUpdates.showInstallModal = partial.ui.showInstallModal;
-      }
-      if (Object.keys(uiUpdates).length > 0) {
-        opts.ui = { ...opts.ui, ...uiUpdates };
-      }
-    }
-    if (partial.mobile !== undefined) {
-      opts.mobile = { ...(opts.mobile ?? {}), ...partial.mobile };
-    }
-    if (partial.transport?.extensionId !== undefined) {
-      opts.transport = {
+      },
+      ui: {
+        ...opts.ui,
+        headless: partial.ui?.headless ?? opts.ui.headless,
+        preferExtension: partial.ui?.preferExtension ?? opts.ui.preferExtension,
+        showInstallModal: partial.ui?.showInstallModal ?? opts.ui.showInstallModal,
+      },
+      mobile: {
+        ...opts.mobile,
+        ...(partial.mobile ?? {}),
+      },
+      transport: {
         ...(opts.transport ?? {}),
-        extensionId: partial.transport.extensionId,
-      };
-    }
-    if (partial.debug !== undefined) {
-      opts.debug = partial.debug;
+        extensionId: partial.transport?.extensionId ?? opts.transport?.extensionId,
+      },
+      debug: partial.debug ?? opts.debug,
     }
   }
 }
