@@ -537,9 +537,12 @@ export class MWPTransport implements ExtendedTransport {
       ),
     );
 
-    // This might not actually get excuted on the wallet if the user doesn't open
-    // their wallet before the message TTL
-    this.request({ method: 'wallet_revokeSession', params: { scopes } });
+    // NOTE: Purposely not awaiting this to avoid blocking the disconnect flow.
+    // This might not actually get executed on the wallet if the user doesn't open
+    // their wallet before the message TTL or if the underlying transport isn't actually connected
+    this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch((err) => {
+      console.error('error revoking session', err);
+    });
 
     // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
     const remainingScopesIncludeEip155 = remainingScopes.some((scope) => scope.includes('eip155'));
