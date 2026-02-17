@@ -28,7 +28,6 @@ import {
 } from '@metamask/multichain-api-client';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
-import { getPermittedEthChainIds, getEthAccounts, InternalScopeObject, InternalScopesObject } from '@metamask/chain-agnostic-permission';
 
 import {
   createLogger,
@@ -540,12 +539,16 @@ export class MWPTransport implements ExtendedTransport {
     // NOTE: Purposely not awaiting this to avoid blocking the disconnect flow.
     // This might not actually get executed on the wallet if the user doesn't open
     // their wallet before the message TTL or if the underlying transport isn't actually connected
-    this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch((err) => {
-      console.error('error revoking session', err);
-    });
+    this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch(
+      (err) => {
+        console.error('error revoking session', err);
+      },
+    );
 
     // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
-    const remainingScopesIncludeEip155 = remainingScopes.some((scope) => scope.includes('eip155'));
+    const remainingScopesIncludeEip155 = remainingScopes.some((scope) =>
+      scope.includes('eip155'),
+    );
     if (!remainingScopesIncludeEip155) {
       this.kvstore.delete(ACCOUNTS_STORE_KEY);
       this.kvstore.delete(CHAIN_STORE_KEY);

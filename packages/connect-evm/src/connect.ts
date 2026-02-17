@@ -129,6 +129,7 @@ export class MetamaskConnectEVM {
      *
      * @param session - The session data
      */
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.#sessionChangedHandler = async (session): Promise<void> => {
       logger('event: wallet_sessionChanged', session);
       this.#sessionScopes = session?.sessionScopes ?? {};
@@ -138,10 +139,11 @@ export class MetamaskConnectEVM {
       } else {
         let initialAccounts: Address[] = [];
         if (this.#core.status === 'connected') {
-          const ethAccountsResponse = await this.#core.transport.sendEip1193Message<
-            { method: 'eth_accounts'; params: [] },
-            { result: string[]; id: number; jsonrpc: '2.0' }
-          >({ method: 'eth_accounts', params: [] });
+          const ethAccountsResponse =
+            await this.#core.transport.sendEip1193Message<
+              { method: 'eth_accounts'; params: [] },
+              { result: string[]; id: number; jsonrpc: '2.0' }
+            >({ method: 'eth_accounts', params: [] });
           initialAccounts = ethAccountsResponse.result as Address[];
         } else {
           initialAccounts = getEthAccounts(this.#sessionScopes);
@@ -151,7 +153,7 @@ export class MetamaskConnectEVM {
 
         this.#onConnect({
           chainId,
-          accounts: initialAccounts as Address[],
+          accounts: initialAccounts,
         });
       }
     };
