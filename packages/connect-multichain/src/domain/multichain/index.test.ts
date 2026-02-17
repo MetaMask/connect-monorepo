@@ -15,11 +15,7 @@ import type {
 } from './types';
 import type { StoreClient } from '../store/client';
 
-/**
- * Minimal concrete implementation of MultichainCore for testing mergeOptions.
- * Abstract members are stubbed; only options and mergeOptions are under test.
- */
-class TestMultichainCore extends MultichainCore {
+class MockMultichainCore extends MultichainCore {
   storage = {} as StoreClient;
 
   status: ConnectionStatus = 'loaded';
@@ -75,7 +71,7 @@ t.describe('MultichainCore', () => {
   t.describe('mergeOptions', () => {
     t.it('merges api.supportedNetworks shallowly over existing', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({
         api: {
@@ -100,7 +96,7 @@ t.describe('MultichainCore', () => {
 
     t.it('leaves api.supportedNetworks unchanged when partial.api is omitted', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({});
 
@@ -110,7 +106,7 @@ t.describe('MultichainCore', () => {
 
     t.it('leaves api.supportedNetworks unchanged when partial.api.supportedNetworks is empty', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({ api: { supportedNetworks: {} } });
 
@@ -120,7 +116,7 @@ t.describe('MultichainCore', () => {
 
     t.it('merges ui.headless, preferExtension, showInstallModal from partial', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({
         ui: {
@@ -141,7 +137,7 @@ t.describe('MultichainCore', () => {
       const base = createBaseOptions();
       base.ui.headless = true;
       base.ui.preferExtension = false;
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({ ui: {} });
 
@@ -153,7 +149,7 @@ t.describe('MultichainCore', () => {
 
     t.it('merges mobile options over existing', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({
         mobile: {
@@ -168,7 +164,7 @@ t.describe('MultichainCore', () => {
 
     t.it('leaves mobile unchanged when partial.mobile is omitted', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({});
 
@@ -178,7 +174,7 @@ t.describe('MultichainCore', () => {
 
     t.it('merges transport.extensionId from partial', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({
         transport: { extensionId: 'new-ext-456' },
@@ -190,7 +186,7 @@ t.describe('MultichainCore', () => {
 
     t.it('preserves existing transport when partial.transport is omitted', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({});
 
@@ -201,7 +197,7 @@ t.describe('MultichainCore', () => {
     t.it('sets transport when initial options had no transport', () => {
       const base = createBaseOptions();
       delete base.transport;
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({ transport: { extensionId: 'new-ext' } });
 
@@ -211,7 +207,7 @@ t.describe('MultichainCore', () => {
 
     t.it('merges debug from partial', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({ debug: true });
 
@@ -222,7 +218,7 @@ t.describe('MultichainCore', () => {
     t.it('keeps existing debug when partial.debug is omitted', () => {
       const base = createBaseOptions();
       base.debug = true;
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({});
 
@@ -233,7 +229,7 @@ t.describe('MultichainCore', () => {
     t.it('does not mutate dapp, storage, or analytics', () => {
       const base = createBaseOptions();
       base.analytics = { integrationType: 'direct' };
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       core.mergeOptions({
         api: { supportedNetworks: { 'eip155:1': 'https://x.com' } },
@@ -249,7 +245,7 @@ t.describe('MultichainCore', () => {
 
     t.it('handles full partial merge correctly', () => {
       const base = createBaseOptions();
-      const core = new TestMultichainCore(base);
+      const core = new MockMultichainCore(base);
 
       const partial: MergeableMultichainOptions = {
         api: {
@@ -287,4 +283,3 @@ t.describe('MultichainCore', () => {
     });
   });
 });
-
