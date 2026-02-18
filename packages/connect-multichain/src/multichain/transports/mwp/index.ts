@@ -518,9 +518,11 @@ export class MWPTransport implements ExtendedTransport {
         );
       }
 
+      const storedSessionRequest = await this.getStoredSessionRequest();
+
       timeout = setTimeout(() => {
         reject(new TransportTimeoutError());
-      }, this.options.connectionTimeout);
+      }, storedSessionRequest ? this.options.resumeTimeout : this.options.connectionTimeout);
 
       connection.then(resolve).catch(reject);
     });
