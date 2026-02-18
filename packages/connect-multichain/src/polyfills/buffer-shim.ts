@@ -1,6 +1,3 @@
-/* eslint-disable no-restricted-globals -- Polyfill intentionally uses global/window */
-/* eslint-disable no-negated-condition -- Ternary chain is clearer here */
-/* eslint-disable no-nested-ternary -- Environment detection requires chained ternary */
 /* eslint-disable import-x/no-nodejs-modules -- Buffer polyfill requires Node.js module */
 /**
  * Buffer polyfill for browser and React Native environments.
@@ -12,17 +9,10 @@
  */
 import { Buffer } from 'buffer';
 
-// Get the appropriate global object for the current environment
-const globalObj =
-  typeof globalThis !== 'undefined'
-    ? globalThis
-    : typeof global !== 'undefined'
-      ? global
-      : typeof window !== 'undefined'
-        ? window
-        : ({} as typeof globalThis);
+import { getGlobalObject } from '../multichain/utils';
 
 // Only set Buffer if it's not already defined (avoid overwriting Node.js native Buffer)
+const globalObj = getGlobalObject();
 if (!globalObj.Buffer) {
   globalObj.Buffer = Buffer;
 }

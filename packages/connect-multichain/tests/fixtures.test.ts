@@ -53,6 +53,7 @@ import type {
   CreateTestFN,
 } from './types';
 import type { MultichainOptions } from '../src/domain';
+import { getGlobalObject } from '../src/multichain/utils';
 
 // Import createSDK functions for convenience
 import { createMultichainClient as createMetamaskSDKWeb } from '../src/index.browser';
@@ -173,8 +174,15 @@ export const createTest: CreateTestFN = ({
   /**
    *
    */
+  /** Singleton key used by MetaMaskConnectMultichain.create() - clear so each test gets a fresh instance */
+  const MULTICHAIN_SINGLETON_KEY = '__METAMASK_CONNECT_MULTICHAIN_SINGLETON__';
+
   async function beforeEach() {
     try {
+      // Clear singleton so each test gets a new SDK instance (avoids state leaking between tests)
+      const globalObject = getGlobalObject();
+      globalObject[MULTICHAIN_SINGLETON_KEY] = undefined;
+
       pendingRequests = new Map();
 
       nativeStorageStub.data.clear();
