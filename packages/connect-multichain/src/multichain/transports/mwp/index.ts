@@ -28,7 +28,6 @@ import {
 } from '@metamask/multichain-api-client';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
-import { getPermittedEthChainIds, getEthAccounts, InternalScopeObject, InternalScopesObject } from '@metamask/chain-agnostic-permission';
 
 import {
   createLogger,
@@ -54,6 +53,7 @@ const DEFAULT_RESUME_TIMEOUT = 10 * 1000;
 const SESSION_STORE_KEY = 'cache_wallet_getSession';
 const ACCOUNTS_STORE_KEY = 'cache_eth_accounts';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
+const PENDING_SESSION_REQUEST_KEY = 'pending_session_request';
 
 const CACHED_METHOD_LIST = [
   'wallet_getSession',
@@ -116,12 +116,41 @@ export class MWPTransport implements ExtendedTransport {
     },
   ) {
     this.dappClient.on('message', this.handleMessage.bind(this));
+    this.dappClient.on('session_request', (sessionRequest: SessionRequest) => {
+      this.currentSessionRequest = sessionRequest;
+      this.kvstore
+        .set(PENDING_SESSION_REQUEST_KEY, JSON.stringify(sessionRequest))
+        .catch((err) => {
+          logger('Failed to store pending session request', err);
+        });
+    });
     if (
       typeof window !== 'undefined' &&
       typeof window.addEventListener !== 'undefined'
     ) {
       this.windowFocusHandler = this.onWindowFocus.bind(this);
       window.addEventListener('focus', this.windowFocusHandler);
+    }
+  }
+
+  private async removeStoredSessionRequest(): Promise<void> {
+    await this.kvstore.delete(PENDING_SESSION_REQUEST_KEY);
+  }
+
+  /**
+   * Returns the stored pending session request from the dappClient session_request event, if any.
+   *
+   * @returns The stored SessionRequest, or null if none or invalid.
+   */
+  async getStoredSessionRequest(): Promise<SessionRequest | null> {
+    try {
+      const raw = await this.kvstore.get(PENDING_SESSION_REQUEST_KEY);
+      if (!raw) {
+        return null;
+      }
+      return JSON.parse(raw) as SessionRequest;
+    } catch {
+      return null;
     }
   }
 
@@ -325,6 +354,7 @@ export class MWPTransport implements ExtendedTransport {
         }
         walletSession = response.result as SessionData;
       }
+      await this.removeStoredSessionRequest();
       this.notifyCallbacks({
         method: 'wallet_sessionChanged',
         params: walletSession,
@@ -460,6 +490,7 @@ export class MWPTransport implements ExtendedTransport {
                 request,
                 messagePayload as TransportResponse,
               );
+              await this.removeStoredSessionRequest();
               this.notifyCallbacks(messagePayload);
               return resolveConnection();
             };
@@ -487,9 +518,11 @@ export class MWPTransport implements ExtendedTransport {
         );
       }
 
+      const storedSessionRequest = await this.getStoredSessionRequest();
+
       timeout = setTimeout(() => {
         reject(new TransportTimeoutError());
-      }, this.options.connectionTimeout);
+      }, storedSessionRequest ? this.options.resumeTimeout : this.options.connectionTimeout);
 
       connection.then(resolve).catch(reject);
     });
@@ -506,6 +539,7 @@ export class MWPTransport implements ExtendedTransport {
           this.dappClient.off('message', initialConnectionMessageHandler);
           initialConnectionMessageHandler = undefined;
         }
+        this.removeStoredSessionRequest();
       });
   }
 
@@ -540,12 +574,16 @@ export class MWPTransport implements ExtendedTransport {
     // NOTE: Purposely not awaiting this to avoid blocking the disconnect flow.
     // This might not actually get executed on the wallet if the user doesn't open
     // their wallet before the message TTL or if the underlying transport isn't actually connected
-    this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch((err) => {
-      console.error('error revoking session', err);
-    });
+    this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch(
+      (err) => {
+        console.error('error revoking session', err);
+      },
+    );
 
     // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
-    const remainingScopesIncludeEip155 = remainingScopes.some((scope) => scope.includes('eip155'));
+    const remainingScopesIncludeEip155 = remainingScopes.some((scope) =>
+      scope.includes('eip155'),
+    );
     if (!remainingScopesIncludeEip155) {
       this.kvstore.delete(ACCOUNTS_STORE_KEY);
       this.kvstore.delete(CHAIN_STORE_KEY);
@@ -788,6 +826,7 @@ export class MWPTransport implements ExtendedTransport {
     const timeoutPromise = new Promise<void>((_resolve, reject) => {
       setTimeout(() => {
         unsubscribe();
+        this.removeStoredSessionRequest();
         reject(new TransportTimeoutError());
       }, this.options.resumeTimeout);
     });

@@ -37,7 +37,7 @@ const SDKContext = createContext<
 >(undefined);
 
 export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
-  const [status, setStatus] = useState<ConnectionStatus>('pending');
+  const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [session, setSession] = useState<SessionData | undefined>(undefined);
   const [error, setError] = useState<Error | null>(null);
 

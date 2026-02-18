@@ -190,6 +190,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     })();
 
     globalObject[SINGLETON_KEY] = instancePromise;
+
+    instancePromise.catch((error) => {
+      globalObject[SINGLETON_KEY] = undefined;
+      console.error('Error initializing MetaMaskConnectMultichain', error);
+    });
+
     return instancePromise;
   }
 
@@ -591,7 +597,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
       if (this.transport.isConnected()) {
         timeout = setTimeout(() => {
-          this.openDeeplinkIfNeeded();
+          this.openSimpleDeeplinkIfNeeded();
         }, 250);
       } else {
         this.dappClient.once(
@@ -700,8 +706,14 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     sessionProperties?: SessionProperties,
     forceRequest?: boolean,
   ): Promise<void> {
-    if (this.status !== 'connected') {
-      await this.disconnect();
+    if (
+      this.status === 'connecting' &&
+      this.transportType === TransportType.MWP
+    ) {
+      await this.openConnectDeeplinkIfNeeded();
+      throw new Error(
+        'Existing connection is pending. Please check your MetaMask Mobile app to continue.',
+      );
     }
     const { ui } = this.options;
     const platformType = getPlatformType();
@@ -903,7 +915,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   // DRY THIS WITH REQUEST ROUTER
-  openDeeplinkIfNeeded(): void {
+  openSimpleDeeplinkIfNeeded(): void {
     const { ui, mobile } = this.options;
     const { showInstallModal = false } = ui ?? {};
     const secure = isSecure();
@@ -926,18 +938,54 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
   }
 
-  async emitSessionChanged(): Promise<void> {
-    if (this.status !== 'connected' && this.status !== 'connecting') {
-      this.emit('wallet_sessionChanged', { sessionScopes: {} });
-    } else {
-      const response = await this.transport.request({
-        method: 'wallet_getSession',
-      });
-      if (response.result) {
-        this.emit('wallet_sessionChanged', response.result);
-      } else {
-        this.emit('wallet_sessionChanged', { sessionScopes: {} });
-      }
+  async openConnectDeeplinkIfNeeded(): Promise<void> {
+    const { ui } = this.options;
+    const { showInstallModal = false } = ui ?? {};
+    const secure = isSecure();
+    const shouldOpenDeeplink = secure && !showInstallModal;
+
+    if (!shouldOpenDeeplink) {
+      return;
     }
+
+    const storedSessionRequest =
+      await this.#transport?.getStoredSessionRequest();
+    if (!storedSessionRequest) {
+      return;
+    }
+
+    const connectionRequest = {
+      sessionRequest: storedSessionRequest,
+      metadata: {
+        dapp: this.options.dapp,
+        sdk: { version: getVersion(), platform: getPlatformType() },
+      },
+    };
+    const deeplink =
+      this.options.ui.factory.createConnectionDeeplink(connectionRequest);
+
+    const universalLink =
+      this.options.ui.factory.createConnectionUniversalLink(connectionRequest);
+
+    if (this.options.mobile?.preferredOpenLink) {
+      this.options.mobile.preferredOpenLink(deeplink, '_self');
+    } else {
+      openDeeplink(this.options, deeplink, universalLink);
+    }
+  }
+
+  async emitSessionChanged(): Promise<void> {
+    const emptySession = { sessionScopes: {} };
+
+    if (this.status !== 'connected' && this.status !== 'connecting') {
+      this.emit('wallet_sessionChanged', emptySession);
+      return;
+    }
+
+    const response = await this.transport.request({
+      method: 'wallet_getSession',
+    });
+
+    this.emit('wallet_sessionChanged', response.result ?? emptySession);
   }
 }

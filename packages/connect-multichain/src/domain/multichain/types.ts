@@ -95,7 +95,7 @@ type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
  */
 export type MergeableMultichainOptions = Omit<
   MultichainOptions,
-  'storage' | 'api' | 'ui' | 'transport'
+  'dapp' | 'analytics' | 'storage' | 'api' | 'ui' | 'transport'
 > & {
   api?: MultichainOptions['api'];
   ui?: Pick<
@@ -135,6 +135,8 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   ) => Promise<TResponse>;
 
   getActiveSession: () => Promise<Session | undefined>;
+
+  getStoredSessionRequest: () => Promise<SessionRequest | null>;
 
   disconnect: (scopes: Scope[]) => Promise<void>;
 };

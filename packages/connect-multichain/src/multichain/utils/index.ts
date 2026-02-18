@@ -2,6 +2,7 @@
 /* eslint-disable jsdoc/require-param-description -- Auto-generated JSDoc */
 /* eslint-disable jsdoc/require-returns -- Auto-generated JSDoc */
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
+import type { SessionProperties } from '@metamask/multichain-api-client';
 import {
   type CaipAccountId,
   type CaipChainId,
@@ -9,8 +10,6 @@ import {
   parseCaipChainId,
 } from '@metamask/utils';
 import { deflate } from 'pako';
-
-import type { SessionProperties } from '@metamask/multichain-api-client';
 
 import {
   type DappSettings,
