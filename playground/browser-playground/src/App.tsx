@@ -166,6 +166,7 @@ function App() {
   }, [wallets, select, clearSolanaError]);
 
   const isConnected = status === 'connected';
+  const isConnecting = status === 'connecting';
   const isDisconnected =
     status === 'disconnected' || status === 'pending' || status === 'loaded';
 
@@ -184,7 +185,6 @@ function App() {
     return all;
   }, []);
 
-  const isConnecting = status === 'connecting';
   return (
     <div
       data-testid={TEST_IDS.app.container}
@@ -213,7 +213,7 @@ function App() {
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect()}
                 onClick={connect}
-                className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
+                className="bg-gray-500 text-white px-5 py-2 rounded text-base hover:bg-gray-600 transition-colors"
               >
                 Connecting (Multichain)
               </button>
