@@ -63,6 +63,10 @@ function testSuite<T extends MultichainOptions>({
       // Set the transport type as a string in storage (this is how it's stored)
       testOptions = {
         ...originalSdkOptions,
+        api: {
+          ...originalSdkOptions.api,
+          supportedNetworks: {},
+        },
         analytics: {
           ...originalSdkOptions.analytics,
           enabled: platform !== 'node',
