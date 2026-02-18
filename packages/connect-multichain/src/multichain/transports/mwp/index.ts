@@ -824,7 +824,6 @@ export class MWPTransport implements ExtendedTransport {
     const timeoutPromise = new Promise<void>((_resolve, reject) => {
       setTimeout(() => {
         unsubscribe();
-        this.removeStoredSessionRequest();
         reject(new TransportTimeoutError());
       }, this.options.resumeTimeout);
     });
