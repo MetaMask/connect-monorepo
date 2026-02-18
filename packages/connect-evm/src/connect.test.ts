@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
-import type { SessionData } from '@metamask/connect-multichain';
+import type { SessionData, MultichainCore } from '@metamask/connect-multichain';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
 import { MetamaskConnectEVM } from './connect';
-import type { MultichainCore } from '@metamask/connect-multichain';
 
-type Status = 'connected' | 'disconnected' | 'connecting' | 'loaded' | 'pending';
+type Status =
+  | 'connected'
+  | 'disconnected'
+  | 'connecting'
+  | 'loaded'
+  | 'pending';
 
 /** Mock core type so storage/transport mocks keep .mockResolvedValue in tests */
 type MockCore = MultichainCore & {
@@ -31,16 +35,21 @@ type MockCore = MultichainCore & {
   >;
 };
 
+/**
+ *
+ */
 function createMockCore(): MockCore {
   const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
-  let _status: Status = 'disconnected';
+  const _status: Status = 'disconnected';
 
   const sendEip1193Message = vi.fn().mockResolvedValue({
     result: [] as string[],
     id: 1,
     jsonrpc: '2.0' as const,
   });
-  const onNotification = vi.fn().mockReturnValue(() => { });
+  const onNotification = vi.fn().mockReturnValue(() => {
+    // noop
+  });
 
   const storageGet = vi.fn().mockResolvedValue(null);
   const storageSet = vi.fn().mockResolvedValue(undefined);
@@ -54,11 +63,13 @@ function createMockCore(): MockCore {
       this._status = value;
     },
     on(event: string, handler: (...args: unknown[]) => void): void {
-      if (!handlers[event]) handlers[event] = [];
+      if (!handlers[event]) {
+        handlers[event] = [];
+      }
       handlers[event].push(handler);
     },
     emit(event: string, ...args: unknown[]): void {
-      handlers[event]?.forEach((h) => h(...args));
+      handlers[event]?.forEach((handler) => handler(...args));
     },
     emitSessionChanged: vi.fn().mockImplementation(async (): Promise<void> => {
       mockCore.emit('wallet_sessionChanged', { sessionScopes: {} });
@@ -236,7 +247,9 @@ describe('MetamaskConnectEVM', () => {
             'eip155:137': {
               methods: [],
               notifications: [],
-              accounts: ['eip155:137:0x1234567890123456789012345678901234567890'],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
             },
           },
         };
@@ -330,7 +343,9 @@ describe('MetamaskConnectEVM', () => {
 
       expect(mockCore.disconnect).toHaveBeenCalledTimes(1);
       const [scopes] = mockCore.disconnect.mock.calls[0];
-      expect(scopes).toEqual(expect.arrayContaining(['eip155:1', 'eip155:137']));
+      expect(scopes).toEqual(
+        expect.arrayContaining(['eip155:1', 'eip155:137']),
+      );
       expect(scopes).toHaveLength(2);
     });
   });
