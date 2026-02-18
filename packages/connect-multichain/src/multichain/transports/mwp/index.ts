@@ -537,6 +537,7 @@ export class MWPTransport implements ExtendedTransport {
           this.dappClient.off('message', initialConnectionMessageHandler);
           initialConnectionMessageHandler = undefined;
         }
+        this.removeStoredSessionRequest();
       });
   }
 
