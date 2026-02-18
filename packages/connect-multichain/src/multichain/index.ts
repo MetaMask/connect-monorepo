@@ -706,8 +706,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     sessionProperties?: SessionProperties,
     forceRequest?: boolean,
   ): Promise<void> {
-    if (this.status !== 'connected') {
-      await this.disconnect();
+    if (
+      this.status === 'connecting' &&
+      this.transportType === TransportType.MWP
+    ) {
+      throw new Error(
+        'Existing connection is pending. Please check your MetaMask Mobile app to continue.',
+      );
     }
     const { ui } = this.options;
     const platformType = getPlatformType();
