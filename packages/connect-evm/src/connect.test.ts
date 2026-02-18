@@ -36,7 +36,9 @@ type MockCore = MultichainCore & {
 };
 
 /**
+ * Creates a mock MultichainCore for testing.
  *
+ * @returns A mock core instance implementing MockCore.
  */
 function createMockCore(): MockCore {
   const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
@@ -55,8 +57,9 @@ function createMockCore(): MockCore {
   const storageSet = vi.fn().mockResolvedValue(undefined);
 
   const mockCore = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- mock mirrors real class _status
     _status: _status as Status,
-    get status() {
+    get status(): Status {
       return this._status;
     },
     set status(value: Status) {
