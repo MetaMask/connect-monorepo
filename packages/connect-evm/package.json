@@ -47,8 +47,9 @@
     "dev": "tsup --watch ",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
-    "test": "vitest run",
-    "test:ci": "vitest run --coverage --coverage.reporter=text --silent",
+    "pretest": "yarn workspace @metamask/analytics run build && yarn workspace @metamask/multichain-ui run build && yarn workspace @metamask/connect-multichain run build",
+    "test": "yarn pretest && vitest run",
+    "test:ci": "yarn pretest && vitest run --coverage --coverage.reporter=text --silent",
     "test:unit": "vitest run",
     "test:verbose": "vitest run --reporter=verbose",
     "test:watch": "vitest watch"
