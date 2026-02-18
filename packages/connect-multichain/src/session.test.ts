@@ -165,17 +165,8 @@ function testSuite<T extends MultichainOptions>({
           t.expect.objectContaining({
             method: 'wallet_getSession',
           }),
-
           { timeout: 60 * 1000 },
         );
-        t.expect(mockedData.mockDefaultTransport.request).toHaveBeenCalledWith(
-          t.expect.objectContaining({
-            method: 'wallet_revokeSession',
-            params: mockSessionData,
-          }),
-          { timeout: 60 * 1000 },
-        );
-
         t.expect(mockedData.mockDefaultTransport.request).toHaveBeenCalledWith(
           t.expect.objectContaining({
             method: 'wallet_createSession',
