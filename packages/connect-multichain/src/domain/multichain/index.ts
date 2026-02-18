@@ -72,9 +72,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    */
   abstract invokeMethod(options: InvokeMethodOptions): Promise<Json>;
 
-  abstract openSimpleDeeplinkIfNeeded(): void;
-
-  abstract openConnectDeeplinkIfNeeded(): Promise<void>;
+  abstract openDeeplinkIfNeeded(): void;
 
   abstract emitSessionChanged(): Promise<void>;
 

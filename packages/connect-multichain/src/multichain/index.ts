@@ -597,7 +597,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
       if (this.transport.isConnected()) {
         timeout = setTimeout(() => {
-          this.openSimpleDeeplinkIfNeeded();
+          this.openDeeplinkIfNeeded();
         }, 250);
       } else {
         this.dappClient.once(
@@ -706,14 +706,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     sessionProperties?: SessionProperties,
     forceRequest?: boolean,
   ): Promise<void> {
-    if (
-      this.status === 'connecting' &&
-      this.transportType === TransportType.MWP
-    ) {
-      await this.openConnectDeeplinkIfNeeded();
-      throw new Error(
-        'Existing connection is pending. Please check your MetaMask Mobile app to continue.',
-      );
+    if (this.status !== 'connected') {
+      await this.disconnect();
     }
     const { ui } = this.options;
     const platformType = getPlatformType();
@@ -915,7 +909,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   // DRY THIS WITH REQUEST ROUTER
-  openSimpleDeeplinkIfNeeded(): void {
+  openDeeplinkIfNeeded(): void {
     const { ui, mobile } = this.options;
     const { showInstallModal = false } = ui ?? {};
     const secure = isSecure();
@@ -935,42 +929,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           openDeeplink(this.options, url, METAMASK_CONNECT_BASE_URL);
         }
       }, 10); // small delay to ensure the message encryption and dispatch completes
-    }
-  }
-
-  async openConnectDeeplinkIfNeeded(): Promise<void> {
-    const { ui } = this.options;
-    const { showInstallModal = false } = ui ?? {};
-    const secure = isSecure();
-    const shouldOpenDeeplink = secure && !showInstallModal;
-
-    if (!shouldOpenDeeplink) {
-      return;
-    }
-
-    const storedSessionRequest =
-      await this.#transport?.getStoredSessionRequest();
-    if (!storedSessionRequest) {
-      return;
-    }
-
-    const connectionRequest = {
-      sessionRequest: storedSessionRequest,
-      metadata: {
-        dapp: this.options.dapp,
-        sdk: { version: getVersion(), platform: getPlatformType() },
-      },
-    };
-    const deeplink =
-      this.options.ui.factory.createConnectionDeeplink(connectionRequest);
-
-    const universalLink =
-      this.options.ui.factory.createConnectionUniversalLink(connectionRequest);
-
-    if (this.options.mobile?.preferredOpenLink) {
-      this.options.mobile.preferredOpenLink(deeplink, '_self');
-    } else {
-      openDeeplink(this.options, deeplink, universalLink);
     }
   }
 

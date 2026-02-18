@@ -701,7 +701,7 @@ export class MetamaskConnectEVM {
       request.method === 'wallet_addEthereumChain' ||
       request.method === 'wallet_switchEthereumChain'
     ) {
-      this.#core.openSimpleDeeplinkIfNeeded();
+      this.#core.openDeeplinkIfNeeded();
     }
     return result;
   }

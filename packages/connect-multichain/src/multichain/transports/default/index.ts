@@ -1,5 +1,4 @@
 import type { Session } from '@metamask/mobile-wallet-protocol-core';
-import type { SessionRequest } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
   type SessionProperties,
   type CreateSessionParams,
@@ -319,12 +318,6 @@ export class DefaultTransport implements ExtendedTransport {
     // and so it is only implemented for the MWPTransport.
     throw new Error(
       'getActiveSession is purposely not implemented for the DefaultTransport',
-    );
-  }
-
-  async getStoredSessionRequest(): Promise<SessionRequest | null> {
-    throw new Error(
-      'getStoredSessionRequest is purposely not implemented for the DefaultTransport',
     );
   }
 }
