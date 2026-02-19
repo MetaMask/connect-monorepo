@@ -522,6 +522,15 @@ function testSuite<T extends MultichainOptions>({
       );
 
       sdk = await createSDK(testOptions);
+
+      if (platform === 'web') {
+        mockedData.mockWalletRevokeSession.mockImplementation(
+          async () => {
+            mockedData.mockWalletGetSession.mockResolvedValue({ sessionScopes: {} });
+          },
+        );
+      }
+
       await sdk.disconnect();
 
       if (platform === 'web') {
