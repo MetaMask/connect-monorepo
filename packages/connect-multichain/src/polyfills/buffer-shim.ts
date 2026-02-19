@@ -13,6 +13,4 @@ import { getGlobalObject } from '../multichain/utils';
 
 // Only set Buffer if it's not already defined (avoid overwriting Node.js native Buffer)
 const globalObj = getGlobalObject();
-if (!globalObj.Buffer) {
-  globalObj.Buffer = Buffer;
-}
+globalObj.Buffer ??= Buffer;

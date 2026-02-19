@@ -12,7 +12,7 @@
 /* eslint-disable import-x/order -- Mock imports need specific order */
 /* eslint-disable @typescript-eslint/no-use-before-define -- Function hoisting */
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors -- Test rejection patterns */
-/* eslint-disable jsdoc/require-returns -- Test helpers */
+
 /* eslint-disable no-plusplus -- Test loops */
 /* eslint-disable no-invalid-this -- Test context */
 /* eslint-disable no-useless-catch -- Test error handling */
@@ -177,6 +177,11 @@ export const createTest: CreateTestFN = ({
   /** Singleton key used by MetaMaskConnectMultichain.create() - clear so each test gets a fresh instance */
   const MULTICHAIN_SINGLETON_KEY = '__METAMASK_CONNECT_MULTICHAIN_SINGLETON__';
 
+  /**
+   * Sets up mocks and clears singleton before each test.
+   *
+   * @returns Promise resolving to the mocked data for the test.
+   */
   async function beforeEach() {
     try {
       // Clear singleton so each test gets a new SDK instance (avoids state leaking between tests)

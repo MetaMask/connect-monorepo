@@ -524,11 +524,11 @@ function testSuite<T extends MultichainOptions>({
       sdk = await createSDK(testOptions);
 
       if (platform === 'web') {
-        mockedData.mockWalletRevokeSession.mockImplementation(
-          async () => {
-            mockedData.mockWalletGetSession.mockResolvedValue({ sessionScopes: {} });
-          },
-        );
+        mockedData.mockWalletRevokeSession.mockImplementation(async () => {
+          mockedData.mockWalletGetSession.mockResolvedValue({
+            sessionScopes: {},
+          });
+        });
       }
 
       await sdk.disconnect();
@@ -571,11 +571,11 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.transport).toBeDefined();
 
       if (platform === 'web') {
-        mockedData.mockWalletRevokeSession.mockImplementation(
-          async () => {
-            mockedData.mockWalletGetSession.mockResolvedValue({ sessionScopes: {} });
-          },
-        );
+        mockedData.mockWalletRevokeSession.mockImplementation(async () => {
+          mockedData.mockWalletGetSession.mockResolvedValue({
+            sessionScopes: {},
+          });
+        });
       }
 
       await t
