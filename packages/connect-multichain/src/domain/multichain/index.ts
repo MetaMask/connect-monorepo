@@ -74,8 +74,6 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   abstract openSimpleDeeplinkIfNeeded(): void;
 
-  abstract openConnectDeeplinkIfNeeded(): Promise<void>;
-
   abstract emitSessionChanged(): Promise<void>;
 
   constructor(protected options: MultichainOptions) {

@@ -520,9 +520,14 @@ export class MWPTransport implements ExtendedTransport {
 
       const storedSessionRequest = await this.getStoredSessionRequest();
 
-      timeout = setTimeout(() => {
-        reject(new TransportTimeoutError());
-      }, storedSessionRequest ? this.options.resumeTimeout : this.options.connectionTimeout);
+      timeout = setTimeout(
+        () => {
+          reject(new TransportTimeoutError());
+        },
+        storedSessionRequest
+          ? this.options.resumeTimeout
+          : this.options.connectionTimeout,
+      );
 
       connection.then(resolve).catch(reject);
     });
@@ -611,7 +616,7 @@ export class MWPTransport implements ExtendedTransport {
         this.windowFocusHandler = undefined;
       }
 
-      this.dappClient.disconnect();
+      await this.dappClient.disconnect();
     }
 
     this.notifyCallbacks({
