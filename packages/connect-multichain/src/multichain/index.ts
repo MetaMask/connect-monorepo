@@ -834,8 +834,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
       return this.#handleConnection(
         this.#deeplinkConnect(
-          scopes,
-          caipAccountIds,
+          mergedScopes,
+          mergedCaipAccountIds,
           nonEmptySessionProperties,
         ),
         scopes,
