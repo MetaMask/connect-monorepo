@@ -755,9 +755,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     const sessionData = await this.#getCaipSession();
 
     const {
-      requestedScopes,
-      requestedCaipAccountIds,
-      requestedSessionProperties,
+      mergedScopes,
+      mergedCaipAccountIds,
+      mergedSessionProperties,
     } = mergeRequestedSessionWithExisting(
       sessionData,
       scopes,
@@ -767,16 +767,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     // Needed because empty object will cause wallet_createSession to return an error
     const nonEmptySessionProperties =
-      Object.keys(requestedSessionProperties ?? {}).length > 0
-        ? requestedSessionProperties
+      Object.keys(mergedSessionProperties ?? {}).length > 0
+        ? mergedSessionProperties
         : undefined;
 
     if (this.#transport?.isConnected() && !secure) {
       return this.#handleConnection(
         this.#transport
           .connect({
-            scopes: requestedScopes,
-            caipAccountIds: requestedCaipAccountIds,
+            scopes: mergedScopes,
+            caipAccountIds: mergedCaipAccountIds,
             sessionProperties: nonEmptySessionProperties,
             forceRequest,
           })
@@ -796,8 +796,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       const defaultTransport = await this.#setupDefaultTransport();
       return this.#handleConnection(
         defaultTransport.connect({
-          scopes: requestedScopes,
-          caipAccountIds: requestedCaipAccountIds,
+          scopes: mergedScopes,
+          caipAccountIds: mergedCaipAccountIds,
           sessionProperties: nonEmptySessionProperties,
           forceRequest,
         }),
@@ -812,8 +812,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       // Web transport has no initial payload
       return this.#handleConnection(
         defaultTransport.connect({
-          scopes: requestedScopes,
-          caipAccountIds: requestedCaipAccountIds,
+          scopes: mergedScopes,
+          caipAccountIds: mergedCaipAccountIds,
           sessionProperties: nonEmptySessionProperties,
           forceRequest,
         }),
@@ -847,8 +847,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.#handleConnection(
       this.#showInstallModal(
         shouldShowInstallModal,
-        requestedScopes,
-        requestedCaipAccountIds,
+        mergedScopes,
+        mergedCaipAccountIds,
         nonEmptySessionProperties,
       ),
       scopes,
