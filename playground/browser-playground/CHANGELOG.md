@@ -8,13 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Add disconnect buttons to cards ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 
 ### Fixed
+
 - Fixes EVM Provider setChainId and setAccounts to also use the connect event ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 - Multichain Card and button properly reflect initial instantiation connecting status ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 
 ### Removed
+
 - Remove the explicit ActiveProviderStorage pattern. Now all providers (cards) are "Active" even without user input to connect to a specific ecosystem ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 
 ## [0.2.0]

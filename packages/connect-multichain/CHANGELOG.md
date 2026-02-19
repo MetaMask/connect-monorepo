@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
 - **BREAKING** `createMultichainClient()` now returns a singleton. Any incoming constructor params on subsequent calls to `createMultichainClient()` will be applied to the existing singleton instance except for the `dapp`, `storage`, and `ui.factory` param options. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 - `ConnectMultichain.connect()` now throws an `'Existing connection is pending. Please check your MetaMask Mobile app to continue.'` error if there is already an ongoing connection attempt. Previously it would abort that ongoing connection in favor of a new one. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 - `ConnectMultichain.connect()` adds newly requested scopes and accounts onto any existing permissions rather than fully replacing them. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))

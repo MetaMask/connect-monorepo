@@ -57,6 +57,10 @@ function testSuite<T extends MultichainOptions>({
       testOptions = {
         ...originalSdkOptions,
         ui: uiOptions,
+        api: {
+          ...originalSdkOptions.api,
+          supportedNetworks: {},
+        },
         analytics: {
           ...originalSdkOptions.analytics,
           enabled: platform === 'web' || platform === 'web-mobile',
