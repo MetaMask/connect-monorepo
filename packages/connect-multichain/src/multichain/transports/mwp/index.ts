@@ -611,7 +611,7 @@ export class MWPTransport implements ExtendedTransport {
         this.windowFocusHandler = undefined;
       }
 
-      this.dappClient.disconnect();
+      await this.dappClient.disconnect();
     }
 
     this.notifyCallbacks({

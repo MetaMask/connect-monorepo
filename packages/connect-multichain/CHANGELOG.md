@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- When `ConnectMultichain.connect()` is called while a connection is already pending, the user is re-prompted with the pending connection deeplink. ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
+
+### Changed
+
+- **BREAKING** `createMultichainClient()` now returns a singleton. Any incoming constructor params on subsequent calls to `createMultichainClient()` will be applied to the existing singleton instance except for the `dapp`, `storage`, and `ui.factory` param options. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- **BREAKING** `ConnectMultichain.openDeeplinkIfNeeded()` is renamed to `openSimpleDeeplinkIfNeeded()` ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
+- `ConnectMultichain.connect()` now throws an `'Existing connection is pending. Please check your MetaMask Mobile app to continue.'` error if there is already an ongoing connection attempt. Previously it would abort that ongoing connection in favor of a new one. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- `ConnectMultichain.connect()` adds newly requested scopes and accounts onto any existing permissions rather than fully replacing them. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- `ConnectMultichain.disconnect()` accepts an optional array of scopes. When provided, only those scopes will be revoked from the existing permissions. If no scopes remain after a partial revoke, then the underly connection is fully discarded. If no scopes are specified ()`[]`), then all scopes will be removed. By default all scopes will be removed. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+
 ### Fixed
 
 - Fix `beforeunload` event listener not being properly removed on disconnect due to `.bind()` creating different function references, causing a listener leak on each connect/disconnect cycle ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))

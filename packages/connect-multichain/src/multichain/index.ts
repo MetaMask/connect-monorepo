@@ -710,7 +710,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.status === 'connecting' &&
       this.transportType === TransportType.MWP
     ) {
-      await this.openConnectDeeplinkIfNeeded();
+      await this.#openConnectDeeplinkIfNeeded();
       throw new Error(
         'Existing connection is pending. Please check your MetaMask Mobile app to continue.',
       );
@@ -938,7 +938,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
   }
 
-  async openConnectDeeplinkIfNeeded(): Promise<void> {
+  async #openConnectDeeplinkIfNeeded(): Promise<void> {
     const { ui } = this.options;
     const { showInstallModal = false } = ui ?? {};
     const secure = isSecure();

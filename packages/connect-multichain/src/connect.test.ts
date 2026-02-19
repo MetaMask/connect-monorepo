@@ -118,6 +118,10 @@ function testSuite<T extends MultichainOptions>({
       // Set the transport type as a string in storage (this is how it's stored)
       testOptions = {
         ...originalSdkOptions,
+        api: {
+          ...originalSdkOptions.api,
+          supportedNetworks: {},
+        },
         analytics: {
           ...originalSdkOptions.analytics,
           enabled: platform !== 'node',
@@ -518,6 +522,15 @@ function testSuite<T extends MultichainOptions>({
       );
 
       sdk = await createSDK(testOptions);
+
+      if (platform === 'web') {
+        mockedData.mockWalletRevokeSession.mockImplementation(async () => {
+          mockedData.mockWalletGetSession.mockResolvedValue({
+            sessionScopes: {},
+          });
+        });
+      }
+
       await sdk.disconnect();
 
       if (platform === 'web') {
@@ -556,6 +569,14 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.status).toBe('connected');
       t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.transport).toBeDefined();
+
+      if (platform === 'web') {
+        mockedData.mockWalletRevokeSession.mockImplementation(async () => {
+          mockedData.mockWalletGetSession.mockResolvedValue({
+            sessionScopes: {},
+          });
+        });
+      }
 
       await t
         .expect(sdk.disconnect())
