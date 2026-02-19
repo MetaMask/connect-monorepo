@@ -561,6 +561,14 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.transport).toBeDefined();
 
+      if (platform === 'web') {
+        mockedData.mockWalletRevokeSession.mockImplementation(
+          async () => {
+            mockedData.mockWalletGetSession.mockResolvedValue({ sessionScopes: {} });
+          },
+        );
+      }
+
       await t
         .expect(sdk.disconnect())
         .rejects.toThrow('Failed to disconnect transport');
