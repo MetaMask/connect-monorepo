@@ -419,6 +419,8 @@ export class MWPTransport implements ExtendedTransport {
       logger('active session found', session);
     }
 
+    const storedSessionRequestBeforeConnectionAttempt = await this.getStoredSessionRequest();
+
     let timeout: NodeJS.Timeout;
     let initialConnectionMessageHandler:
       | ((message: unknown) => Promise<void>)
@@ -518,13 +520,12 @@ export class MWPTransport implements ExtendedTransport {
         );
       }
 
-      const storedSessionRequest = await this.getStoredSessionRequest();
 
       timeout = setTimeout(
         () => {
           reject(new TransportTimeoutError());
         },
-        storedSessionRequest
+        storedSessionRequestBeforeConnectionAttempt
           ? this.options.resumeTimeout
           : this.options.connectionTimeout,
       );
