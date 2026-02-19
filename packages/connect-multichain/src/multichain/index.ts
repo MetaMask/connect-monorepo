@@ -898,7 +898,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#listener = undefined;
       this.#beforeUnloadListener = undefined;
       this.#transport = undefined;
-      this.#providerTransportWrapper.clearTransportNotifcationListener();
+      this.#providerTransportWrapper.clearTransportNotificationListener();
       this.#dappClient = undefined;
       this.status = 'disconnected';
     }

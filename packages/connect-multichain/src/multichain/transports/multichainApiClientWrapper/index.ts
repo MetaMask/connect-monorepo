@@ -56,7 +56,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     });
   }
 
-  clearTransportNotifcationListener(): void {
+  clearTransportNotificationListener(): void {
     this.notificationListener?.();
     this.notificationListener = undefined;
   }
