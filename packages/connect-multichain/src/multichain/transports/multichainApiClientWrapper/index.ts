@@ -61,7 +61,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     this.notificationListener = undefined;
   }
 
-  setupTransportNotifcationListener(): void {
+  setupTransportNotificationListener(): void {
     if (!this.isTransportDefined() || this.notificationListener) {
       return;
     }
@@ -115,7 +115,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   onNotification(callback: (data: unknown) => void): () => void {
-    this.setupTransportNotifcationListener();
+    this.setupTransportNotificationListener();
     this.#notificationCallbacks.add(callback);
     return () => {
       this.#notificationCallbacks.delete(callback);

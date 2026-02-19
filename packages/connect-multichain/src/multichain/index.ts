@@ -247,7 +247,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
           this.#transport = apiTransport;
-          this.#providerTransportWrapper.setupTransportNotifcationListener();
+          this.#providerTransportWrapper.setupTransportNotificationListener();
           this.#listener = apiTransport.onNotification(
             this.#onTransportNotification.bind(this),
           );
@@ -259,7 +259,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         const apiTransport = new MWPTransport(dappClient, kvstore);
         this.#dappClient = dappClient;
         this.#transport = apiTransport;
-        this.#providerTransportWrapper.setupTransportNotifcationListener();
+        this.#providerTransportWrapper.setupTransportNotificationListener();
         this.#listener = apiTransport.onNotification(
           this.#onTransportNotification.bind(this),
         );
@@ -337,7 +337,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#dappClient = dappClient;
     const apiTransport = new MWPTransport(dappClient, kvstore);
     this.#transport = apiTransport;
-    this.#providerTransportWrapper.setupTransportNotifcationListener();
+    this.#providerTransportWrapper.setupTransportNotificationListener();
     this.#listener = this.transport.onNotification(
       this.#onTransportNotification.bind(this),
     );
@@ -558,7 +558,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#onTransportNotification.bind(this),
     );
     this.#transport = transport;
-    this.#providerTransportWrapper.setupTransportNotifcationListener();
+    this.#providerTransportWrapper.setupTransportNotificationListener();
     return transport;
   }
 
