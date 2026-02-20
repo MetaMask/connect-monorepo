@@ -182,7 +182,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     const scopes = revokeSessionParams?.scopes ?? [];
 
     try {
-      this.metamaskConnectMultichain.disconnect(scopes as Scope[]);
+      await this.metamaskConnectMultichain.disconnect(scopes as Scope[]);
       return { jsonrpc: '2.0', id: request.id, result: true };
     } catch (_error) {
       return { jsonrpc: '2.0', id: request.id, result: false };
