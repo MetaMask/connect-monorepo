@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
 /* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
 /* eslint-disable no-plusplus -- Increment operator is safe here */
-/* eslint-disable @typescript-eslint/no-floating-promises -- Promise is intentionally not awaited */
+
 import type {
   CreateSessionParams,
   RevokeSessionParams,
@@ -56,12 +56,12 @@ export class MultichainApiClientWrapperTransport implements Transport {
     });
   }
 
-  clearTransportNotifcationListener(): void {
+  clearTransportNotificationListener(): void {
     this.notificationListener?.();
     this.notificationListener = undefined;
   }
 
-  setupTransportNotifcationListener(): void {
+  setupTransportNotificationListener(): void {
     if (!this.isTransportDefined() || this.notificationListener) {
       return;
     }
@@ -115,7 +115,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   onNotification(callback: (data: unknown) => void): () => void {
-    this.setupTransportNotifcationListener();
+    this.setupTransportNotificationListener();
     this.#notificationCallbacks.add(callback);
     return () => {
       this.#notificationCallbacks.delete(callback);
@@ -182,7 +182,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     const scopes = revokeSessionParams?.scopes ?? [];
 
     try {
-      this.metamaskConnectMultichain.disconnect(scopes as Scope[]);
+      await this.metamaskConnectMultichain.disconnect(scopes as Scope[]);
       return { jsonrpc: '2.0', id: request.id, result: true };
     } catch (_error) {
       return { jsonrpc: '2.0', id: request.id, result: false };

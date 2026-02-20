@@ -69,9 +69,6 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
     })
       .then((solanaClient) => {
         setClient(solanaClient);
-        return solanaClient.registerWallet();
-      })
-      .then(() => {
         setIsRegistered(true);
       })
       .catch((error) => {
