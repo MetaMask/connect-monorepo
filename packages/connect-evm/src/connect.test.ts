@@ -2,7 +2,8 @@
 import type { SessionData, MultichainCore } from '@metamask/connect-multichain';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
-import { ConnectEvmStatus, MetamaskConnectEVM } from './connect';
+import type { ConnectEvmStatus } from './connect';
+import { MetamaskConnectEVM } from './connect';
 
 type MockCore = MultichainCore & {
   emit: (event: string, ...args: unknown[]) => void;

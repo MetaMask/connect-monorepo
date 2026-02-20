@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
 /* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
 /* eslint-disable no-plusplus -- Increment operator is safe here */
-/* eslint-disable @typescript-eslint/no-floating-promises -- Promise is intentionally not awaited */
+
 import type {
   CreateSessionParams,
   RevokeSessionParams,

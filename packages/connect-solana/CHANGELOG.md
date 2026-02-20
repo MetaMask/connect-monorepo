@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add node.js builds [#169](https://github.com/MetaMask/connect-monorepo/pull/169)
 
+### Changed
+
+- **BREAKING:** Automatically register as MetaMask to Solana Wallet Standard registry upon instantiation - with option to skip auto-registration [#178](https://github.com/MetaMask/connect-monorepo/pull/178)
+
 ## [0.1.0]
 
 ### Added

@@ -760,16 +760,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     const sessionData = await this.#getCaipSession();
 
-    const {
-      mergedScopes,
-      mergedCaipAccountIds,
-      mergedSessionProperties,
-    } = mergeRequestedSessionWithExisting(
-      sessionData,
-      scopes,
-      caipAccountIds,
-      sessionProperties,
-    );
+    const { mergedScopes, mergedCaipAccountIds, mergedSessionProperties } =
+      mergeRequestedSessionWithExisting(
+        sessionData,
+        scopes,
+        caipAccountIds,
+        sessionProperties,
+      );
 
     // Needed because empty object will cause wallet_createSession to return an error
     const nonEmptySessionProperties =
