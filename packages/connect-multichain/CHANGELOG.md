@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `beforeunload` event listener not being properly removed on disconnect due to `.bind()` creating different function references, causing a listener leak on each connect/disconnect cycle ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))
+- Rename `StoreAdapterWeb.DB_NAME` from `mmsdk` to `mmconnect` to prevent IndexedDB collisions when the legacy MetaMask SDK and MM Connect run in the same browser context ([#177](https://github.com/MetaMask/connect-monorepo/pull/177))
 
 ## [0.5.3]
 
