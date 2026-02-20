@@ -24,7 +24,7 @@ import type {
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param options.debug - Enable debug logging
  * @param options.walletName - Custom wallet name for registration (defaults to 'MetaMask Connect')
- * @param options.autoRegister - Auto-register the wallet during creation (defaults to true)
+ * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
  * @returns A promise that resolves to the Solana client instance
  *
  * @example
@@ -57,7 +57,7 @@ export async function createSolanaClient(
   };
 
   const walletName = options.walletName ?? 'MetaMask';
-  const autoRegister = options.autoRegister ?? true;
+  const skipAutoRegister = options.skipAutoRegister ?? false;
 
   const supportedNetworks = convertNetworksToCAIP(
     options.api?.supportedNetworks ?? defaultNetworks,
@@ -72,7 +72,7 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
-  if (autoRegister) {
+  if (!skipAutoRegister) {
     await registerSolanaWalletStandard({ client, walletName });
   }
 
@@ -81,7 +81,7 @@ export async function createSolanaClient(
     getWallet: (name?: string) =>
       getWalletStandard({ client, walletName: name ?? walletName }),
     registerWallet: async (name?: string): Promise<void> => {
-      if (autoRegister) {
+      if (!skipAutoRegister) {
         return;
       }
       await registerSolanaWalletStandard({

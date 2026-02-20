@@ -112,8 +112,8 @@ describe('createSolanaClient', () => {
       });
     });
 
-    it('should skip auto-registration when autoRegister is false', async () => {
-      await createSolanaClient({ ...mockOptions, autoRegister: false });
+    it('should skip auto-registration when skipAutoRegister is true', async () => {
+      await createSolanaClient({ ...mockOptions, skipAutoRegister: true });
 
       expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
     });
@@ -136,7 +136,7 @@ describe('createSolanaClient', () => {
       it('should get wallet using getWalletStandard', async () => {
         const client = await createSolanaClient({
           ...mockOptions,
-          autoRegister: false,
+          skipAutoRegister: true,
         });
 
         const wallet = client.getWallet('CustomWallet');
@@ -151,7 +151,7 @@ describe('createSolanaClient', () => {
       it('should use default walletName when none provided', async () => {
         const client = await createSolanaClient({
           ...mockOptions,
-          autoRegister: false,
+          skipAutoRegister: true,
         });
 
         const wallet = client.getWallet();
@@ -166,7 +166,7 @@ describe('createSolanaClient', () => {
       it('should use custom walletName as default for getWallet', async () => {
         const client = await createSolanaClient({
           ...mockOptions,
-          autoRegister: false,
+          skipAutoRegister: true,
           walletName: 'My Custom Wallet',
         });
 
@@ -184,7 +184,7 @@ describe('createSolanaClient', () => {
       it('should register wallet using registerSolanaWalletStandard', async () => {
         const client = await createSolanaClient({
           ...mockOptions,
-          autoRegister: false,
+          skipAutoRegister: true,
         });
 
         await client.registerWallet('CustomWallet');
@@ -198,7 +198,7 @@ describe('createSolanaClient', () => {
       it('should register wallet with default name when no name provided', async () => {
         const client = await createSolanaClient({
           ...mockOptions,
-          autoRegister: false,
+          skipAutoRegister: true,
         });
 
         await client.registerWallet();
@@ -212,7 +212,7 @@ describe('createSolanaClient', () => {
       it('should use custom walletName as default for registerWallet', async () => {
         const client = await createSolanaClient({
           ...mockOptions,
-          autoRegister: false,
+          skipAutoRegister: true,
           walletName: 'My Custom Wallet',
         });
 

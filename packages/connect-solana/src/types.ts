@@ -39,8 +39,8 @@ export type SolanaConnectOptions = Pick<MultichainOptions, 'dapp'> & {
   debug?: boolean;
   /** Custom wallet name for registration and getWallet. Defaults to 'MetaMask'. */
   walletName?: string;
-  /** Auto-register the wallet during creation. Defaults to true. Set to false for manual control. */
-  autoRegister?: boolean;
+  /** Skip auto-registering the wallet during creation. Defaults to false. Set to true for manual control. */
+  skipAutoRegister?: boolean;
 };
 
 /**
