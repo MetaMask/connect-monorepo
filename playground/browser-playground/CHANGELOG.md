@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Patch `@solana/wallet-adapter-react` to work with android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
 
+### Changed
+
+- Remove manual registration of `connect-solana` ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
+
 ### Removed
 
 - Remove the explicit ActiveProviderStorage pattern. Now all providers (cards) are "Active" even without user input to connect to a specific ecosystem ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))

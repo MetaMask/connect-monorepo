@@ -135,9 +135,9 @@ export function mergeRequestedSessionWithExisting(
   caipAccountIds: CaipAccountId[],
   sessionProperties?: SessionProperties,
 ): {
-  requestedScopes: Scope[];
-  requestedCaipAccountIds: CaipAccountId[];
-  requestedSessionProperties: SessionProperties;
+  mergedScopes: Scope[];
+  mergedCaipAccountIds: CaipAccountId[];
+  mergedSessionProperties: SessionProperties;
 } {
   const existingCaipChainIds = Object.keys(sessionData.sessionScopes);
   const existingCaipAccountIds: string[] = [];
@@ -149,20 +149,20 @@ export function mergeRequestedSessionWithExisting(
     }
   });
 
-  const requestedScopes = Array.from(
+  const mergedScopes = Array.from(
     new Set([...existingCaipChainIds, ...scopes]),
   ) as Scope[];
-  const requestedCaipAccountIds = Array.from(
+  const mergedCaipAccountIds = Array.from(
     new Set([...existingCaipAccountIds, ...caipAccountIds]),
   ) as CaipAccountId[];
-  const requestedSessionProperties = {
+  const mergedSessionProperties = {
     ...sessionData.sessionProperties,
     ...sessionProperties,
   };
   return {
-    requestedScopes,
-    requestedCaipAccountIds,
-    requestedSessionProperties,
+    mergedScopes,
+    mergedCaipAccountIds,
+    mergedSessionProperties,
   };
 }
 
