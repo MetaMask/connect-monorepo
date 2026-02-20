@@ -2,6 +2,7 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { useCallback, useState } from 'react';
+import { TEST_IDS } from '@metamask/playground-ui';
 
 /**
  * SolanaWalletCard component displays Solana wallet connection status
@@ -111,15 +112,16 @@ export const SolanaWalletCard: React.FC = () => {
   }, [publicKey, sendTransaction, connection]);
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+    <div data-testid={TEST_IDS.solana.card} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        <h3 data-testid={TEST_IDS.solana.title} className="text-lg font-semibold text-gray-800 flex items-center gap-2">
           <span className="text-2xl">☀️</span>
           Solana Wallet
         </h3>
         {connected && (
           <button
             type="button"
+            data-testid={TEST_IDS.solana.btnDisconnect}
             onClick={disconnect}
             className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
           >
@@ -130,7 +132,7 @@ export const SolanaWalletCard: React.FC = () => {
 
       <div className="space-y-4">
         {/* Connection Status */}
-        <div className="flex items-center gap-2">
+        <div data-testid={TEST_IDS.solana.status} className="flex items-center gap-2">
           <span
             className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-gray-400'}`}
           />
@@ -141,7 +143,7 @@ export const SolanaWalletCard: React.FC = () => {
 
         {/* Wallet Address */}
         {publicKey && (
-          <div className="bg-gray-50 rounded p-3">
+          <div data-testid={TEST_IDS.solana.addressContainer} className="bg-gray-50 rounded p-3">
             <p className="text-xs text-gray-500 mb-1">Address</p>
             <p className="text-sm font-mono break-all">{publicKey.toBase58()}</p>
           </div>
@@ -149,19 +151,20 @@ export const SolanaWalletCard: React.FC = () => {
 
         {/* Wallet Buttons */}
         {!connected && (
-          <div className="flex gap-2 flex-wrap">
+          <div data-testid={TEST_IDS.solana.btnConnect} className="flex gap-2 flex-wrap">
             <WalletMultiButton className="!bg-blue-500 hover:!bg-blue-600" />
           </div>
         )}
 
         {/* Sign Message Section */}
         {connected && (
-          <div className="border-t pt-4 mt-4">
+          <div data-testid={TEST_IDS.solana.signMessageSection} className="border-t pt-4 mt-4">
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Sign Message
             </h4>
             <input
               type="text"
+              data-testid={TEST_IDS.solana.inputMessage}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-2"
@@ -169,6 +172,7 @@ export const SolanaWalletCard: React.FC = () => {
             />
             <button
               type="button"
+              data-testid={TEST_IDS.solana.btnSignMessage}
               onClick={handleSignMessage}
               disabled={loading || !signMessage}
               className="bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -177,7 +181,7 @@ export const SolanaWalletCard: React.FC = () => {
             </button>
 
             {signedMessage && (
-              <div className="mt-3 bg-green-50 rounded p-3">
+              <div data-testid={TEST_IDS.solana.signedMessageResult} className="mt-3 bg-green-50 rounded p-3">
                 <p className="text-xs text-green-700 mb-1">Signed Message</p>
                 <p className="text-xs font-mono break-all text-green-800">
                   {signedMessage}
@@ -189,13 +193,14 @@ export const SolanaWalletCard: React.FC = () => {
 
         {/* Transaction Section */}
         {connected && (
-          <div className="border-t pt-4 mt-4">
+          <div data-testid={TEST_IDS.solana.transactionsSection} className="border-t pt-4 mt-4">
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Transactions
             </h4>
             <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
+                data-testid={TEST_IDS.solana.btnSignTransaction}
                 onClick={handleSignTransaction}
                 disabled={loading || !signTransaction}
                 className="bg-orange-500 text-white px-4 py-2 rounded text-sm hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -204,6 +209,7 @@ export const SolanaWalletCard: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-testid={TEST_IDS.solana.btnSendTransaction}
                 onClick={handleSendTransaction}
                 disabled={loading || !sendTransaction}
                 className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -213,7 +219,7 @@ export const SolanaWalletCard: React.FC = () => {
             </div>
 
             {transactionSignature && (
-              <div className="mt-3 bg-blue-50 rounded p-3">
+              <div data-testid={TEST_IDS.solana.transactionSignatureResult} className="mt-3 bg-blue-50 rounded p-3">
                 <p className="text-xs text-blue-700 mb-1">Transaction Signature</p>
                 <p className="text-xs font-mono break-all text-blue-800">
                   {transactionSignature}
@@ -225,7 +231,7 @@ export const SolanaWalletCard: React.FC = () => {
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded p-3">
+          <div data-testid={TEST_IDS.solana.errorContainer} className="bg-red-50 border border-red-200 rounded p-3">
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}

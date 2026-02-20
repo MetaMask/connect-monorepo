@@ -55,10 +55,11 @@ function App() {
 
   const {
     connected: solanaConnected,
+    connecting: solanaConnecting,
+    disconnecting: solanaDisconnecting,
     publicKey: solanaPublicKey,
     wallets,
     select,
-    connect: solanaConnect,
   } = useWallet();
 
   const handleCheckboxChange = useCallback(
