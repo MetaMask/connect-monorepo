@@ -18,7 +18,7 @@ import { colors, sharedStyles } from '../src/styles/shared';
 export default function Page() {
 	const [customScopes, setCustomScopes] = useState<Scope[]>(['eip155:1' as Scope]);
 	const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
-	const { error, state, session, connect: sdkConnect, disconnect: sdkDisconnect } = useSDK();
+	const { error, status: state, session, connect: sdkConnect, disconnect: sdkDisconnect } = useSDK();
 	const {
 		connected: legacyConnected,
 		provider: legacyProvider,

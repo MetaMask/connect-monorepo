@@ -5,7 +5,7 @@ import { LegacyEVMSDKProvider } from '../src/sdk/LegacyEVMSDKProvider';
 import { Slot, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { deserialize, serialize, WagmiProvider } from 'wagmi';
@@ -14,18 +14,8 @@ import { wagmiConfig } from '../src/wagmi/config';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// Create AsyncStorage adapter for tanstack query persister
-const asyncStorageAdapter = {
-  getItem: async (key: string): Promise<string | null> => {
-    return await AsyncStorage.getItem(key);
-  },
-  setItem: async (key: string, value: string): Promise<void> => {
-    await AsyncStorage.setItem(key, value);
-  },
-  removeItem: async (key: string): Promise<void> => {
-    await AsyncStorage.removeItem(key);
-  },
-};
+// AsyncStorage natively provides the async getItem/setItem/removeItem API
+// that createAsyncStoragePersister expects.
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,10 +29,10 @@ const queryClient = new QueryClient({
   },
 });
 
-const persister = createSyncStoragePersister({
+const persister = createAsyncStoragePersister({
   key: 'react-native-playground.cache',
   serialize,
-  storage: asyncStorageAdapter as any,
+  storage: AsyncStorage,
   deserialize,
 });
 
