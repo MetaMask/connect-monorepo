@@ -108,7 +108,7 @@ describe('createSolanaClient', () => {
 
       expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
         client: mockCore.provider,
-        walletName: 'MetaMask',
+        walletName: 'MetaMask Connect',
       });
     });
 
@@ -131,7 +131,7 @@ describe('createSolanaClient', () => {
 
         expect(getWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask',
+          walletName: 'MetaMask Connect',
         });
         expect(wallet).toBe(mockWallet);
       });
@@ -148,7 +148,7 @@ describe('createSolanaClient', () => {
 
         expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask',
+          walletName: 'MetaMask Connect',
         });
       });
 
