@@ -937,18 +937,25 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
   }
 
+  // Provides a way for ecosystem clients (EVM, Solana, etc.) to get the current CAIP session data
+  // when instantiating themselves (as they would have already missed any initial sessionChanged events emitted by ConnectMultichain)
+  // without having to concern themselves with the current transport connection status.
   async emitSessionChanged(): Promise<void> {
     const emptySession = { sessionScopes: {} };
 
     if (this.status !== 'connected' && this.status !== 'connecting') {
+      // If we aren't connected or connecting, there definitely is no active CAIP session
+      // so we optimistically emit an empty session to signify that to the ecosystem client consumers (EVM, Solana, etc.)
       this.emit('wallet_sessionChanged', emptySession);
       return;
     }
 
+    // Otherwise, we need to fetch the current CAIP session from the wallet
     const response = await this.transport.request({
       method: 'wallet_getSession',
     });
 
+    // And then simulate a sessionChanged event with the current CAIP session data
     this.emit('wallet_sessionChanged', response.result ?? emptySession);
   }
 }
