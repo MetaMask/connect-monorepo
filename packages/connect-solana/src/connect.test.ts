@@ -102,10 +102,42 @@ describe('createSolanaClient', () => {
     expect(client.core).toBe(mockCore);
   });
 
+  describe('auto-registration', () => {
+    it('should auto-register the wallet by default', async () => {
+      await createSolanaClient(mockOptions);
+
+      expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
+        client: mockCore.provider,
+        walletName: 'MetaMask',
+      });
+    });
+
+    it('should skip auto-registration when autoRegister is false', async () => {
+      await createSolanaClient({ ...mockOptions, autoRegister: false });
+
+      expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+    });
+
+    it('should use custom walletName for auto-registration', async () => {
+      await createSolanaClient({
+        ...mockOptions,
+        walletName: 'My Custom Wallet',
+      });
+
+      expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
+        client: mockCore.provider,
+        walletName: 'My Custom Wallet',
+      });
+    });
+  });
+
   describe('SolanaClient', () => {
     describe('getWallet', () => {
       it('should get wallet using getWalletStandard', async () => {
-        const client = await createSolanaClient(mockOptions);
+        const client = await createSolanaClient({
+          ...mockOptions,
+          autoRegister: false,
+        });
 
         const wallet = client.getWallet('CustomWallet');
 
@@ -116,14 +148,33 @@ describe('createSolanaClient', () => {
         expect(wallet).toBe(mockWallet);
       });
 
-      it('should get wallet without walletName', async () => {
-        const client = await createSolanaClient(mockOptions);
+      it('should use default walletName when none provided', async () => {
+        const client = await createSolanaClient({
+          ...mockOptions,
+          autoRegister: false,
+        });
 
         const wallet = client.getWallet();
 
         expect(getWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: undefined,
+          walletName: 'MetaMask',
+        });
+        expect(wallet).toBe(mockWallet);
+      });
+
+      it('should use custom walletName as default for getWallet', async () => {
+        const client = await createSolanaClient({
+          ...mockOptions,
+          autoRegister: false,
+          walletName: 'My Custom Wallet',
+        });
+
+        const wallet = client.getWallet();
+
+        expect(getWalletStandard).toHaveBeenCalledWith({
+          client: mockCore.provider,
+          walletName: 'My Custom Wallet',
         });
         expect(wallet).toBe(mockWallet);
       });
@@ -131,7 +182,10 @@ describe('createSolanaClient', () => {
 
     describe('registerWallet', () => {
       it('should register wallet using registerSolanaWalletStandard', async () => {
-        const client = await createSolanaClient(mockOptions);
+        const client = await createSolanaClient({
+          ...mockOptions,
+          autoRegister: false,
+        });
 
         await client.registerWallet('CustomWallet');
 
@@ -142,13 +196,31 @@ describe('createSolanaClient', () => {
       });
 
       it('should register wallet with default name when no name provided', async () => {
-        const client = await createSolanaClient(mockOptions);
+        const client = await createSolanaClient({
+          ...mockOptions,
+          autoRegister: false,
+        });
 
         await client.registerWallet();
 
         expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask Connect',
+          walletName: 'MetaMask',
+        });
+      });
+
+      it('should use custom walletName as default for registerWallet', async () => {
+        const client = await createSolanaClient({
+          ...mockOptions,
+          autoRegister: false,
+          walletName: 'My Custom Wallet',
+        });
+
+        await client.registerWallet();
+
+        expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
+          client: mockCore.provider,
+          walletName: 'My Custom Wallet',
         });
       });
     });

@@ -23,12 +23,15 @@ import type {
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param options.debug - Enable debug logging
+ * @param options.walletName - Custom wallet name for registration (defaults to 'MetaMask Connect')
+ * @param options.autoRegister - Auto-register the wallet during creation (defaults to true)
  * @returns A promise that resolves to the Solana client instance
  *
  * @example
  * ```typescript
  * import { createSolanaClient } from '@metamask/connect-solana';
  *
+ * // Wallet is auto-registered and ready to use
  * const client = await createSolanaClient({
  *   dapp: {
  *     name: 'My Solana DApp',
@@ -42,10 +45,7 @@ import type {
  *   },
  * });
  *
- * // Register the wallet to make it discoverable by Solana dapps
- * await client.registerWallet();
- *
- * // Or get the wallet instance directly
+ * // Get the wallet instance directly
  * const wallet = client.getWallet();
  * ```
  */
@@ -55,6 +55,9 @@ export async function createSolanaClient(
   const defaultNetworks: SolanaSupportedNetworks = {
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
+
+  const walletName = options.walletName ?? 'MetaMask';
+  const autoRegister = options.autoRegister ?? true;
 
   const supportedNetworks = convertNetworksToCAIP(
     options.api?.supportedNetworks ?? defaultNetworks,
@@ -69,12 +72,23 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
+  if (autoRegister) {
+    await registerSolanaWalletStandard({ client, walletName });
+  }
+
   return {
     core,
-    getWallet: (walletName?: string) =>
-      getWalletStandard({ client, walletName }),
-    registerWallet: async (walletName = 'MetaMask Connect') =>
-      registerSolanaWalletStandard({ client, walletName }),
+    getWallet: (name?: string) =>
+      getWalletStandard({ client, walletName: name ?? walletName }),
+    registerWallet: async (name?: string): Promise<void> => {
+      if (autoRegister) {
+        return;
+      }
+      await registerSolanaWalletStandard({
+        client,
+        walletName: name ?? walletName,
+      });
+    },
     disconnect: async () => await core.disconnect(),
   };
 }
