@@ -9,7 +9,11 @@ import type { CaipAccountId, Json } from '@metamask/utils';
 import { EventEmitter, type SDKEvents } from '../events';
 import type { StoreClient } from '../store/client';
 import type { InvokeMethodOptions, RPCAPI, Scope } from './api/types';
-import type { MultichainOptions, ExtendedTransport } from './types';
+import type {
+  ExtendedTransport,
+  MergeableMultichainOptions,
+  MultichainOptions,
+} from './types';
 
 export type ConnectionStatus =
   | 'pending'
@@ -58,7 +62,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    *
    * @returns Promise that resolves when disconnection is complete
    */
-  abstract disconnect(): Promise<void>;
+  abstract disconnect(scopes?: Scope[]): Promise<void>;
 
   /**
    * Invokes an RPC method with the specified options.
@@ -70,8 +74,50 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   abstract openDeeplinkIfNeeded(): void;
 
-  constructor(protected readonly options: MultichainOptions) {
+  abstract emitSessionChanged(): Promise<void>;
+
+  constructor(protected options: MultichainOptions) {
     super();
+  }
+
+  /**
+   * Merges the given options into the current instance options.
+   * Only the mergeable keys are updated (api.supportedNetworks, ui.*, mobile.*, transport.extensionId, debug).
+   * The main thing to note is that the value for `dapp` is not merged as it does not make sense for
+   * subsequent calls to `createMultichainClient` to have a different `dapp` value.
+   * Used when createMultichainClient is called with an existing singleton.
+   *
+   * @param partial - Options to merge/overwrite onto the current instance
+   */
+  mergeOptions(partial: MergeableMultichainOptions): void {
+    const opts = this.options;
+    this.options = {
+      ...opts,
+      api: {
+        ...opts.api,
+        supportedNetworks: {
+          ...opts.api.supportedNetworks,
+          ...(partial.api?.supportedNetworks ?? {}),
+        },
+      },
+      ui: {
+        ...opts.ui,
+        headless: partial.ui?.headless ?? opts.ui.headless,
+        preferExtension: partial.ui?.preferExtension ?? opts.ui.preferExtension,
+        showInstallModal:
+          partial.ui?.showInstallModal ?? opts.ui.showInstallModal,
+      },
+      mobile: {
+        ...opts.mobile,
+        ...(partial.mobile ?? {}),
+      },
+      transport: {
+        ...(opts.transport ?? {}),
+        extensionId:
+          partial.transport?.extensionId ?? opts.transport?.extensionId,
+      },
+      debug: partial.debug ?? opts.debug,
+    };
   }
 }
 /* c8 ignore end */

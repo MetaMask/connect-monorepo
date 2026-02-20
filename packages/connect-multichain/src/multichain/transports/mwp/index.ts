@@ -514,22 +514,80 @@ export class MWPTransport implements ExtendedTransport {
   /**
    * Disconnects from the Mobile Wallet Protocol
    *
+   * @param [scopes] - The scopes to revoke. If not provided or empty, all scopes will be revoked.
    * @returns Nothing
    */
-  async disconnect(): Promise<void> {
-    // Clean up window focus event listener
-    if (
-      typeof window !== 'undefined' &&
-      typeof window.removeEventListener !== 'undefined' &&
-      this.windowFocusHandler
-    ) {
-      window.removeEventListener('focus', this.windowFocusHandler);
-      this.windowFocusHandler = undefined;
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    const cachedSession = await this.getCachedResponse({
+      jsonrpc: '2.0',
+      id: '0',
+      method: 'wallet_getSession',
+    });
+    const cachedSessionScopes =
+      (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
+
+    const remainingScopes =
+      scopes.length === 0
+        ? []
+        : Object.keys(cachedSessionScopes).filter(
+            (scope) => !scopes.includes(scope as Scope),
+          );
+
+    const newSessionScopes = Object.fromEntries(
+      Object.entries(cachedSessionScopes).filter(([key]) =>
+        remainingScopes.includes(key),
+      ),
+    );
+
+    // NOTE: Purposely not awaiting this to avoid blocking the disconnect flow.
+    // This might not actually get executed on the wallet if the user doesn't open
+    // their wallet before the message TTL or if the underlying transport isn't actually connected
+    this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch(
+      (err) => {
+        console.error('error revoking session', err);
+      },
+    );
+
+    // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
+    const remainingScopesIncludeEip155 = remainingScopes.some((scope) =>
+      scope.includes('eip155'),
+    );
+    if (!remainingScopesIncludeEip155) {
+      this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      this.kvstore.delete(CHAIN_STORE_KEY);
     }
-    this.kvstore.delete(SESSION_STORE_KEY);
-    this.kvstore.delete(ACCOUNTS_STORE_KEY);
-    this.kvstore.delete(CHAIN_STORE_KEY);
-    return this.dappClient.disconnect();
+
+    if (remainingScopes.length > 0) {
+      this.kvstore.set(
+        SESSION_STORE_KEY,
+        JSON.stringify({
+          result: {
+            sessionScopes: newSessionScopes,
+          },
+        }),
+      );
+    } else {
+      this.kvstore.delete(SESSION_STORE_KEY);
+
+      // Clean up window focus event listener
+      if (
+        typeof window !== 'undefined' &&
+        typeof window.removeEventListener !== 'undefined' &&
+        this.windowFocusHandler
+      ) {
+        window.removeEventListener('focus', this.windowFocusHandler);
+        this.windowFocusHandler = undefined;
+      }
+
+      await this.dappClient.disconnect();
+    }
+
+    this.notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: {
+        sessionScopes: newSessionScopes,
+      },
+    });
   }
 
   /**
