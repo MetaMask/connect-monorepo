@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Automatically register as MetaMask in the Solana Wallet Standard with override option [#178](https://github.com/MetaMask/connect-monorepo/pull/178)
+- **BREAKING:** Automatically register as MetaMask to Solana Wallet Standard registry upon instantiation - with option to skip auto-registration [#178](https://github.com/MetaMask/connect-monorepo/pull/178)
 
 ## [0.1.0]
 
