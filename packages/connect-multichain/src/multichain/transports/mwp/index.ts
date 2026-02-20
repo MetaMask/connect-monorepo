@@ -534,7 +534,10 @@ export class MWPTransport implements ExtendedTransport {
     });
 
     return connectionPromise
-      .catch((error) => {
+      .catch(async (error) => {
+        // Clean up the MWP session from the KVStore so stale sessions
+        // don't cause subsequent connect attempts to enter the resume path
+        await this.dappClient.disconnect();
         throw error;
       })
       .finally(() => {
