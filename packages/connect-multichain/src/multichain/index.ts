@@ -160,6 +160,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
   }
 
+  // Creates a singleton instance of MetaMaskConnectMultichain.
+  // If the singleton already exists, it merges the incoming options with the
+  // existing singleton options for the following keys: `api.supportedNetworks`,
+  // `ui.*`, `mobile.*`, `transport.extensionId`, `debug`
   static async create(
     options: MultichainOptions,
   ): Promise<MetaMaskConnectMultichain> {
