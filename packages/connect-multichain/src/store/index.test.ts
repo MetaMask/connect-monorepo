@@ -290,9 +290,12 @@ t.describe(`Store with WebAdapter`, () => {
 });
 
 t.describe('StoreAdapterWeb DB naming', () => {
-  t.it('DB_NAME is mmconnect (not mmsdk, to avoid legacy SDK collisions)', () => {
-    t.expect(StoreAdapterWeb.DB_NAME).toBe('mmconnect');
-  });
+  t.it(
+    'DB_NAME is mmconnect (not mmsdk, to avoid legacy SDK collisions)',
+    () => {
+      t.expect(StoreAdapterWeb.DB_NAME).toBe('mmconnect');
+    },
+  );
 
   t.it('opens IndexedDB with mmconnect prefix and default suffix', () => {
     const idbFactory = new IDBFactory();
@@ -300,7 +303,7 @@ t.describe('StoreAdapterWeb DB naming', () => {
 
     t.vi.stubGlobal('window', { indexedDB: idbFactory });
 
-    new StoreAdapterWeb();
+    const _adapter = new StoreAdapterWeb();
 
     t.expect(openSpy).toHaveBeenCalledOnce();
     const calledWith = openSpy.mock.calls[0]?.[0];
@@ -313,7 +316,7 @@ t.describe('StoreAdapterWeb DB naming', () => {
 
     t.vi.stubGlobal('window', { indexedDB: idbFactory });
 
-    new StoreAdapterWeb('-my-suffix');
+    const _adapter = new StoreAdapterWeb('-my-suffix');
 
     t.expect(openSpy).toHaveBeenCalledOnce();
     const calledWith = openSpy.mock.calls[0]?.[0];
