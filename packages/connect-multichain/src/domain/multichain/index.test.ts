@@ -29,7 +29,7 @@ class MockMultichainCore extends MultichainCore {
 
   invokeMethod = async (): Promise<Json> => Promise.resolve({});
 
-  openDeeplinkIfNeeded = (): void => undefined;
+  openSimpleDeeplinkIfNeeded = (): void => undefined;
 
   emitSessionChanged = async (): Promise<void> => Promise.resolve();
 
