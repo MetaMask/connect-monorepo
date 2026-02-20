@@ -2,19 +2,12 @@
 import type { SessionData, MultichainCore } from '@metamask/connect-multichain';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
+import type { ConnectEvmStatus } from './connect';
 import { MetamaskConnectEVM } from './connect';
 
-type Status =
-  | 'connected'
-  | 'disconnected'
-  | 'connecting'
-  | 'loaded'
-  | 'pending';
-
-/** Mock core type so storage/transport mocks keep .mockResolvedValue in tests */
 type MockCore = MultichainCore & {
   emit: (event: string, ...args: unknown[]) => void;
-  _status: Status;
+  _status: ConnectEvmStatus;
   storage: MultichainCore['storage'] & {
     adapter: {
       get: Mock<(key: string) => Promise<string | null>>;
@@ -42,7 +35,7 @@ type MockCore = MultichainCore & {
  */
 function createMockCore(): MockCore {
   const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
-  const _status: Status = 'disconnected';
+  const _status: ConnectEvmStatus = 'disconnected';
 
   const sendEip1193Message = vi.fn().mockResolvedValue({
     result: [] as string[],
@@ -58,11 +51,11 @@ function createMockCore(): MockCore {
 
   const mockCore = {
     // eslint-disable-next-line @typescript-eslint/naming-convention -- mock mirrors real class _status
-    _status: _status as Status,
-    get status(): Status {
+    _status: _status as ConnectEvmStatus,
+    get status(): ConnectEvmStatus {
       return this._status;
     },
-    set status(value: Status) {
+    set status(value: ConnectEvmStatus) {
       this._status = value;
     },
     on(event: string, handler: (...args: unknown[]) => void): void {

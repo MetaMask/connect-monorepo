@@ -160,6 +160,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
   }
 
+  // Creates a singleton instance of MetaMaskConnectMultichain.
+  // If the singleton already exists, it merges the incoming options with the
+  // existing singleton options for the following keys: `api.supportedNetworks`,
+  // `ui.*`, `mobile.*`, `transport.extensionId`, `debug`. Take note that the
+  // value for `dapp` is not merged as it does not make sense for subsequent calls to
+  // `createMultichainClient` to have a different `dapp` value.
   static async create(
     options: MultichainOptions,
   ): Promise<MetaMaskConnectMultichain> {
@@ -247,7 +253,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
           this.#transport = apiTransport;
-          this.#providerTransportWrapper.setupTransportNotifcationListener();
+          this.#providerTransportWrapper.setupTransportNotificationListener();
           this.#listener = apiTransport.onNotification(
             this.#onTransportNotification.bind(this),
           );
@@ -259,7 +265,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         const apiTransport = new MWPTransport(dappClient, kvstore);
         this.#dappClient = dappClient;
         this.#transport = apiTransport;
-        this.#providerTransportWrapper.setupTransportNotifcationListener();
+        this.#providerTransportWrapper.setupTransportNotificationListener();
         this.#listener = apiTransport.onNotification(
           this.#onTransportNotification.bind(this),
         );
@@ -337,7 +343,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#dappClient = dappClient;
     const apiTransport = new MWPTransport(dappClient, kvstore);
     this.#transport = apiTransport;
-    this.#providerTransportWrapper.setupTransportNotifcationListener();
+    this.#providerTransportWrapper.setupTransportNotificationListener();
     this.#listener = this.transport.onNotification(
       this.#onTransportNotification.bind(this),
     );
@@ -558,7 +564,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#onTransportNotification.bind(this),
     );
     this.#transport = transport;
-    this.#providerTransportWrapper.setupTransportNotifcationListener();
+    this.#providerTransportWrapper.setupTransportNotificationListener();
     return transport;
   }
 
@@ -755,29 +761,26 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     const sessionData = await this.#getCaipSession();
 
-    const {
-      requestedScopes,
-      requestedCaipAccountIds,
-      requestedSessionProperties,
-    } = mergeRequestedSessionWithExisting(
-      sessionData,
-      scopes,
-      caipAccountIds,
-      sessionProperties,
-    );
+    const { mergedScopes, mergedCaipAccountIds, mergedSessionProperties } =
+      mergeRequestedSessionWithExisting(
+        sessionData,
+        scopes,
+        caipAccountIds,
+        sessionProperties,
+      );
 
     // Needed because empty object will cause wallet_createSession to return an error
     const nonEmptySessionProperties =
-      Object.keys(requestedSessionProperties ?? {}).length > 0
-        ? requestedSessionProperties
+      Object.keys(mergedSessionProperties ?? {}).length > 0
+        ? mergedSessionProperties
         : undefined;
 
     if (this.#transport?.isConnected() && !secure) {
       return this.#handleConnection(
         this.#transport
           .connect({
-            scopes: requestedScopes,
-            caipAccountIds: requestedCaipAccountIds,
+            scopes: mergedScopes,
+            caipAccountIds: mergedCaipAccountIds,
             sessionProperties: nonEmptySessionProperties,
             forceRequest,
           })
@@ -797,8 +800,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       const defaultTransport = await this.#setupDefaultTransport();
       return this.#handleConnection(
         defaultTransport.connect({
-          scopes: requestedScopes,
-          caipAccountIds: requestedCaipAccountIds,
+          scopes: mergedScopes,
+          caipAccountIds: mergedCaipAccountIds,
           sessionProperties: nonEmptySessionProperties,
           forceRequest,
         }),
@@ -813,8 +816,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       // Web transport has no initial payload
       return this.#handleConnection(
         defaultTransport.connect({
-          scopes: requestedScopes,
-          caipAccountIds: requestedCaipAccountIds,
+          scopes: mergedScopes,
+          caipAccountIds: mergedCaipAccountIds,
           sessionProperties: nonEmptySessionProperties,
           forceRequest,
         }),
@@ -835,8 +838,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       // Desktop is not preferred option, so we use deeplinks (mobile web)
       return this.#handleConnection(
         this.#deeplinkConnect(
-          scopes,
-          caipAccountIds,
+          mergedScopes,
+          mergedCaipAccountIds,
           nonEmptySessionProperties,
         ),
         scopes,
@@ -848,8 +851,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.#handleConnection(
       this.#showInstallModal(
         shouldShowInstallModal,
-        requestedScopes,
-        requestedCaipAccountIds,
+        mergedScopes,
+        mergedCaipAccountIds,
         nonEmptySessionProperties,
       ),
       scopes,
@@ -899,7 +902,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#listener = undefined;
       this.#beforeUnloadListener = undefined;
       this.#transport = undefined;
-      this.#providerTransportWrapper.clearTransportNotifcationListener();
+      this.#providerTransportWrapper.clearTransportNotificationListener();
       this.#dappClient = undefined;
       this.status = 'disconnected';
     }
@@ -974,18 +977,25 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
   }
 
+  // Provides a way for ecosystem clients (EVM, Solana, etc.) to get the current CAIP session data
+  // when instantiating themselves (as they would have already missed any initial sessionChanged events emitted by ConnectMultichain)
+  // without having to concern themselves with the current transport connection status.
   async emitSessionChanged(): Promise<void> {
     const emptySession = { sessionScopes: {} };
 
     if (this.status !== 'connected' && this.status !== 'connecting') {
+      // If we aren't connected or connecting, there definitely is no active CAIP session
+      // so we optimistically emit an empty session to signify that to the ecosystem client consumers (EVM, Solana, etc.)
       this.emit('wallet_sessionChanged', emptySession);
       return;
     }
 
+    // Otherwise, we need to fetch the current CAIP session from the wallet
     const response = await this.transport.request({
       method: 'wallet_getSession',
     });
 
+    // And then simulate a sessionChanged event with the current CAIP session data
     this.emit('wallet_sessionChanged', response.result ?? emptySession);
   }
 }

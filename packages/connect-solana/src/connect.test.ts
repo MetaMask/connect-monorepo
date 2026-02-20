@@ -102,54 +102,63 @@ describe('createSolanaClient', () => {
     expect(client.core).toBe(mockCore);
   });
 
+  describe('auto-registration', () => {
+    it('should auto-register the wallet by default', async () => {
+      await createSolanaClient(mockOptions);
+
+      expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
+        client: mockCore.provider,
+        walletName: 'MetaMask',
+      });
+    });
+
+    it('should skip auto-registration when skipAutoRegister is true', async () => {
+      await createSolanaClient({ ...mockOptions, skipAutoRegister: true });
+
+      expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+    });
+  });
+
   describe('SolanaClient', () => {
     describe('getWallet', () => {
-      it('should get wallet using getWalletStandard', async () => {
-        const client = await createSolanaClient(mockOptions);
-
-        const wallet = client.getWallet('CustomWallet');
-
-        expect(getWalletStandard).toHaveBeenCalledWith({
-          client: mockCore.provider,
-          walletName: 'CustomWallet',
+      it('should get wallet using getWalletStandard with MetaMask name', async () => {
+        const client = await createSolanaClient({
+          ...mockOptions,
+          skipAutoRegister: true,
         });
-        expect(wallet).toBe(mockWallet);
-      });
-
-      it('should get wallet without walletName', async () => {
-        const client = await createSolanaClient(mockOptions);
 
         const wallet = client.getWallet();
 
         expect(getWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: undefined,
+          walletName: 'MetaMask',
         });
         expect(wallet).toBe(mockWallet);
       });
     });
 
     describe('registerWallet', () => {
-      it('should register wallet using registerSolanaWalletStandard', async () => {
-        const client = await createSolanaClient(mockOptions);
-
-        await client.registerWallet('CustomWallet');
-
-        expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
-          client: mockCore.provider,
-          walletName: 'CustomWallet',
+      it('should register wallet with MetaMask name', async () => {
+        const client = await createSolanaClient({
+          ...mockOptions,
+          skipAutoRegister: true,
         });
-      });
-
-      it('should register wallet with default name when no name provided', async () => {
-        const client = await createSolanaClient(mockOptions);
 
         await client.registerWallet();
 
         expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask Connect',
+          walletName: 'MetaMask',
         });
+      });
+
+      it('should no-op when auto-registration was used', async () => {
+        const client = await createSolanaClient(mockOptions);
+
+        vi.clearAllMocks();
+        await client.registerWallet();
+
+        expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
       });
     });
 

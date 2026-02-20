@@ -52,6 +52,8 @@ type ConnectOptions = {
   chainIds?: Hex[];
 };
 
+export type ConnectEvmStatus = 'disconnected' | 'connected' | 'connecting';
+
 /**
  * The MetamaskConnectEVM class provides an EIP-1193 compatible interface for connecting
  * to MetaMask and interacting with Ethereum Virtual Machine (EVM) networks.
@@ -103,7 +105,7 @@ export class MetamaskConnectEVM {
   #removeNotificationHandler?: () => void;
 
   /** The current connection status */
-  #status: 'disconnected' | 'connected' | 'connecting' = 'disconnected';
+  #status: ConnectEvmStatus = 'disconnected';
 
   /**
    * Creates a new MetamaskConnectEVM instance.
@@ -732,11 +734,11 @@ export class MetamaskConnectEVM {
       let initialAccounts: Address[] = [];
       if (this.#core.status === 'connected') {
         const ethAccountsResponse =
-          await this.#core.transport.sendEip1193Message<
-            { method: 'eth_accounts'; params: [] },
-            { result: Address[]; id: number; jsonrpc: '2.0' }
-          >({ method: 'eth_accounts', params: [] });
-        initialAccounts = ethAccountsResponse.result;
+          await this.#core.transport.sendEip1193Message({
+            method: 'eth_accounts',
+            params: [],
+          });
+        initialAccounts = ethAccountsResponse.result as Address[];
       } else {
         initialAccounts = getEthAccounts(this.#sessionScopes);
       }
