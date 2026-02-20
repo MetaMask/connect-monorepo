@@ -289,6 +289,41 @@ t.describe(`Store with WebAdapter`, () => {
   );
 });
 
+t.describe('StoreAdapterWeb DB naming', () => {
+  t.it(
+    'DB_NAME is mmconnect (not mmsdk, to avoid legacy SDK collisions)',
+    () => {
+      t.expect(StoreAdapterWeb.DB_NAME).toBe('mmconnect');
+    },
+  );
+
+  t.it('opens IndexedDB with mmconnect prefix and default suffix', () => {
+    const idbFactory = new IDBFactory();
+    const openSpy = t.vi.spyOn(idbFactory, 'open');
+
+    t.vi.stubGlobal('window', { indexedDB: idbFactory });
+
+    const _adapter = new StoreAdapterWeb();
+
+    t.expect(openSpy).toHaveBeenCalledOnce();
+    const calledWith = openSpy.mock.calls[0]?.[0];
+    t.expect(calledWith).toBe('mmconnect-kv-store');
+  });
+
+  t.it('opens IndexedDB with mmconnect prefix and custom suffix', () => {
+    const idbFactory = new IDBFactory();
+    const openSpy = t.vi.spyOn(idbFactory, 'open');
+
+    t.vi.stubGlobal('window', { indexedDB: idbFactory });
+
+    const _adapter = new StoreAdapterWeb('-my-suffix');
+
+    t.expect(openSpy).toHaveBeenCalledOnce();
+    const calledWith = openSpy.mock.calls[0]?.[0];
+    t.expect(calledWith).toBe('mmconnect-my-suffix');
+  });
+});
+
 t.describe(`Store with RNAdapter`, () => {
   // Test RN storage with mocked AsyncStorage
   createStoreTests(
