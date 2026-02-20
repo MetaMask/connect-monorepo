@@ -163,7 +163,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   // Creates a singleton instance of MetaMaskConnectMultichain.
   // If the singleton already exists, it merges the incoming options with the
   // existing singleton options for the following keys: `api.supportedNetworks`,
-  // `ui.*`, `mobile.*`, `transport.extensionId`, `debug`
+  // `ui.*`, `mobile.*`, `transport.extensionId`, `debug`. Take note that the
+  // value for `dapp` is not merged as it does not make sense for subsequent calls to
+  // `createMultichainClient` to have a different `dapp` value.
   static async create(
     options: MultichainOptions,
   ): Promise<MetaMaskConnectMultichain> {
