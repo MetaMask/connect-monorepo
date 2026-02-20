@@ -70,7 +70,7 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
-  const walletName = 'MetaMask';
+  const walletName = 'MetaMask Connect';
 
   if (!skipAutoRegister) {
     await registerSolanaWalletStandard({ client, walletName });
