@@ -23,7 +23,6 @@ import type {
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param options.debug - Enable debug logging
- * @param options.walletName - Custom wallet name for registration (defaults to 'MetaMask Connect')
  * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
  * @returns A promise that resolves to the Solana client instance
  *
@@ -56,7 +55,6 @@ export async function createSolanaClient(
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
 
-  const walletName = options.walletName ?? 'MetaMask';
   const skipAutoRegister = options.skipAutoRegister ?? false;
 
   const supportedNetworks = convertNetworksToCAIP(
@@ -72,22 +70,20 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
+  const walletName = 'MetaMask';
+
   if (!skipAutoRegister) {
     await registerSolanaWalletStandard({ client, walletName });
   }
 
   return {
     core,
-    getWallet: (name?: string) =>
-      getWalletStandard({ client, walletName: name ?? walletName }),
-    registerWallet: async (name?: string): Promise<void> => {
+    getWallet: () => getWalletStandard({ client, walletName }),
+    registerWallet: async (): Promise<void> => {
       if (!skipAutoRegister) {
         return;
       }
-      await registerSolanaWalletStandard({
-        client,
-        walletName: name ?? walletName,
-      });
+      await registerSolanaWalletStandard({ client, walletName });
     },
     disconnect: async () => await core.disconnect(),
   };
