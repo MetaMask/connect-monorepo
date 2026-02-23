@@ -17,8 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Make sure Multichain UI card is rendered after Multichain connection established, which broke after merging in [Connect Multichain Singleton PR](https://github.com/MetaMask/connect-monorepo/pull/157) ([#181](https://github.com/MetaMask/connect-monorepo/pull/181))
-- Fix JSON parse error on startup by replacing `createSyncStoragePersister` with `createAsyncStoragePersister` for React Native's async `AsyncStorage` API
-- Fix Connect (Multichain) button not rendering by correcting `useSDK()` destructuring (`state` -> `status: state`)
+- Fix JSON parse error on startup by replacing `createSyncStoragePersister` with `createAsyncStoragePersister` for React Native's async `AsyncStorage` API ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
+- Fix Connect (Multichain) button not rendering by correcting `useSDK()` destructuring (`state` -> `status: state`) ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
 
 ## [0.1.1]
 
