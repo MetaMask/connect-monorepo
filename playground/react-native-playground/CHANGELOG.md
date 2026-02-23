@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Make sure Multichain UI card is rendered after Multichain connection established, which broke after merging in [Connect Multichain Singleton PR](https://github.com/MetaMask/connect-monorepo/pull/157) ([#181](https://github.com/MetaMask/connect-monorepo/pull/181))
+
 ## [0.1.1]
 
 ### Changed
