@@ -209,8 +209,8 @@ Disconnects from the wallet. If `scopes` are provided, only the specified scopes
 
 **Parameters**
 
-| Name     | Type      | Required | Description                                                           |
-| -------- | --------- | -------- | --------------------------------------------------------------------- |
+| Name     | Type      | Required | Description                                                          |
+| -------- | --------- | -------- | -------------------------------------------------------------------- |
 | `scopes` | `Scope[]` | No       | Array of CAIP-2 chain identifiers to revoke (defaults to all scopes) |
 
 **Returns**
