@@ -431,7 +431,7 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     const storedSessionRequestBeforeConnectionAttempt =
-    await this.getStoredPendingSessionRequest();
+      await this.getStoredPendingSessionRequest();
 
     let timeout: NodeJS.Timeout;
     let initialConnectionMessageHandler:
