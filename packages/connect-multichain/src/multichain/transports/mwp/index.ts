@@ -116,6 +116,12 @@ export class MWPTransport implements ExtendedTransport {
     },
   ) {
     this.dappClient.on('message', this.handleMessage.bind(this));
+    // We store the pending session request in the KVStore so that we can:
+    // 1. Use it to regenerate the deeplink to re-prompt the user with if they
+    // attempt to connect while there is a pending connection attempt.
+    // 2. Determine if there was a pending connection attempt when MultichainConnect
+    // is initializing itself for the first time on page load and correctly set
+    // the appropriate timeout duration for that connection attempt.
     this.dappClient.on('session_request', (sessionRequest: SessionRequest) => {
       this.currentSessionRequest = sessionRequest;
       this.kvstore
@@ -133,10 +139,6 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-  private async removeStoredPendingSessionRequest(): Promise<void> {
-    await this.kvstore.delete(PENDING_SESSION_REQUEST_KEY);
-  }
-
   /**
    * Returns the stored pending session request from the dappClient session_request event, if any.
    *
@@ -152,6 +154,15 @@ export class MWPTransport implements ExtendedTransport {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Removes the stored pending session request from the KVStore.
+   * This is necessary to ensure that ConnectMultichain is able to correctly
+   * infer the MWP Transport connection attempt status.
+   */
+  private async removeStoredPendingSessionRequest(): Promise<void> {
+    await this.kvstore.delete(PENDING_SESSION_REQUEST_KEY);
   }
 
   private onWindowFocus(): void {
@@ -420,7 +431,7 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     const storedSessionRequestBeforeConnectionAttempt =
-      await this.getStoredPendingSessionRequest();
+    await this.getStoredPendingSessionRequest();
 
     let timeout: NodeJS.Timeout;
     let initialConnectionMessageHandler:
