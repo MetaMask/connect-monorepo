@@ -8,6 +8,7 @@ interface LegacyEVMCardProps {
   chainId: string | undefined;
   accounts: string[];
   sdk: any;
+  disconnect: () => Promise<void>;
 }
 
 export function LegacyEVMCard({
@@ -15,6 +16,7 @@ export function LegacyEVMCard({
   chainId,
   accounts,
   sdk,
+  disconnect,
 }: LegacyEVMCardProps) {
   const [response, setResponse] = useState<string>('');
 
@@ -173,6 +175,13 @@ export function LegacyEVMCard({
         <h3 data-testid={TEST_IDS.legacyEvm.title} className="text-lg font-semibold text-gray-800 truncate">
           Legacy EVM Connection
         </h3>
+        <button
+          type="button"
+          onClick={disconnect}
+          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+        >
+          Disconnect
+        </button>
       </div>
 
       <div className="mb-4">

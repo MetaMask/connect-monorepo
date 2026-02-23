@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `debug` option param used by `createEVMClient()` now enables console debug logs of the underlying `MultichainClient` instance ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
 - update `connect()` and `createEVMClient()` typings to be more accurate ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 - update `switchChain()` to return `Promise<void>` ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
+- Make `ConnectEvm` rely on `wallet_sessionChanged` events from `ConnectMultichain` rather than explicit connect/disconnect events ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 
 ### Fixed
 

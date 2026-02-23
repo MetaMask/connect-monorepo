@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 import { analytics } from '@metamask/analytics';
-import type { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
+import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
   ConnectionStatus,
   MultichainCore,
@@ -29,7 +29,7 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getPermittedEthChainIds } from './utils/caip';
+import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -51,6 +51,8 @@ type ConnectOptions = {
   /** All available chain IDs in the dapp in hex format */
   chainIds?: Hex[];
 };
+
+export type ConnectEvmStatus = 'disconnected' | 'connected' | 'connecting';
 
 /**
  * The MetamaskConnectEVM class provides an EIP-1193 compatible interface for connecting
@@ -102,6 +104,9 @@ export class MetamaskConnectEVM {
   /** The clean-up function for the notification handler */
   #removeNotificationHandler?: () => void;
 
+  /** The current connection status */
+  #status: ConnectEvmStatus = 'disconnected';
+
   /**
    * Creates a new MetamaskConnectEVM instance.
    * Use the static `create()` method instead to ensure proper async initialization.
@@ -126,14 +131,9 @@ export class MetamaskConnectEVM {
      *
      * @param session - The session data
      */
-    this.#sessionChangedHandler = (session): void => {
-      logger('event: wallet_sessionChanged', session);
-      this.#sessionScopes = session?.sessionScopes ?? {};
-    };
-    this.#core.on(
-      'wallet_sessionChanged',
-      this.#sessionChangedHandler.bind(this),
-    );
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.#sessionChangedHandler = this.#onSessionChanged.bind(this);
+    this.#core.on('wallet_sessionChanged', this.#sessionChangedHandler);
 
     /**
      * Handles the display_uri event.
@@ -160,7 +160,7 @@ export class MetamaskConnectEVM {
     options: MetamaskConnectEVMOptions,
   ): Promise<MetamaskConnectEVM> {
     const instance = new MetamaskConnectEVM(options);
-    await instance.#attemptSessionRecovery();
+    await instance.#core.emitSessionChanged();
     return instance;
   }
 
@@ -334,64 +334,36 @@ export class MetamaskConnectEVM {
       ? caipChainIds.map((caipChainId) => `${caipChainId}:${account}`)
       : [];
 
-    await this.#core.connect(
-      caipChainIds as Scope[],
-      caipAccountIds as CaipAccountId[],
-      undefined,
-      forceRequest,
-    );
+    this.#status = 'connecting';
 
-    const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
-
-    const initialAccounts = await this.#core.transport.sendEip1193Message<
-      { method: 'eth_accounts'; params: [] },
-      { result: string[]; id: number; jsonrpc: '2.0' }
-    >({ method: 'eth_accounts', params: [] });
-
-    const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
-
-    this.#onConnect({
-      chainId,
-      accounts: initialAccounts.result as Address[],
-    });
-
-    // Remove previous notification handler if it exists
-    this.#removeNotificationHandler?.();
-
-    this.#removeNotificationHandler = this.#core.transport.onNotification(
-      (notification) => {
-        // @ts-expect-error TODO: address this
-        if (notification?.method === 'metamask_accountsChanged') {
-          // @ts-expect-error TODO: address this
-          const accounts = notification?.params;
-          logger('transport-event: accountsChanged', accounts);
-          this.#onAccountsChanged(accounts);
-        }
-
-        // @ts-expect-error TODO: address this
-        if (notification?.method === 'metamask_chainChanged') {
-          // @ts-expect-error TODO: address this
-          const notificationChainId = notification?.params?.chainId;
-          logger('transport-event: chainChanged', notificationChainId);
-          // Cache the chainId for persistence across page refreshes
-          this.#cacheChainId(notificationChainId).catch((error) => {
-            logger('Error caching chainId in notification handler', error);
+    try {
+      // Wait for the wallet_sessionChanged event to fire and set the provider properties
+      const result = new Promise((resolve) => {
+        this.#provider.once('connect', ({ chainId, accounts }) => {
+          logger('fulfilled-request: connect', {
+            chainId,
+            accounts,
           });
-          this.#onChainChanged(notificationChainId);
-        }
-      },
-    );
+          resolve({
+            accounts,
+            chainId: chainId as Hex,
+          });
+        });
+      });
 
-    logger('fulfilled-request: connect', {
-      chainId: chainIds[0],
-      accounts: this.#provider.accounts,
-    });
+      await this.#core.connect(
+        caipChainIds as Scope[],
+        caipAccountIds as CaipAccountId[],
+        undefined,
+        forceRequest,
+      );
 
-    // TODO: update required here since accounts and chainId are now promises
-    return {
-      accounts: this.#provider.accounts,
-      chainId,
-    };
+      return result as Promise<{ accounts: Address[]; chainId: Hex }>;
+    } catch (error) {
+      this.#status = 'disconnected';
+      logger('Error connecting to wallet', error);
+      throw error;
+    }
   }
 
   /**
@@ -485,7 +457,13 @@ export class MetamaskConnectEVM {
   async disconnect(): Promise<void> {
     logger('request: disconnect');
 
-    await this.#core.disconnect();
+    const sessionScopes = this.#sessionScopes;
+    const eip155Scopes = Object.keys(sessionScopes).filter((scope) => {
+      const { namespace } = parseScopeString(scope as Scope);
+      return namespace === 'eip155';
+    });
+
+    await this.#core.disconnect(eip155Scopes as Scope[]);
     this.#onDisconnect();
     this.#clearConnectionState();
 
@@ -494,10 +472,8 @@ export class MetamaskConnectEVM {
     // for the lifetime of the SDK instance, allowing reconnection to work properly.
     // Session-scoped listeners (like the notification handler below) are removed.
 
-    if (this.#removeNotificationHandler) {
-      this.#removeNotificationHandler();
-      this.#removeNotificationHandler = undefined;
-    }
+    this.#removeNotificationHandler?.();
+    this.#removeNotificationHandler = undefined;
 
     logger('fulfilled-request: disconnect');
   }
@@ -748,6 +724,34 @@ export class MetamaskConnectEVM {
     }
   }
 
+  async #onSessionChanged(session?: SessionData): Promise<void> {
+    logger('event: wallet_sessionChanged', session);
+    this.#sessionScopes = session?.sessionScopes ?? {};
+    const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
+    if (hexPermittedChainIds.length === 0) {
+      this.#onDisconnect();
+    } else {
+      let initialAccounts: Address[] = [];
+      if (this.#core.status === 'connected') {
+        const ethAccountsResponse =
+          await this.#core.transport.sendEip1193Message({
+            method: 'eth_accounts',
+            params: [],
+          });
+        initialAccounts = ethAccountsResponse.result as Address[];
+      } else {
+        initialAccounts = getEthAccounts(this.#sessionScopes);
+      }
+
+      const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
+
+      this.#onConnect({
+        chainId,
+        accounts: initialAccounts,
+      });
+    }
+  }
+
   /**
    * Handles chain change events and updates the provider's selected chain ID.
    *
@@ -769,6 +773,12 @@ export class MetamaskConnectEVM {
    * @param accounts - The new list of permitted accounts
    */
   #onAccountsChanged(accounts: Address[]): void {
+    const accountsUnchanged =
+      accounts.length === this.#provider.accounts.length &&
+      accounts.every((acct, idx) => acct === this.#provider.accounts[idx]);
+    if (accountsUnchanged) {
+      return;
+    }
     logger('handler: accountsChanged', accounts);
     this.#provider.accounts = accounts;
     this.#provider.emit('accountsChanged', accounts);
@@ -795,8 +805,40 @@ export class MetamaskConnectEVM {
       accounts,
     };
 
-    this.#provider.emit('connect', data);
-    this.#eventHandlers?.connect?.(data);
+    if (this.#status !== 'connected') {
+      this.#status = 'connected';
+      this.#provider.emit('connect', data);
+      this.#eventHandlers?.connect?.(data);
+
+      this.#removeNotificationHandler?.();
+
+      // TODO: Verify if #core.on('metamask_accountsChanged') and #core.on('metamask_chainChanged')
+      // would work here instead
+      this.#removeNotificationHandler = this.#core.transport.onNotification(
+        (notification) => {
+          // @ts-expect-error TODO: address this
+          if (notification?.method === 'metamask_accountsChanged') {
+            // @ts-expect-error TODO: address this
+            const notificationAccounts = notification?.params;
+            logger('transport-event: accountsChanged', notificationAccounts);
+            // why are we not caching the accounts here?
+            this.#onAccountsChanged(notificationAccounts);
+          }
+
+          // @ts-expect-error TODO: address this
+          if (notification?.method === 'metamask_chainChanged') {
+            // @ts-expect-error TODO: address this
+            const notificationChainId = notification?.params?.chainId;
+            logger('transport-event: chainChanged', notificationChainId);
+            // Cache the chainId for persistence across page refreshes
+            this.#cacheChainId(notificationChainId).catch((error) => {
+              logger('Error caching chainId in notification handler', error);
+            });
+            this.#onChainChanged(notificationChainId);
+          }
+        },
+      );
+    }
 
     this.#onChainChanged(chainId);
     this.#onAccountsChanged(accounts);
@@ -807,6 +849,11 @@ export class MetamaskConnectEVM {
    * Also clears accounts by triggering an accountsChanged event with an empty array.
    */
   #onDisconnect(): void {
+    if (this.#status === 'disconnected') {
+      return;
+    }
+    this.#status = 'disconnected';
+
     logger('handler: disconnect');
     this.#provider.emit('disconnect');
     this.#eventHandlers?.disconnect?.();
@@ -821,66 +868,13 @@ export class MetamaskConnectEVM {
    * @param uri - The deeplink URI to be displayed as a QR code
    */
   #onDisplayUri(uri: string): void {
+    if (this.#status !== 'connecting') {
+      return;
+    }
+
     logger('handler: display_uri', uri);
     this.#provider.emit('display_uri', uri);
     this.#eventHandlers?.displayUri?.(uri);
-  }
-
-  /**
-   * Will trigger an accountsChanged event if there's a valid previous session.
-   * This is needed because the accountsChanged event is not triggered when
-   * revising, reloading or opening the app in a new tab.
-   *
-   * This works by checking by checking events received during MultichainCore initialization,
-   * and if there's a wallet_sessionChanged event, it will add a 1-time listener for eth_accounts results
-   * and trigger an accountsChanged event if the results are valid accounts.
-   */
-  async #attemptSessionRecovery(): Promise<void> {
-    // Skip session recovery if transport is not initialized yet.
-    // Transport is only initialized when there's a stored session or after connect() is called.
-    // Only attempt recovery if we're in a state where transport should be available.
-    if (
-      this.#core.status !== 'connected' &&
-      this.#core.status !== 'connecting'
-    ) {
-      return;
-    }
-    try {
-      const response = await this.#core.transport.request<
-        { method: 'wallet_getSession' },
-        {
-          result: { sessionScopes: Caip25CaveatValue };
-          id: number;
-          jsonrpc: '2.0';
-        }
-      >({
-        method: 'wallet_getSession',
-      });
-
-      const { sessionScopes } = response.result;
-
-      this.#sessionScopes = sessionScopes;
-      const permittedChainIds = getPermittedEthChainIds(sessionScopes);
-
-      // Instead of using the accounts we get back from calling `wallet_getSession`
-      // we get permitted accounts from `eth_accounts` to make sure we have them ordered by last selected account
-      // and correctly set the currently selected account for the dapp
-      const permittedAccounts = await this.#core.transport.sendEip1193Message<
-        { method: 'eth_accounts'; params: [] },
-        { result: Address[]; id: number; jsonrpc: '2.0' }
-      >({ method: 'eth_accounts', params: [] });
-
-      const chainId = await this.#getSelectedChainId(permittedChainIds);
-
-      if (permittedChainIds.length && permittedAccounts.result) {
-        this.#onConnect({
-          chainId,
-          accounts: permittedAccounts.result,
-        });
-      }
-    } catch (error) {
-      console.error('Error attempting session recovery', error);
-    }
   }
 
   /**

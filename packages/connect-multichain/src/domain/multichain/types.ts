@@ -90,6 +90,23 @@ type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
 };
 
 /**
+ * Options that can be merged/overwritten when createMultichainClient is called
+ * with an existing singleton.
+ */
+export type MergeableMultichainOptions = Omit<
+  MultichainOptions,
+  'dapp' | 'analytics' | 'storage' | 'api' | 'ui' | 'transport'
+> & {
+  api?: MultichainOptions['api'];
+  ui?: Pick<
+    MultichainOptions['ui'],
+    'headless' | 'preferExtension' | 'showInstallModal'
+  >;
+  transport?: Pick<NonNullable<MultichainOptions['transport']>, 'extensionId'>;
+  debug?: boolean;
+};
+
+/**
  * Complete options for Multichain SDK configuration.
  *
  * This type extends the base options with storage configuration,
@@ -118,4 +135,6 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   ) => Promise<TResponse>;
 
   getActiveSession: () => Promise<Session | undefined>;
+
+  disconnect: (scopes: Scope[]) => Promise<void>;
 };

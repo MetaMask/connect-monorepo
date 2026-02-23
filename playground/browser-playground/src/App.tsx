@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
-import { useAccount, useChainId, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { useWallet } from '@solana/wallet-adapter-react';
 import {
   FEATURED_NETWORKS,
@@ -14,11 +14,6 @@ import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
-import {
-  isProviderActive,
-  setProviderActive,
-  clearAllActiveProviders,
-} from './utils/activeProviderStorage';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { useSolanaSDK } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
@@ -29,12 +24,6 @@ function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
 
-  // Track whether wagmi should be shown based on localStorage
-  const [wagmiIsActiveProvider, setWagmiIsActiveProvider] = useState(() =>
-    isProviderActive('wagmi'),
-  );
-
-  // Track Wagmi connection errors
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
 
   // Get Solana wallet error from provider context
@@ -58,30 +47,18 @@ function App() {
     disconnect: legacyDisconnect,
   } = useLegacyEVMSDK();
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
-  const wagmiChainId = useChainId();
   const {
     connectors,
     connectAsync: wagmiConnectAsync,
     status: wagmiStatus,
   } = useConnect();
-  const { disconnect: wagmiDisconnect } = useDisconnect();
 
-  // On mount, check if wagmi is connected but not marked as active provider
-  // If so, disconnect wagmi to clear stale state
-  useEffect(() => {
-    if (wagmiConnected && !isProviderActive('wagmi')) {
-      // Wagmi thinks it's connected but our localStorage says it shouldn't be
-      // Disconnect to clear stale state
-      wagmiDisconnect();
-    }
-  }, []);
   const {
     connected: solanaConnected,
     publicKey: solanaPublicKey,
     wallets,
     select,
     connect: solanaConnect,
-    disconnect: solanaDisconnect,
   } = useWallet();
 
   const handleCheckboxChange = useCallback(
@@ -164,8 +141,6 @@ function App() {
           connector: metaMaskConnector,
           chainId,
         });
-        setProviderActive('wagmi');
-        setWagmiIsActiveProvider(true);
       } catch (err) {
         console.error('Wagmi connection error:', err);
         setWagmiError(err instanceof Error ? err : new Error(String(err)));
@@ -191,35 +166,14 @@ function App() {
   }, [wallets, select, clearSolanaError]);
 
   const isConnected = status === 'connected';
+  const isConnecting = status === 'connecting';
   const isDisconnected =
     status === 'disconnected' || status === 'pending' || status === 'loaded';
 
   const disconnect = useCallback(async () => {
-    clearAllActiveProviders();
-    setWagmiIsActiveProvider(false);
-
-    // Disconnect all connections if connected
-    if (isConnected) {
-      await sdkDisconnect();
-    }
-    if (legacyConnected) {
-      await legacyDisconnect();
-    }
-    if (wagmiConnected) {
-      wagmiDisconnect();
-    }
-    if (solanaConnected) {
-      await solanaDisconnect();
-    }
+    await sdkDisconnect();
   }, [
     sdkDisconnect,
-    legacyDisconnect,
-    wagmiDisconnect,
-    solanaDisconnect,
-    isConnected,
-    legacyConnected,
-    wagmiConnected,
-    solanaConnected,
   ]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
@@ -231,7 +185,6 @@ function App() {
     return all;
   }, []);
 
-  const isConnecting = status === 'connecting';
   return (
     <div
       data-testid={TEST_IDS.app.container}
@@ -260,7 +213,7 @@ function App() {
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect()}
                 onClick={connect}
-                className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
+                className="bg-gray-500 text-white px-5 py-2 rounded text-base hover:bg-gray-600 transition-colors"
               >
                 Connecting (Multichain)
               </button>
@@ -288,7 +241,7 @@ function App() {
               </button>
             )}
 
-            {(!wagmiConnected || !wagmiIsActiveProvider) && (
+            {(!wagmiConnected) && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect('wagmi')}
@@ -313,21 +266,13 @@ function App() {
               </button>
             )}
 
-            {isConnected && (
+            {isConnected && scopesHaveChanged() && (
               <button
                 type="button"
-                data-testid={
-                  scopesHaveChanged()
-                    ? TEST_IDS.app.btnReconnect
-                    : TEST_IDS.app.btnDisconnect
-                }
-                onClick={scopesHaveChanged() ? connect : disconnect}
+                data-testid={TEST_IDS.app.btnReconnect}
+                onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
-              >
-                {scopesHaveChanged()
-                  ? `Re Establishing Connection (Multichain)`
-                  : `Disconnect (Multichain)`}
-              </button>
+              > Reconnect (Multichain) </button>
             )}
 
             {(isConnected ||
@@ -432,11 +377,12 @@ function App() {
                   chainId={legacyChainId}
                   accounts={legacyAccounts}
                   sdk={legacySDK}
+                  disconnect={legacyDisconnect}
                 />
               </div>
             </section>
           )}
-          {wagmiConnected && wagmiAddress && wagmiIsActiveProvider && (
+          {wagmiConnected && wagmiAddress && (
             <section className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Wagmi Connection

@@ -23,12 +23,14 @@ import type {
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param options.debug - Enable debug logging
+ * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
  * @returns A promise that resolves to the Solana client instance
  *
  * @example
  * ```typescript
  * import { createSolanaClient } from '@metamask/connect-solana';
  *
+ * // Wallet is auto-registered and ready to use
  * const client = await createSolanaClient({
  *   dapp: {
  *     name: 'My Solana DApp',
@@ -42,10 +44,7 @@ import type {
  *   },
  * });
  *
- * // Register the wallet to make it discoverable by Solana dapps
- * await client.registerWallet();
- *
- * // Or get the wallet instance directly
+ * // Get the wallet instance directly
  * const wallet = client.getWallet();
  * ```
  */
@@ -55,6 +54,8 @@ export async function createSolanaClient(
   const defaultNetworks: SolanaSupportedNetworks = {
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
+
+  const skipAutoRegister = options.skipAutoRegister ?? false;
 
   const supportedNetworks = convertNetworksToCAIP(
     options.api?.supportedNetworks ?? defaultNetworks,
@@ -69,12 +70,21 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
+  const walletName = 'MetaMask Connect';
+
+  if (!skipAutoRegister) {
+    await registerSolanaWalletStandard({ client, walletName });
+  }
+
   return {
     core,
-    getWallet: (walletName?: string) =>
-      getWalletStandard({ client, walletName }),
-    registerWallet: async (walletName = 'MetaMask Connect') =>
-      registerSolanaWalletStandard({ client, walletName }),
+    getWallet: () => getWalletStandard({ client, walletName }),
+    registerWallet: async (): Promise<void> => {
+      if (!skipAutoRegister) {
+        return;
+      }
+      await registerSolanaWalletStandard({ client, walletName });
+    },
     disconnect: async () => await core.disconnect(),
   };
 }
