@@ -16,9 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Patch `@solana/wallet-adapter-react` to work with android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
-
-### Changed
-
 - Remove manual registration of `connect-solana` ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
 
 ### Removed
