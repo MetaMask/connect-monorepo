@@ -133,7 +133,7 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-  private async removeStoredSessionRequest(): Promise<void> {
+  private async removeStoredPendingSessionRequest(): Promise<void> {
     await this.kvstore.delete(PENDING_SESSION_REQUEST_KEY);
   }
 
@@ -142,7 +142,7 @@ export class MWPTransport implements ExtendedTransport {
    *
    * @returns The stored SessionRequest, or null if none or invalid.
    */
-  async getStoredSessionRequest(): Promise<SessionRequest | null> {
+  async getStoredPendingSessionRequest(): Promise<SessionRequest | null> {
     try {
       const raw = await this.kvstore.get(PENDING_SESSION_REQUEST_KEY);
       if (!raw) {
@@ -354,7 +354,7 @@ export class MWPTransport implements ExtendedTransport {
         }
         walletSession = response.result as SessionData;
       }
-      await this.removeStoredSessionRequest();
+      await this.removeStoredPendingSessionRequest();
       this.notifyCallbacks({
         method: 'wallet_sessionChanged',
         params: walletSession,
@@ -420,7 +420,7 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     const storedSessionRequestBeforeConnectionAttempt =
-      await this.getStoredSessionRequest();
+      await this.getStoredPendingSessionRequest();
 
     let timeout: NodeJS.Timeout;
     let initialConnectionMessageHandler:
@@ -493,7 +493,7 @@ export class MWPTransport implements ExtendedTransport {
                 request,
                 messagePayload as TransportResponse,
               );
-              await this.removeStoredSessionRequest();
+              await this.removeStoredPendingSessionRequest();
               this.notifyCallbacks(messagePayload);
               return resolveConnection();
             };
@@ -548,7 +548,7 @@ export class MWPTransport implements ExtendedTransport {
           this.dappClient.off('message', initialConnectionMessageHandler);
           initialConnectionMessageHandler = undefined;
         }
-        this.removeStoredSessionRequest();
+        this.removeStoredPendingSessionRequest();
       });
   }
 
@@ -835,7 +835,7 @@ export class MWPTransport implements ExtendedTransport {
     const timeoutPromise = new Promise<void>((_resolve, reject) => {
       setTimeout(() => {
         unsubscribe();
-        this.removeStoredSessionRequest();
+        this.removeStoredPendingSessionRequest();
         reject(new TransportTimeoutError());
       }, this.options.resumeTimeout);
     });
