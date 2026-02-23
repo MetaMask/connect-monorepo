@@ -952,7 +952,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
 
     const storedSessionRequest =
-      await this.#transport?.getStoredSessionRequest();
+      await this.#transport?.getStoredPendingSessionRequest();
     if (!storedSessionRequest) {
       return;
     }
