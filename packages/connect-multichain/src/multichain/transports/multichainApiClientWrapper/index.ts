@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
 /* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
-/* eslint-disable no-plusplus -- Increment operator is safe here */
 
 import type {
   CreateSessionParams,

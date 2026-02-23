@@ -10,9 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add disconnect buttons to cards ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- Add `data-testid` attributes to Solana components ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
+- Add `data-testid` attributes to Legacy EVM and Wagmi disconnect buttons ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
 
 ### Changed
 
+- Patch `@solana/wallet-adapter-react` to work with android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
 - Remove manual registration of `connect-solana` ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
 
 ### Removed

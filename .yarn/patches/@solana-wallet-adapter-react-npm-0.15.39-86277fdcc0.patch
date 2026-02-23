@@ -1,0 +1,165 @@
+diff --git a/lib/cjs/WalletProvider.js b/lib/cjs/WalletProvider.js
+index 9c3d07cabf94c064cf9750480a77a856ab799fda..9e7f01bd258288fe6705190842232f0c3788c619 100644
+--- a/lib/cjs/WalletProvider.js
++++ b/lib/cjs/WalletProvider.js
+@@ -144,26 +144,30 @@ function WalletProvider({ children, wallets: adapters, autoConnect, localStorage
+         });
+     }, [autoConnect, adapter]);
+     const isUnloadingRef = (0, react_1.useRef)(false);
+-    (0, react_1.useEffect)(() => {
+-        if (walletName === wallet_adapter_mobile_1.SolanaMobileWalletAdapterWalletName && getIsMobile(adaptersWithStandardAdapters)) {
+-            isUnloadingRef.current = false;
+-            return;
+-        }
+-        function handleBeforeUnload() {
+-            isUnloadingRef.current = true;
+-        }
+-        /**
+-         * Some wallets fire disconnection events when the window unloads. Since there's no way to
+-         * distinguish between a disconnection event received because a user initiated it, and one
+-         * that was received because they've closed the window, we have to track window unload
+-         * events themselves. Downstream components use this information to decide whether to act
+-         * upon or drop wallet events and errors.
+-         */
+-        window.addEventListener('beforeunload', handleBeforeUnload);
+-        return () => {
+-            window.removeEventListener('beforeunload', handleBeforeUnload);
+-        };
+-    }, [adaptersWithStandardAdapters, walletName]);
++    // beforeunload event removed to avoid bug with Chrome on Android
++    // We also only except to handle the MetaMask solana wallet standard provider
++    // which does not emit a disconnect event when the window is unloaded which
++    // the commented code block was trying to handle.
++    // (0, react_1.useEffect)(() => {
++    //     if (walletName === wallet_adapter_mobile_1.SolanaMobileWalletAdapterWalletName && getIsMobile(adaptersWithStandardAdapters)) {
++    //         isUnloadingRef.current = false;
++    //         return;
++    //     }
++    //     function handleBeforeUnload() {
++    //         isUnloadingRef.current = true;
++    //     }
++    //     /**
++    //      * Some wallets fire disconnection events when the window unloads. Since there's no way to
++    //      * distinguish between a disconnection event received because a user initiated it, and one
++    //      * that was received because they've closed the window, we have to track window unload
++    //      * events themselves. Downstream components use this information to decide whether to act
++    //      * upon or drop wallet events and errors.
++    //      */
++    //     window.addEventListener('beforeunload', handleBeforeUnload);
++    //     return () => {
++    //         window.removeEventListener('beforeunload', handleBeforeUnload);
++    //     };
++    // }, [adaptersWithStandardAdapters, walletName]);
+     const handleConnectError = (0, react_1.useCallback)(() => {
+         if (adapter) {
+             // If any error happens while connecting, unset the adapter.
+diff --git a/lib/esm/WalletProvider.js b/lib/esm/WalletProvider.js
+index d5dcd36332ead1ede05424537577158a033fa2f0..6eb1042aad4f52bf331023551dcbbc8b5e98877c 100644
+--- a/lib/esm/WalletProvider.js
++++ b/lib/esm/WalletProvider.js
+@@ -95,26 +95,30 @@ export function WalletProvider({ children, wallets: adapters, autoConnect, local
+         };
+     }, [autoConnect, adapter]);
+     const isUnloadingRef = useRef(false);
+-    useEffect(() => {
+-        if (walletName === SolanaMobileWalletAdapterWalletName && getIsMobile(adaptersWithStandardAdapters)) {
+-            isUnloadingRef.current = false;
+-            return;
+-        }
+-        function handleBeforeUnload() {
+-            isUnloadingRef.current = true;
+-        }
+-        /**
+-         * Some wallets fire disconnection events when the window unloads. Since there's no way to
+-         * distinguish between a disconnection event received because a user initiated it, and one
+-         * that was received because they've closed the window, we have to track window unload
+-         * events themselves. Downstream components use this information to decide whether to act
+-         * upon or drop wallet events and errors.
+-         */
+-        window.addEventListener('beforeunload', handleBeforeUnload);
+-        return () => {
+-            window.removeEventListener('beforeunload', handleBeforeUnload);
+-        };
+-    }, [adaptersWithStandardAdapters, walletName]);
++    // beforeunload event removed to avoid bug with Chrome on Android
++    // We also only except to handle the MetaMask solana wallet standard provider
++    // which does not emit a disconnect event when the window is unloaded which
++    // the commented code block was trying to handle.
++    // useEffect(() => {
++    //     if (walletName === SolanaMobileWalletAdapterWalletName && getIsMobile(adaptersWithStandardAdapters)) {
++    //         isUnloadingRef.current = false;
++    //         return;
++    //     }
++    //     function handleBeforeUnload() {
++    //         isUnloadingRef.current = true;
++    //     }
++    //     /**
++    //      * Some wallets fire disconnection events when the window unloads. Since there's no way to
++    //      * distinguish between a disconnection event received because a user initiated it, and one
++    //      * that was received because they've closed the window, we have to track window unload
++    //      * events themselves. Downstream components use this information to decide whether to act
++    //      * upon or drop wallet events and errors.
++    //      */
++    //     window.addEventListener('beforeunload', handleBeforeUnload);
++    //     return () => {
++    //         window.removeEventListener('beforeunload', handleBeforeUnload);
++    //     };
++    // }, [adaptersWithStandardAdapters, walletName]);
+     const handleConnectError = useCallback(() => {
+         if (adapter) {
+             // If any error happens while connecting, unset the adapter.
+diff --git a/src/WalletProvider.tsx b/src/WalletProvider.tsx
+index 7d4723ef7877ed1c2da3bd57f74ec7b12743e085..601470de23a877232ce11262cca1758990e64425 100644
+--- a/src/WalletProvider.tsx
++++ b/src/WalletProvider.tsx
+@@ -124,26 +124,30 @@ export function WalletProvider({
+         };
+     }, [autoConnect, adapter]);
+     const isUnloadingRef = useRef(false);
+-    useEffect(() => {
+-        if (walletName === SolanaMobileWalletAdapterWalletName && getIsMobile(adaptersWithStandardAdapters)) {
+-            isUnloadingRef.current = false;
+-            return;
+-        }
+-        function handleBeforeUnload() {
+-            isUnloadingRef.current = true;
+-        }
+-        /**
+-         * Some wallets fire disconnection events when the window unloads. Since there's no way to
+-         * distinguish between a disconnection event received because a user initiated it, and one
+-         * that was received because they've closed the window, we have to track window unload
+-         * events themselves. Downstream components use this information to decide whether to act
+-         * upon or drop wallet events and errors.
+-         */
+-        window.addEventListener('beforeunload', handleBeforeUnload);
+-        return () => {
+-            window.removeEventListener('beforeunload', handleBeforeUnload);
+-        };
+-    }, [adaptersWithStandardAdapters, walletName]);
++    // beforeunload event removed to avoid bug with Chrome on Android
++    // We also only except to handle the MetaMask solana wallet standard provider
++    // which does not emit a disconnect event when the window is unloaded which
++    // the commented code block was trying to handle.
++    // useEffect(() => {
++    //     if (walletName === SolanaMobileWalletAdapterWalletName && getIsMobile(adaptersWithStandardAdapters)) {
++    //         isUnloadingRef.current = false;
++    //         return;
++    //     }
++    //     function handleBeforeUnload() {
++    //         isUnloadingRef.current = true;
++    //     }
++    //     /**
++    //      * Some wallets fire disconnection events when the window unloads. Since there's no way to
++    //      * distinguish between a disconnection event received because a user initiated it, and one
++    //      * that was received because they've closed the window, we have to track window unload
++    //      * events themselves. Downstream components use this information to decide whether to act
++    //      * upon or drop wallet events and errors.
++    //      */
++    //     window.addEventListener('beforeunload', handleBeforeUnload);
++    //     return () => {
++    //         window.removeEventListener('beforeunload', handleBeforeUnload);
++    //     };
++    // }, [adaptersWithStandardAdapters, walletName]);
+     const handleConnectError = useCallback(() => {
+         if (adapter) {
+             // If any error happens while connecting, unset the adapter.

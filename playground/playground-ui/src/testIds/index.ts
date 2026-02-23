@@ -133,6 +133,7 @@ export const TEST_IDS = {
   legacyEvm: {
     card: 'legacy-evm-card',
     title: 'legacy-evm-title',
+    btnDisconnect: 'legacy-evm-btn-disconnect',
 
     // Status display
     chainIdLabel: 'legacy-evm-chain-id-label',
@@ -170,6 +171,7 @@ export const TEST_IDS = {
   wagmi: {
     card: 'wagmi-card',
     title: 'wagmi-title',
+    btnDisconnect: 'wagmi-btn-disconnect',
 
     // Status display
     chainIdLabel: 'wagmi-chain-id-label',
@@ -207,6 +209,27 @@ export const TEST_IDS = {
     connectorSection: 'wagmi-section-connector',
     connectorAccount: 'wagmi-connector-account',
     connectorChainId: 'wagmi-connector-chain-id',
+  },
+
+  // ============================================
+  // SOLANA CARD
+  // ============================================
+  solana: {
+    card: 'solana-card',
+    title: 'solana-title',
+    btnConnect: 'solana-btn-connect',
+    btnDisconnect: 'solana-btn-disconnect',
+    status: 'solana-status',
+    addressContainer: 'solana-address-container',
+    signMessageSection: 'solana-section-sign-message',
+    inputMessage: 'solana-input-message',
+    btnSignMessage: 'solana-btn-sign-message',
+    signedMessageResult: 'solana-signed-message-result',
+    transactionsSection: 'solana-section-transactions',
+    btnSignTransaction: 'solana-btn-sign-transaction',
+    btnSendTransaction: 'solana-btn-send-transaction',
+    transactionSignatureResult: 'solana-transaction-signature-result',
+    errorContainer: 'solana-error-container',
   },
 
   // ============================================

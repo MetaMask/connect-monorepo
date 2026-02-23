@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /* eslint-disable consistent-return */
-/* eslint-disable no-plusplus */
 /* eslint-disable promise/param-names */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-shadow */
