@@ -77,8 +77,8 @@ export const LegacyEVMSDKProvider = ({
             };
         const supportedNetworks = convertCaipToHexKeys(caipNetworks);
 
-        // Type assertion needed because createEVMClient's type doesn't include mobile/transport
-        // but they are passed through to createMultichainClient at runtime
+        // Type assertion needed because createEVMClient's type doesn't include mobile
+        // but it is passed through to createMultichainClient at runtime
         const clientSDK = await createEVMClient({
           dapp: {
             name: 'playground',
@@ -94,11 +94,6 @@ export const LegacyEVMSDKProvider = ({
           },
           transport: {
             extensionId: METAMASK_PROD_CHROME_ID,
-            onNotification: (notification: unknown) => {
-              const payload = notification as Record<string, unknown>;
-              // Handle any necessary notifications here
-              console.debug('Legacy EVM notification:', payload);
-            },
           },
         } as any);
         const providerInstance = await clientSDK.getProvider();

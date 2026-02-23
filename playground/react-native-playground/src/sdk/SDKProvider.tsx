@@ -20,7 +20,7 @@ const SDKContext = createContext<
 >(undefined);
 
 export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
-	const [status, setStatus] = useState<ConnectionStatus>('pending');
+	const [status, setStatus] = useState<ConnectionStatus>('connecting');
 	const [session, setSession] = useState<SessionData | undefined>(undefined);
 	const [error, setError] = useState<Error | null>(null);
 
@@ -43,15 +43,17 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 				},
 				transport: {
 					extensionId: METAMASK_PROD_CHROME_ID,
-					onNotification: (notification: unknown) => {
-						const payload = notification as Record<string, unknown>;
-						if (payload.method === 'wallet_sessionChanged' || payload.method === 'wallet_createSession' || payload.method === 'wallet_getSession') {
-							setSession(payload.params as SessionData);
-						} else if (payload.method === 'stateChanged') {
-							setStatus(payload.params as ConnectionStatus);
-						}
-					},
 				},
+			});
+
+			sdkRef.current.then((sdkInstance) => {
+				setStatus(sdkInstance.status);
+				sdkInstance.on('stateChanged', (newStatus: unknown) => {
+					setStatus(newStatus as ConnectionStatus);
+				});
+				sdkInstance.on('wallet_sessionChanged', (newSession: unknown) => {
+					setSession(newSession as SessionData);
+				});
 			});
 		}
 	}, []);
@@ -62,11 +64,12 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 				throw new Error('SDK not initialized');
 			}
 			const sdkInstance = await sdkRef.current;
+			setSession(undefined);
 			return sdkInstance.disconnect();
 		} catch (error) {
 			setError(error as Error);
 		}
-	}, [sdkRef.current]);
+	}, []);
 
 	const connect = useCallback(
 		async (scopes: Scope[], caipAccountIds: CaipAccountId[]) => {
@@ -80,7 +83,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 				setError(error as Error);
 			}
 		},
-		[sdkRef.current],
+		[],
 	);
 
 	const invokeMethod = useCallback(
@@ -95,7 +98,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 				setError(error as Error);
 			}
 		},
-		[sdkRef.current],
+		[],
 	);
 
 	return (
