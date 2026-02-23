@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Add Metro bundler configuration with Node.js module shims to support APK bundling
-- Enable `unstable_transformImportMeta` in Babel config for `import.meta` support in dependencies
-- Set explicit Android package identifier for APK builds
-- Add `dotenv` and `readable-stream` as dev dependencies for Metro config
+- Add Metro bundler configuration with Node.js module shims to support APK bundling ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
+- Enable `unstable_transformImportMeta` in Babel config for `import.meta` support in dependencies ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
+- Set explicit Android package identifier for APK builds ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
+- Add `dotenv` and `readable-stream` as dev dependencies for Metro config ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
 
 ### Fixed
 
-- Make sure Multichain UI card is rendered after Multichain connection established, which broke after merging in [Connect Multichain Singleton PR](https://github.com/MetaMask/connect-monorepo/pull/157) ([#181](https://github.com/MetaMask/connect-monorepo/pull/181))
+- Make sure Multichain UI card is rendered after Multichain connection established by aligning the `SDKProvider` with the browser playground's event-emitter pattern, broken after merging in [Connect Multichain Singleton PR](https://github.com/MetaMask/connect-monorepo/pull/157) which caused the React Native `SDKProvider`'s `transport.onNotification` callback to be silently dropped, preventing session and status updates from ever reaching the UI ([#181](https://github.com/MetaMask/connect-monorepo/pull/181))
 - Fix JSON parse error on startup by replacing `createSyncStoragePersister` with `createAsyncStoragePersister` for React Native's async `AsyncStorage` API ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
 - Fix Connect (Multichain) button not rendering by correcting `useSDK()` destructuring (`state` -> `status: state`) ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
 
