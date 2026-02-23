@@ -85,7 +85,7 @@ function App() {
 }
 ```
 
-### ⚠️ Chrome on Android support
+### ⚠️ Wallet Adapter support
 
 > **Note:** There is a known issue with `@solana/wallet-adapter-react` that prevents connecting to MetaMask when using the Wallet Standard provider from `@metamask/connect-solana` in Chrome on Android.
 >
