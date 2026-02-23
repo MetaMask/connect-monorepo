@@ -14,9 +14,6 @@ import { wagmiConfig } from '../src/wagmi/config';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// AsyncStorage natively provides the async getItem/setItem/removeItem API
-// that createAsyncStoragePersister expects.
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
