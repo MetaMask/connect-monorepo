@@ -44,8 +44,8 @@
     "pre-push": "yarn lint"
   },
   "resolutions": {
-    "bs58": "4.0.1",
-    "@solana/wallet-adapter-react@npm:^0.15.39": "patch:@solana/wallet-adapter-react@npm%3A0.15.39#~/.yarn/patches/@solana-wallet-adapter-react-npm-0.15.39-86277fdcc0.patch"
+    "@solana/wallet-adapter-react@npm:^0.15.39": "patch:@solana/wallet-adapter-react@npm%3A0.15.39#~/.yarn/patches/@solana-wallet-adapter-react-npm-0.15.39-86277fdcc0.patch",
+    "bs58": "4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
