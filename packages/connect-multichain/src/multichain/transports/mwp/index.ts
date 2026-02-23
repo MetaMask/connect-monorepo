@@ -156,7 +156,6 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-
   /**
    * Removes the stored pending session request from the KVStore.
    * This is necessary to ensure that ConnectMultichain is able to correctly
