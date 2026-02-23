@@ -15,21 +15,11 @@ import type { CaipAccountId } from '@metamask/utils';
 import type { InvokeMethodOptions, RPCAPI, Scope } from 'src/domain';
 import type { MetaMaskConnectMultichain } from 'src/multichain';
 
-// uint32 (two's complement) max
-// more conservative than Number.MAX_SAFE_INTEGER
-const MAX = 4_294_967_295;
-let idCounter = Math.floor(Math.random() * MAX);
-
-const getUniqueId = (): number => {
-  idCounter = (idCounter + 1) % MAX;
-  return idCounter;
-};
+import { getUniqueRequestId } from '../../utils';
 
 type TransportRequestWithId = TransportRequest & { id: number };
 
 export class MultichainApiClientWrapperTransport implements Transport {
-  #requestId = getUniqueId();
-
   readonly #notificationCallbacks = new Set<(data: unknown) => void>();
 
   notificationListener: (() => void) | undefined;
@@ -91,7 +81,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     params: ParamsType,
     _options: { timeout?: number } = {},
   ): Promise<ReturnType> {
-    const id = this.#requestId++;
+    const id = getUniqueRequestId();
     const requestPayload = {
       id,
       jsonrpc: '2.0',
