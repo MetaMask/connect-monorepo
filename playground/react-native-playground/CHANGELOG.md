@@ -7,18 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- Make sure Multichain UI card is rendered after Multichain connection established, which broke after merging in [Connect Multichain Singleton PR](https://github.com/MetaMask/connect-monorepo/pull/157) ([#181](https://github.com/MetaMask/connect-monorepo/pull/181))
-- Fix JSON parse error on startup by replacing `createSyncStoragePersister` with `createAsyncStoragePersister` for React Native's async `AsyncStorage` API
-- Fix Connect (Multichain) button not rendering by correcting `useSDK()` destructuring (`state` -> `status: state`)
-
 ### Changed
 
 - Add Metro bundler configuration with Node.js module shims to support APK bundling
 - Enable `unstable_transformImportMeta` in Babel config for `import.meta` support in dependencies
 - Set explicit Android package identifier for APK builds
 - Add `dotenv` and `readable-stream` as dev dependencies for Metro config
+
+### Fixed
+
+- Make sure Multichain UI card is rendered after Multichain connection established, which broke after merging in [Connect Multichain Singleton PR](https://github.com/MetaMask/connect-monorepo/pull/157) ([#181](https://github.com/MetaMask/connect-monorepo/pull/181))
+- Fix JSON parse error on startup by replacing `createSyncStoragePersister` with `createAsyncStoragePersister` for React Native's async `AsyncStorage` API
+- Fix Connect (Multichain) button not rendering by correcting `useSDK()` destructuring (`state` -> `status: state`)
 
 ## [0.1.1]
 
