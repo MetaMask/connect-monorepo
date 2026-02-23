@@ -14,6 +14,7 @@ import type { ExtendedTransport, RPCAPI, Scope, SessionData } from 'src/domain';
 import {
   addValidAccounts,
   getOptionalScopes,
+  getUniqueRequestId,
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
@@ -34,9 +35,6 @@ export class DefaultTransport implements ExtendedTransport {
   readonly #defaultRequestOptions = {
     timeout: DEFAULT_REQUEST_TIMEOUT,
   };
-
-  // Use timestamp-based ID to avoid conflicts across disconnect/reconnect cycles
-  #reqId = Date.now();
 
   readonly #pendingRequests = new Map<string, PendingRequest>();
 
@@ -148,8 +146,7 @@ export class DefaultTransport implements ExtendedTransport {
     this.#setupMessageListener();
 
     // Generate unique request ID - increment counter to ensure uniqueness
-    this.#reqId += 1;
-    const requestId = `${this.#reqId}`;
+    const requestId = String(getUniqueRequestId());
 
     // Create request with ID - MetaMask expects JSON-RPC format
     const request = {

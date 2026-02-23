@@ -40,6 +40,7 @@ import {
 import {
   addValidAccounts,
   getOptionalScopes,
+  getUniqueRequestId,
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
@@ -80,8 +81,6 @@ const logger = createLogger('metamask-sdk:transport');
  * Bridges the MWP DappClient with the multichain API client Transport interface
  */
 export class MWPTransport implements ExtendedTransport {
-  private __reqId = 0;
-
   private __pendingRequests = new Map<string, PendingRequests>();
 
   private notificationCallbacks = new Set<(data: unknown) => void>();
@@ -383,7 +382,7 @@ export class MWPTransport implements ExtendedTransport {
   >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
     const request = {
       jsonrpc: '2.0',
-      id: `${this.__reqId++}`,
+      id: String(getUniqueRequestId()),
       ...payload,
     };
 
@@ -463,7 +462,7 @@ export class MWPTransport implements ExtendedTransport {
             };
             const request = {
               jsonrpc: '2.0',
-              id: `${this.__reqId++}`,
+              id: String(getUniqueRequestId()),
               method: 'wallet_createSession',
               params: sessionRequest,
             };
@@ -751,7 +750,7 @@ export class MWPTransport implements ExtendedTransport {
   >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
     const request = {
       jsonrpc: '2.0',
-      id: `${this.__reqId++}`,
+      id: String(getUniqueRequestId()),
       ...payload,
     };
 

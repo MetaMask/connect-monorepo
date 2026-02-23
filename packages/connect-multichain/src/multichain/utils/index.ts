@@ -399,3 +399,13 @@ export function addValidAccounts(
 
   return result;
 }
+
+// uint32 (two's complement) max
+// more conservative than Number.MAX_SAFE_INTEGER
+const MAX = 4_294_967_295;
+let idCounter = Math.floor(Math.random() * MAX);
+
+export const getUniqueRequestId = (): number => {
+  idCounter = (idCounter + 1) % MAX;
+  return idCounter;
+};
