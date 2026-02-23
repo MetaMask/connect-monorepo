@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update `connect()` and `createEVMClient()` typings to be more accurate ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 - update `switchChain()` to return `Promise<void>` ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 - Make `ConnectEvm` rely on `wallet_sessionChanged` events from `ConnectMultichain` rather than explicit connect/disconnect events ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- Chain add/switch deeplink now calls `openSimpleDeeplinkIfNeeded()` instead of `openDeeplinkIfNeeded()` to align with `@metamask/connect-multichain` changes ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
 
 ### Fixed
 

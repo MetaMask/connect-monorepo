@@ -136,5 +136,7 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
 
   getActiveSession: () => Promise<Session | undefined>;
 
+  getStoredPendingSessionRequest: () => Promise<SessionRequest | null>;
+
   disconnect: (scopes: Scope[]) => Promise<void>;
 };
