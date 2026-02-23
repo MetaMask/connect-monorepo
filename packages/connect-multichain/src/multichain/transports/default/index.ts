@@ -322,9 +322,9 @@ export class DefaultTransport implements ExtendedTransport {
     );
   }
 
-  async getStoredSessionRequest(): Promise<SessionRequest | null> {
+  async getStoredPendingSessionRequest(): Promise<SessionRequest | null> {
     throw new Error(
-      'getStoredSessionRequest is purposely not implemented for the DefaultTransport',
+      'getStoredPendingSessionRequest is purposely not implemented for the DefaultTransport',
     );
   }
 }
