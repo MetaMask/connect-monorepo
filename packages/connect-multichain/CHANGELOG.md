@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `beforeunload` event listener not being properly removed on disconnect due to `.bind()` creating different function references, causing a listener leak on each connect/disconnect cycle ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))
 - Rename `StoreAdapterWeb.DB_NAME` from `mmsdk` to `mmconnect` to prevent IndexedDB collisions when the legacy MetaMask SDK and MM Connect run in the same browser context ([#177](https://github.com/MetaMask/connect-monorepo/pull/177))
 - Clean up stale MWP session from KVStore on connection rejection so subsequent QR code connection attempts are not blocked ([#180](https://github.com/MetaMask/connect-monorepo/pull/180))
+- Fix bug with JSON-RPC requests where previously used `id` value could be re-used causing the wallet to ignore the request when a dapp was refreshed/reloaded. ([#183](https://github.com/MetaMask/connect-monorepo/pull/183))
 
 ## [0.5.3]
 
