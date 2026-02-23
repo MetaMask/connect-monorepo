@@ -4744,6 +4744,7 @@ __metadata:
     "@wagmi/core": "npm:^2.22.1"
     buffer: "npm:^6.0.3"
     cross-env: "npm:^10.1.0"
+    dotenv: "npm:^17.2.3"
     eciesjs: "npm:^0.4.15"
     eslint: "npm:^9.25.0"
     eslint-config-expo: "npm:~10.0.0"
@@ -4770,6 +4771,7 @@ __metadata:
     react-native-screens: "npm:~4.16.0"
     react-native-web: "npm:^0.21.0"
     react-native-worklets: "npm:^0.5.0"
+    readable-stream: "npm:^4.7.0"
     typescript: "npm:^5.9.3"
     viem: "npm:2.*"
     wagmi: "npm:^2.19.2"
@@ -25096,7 +25098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^3.6.2 || ^4.4.2":
+"readable-stream@npm:^3.6.2 || ^4.4.2, readable-stream@npm:^4.7.0":
   version: 4.7.0
   resolution: "readable-stream@npm:4.7.0"
   dependencies:

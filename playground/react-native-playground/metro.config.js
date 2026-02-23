@@ -1,6 +1,6 @@
+const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
-const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
