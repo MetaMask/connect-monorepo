@@ -15,24 +15,37 @@ This playground provides a mobile testing environment for MetaMask connections. 
 
 - Node.js (>=20.19.0)
 - Yarn (v4.1.1+)
-- Expo CLI
-- iOS Simulator (for iOS development) or Android Studio (for Android development)
+- Expo CLI (`npx expo` works without a global install)
 
-## Installation
+### Android
 
-From the **monorepo root**:
+- [Android Studio](https://developer.android.com/studio) with:
+  - Android SDK (API 36 recommended — the build will also auto-install NDK 27.1)
+  - At least one AVD (Android Virtual Device) configured via **AVD Manager**
+- `ANDROID_HOME` environment variable pointing to your SDK (e.g. `~/Library/Android/sdk`)
+
+### iOS
+
+- Xcode with iOS Simulator
+- CocoaPods (`gem install cocoapods` or via Homebrew)
+
+## Getting Started
+
+All commands below assume you start from the **monorepo root** unless noted otherwise.
+
+### 1. Install dependencies and build workspace packages
 
 ```bash
-# Install all dependencies
 yarn install
-
-# Build workspace packages
 yarn build
 ```
 
-## Configuration
+`yarn build` compiles the workspace packages (`connect-multichain`, `connect-evm`, etc.) that the playground depends on. You need to re-run this whenever you change code in those packages.
+
+### 2. Create the environment file
 
 ```bash
+cd playground/react-native-playground
 cp .env.example .env
 ```
 
@@ -42,25 +55,64 @@ Then fill out the resulting `.env` file:
 EXPO_PUBLIC_INFURA_API_KEY=your_infura_api_key
 ```
 
-## Running the App
+> The Infura key is used for JSON-RPC calls. The app will launch without one, but RPC methods will fail.
 
-### iOS
+### 3. Run on a device or emulator
 
-```bash
-yarn ios
-```
+There are two ways to run the app, depending on your needs:
 
-### Android
+#### Option A: Expo Dev Server (`yarn android` / `yarn ios`)
 
-```bash
-yarn android
-```
-
-### Web
+This starts the Expo dev server and opens the app in Expo Go (or an existing development build). Fast iteration, but requires Expo Go installed on the device/emulator.
 
 ```bash
-yarn web
+# From playground/react-native-playground
+yarn android   # or yarn ios, yarn web
 ```
+
+#### Option B: Native Debug Build (`npx expo run:android`)
+
+This generates the native project, compiles a debug APK via Gradle, installs it on the emulator, and starts Metro. Use this when you need a standalone build or don't have Expo Go.
+
+```bash
+# Start the emulator first (pick an AVD name from the list)
+$ANDROID_HOME/emulator/emulator -list-avds
+$ANDROID_HOME/emulator/emulator -avd <AVD_NAME> &
+
+# Wait for boot
+$ANDROID_HOME/platform-tools/adb wait-for-device
+
+# Build, install, and launch
+cd playground/react-native-playground
+yarn copy-wagmi-connector
+npx expo run:android
+```
+
+For iOS the equivalent is:
+
+```bash
+npx expo run:ios
+```
+
+> **First-time build expectations:** The initial `npx expo run:android` takes **8–12 minutes** because it runs `expo prebuild` to generate the `android/` directory, downloads Gradle 8.x and the NDK, then compiles all native modules (reanimated, gesture-handler, screens, etc.). Subsequent builds are much faster thanks to Gradle caching.
+
+### 4. Verify the app is running
+
+After the build completes you should see:
+
+- The APK installed from `android/app/build/outputs/apk/debug/app-debug.apk`
+- Metro bundler running on `http://localhost:8081`
+- The playground app open on the emulator
+
+Metro will stream JS bundle progress and app logs to the terminal.
+
+## Running the App (Quick Reference)
+
+| Platform | Dev server (Expo Go)     | Native build                |
+| -------- | ------------------------ | --------------------------- |
+| Android  | `yarn android`           | `npx expo run:android`      |
+| iOS      | `yarn ios`               | `npx expo run:ios`          |
+| Web      | `yarn web`               | N/A                         |
 
 ## Features
 
@@ -167,18 +219,36 @@ See [scripts/README.md](./scripts/README.md) for detailed polyfill documentation
    - Ensure `yarn copy-wagmi-connector` has run (automatic with `yarn start`)
    - Check polyfills are properly configured
 
+5. **Stale native build or prebuild issues**
+   - Delete the generated native directories and re-run:
+     ```bash
+     rm -rf android ios
+     npx expo run:android   # re-generates android/ and rebuilds
+     ```
+
+6. **Emulator not found / `adb` not on PATH**
+   - Ensure `ANDROID_HOME` is set (e.g. `export ANDROID_HOME=~/Library/Android/sdk`)
+   - Add platform-tools to PATH: `export PATH=$ANDROID_HOME/platform-tools:$PATH`
+   - Create an AVD in Android Studio via **Tools → AVD Manager**
+
+7. **Gradle build fails with SDK/NDK errors**
+   - Open Android Studio → **SDK Manager** and install the matching SDK platform (API 36) and NDK 27.1
+   - Accept licenses: `$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses`
+
 ## Building for Production
 
-### iOS
+Use [EAS Build](https://docs.expo.dev/build/introduction/) for production builds:
 
 ```bash
-expo build:ios
+npx eas build --platform android
+npx eas build --platform ios
 ```
 
-### Android
+Or build locally with:
 
 ```bash
-expo build:android
+npx expo run:android --variant release
+npx expo run:ios --configuration Release
 ```
 
 ## Contributing
