@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Patch `@solana/wallet-adapter-react` to work with android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
 - Remove manual registration of `connect-solana` ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.5.0
+  - @metamask/connect-multichain@0.6.0
+  - @metamask/connect-solana@0.2.0
 
 ### Removed
 
