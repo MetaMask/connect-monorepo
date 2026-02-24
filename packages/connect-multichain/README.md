@@ -203,20 +203,26 @@ await client.connect(
 );
 ```
 
-##### `disconnect()`
+##### `disconnect(scopes?)`
 
-Disconnects from the wallet and cleans up resources.
+Disconnects from the wallet. If `scopes` are provided, only the specified scopes are revoked; if there are remaining scopes, the connection stays alive. If omitted or empty, all scopes are revoked and the connection is fully torn down.
 
 **Parameters**
 
-None.
+| Name     | Type      | Required | Description                                                          |
+| -------- | --------- | -------- | -------------------------------------------------------------------- |
+| `scopes` | `Scope[]` | No       | Array of CAIP-2 chain identifiers to revoke (defaults to all scopes) |
 
 **Returns**
 
 `Promise<void>`
 
 ```typescript
+// Fully disconnect
 await client.disconnect();
+
+// Disconnect only specific scopes
+await client.disconnect(['eip155:1']);
 ```
 
 ##### `invokeMethod(options)`

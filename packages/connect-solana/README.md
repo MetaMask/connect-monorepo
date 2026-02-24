@@ -95,24 +95,76 @@ function App() {
 
 ### `createSolanaClient(options)`
 
-Creates a new Solana client instance.
+Creates a new Solana client instance. By default, the wallet is automatically registered with the wallet-standard registry on creation.
 
 #### Parameters
 
-- `options.dapp.name` (required) - The name of your dapp
-- `options.dapp.url` (optional) - The URL of your dapp
-- `options.dapp.iconUrl` (optional) - The icon URL of your dapp
-- `options.api.supportedNetworks` (optional) - Map of CAIP chain IDs to RPC URLs
-- `options.debug` (optional) - Enable debug logging
+| Option                  | Type                      | Required | Description                                                            |
+| ----------------------- | ------------------------- | -------- | ---------------------------------------------------------------------- |
+| `dapp.name`             | `string`                  | Yes      | Name of your dApp                                                      |
+| `dapp.url`              | `string`                  | No       | URL of your dApp                                                       |
+| `dapp.iconUrl`          | `string`                  | No       | Icon URL for your dApp                                                 |
+| `api.supportedNetworks` | `SolanaSupportedNetworks` | No       | Map of network names (`mainnet`, `devnet`, `testnet`) to RPC URLs      |
+| `debug`                 | `boolean`                 | No       | Enable debug logging                                                   |
+| `skipAutoRegister`      | `boolean`                 | No       | Skip auto-registering the wallet during creation (defaults to `false`) |
 
 #### Returns
 
-A `SolanaClient` object with:
+`Promise<SolanaClient>`
 
-- `core` - The underlying MultichainCore instance
-- `getWallet(walletName?)` - Returns a wallet-standard compatible wallet
-- `registerWallet(walletName?)` - Registers the wallet with the wallet-standard registry
-- `disconnect()` - Disconnects and revokes the session
+---
+
+### `SolanaClient`
+
+The object returned by `createSolanaClient`.
+
+#### Properties
+
+| Property | Type             | Description                            |
+| -------- | ---------------- | -------------------------------------- |
+| `core`   | `MultichainCore` | The underlying MultichainCore instance |
+
+#### Methods
+
+##### `getWallet()`
+
+Returns a wallet-standard compatible MetaMask wallet instance.
+
+**Returns**
+
+`Wallet` - A [wallet-standard](https://github.com/wallet-standard/wallet-standard) compatible wallet.
+
+##### `registerWallet()`
+
+Registers the MetaMask wallet with the wallet-standard registry. This is a no-op if the wallet was already auto-registered during creation (i.e., `skipAutoRegister` was not set to `true`).
+
+**Returns**
+
+`Promise<void>`
+
+##### `disconnect()`
+
+Disconnects from the wallet and revokes the session.
+
+**Returns**
+
+`Promise<void>`
+
+---
+
+### Types
+
+#### `SolanaNetwork`
+
+```typescript
+type SolanaNetwork = 'mainnet' | 'devnet' | 'testnet';
+```
+
+#### `SolanaSupportedNetworks`
+
+```typescript
+type SolanaSupportedNetworks = Partial<Record<SolanaNetwork, string>>;
+```
 
 ## TypeScript
 

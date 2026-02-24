@@ -529,7 +529,7 @@ const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
 
 ```typescript
 type EventHandlers = {
-  connect: (result: { chainId: Hex }) => void;
+  connect: (result: { chainId: Hex; accounts: Address[] }) => void;
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;
