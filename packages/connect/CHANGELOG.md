@@ -7,15 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0]
-
-### Uncategorized
-
-- chore: add API documentation ([#146](https://github.com/MetaMask/connect-monorepo/pull/146))
-- build: re-introduce lint step to ci workflow ([#145](https://github.com/MetaMask/connect-monorepo/pull/145))
-- chore: fix package consistency across monorepo ([#94](https://github.com/MetaMask/connect-monorepo/pull/94))
-- fix: changelog repo url ([#78](https://github.com/MetaMask/connect-monorepo/pull/78))
-
 ## [0.2.0]
 
 ### Added
@@ -32,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect@0.3.0...HEAD
-[0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect@0.2.0...@metamask/connect@0.3.0
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect@0.2.0...HEAD
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect@0.1.0...@metamask/connect@0.2.0
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/connect@0.1.0
