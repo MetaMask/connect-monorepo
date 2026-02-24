@@ -9,11 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.0]
 
-### Uncategorized
-
-- chore: update READMEs after singleton changes ([#184](https://github.com/MetaMask/connect-monorepo/pull/184))
-- feat: Add solana test-id to browser playground. Patch solana react package for android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
-
 ### Added
 
 - When `ConnectMultichain.connect()` is called while a connection is already pending, the user is re-prompted with the pending connection deeplink. ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
