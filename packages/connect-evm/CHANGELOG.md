@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `createEVMClient()` param option `api.supportedNetworks` now expects hex chain IDs as keys (e.g., `'0x1'`) instead of CAIP chain IDs
   - Event handler types for `connectAndSign` and `connectWith` now use `Hex` for `chainId`
 - **BREAKING** `getInfuraRpcUrls` now returns a rpc url map keyed by hex chain ID rather than CAIP Chain ID ([#152](https://github.com/MetaMask/connect-monorepo/pull/152))
+- **BREAKING** `disconnect()` now revokes only `eip155:*` scopes instead of revoking the entire multichain session. Non-EVM scopes (for example Solana) are preserved. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- **BREAKING** EIP-1193 `connect` event payload now includes accounts: `{ chainId: Hex; accounts: Address[] }` (previously `{ chainId: Hex }`). ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 - The `debug` option param used by `createEVMClient()` now enables console debug logs of the underlying `MultichainClient` instance ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
 - update `connect()` and `createEVMClient()` typings to be more accurate ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 - update `switchChain()` to return `Promise<void>` ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))

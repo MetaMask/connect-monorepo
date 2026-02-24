@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **BREAKING:** Automatically register as MetaMask to Solana Wallet Standard registry upon instantiation - with option to skip auto-registration [#178](https://github.com/MetaMask/connect-monorepo/pull/178)
+- **BREAKING** `getWallet()` no longer accepts a `walletName` argument and now always returns the `"MetaMask Connect"` wallet instance. ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
+- **BREAKING** `registerWallet()` no longer accepts a `walletName` argument. Wallet naming is now fixed to `"MetaMask Connect"`. ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
+- `registerWallet()` is now effectively a no-op when auto-registration is enabled (default). Use `skipAutoRegister: true` for manual registration control. ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
 
 ## [0.1.0]
 
