@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2]
+
 ### Changed
 
 - Add Metro bundler configuration with Node.js module shims to support APK bundling ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
 - Enable `unstable_transformImportMeta` in Babel config for `import.meta` support in dependencies ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
 - Set explicit Android package identifier for APK builds ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
 - Add `dotenv` and `readable-stream` as dev dependencies for Metro config ([#182](https://github.com/MetaMask/connect-monorepo/pull/182))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.5.0
+  - @metamask/connect-multichain@0.6.0
 
 ### Fixed
 
@@ -35,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.2...HEAD
+[0.1.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.1...@metamask/react-native-playground@0.1.2
 [0.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.0...@metamask/react-native-playground@0.1.1
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/react-native-playground@0.1.0
