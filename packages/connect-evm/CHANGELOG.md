@@ -9,12 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0]
 
-### Uncategorized
-
-- chore: update READMEs after singleton changes ([#184](https://github.com/MetaMask/connect-monorepo/pull/184))
-- chore: add API documentation ([#146](https://github.com/MetaMask/connect-monorepo/pull/146))
-- build: re-introduce lint step to ci workflow ([#145](https://github.com/MetaMask/connect-monorepo/pull/145))
-
 ### Changed
 
 - **BREAKING** Standardize `chainId` to use `Hex` format throughout the public API ([#150](https://github.com/MetaMask/connect-monorepo/pull/150))
