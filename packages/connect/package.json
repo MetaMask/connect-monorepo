@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Easily connect to MetaMask and its ecosystem from any application and platform",
   "keywords": [
     "MetaMask",

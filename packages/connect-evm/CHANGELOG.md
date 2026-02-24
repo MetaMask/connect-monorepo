@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0]
+
 ### Uncategorized
 
 - chore: update READMEs after singleton changes ([#184](https://github.com/MetaMask/connect-monorepo/pull/184))
@@ -123,7 +125,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.5.0...HEAD
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.1...@metamask/connect-evm@0.5.0
 [0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.0...@metamask/connect-evm@0.4.1
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.3.1...@metamask/connect-evm@0.4.0
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.3.0...@metamask/connect-evm@0.3.1

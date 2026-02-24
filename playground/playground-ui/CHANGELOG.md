@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- feat: Add solana test-id to browser playground. Patch solana react package for android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
-
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications
