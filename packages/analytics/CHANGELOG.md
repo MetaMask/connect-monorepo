@@ -7,14 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0]
-
-### Uncategorized
-
-- build: re-introduce lint step to ci workflow ([#145](https://github.com/MetaMask/connect-monorepo/pull/145))
-- chore: fix package consistency across monorepo ([#94](https://github.com/MetaMask/connect-monorepo/pull/94))
-- fix: changelog repo url ([#78](https://github.com/MetaMask/connect-monorepo/pull/78))
-
 ## [0.2.0]
 
 ### Added
