@@ -18,7 +18,7 @@ export const wagmiConfig = createConfig({
     metaMask({
       dapp: {
         name: 'react-native-playground',
-        url: 'https://playground.metamask.io', // verify if protocol is required
+        url: 'https://playground.metamask.io',
       },
       // React Native: use Linking.openURL for deeplinks instead of window.location.href
       mobile: {

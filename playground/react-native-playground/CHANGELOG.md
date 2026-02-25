@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix malformed reported dapp URL causing issues in the wallet ([#187](https://github.com/MetaMask/connect-monorepo/pull/187))
+
 ## [0.1.2]
 
 ### Changed
