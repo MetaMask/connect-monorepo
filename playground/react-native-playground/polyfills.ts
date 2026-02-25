@@ -27,14 +27,6 @@ if (typeof global !== 'undefined' && global.window) {
   windowObj = {};
 }
 
-// Ensure location object exists
-if (!windowObj.location) {
-  windowObj.location = {
-    hostname: 'react-native-playground',
-    href: 'react-native-playground://',
-  };
-}
-
 // Ensure addEventListener exists (even if window already exists, it might not have this method)
 if (typeof windowObj.addEventListener !== 'function') {
   windowObj.addEventListener = (event: string, listener: EventListener) => {
