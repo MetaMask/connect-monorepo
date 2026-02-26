@@ -182,6 +182,134 @@ t.describe('MWPTransport', () => {
       },
     );
 
+    t.it(
+      'should handle standard JSON-RPC error codes outside EIP-1193 provider range',
+      async () => {
+        return new Promise<void>((resolve) => {
+          const mockResolve = t.vi.fn();
+          const mockReject = t.vi.fn();
+          const mockTimeout = setTimeout(() => {}, 60000) as any;
+
+          const requestId = 'test-request-jsonrpc';
+          transport.pendingRequests.set(requestId, {
+            resolve: mockResolve,
+            reject: mockReject,
+            timeout: mockTimeout,
+          } as any);
+
+          const errorMessage = {
+            data: {
+              id: requestId,
+              error: {
+                code: -32603,
+                message: 'Internal error',
+              },
+            },
+          };
+
+          const messageHandler = mockDappClient.on.mock.calls.find(
+            (call: any[]) => call[0] === 'message',
+          )?.[1];
+
+          messageHandler?.(errorMessage);
+
+          t.expect(mockReject).toHaveBeenCalled();
+          const rejectedError = mockReject.mock.calls[0][0];
+          t.expect(rejectedError.code).toBe(-32603);
+          t.expect(rejectedError.message).toBe('Internal error');
+          t.expect(mockResolve).not.toHaveBeenCalled();
+          t.expect(transport.pendingRequests.has(requestId)).toBe(false);
+
+          clearTimeout(mockTimeout);
+          resolve();
+        });
+      },
+    );
+
+    t.it(
+      'should handle JSON-RPC invalid params error code (-32602)',
+      async () => {
+        return new Promise<void>((resolve) => {
+          const mockResolve = t.vi.fn();
+          const mockReject = t.vi.fn();
+          const mockTimeout = setTimeout(() => {}, 60000) as any;
+
+          const requestId = 'test-request-invalid-params';
+          transport.pendingRequests.set(requestId, {
+            resolve: mockResolve,
+            reject: mockReject,
+            timeout: mockTimeout,
+          } as any);
+
+          const errorMessage = {
+            data: {
+              id: requestId,
+              error: {
+                code: -32602,
+                message: 'Invalid params',
+              },
+            },
+          };
+
+          const messageHandler = mockDappClient.on.mock.calls.find(
+            (call: any[]) => call[0] === 'message',
+          )?.[1];
+
+          messageHandler?.(errorMessage);
+
+          t.expect(mockReject).toHaveBeenCalled();
+          const rejectedError = mockReject.mock.calls[0][0];
+          t.expect(rejectedError.code).toBe(-32602);
+          t.expect(rejectedError.message).toBe('Invalid params');
+
+          clearTimeout(mockTimeout);
+          resolve();
+        });
+      },
+    );
+
+    t.it(
+      'should handle error codes outside both JSON-RPC and provider ranges',
+      async () => {
+        return new Promise<void>((resolve) => {
+          const mockResolve = t.vi.fn();
+          const mockReject = t.vi.fn();
+          const mockTimeout = setTimeout(() => {}, 60000) as any;
+
+          const requestId = 'test-request-other-code';
+          transport.pendingRequests.set(requestId, {
+            resolve: mockResolve,
+            reject: mockReject,
+            timeout: mockTimeout,
+          } as any);
+
+          const errorMessage = {
+            data: {
+              id: requestId,
+              error: {
+                code: 500,
+                message: 'Server error',
+              },
+            },
+          };
+
+          const messageHandler = mockDappClient.on.mock.calls.find(
+            (call: any[]) => call[0] === 'message',
+          )?.[1];
+
+          messageHandler?.(errorMessage);
+
+          t.expect(mockReject).toHaveBeenCalled();
+          const rejectedError = mockReject.mock.calls[0][0];
+          t.expect(rejectedError.code).toBe(500);
+          t.expect(rejectedError.message).toBe('Server error');
+
+          clearTimeout(mockTimeout);
+          resolve();
+        });
+      },
+    );
+
     t.it('should preserve custom error codes from wallet', async () => {
       return new Promise<void>((resolve) => {
         const mockResolve = t.vi.fn();
