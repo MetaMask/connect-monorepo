@@ -31,7 +31,7 @@ if (typeof global !== 'undefined' && global.window) {
 if (!windowObj.location) {
   windowObj.location = {
     hostname: 'react-native-playground',
-    href: 'react-native-playground://',
+    href: 'https://playground.metamask.io',
   };
 }
 
