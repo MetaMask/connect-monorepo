@@ -15,7 +15,9 @@ export const wagmiConfig = createConfig({
   connectors: [
     metaMask({
       dapp: {
+        // eslint-disable-next-line no-restricted-globals
         name: window.location.hostname,
+        // eslint-disable-next-line no-restricted-globals
         url: window.location.href,
       },
       // React Native: use Linking.openURL for deeplinks instead of window.location.href
