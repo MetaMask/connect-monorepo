@@ -263,6 +263,92 @@ t.describe('Utils', () => {
         );
       },
     );
+
+    t.it(
+      'should normalize non-http URL to https on ReactNative platform',
+      () => {
+        const mockGetPlatformType = t.vi.mocked(getPlatformType);
+        mockGetPlatformType.mockReturnValue(PlatformType.ReactNative);
+        options.dapp.url = 'react-native-playground://';
+        options.dapp.name = 'playground';
+
+        const result = utils.setupDappMetadata(options);
+
+        t.expect(result.dapp.url).toBe(
+          'https://react-native-playground.rn.dapp.local',
+        );
+        t.expect(result.dapp.nativeScheme).toBe('react-native-playground://');
+      },
+    );
+
+    t.it(
+      'should normalize custom scheme URL with path on ReactNative platform',
+      () => {
+        const mockGetPlatformType = t.vi.mocked(getPlatformType);
+        mockGetPlatformType.mockReturnValue(PlatformType.ReactNative);
+        options.dapp.url = 'myapp://path';
+        options.dapp.name = 'myapp';
+
+        const result = utils.setupDappMetadata(options);
+
+        t.expect(result.dapp.url).toBe('https://myapp.rn.dapp.local');
+        t.expect(result.dapp.nativeScheme).toBe('myapp://path');
+      },
+    );
+
+    t.it(
+      'should sanitize scheme with dots and uppercase on ReactNative platform',
+      () => {
+        const mockGetPlatformType = t.vi.mocked(getPlatformType);
+        mockGetPlatformType.mockReturnValue(PlatformType.ReactNative);
+        options.dapp.url = 'My.App://';
+        options.dapp.name = 'myapp';
+
+        const result = utils.setupDappMetadata(options);
+
+        t.expect(result.dapp.url).toBe('https://my-app.rn.dapp.local');
+        t.expect(result.dapp.nativeScheme).toBe('My.App://');
+      },
+    );
+
+    t.it(
+      'should use "unknown" subdomain when scheme sanitizes to empty string on ReactNative platform',
+      () => {
+        const mockGetPlatformType = t.vi.mocked(getPlatformType);
+        mockGetPlatformType.mockReturnValue(PlatformType.ReactNative);
+        options.dapp.url = '://';
+        options.dapp.name = 'test';
+
+        const result = utils.setupDappMetadata(options);
+
+        t.expect(result.dapp.url).toBe('https://unknown.rn.dapp.local');
+        t.expect(result.dapp.nativeScheme).toBe('://');
+      },
+    );
+
+    t.it('should not normalize http(s) URLs on ReactNative platform', () => {
+      const mockGetPlatformType = t.vi.mocked(getPlatformType);
+      mockGetPlatformType.mockReturnValue(PlatformType.ReactNative);
+      options.dapp.url = 'https://example.com';
+      options.dapp.name = 'test';
+
+      const result = utils.setupDappMetadata(options);
+
+      t.expect(result.dapp.url).toBe('https://example.com');
+      t.expect(result.dapp.nativeScheme).toBeUndefined();
+    });
+
+    t.it('should not normalize URLs on non-ReactNative platforms', () => {
+      const mockGetPlatformType = t.vi.mocked(getPlatformType);
+      mockGetPlatformType.mockReturnValue(PlatformType.NonBrowser);
+      options.dapp.url = 'custom-scheme://';
+      options.dapp.name = 'test';
+
+      const result = utils.setupDappMetadata(options);
+
+      t.expect(result.dapp.url).toBe('custom-scheme://');
+      t.expect(result.dapp.nativeScheme).toBeUndefined();
+    });
   });
 
   t.describe('isSameScopesAndAccounts', () => {

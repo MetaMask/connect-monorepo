@@ -205,6 +205,40 @@ export const extractFavicon = () => {
 };
 
 /**
+ * Normalizes a non-http(s) URL from a React Native app into a valid https URL.
+ * Extracts the scheme, sanitizes it to a DNS-safe label, and builds a .rn.dapp.local URL.
+ *
+ * @param url - The original URL to normalize
+ * @returns An object with the normalized URL and original scheme, or undefined if no normalization needed
+ */
+function normalizeNativeUrl(
+  url: string,
+): { url: string; nativeScheme: string } | undefined {
+  // Matches "http://" or "https://"
+  const httpPattern = /^https?:\/\//u;
+  if (httpPattern.test(url)) {
+    return undefined;
+  }
+
+  // Captures the scheme before "://" — e.g. "myapp" from "myapp://path"
+  const schemeMatch = url.match(/^([^:]*):\/\//u);
+  const rawScheme = schemeMatch?.[1] ?? '';
+  const sanitized = rawScheme
+    .toLowerCase()
+    // Replace non-DNS chars with hyphens — e.g. "My.App" -> "my-app"
+    .replace(/[^a-z0-9-]/gu, '-')
+    // Strip leading/trailing hyphens — e.g. "-my-app-" -> "my-app"
+    .replace(/^-+|-+$/gu, '');
+
+  const subdomain = (sanitized || 'unknown').slice(0, 63).replace(/-+$/u, '');
+
+  return {
+    url: `https://${subdomain}.rn.dapp.local`,
+    nativeScheme: url,
+  };
+}
+
+/**
  *
  * @param options
  */
@@ -229,6 +263,22 @@ export function setupDappMetadata(
   if (!options.dapp?.url) {
     throw new Error('You must provide dapp url');
   }
+
+  // Normalize non-http(s) URLs on React Native platforms
+  if (platform === PlatformType.ReactNative && options.dapp.url) {
+    const normalized = normalizeNativeUrl(options.dapp.url);
+    if (normalized) {
+      console.info(
+        `Normalizing dapp URL for React Native: "${options.dapp.url}" -> "${normalized.url}"`,
+      );
+      options.dapp = {
+        ...options.dapp,
+        url: normalized.url,
+        nativeScheme: normalized.nativeScheme,
+      };
+    }
+  }
+
   const BASE_64_ICON_MAX_LENGTH = 163400;
   // Check if iconUrl and url are valid
   const urlPattern = /^(http|https):\/\/[^\s]*$/u; // Regular expression for URLs starting with http:// or https://
