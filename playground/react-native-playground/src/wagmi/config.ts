@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-globals -- React Native polyfills window */
-/* eslint-disable no-negated-condition -- Clearer pattern for undefined checks */
 /* eslint-disable import-x/no-unassigned-import -- Polyfill import */
 
 // Ensure polyfills are loaded first (especially window.addEventListener)
