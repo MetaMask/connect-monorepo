@@ -25,7 +25,7 @@ import {
   type TransportResponse,
   TransportTimeoutError,
 } from '@metamask/multichain-api-client';
-import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import { JsonRpcError, providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
 
 import {
@@ -192,10 +192,13 @@ export class MWPTransport implements ExtendedTransport {
       typeof errorData.code === 'number' &&
       typeof errorData.message === 'string'
     ) {
-      return providerErrors.custom({
-        code: errorData.code,
-        message: errorData.message,
-      });
+      const { code, message } = errorData;
+
+      if (code >= 1000 && code <= 4999) {
+        return providerErrors.custom({ code, message });
+      }
+
+      return new JsonRpcError(code, message);
     }
 
     const message =
