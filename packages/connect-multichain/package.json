@@ -82,7 +82,7 @@
     "bowser": "^2.11.0",
     "buffer": "^6.0.3",
     "cross-fetch": "^4.1.0",
-    "eciesjs": "^0.4.15",
+    "eciesjs": "0.4.17",
     "eventemitter3": "^5.0.1",
     "pako": "^2.1.0",
     "uuid": "^11.1.0",
