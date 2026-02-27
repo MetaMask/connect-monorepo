@@ -148,6 +148,19 @@ See [scripts/README.md](./scripts/README.md) for detailed polyfill documentation
 | ---------------------------- | ----------------------------- |
 | `EXPO_PUBLIC_INFURA_API_KEY` | Infura API key for RPC access |
 
+### CI Secrets (GitHub Actions)
+
+The following secrets must be configured in the connect-monorepo repository
+settings for the APK CI build workflow:
+
+| Secret           | Required | Description                                      |
+| ---------------- | -------- | ------------------------------------------------ |
+| `INFURA_API_KEY` | Yes      | Infura API key baked into the APK for RPC access |
+
+The APK is signed with the Expo-generated debug keystore, which is sufficient
+for a test dApp. If a dedicated release keystore is needed in the future,
+additional signing config can be added to the workflow.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -169,17 +182,100 @@ See [scripts/README.md](./scripts/README.md) for detailed polyfill documentation
 
 ## Building for Production
 
+### Android Release APK
+
+The release APK is built automatically on every connect-monorepo release via
+the `build-rn-playground-apk` GitHub Actions workflow and attached to the
+GitHub Release as `rn-playground-<version>.apk`.
+
+**CI workflow** (`.github/workflows/build-rn-playground-apk.yml`):
+
+- Triggered automatically as part of `publish-release.yml`
+- Can also be triggered manually via `workflow_dispatch`
+- Builds the APK using Expo prebuild + Gradle
+- Uploads as a GitHub Release asset (on release) and as a workflow artifact
+
+**Manual build:**
+
+```bash
+# From the monorepo root (after yarn install && yarn build)
+cd playground/react-native-playground
+npx expo prebuild --platform android --clean
+cd android && ./gradlew assembleRelease
+```
+
+The output APK will be at:
+
+```
+android/app/build/outputs/apk/release/app-release.apk
+```
+
+**Fetching from downstream repos** (e.g., metamask-mobile):
+
+```bash
+# Fetch the latest release APK
+curl -fsSL -H "Authorization: token $GITHUB_TOKEN" \
+  "https://api.github.com/repos/MetaMask/connect-monorepo/releases/latest" \
+  | jq -r '.assets[] | select(.name | startswith("rn-playground-")) | .browser_download_url' \
+  | xargs curl -fsSL -o rn-playground.apk
+```
+
 ### iOS
+
+iOS builds are currently out of scope for CI automation.
 
 ```bash
 expo build:ios
 ```
 
-### Android
+## BrowserStack Integration for E2E Tests
 
-```bash
-expo build:android
-```
+The playground APK is used by the metamask-mobile Appwright E2E tests on
+BrowserStack. Three upload approaches were evaluated:
+
+| Approach                      | Description                                                                                     | Recommendation |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- | -------------- |
+| Upload in connect-monorepo CI | Release pipeline uploads APK to BrowserStack; stores `bs://` URL as a release artifact          | Not recommended |
+| Upload in metamask-mobile CI  | metamask-mobile downloads APK from GitHub Releases, uploads to BrowserStack before tests        | **Recommended** |
+| Hybrid                        | connect-monorepo publishes to GitHub Releases; metamask-mobile fetches, uploads, caches `bs://` | Acceptable     |
+
+### Recommended approach: Upload in metamask-mobile CI
+
+**Rationale:**
+
+1. **Credential scoping** — BrowserStack credentials (`BROWSERSTACK_USERNAME`,
+   `BROWSERSTACK_ACCESS_KEY`) remain scoped to the metamask-mobile repo where
+   they are already configured and used for all other BrowserStack uploads.
+   Adding them to connect-monorepo would expand the secret surface area.
+
+2. **Consistency** — The existing metamask-mobile pattern (build/download APK →
+   upload to BrowserStack → run tests) already works for the MetaMask wallet
+   APK via Bitrise. The playground APK follows the same pattern, just with
+   GitHub Releases as the source instead of Bitrise.
+
+3. **Freshness control** — BrowserStack apps expire after 30 days of inactivity.
+   Uploading per-test-run guarantees the APK is always available regardless of
+   connect-monorepo release cadence.
+
+4. **Version pinning** — metamask-mobile controls which playground version to
+   test via `RN_PLAYGROUND_APK_VERSION` (env var or repo variable), enabling
+   independent version management.
+
+### Implementation
+
+The `run-performance-e2e.yml` workflow in metamask-mobile includes a
+`fetch-rn-playground-apk` job that:
+
+1. Downloads the playground APK from connect-monorepo GitHub Releases using
+   `scripts/fetch-rn-playground-apk.sh`
+2. Uploads it to BrowserStack via the App Automate REST API
+3. Passes the resulting `bs://` URL to mm-connect test jobs via the
+   `browserstack_playground_url` input
+
+The Appwright BrowserStack provider (via the yarn patch in metamask-mobile)
+reads `BROWSERSTACK_RN_PLAYGROUND_URL` from the environment and passes it as
+`otherApps` in `bstack:options`, telling BrowserStack to pre-install the
+playground APK alongside the MetaMask wallet on the test device.
 
 ## Contributing
 
