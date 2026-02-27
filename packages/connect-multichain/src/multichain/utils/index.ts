@@ -222,7 +222,7 @@ function normalizeNativeUrl(
 
   // Captures the scheme before "://" — e.g. "myapp" from "myapp://path"
   const schemeMatch = url.match(/^([^:]*):\/\//u);
-  const rawScheme = schemeMatch?.[1] ?? '';
+  const rawScheme = schemeMatch?.[1] ?? url;
   const sanitized = rawScheme
     .toLowerCase()
     // Replace non-DNS chars with hyphens — e.g. "My.App" -> "my-app"
