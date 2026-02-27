@@ -428,7 +428,11 @@ export class MWPTransport implements ExtendedTransport {
 
     const session = await this.getActiveSession();
     if (session) {
-      logger('active session found', session);
+      logger('active session found', {
+        id: session.id,
+        channel: session.channel,
+        expiresAt: session.expiresAt,
+      });
     }
 
     const storedSessionRequestBeforeConnectionAttempt =

@@ -697,7 +697,9 @@ export class MetamaskConnectEVM {
     method: string;
     params: unknown[];
   }): Promise<unknown> {
-    logger('direct request to metamask-provider called', request);
+    logger('direct request to metamask-provider called', {
+      method: request.method,
+    });
     const result = this.#core.transport.sendEip1193Message(request);
     if (
       request.method === 'wallet_addEthereumChain' ||
@@ -725,7 +727,9 @@ export class MetamaskConnectEVM {
   }
 
   async #onSessionChanged(session?: SessionData): Promise<void> {
-    logger('event: wallet_sessionChanged', session);
+    logger('event: wallet_sessionChanged', {
+      scopes: Object.keys(session?.sessionScopes ?? {}),
+    });
     this.#sessionScopes = session?.sessionScopes ?? {};
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
     if (hexPermittedChainIds.length === 0) {

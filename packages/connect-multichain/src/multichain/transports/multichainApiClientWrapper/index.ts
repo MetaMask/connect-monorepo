@@ -112,7 +112,6 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   async #walletCreateSession(request: TransportRequestWithId) {
-    console.log('📚 #walletCreateSession', request);
     const createSessionParams = request.params as CreateSessionParams<RPCAPI>;
     const scopes = Object.keys({
       ...createSessionParams.optionalScopes,
