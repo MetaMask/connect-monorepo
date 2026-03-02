@@ -233,11 +233,11 @@ expo build:ios
 The playground APK is used by the metamask-mobile Appwright E2E tests on
 BrowserStack. Three upload approaches were evaluated:
 
-| Approach                      | Description                                                                                     | Recommendation |
-| ----------------------------- | ----------------------------------------------------------------------------------------------- | -------------- |
+| Approach                      | Description                                                                                     | Recommendation  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- | --------------- |
 | Upload in connect-monorepo CI | Release pipeline uploads APK to BrowserStack; stores `bs://` URL as a release artifact          | Not recommended |
 | Upload in metamask-mobile CI  | metamask-mobile downloads APK from GitHub Releases, uploads to BrowserStack before tests        | **Recommended** |
-| Hybrid                        | connect-monorepo publishes to GitHub Releases; metamask-mobile fetches, uploads, caches `bs://` | Acceptable     |
+| Hybrid                        | connect-monorepo publishes to GitHub Releases; metamask-mobile fetches, uploads, caches `bs://` | Acceptable      |
 
 ### Recommended approach: Upload in metamask-mobile CI
 
