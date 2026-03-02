@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Explicitly disconnect Solana scopes ([#193](https://github.com/MetaMask/connect-monorepo/pull/193))
+- Explicitly disconnect only Solana scopes when calling `SolanaClient.disconnect()`. Previously calling this function would result in the wallet connection being terminated entirely even if other ecosystems (evm, bitcoin, etc) were still connected  ([#193](https://github.com/MetaMask/connect-monorepo/pull/193))
 
 ## [0.2.0]
 
