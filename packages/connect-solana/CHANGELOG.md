@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Explicitly disconnect Solana scopes ([#193](https://github.com/MetaMask/connect-monorepo/pull/193))
+
 ## [0.2.0]
 
 ### Added
