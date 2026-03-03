@@ -28,7 +28,6 @@
 All code in this repo should not only follow the [MetaMask contributor guidelines](https://github.com/MetaMask/contributor-docs) but also the guidelines contained in this repo:
 
 - [Package guidelines](./package-guidelines.md)
-- [Controller guidelines](./controller-guidelines.md)
 
 ## Writing and running tests
 
