@@ -37,7 +37,7 @@ const client = await createEVMClient({
 // Connect to MetaMask
 let accounts, chainId;
 try {
-  ({ accounts, chainId } = await client.connect({ chainIds: [1] }));
+  ({ accounts, chainId } = await client.connect({ chainIds: ['0x1'] }));
 } catch (error) {
   if (error.code === 4001) {
     console.log('User rejected the connection request');
@@ -72,13 +72,18 @@ const client = await createMultichainClient({
   api: {
     supportedNetworks: {
       'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
-      'solana:mainnet': 'https://api.mainnet-beta.solana.com',
+      // Solana mainnet CAIP-2 ID (first 32 chars of Base58-encoded genesis hash)
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+        'https://api.mainnet-beta.solana.com',
     },
   },
 });
 
 // Connect with multiple chain scopes
-await client.connect(['eip155:1', 'solana:mainnet'], []);
+await client.connect(
+  ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+  [],
+);
 
 // Invoke methods on specific chains
 const result = await client.invokeMethod({
