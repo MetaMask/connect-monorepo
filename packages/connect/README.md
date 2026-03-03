@@ -73,13 +73,17 @@ const client = await createMultichainClient({
     supportedNetworks: {
       'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
       // Solana mainnet CAIP-2 ID (first 32 chars of Base58-encoded genesis hash)
-      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'https://api.mainnet-beta.solana.com',
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+        'https://api.mainnet-beta.solana.com',
     },
   },
 });
 
 // Connect with multiple chain scopes
-await client.connect(['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'], []);
+await client.connect(
+  ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+  [],
+);
 
 // Invoke methods on specific chains
 const result = await client.invokeMethod({

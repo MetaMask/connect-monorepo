@@ -94,14 +94,14 @@ Creates a new Solana client instance. By default, the wallet is automatically re
 
 #### Parameters
 
-| Option                  | Type                      | Required | Description                                                            |
-| ----------------------- | ------------------------- | -------- | ---------------------------------------------------------------------- |
-| `dapp.name`             | `string`                  | Yes      | Name of your dApp                                                      |
-| `dapp.url`              | `string`                  | No       | URL of your dApp                                                       |
-| `dapp.iconUrl`          | `string`                  | No       | Icon URL for your dApp                                                 |
-| `api.supportedNetworks` | `SolanaSupportedNetworks` | No       | Map of network names (`mainnet`, `devnet`, `testnet`) to RPC URLs      |
+| Option                  | Type                      | Required | Description                                                               |
+| ----------------------- | ------------------------- | -------- | ------------------------------------------------------------------------- |
+| `dapp.name`             | `string`                  | Yes      | Name of your dApp                                                         |
+| `dapp.url`              | `string`                  | No       | URL of your dApp                                                          |
+| `dapp.iconUrl`          | `string`                  | No       | Icon URL for your dApp                                                    |
+| `api.supportedNetworks` | `SolanaSupportedNetworks` | No       | Map of network names (`mainnet`, `devnet`, `testnet`) to RPC URLs         |
 | `debug`                 | `boolean`                 | No       | Reserved for future use; not currently forwarded to the underlying client |
-| `skipAutoRegister`      | `boolean`                 | No       | Skip auto-registering the wallet during creation (defaults to `false`) |
+| `skipAutoRegister`      | `boolean`                 | No       | Skip auto-registering the wallet during creation (defaults to `false`)    |
 
 #### Returns
 

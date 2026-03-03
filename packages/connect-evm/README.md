@@ -216,11 +216,11 @@ Connects to MetaMask wallet.
 
 **Parameters**
 
-| Name                   | Type      | Required | Description                                                                              |
-| ---------------------- | --------- | -------- | ---------------------------------------------------------------------------------------- |
+| Name                   | Type      | Required | Description                                                                                                                                                                              |
+| ---------------------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options.chainIds`     | `Hex[]`   | No       | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided). Note: Ethereum mainnet (`0x1`) is always included in the request regardless of what is passed. |
-| `options.account`      | `string`  | No       | Specific account address to connect                                                      |
-| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                 |
+| `options.account`      | `string`  | No       | Specific account address to connect                                                                                                                                                      |
+| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                                                                                                                 |
 
 **Returns**
 
