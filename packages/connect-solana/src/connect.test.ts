@@ -163,12 +163,16 @@ describe('createSolanaClient', () => {
     });
 
     describe('disconnect', () => {
-      it('should disconnect using core.disconnect', async () => {
+      it('should disconnect only Solana scopes', async () => {
         const client = await createSolanaClient(mockOptions);
 
         await client.disconnect();
 
-        expect(mockCore.disconnect).toHaveBeenCalled();
+        expect(mockCore.disconnect).toHaveBeenCalledWith([
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+          'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+          'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z',
+        ]);
       });
     });
   });
