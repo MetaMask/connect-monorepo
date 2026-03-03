@@ -82,6 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       RELEASE_VERSION: ${{ steps.get-release-version.outputs.RELEASE_VERSION }}
+      RELEASE_TAG: ${{ steps.get-release-version.outputs.RELEASE_TAG }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -91,13 +92,14 @@ jobs:
         shell: bash
         run: |
           # Get version from the latest git tag created by the release action
-          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -z "$VERSION" ]; then
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$TAG" ]; then
             # Fallback to package.json version if no tag found
-            VERSION=$(node -p "require('./package.json').version")
+            TAG="v$(node -p "require('./package.json').version")"
           fi
-          # Remove 'v' prefix if present
-          VERSION=${VERSION#v}
+          echo "RELEASE_TAG=$TAG" >> "$GITHUB_OUTPUT"
+          # Remove 'v' prefix for the version output
+          VERSION=${TAG#v}
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
   publish-wagmi-to-gh-pages:
@@ -151,7 +153,7 @@ jobs:
       contents: write
     uses: ./.github/workflows/build-rn-playground-apk.yml
     with:
-      release_version: ${{ needs.get-release-version.outputs.RELEASE_VERSION }}
+      release_tag: ${{ needs.get-release-version.outputs.RELEASE_TAG }}
       upload_to_release: true
     secrets:
       INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}

@@ -3,8 +3,8 @@ name: Build React Native Playground APK
 on:
   workflow_call:
     inputs:
-      release_version:
-        description: 'Release version to use for APK naming and release asset upload (e.g., "17.0.0")'
+      release_tag:
+        description: 'Git tag of the GitHub Release to attach the APK to (e.g., "v17.0.0")'
         required: false
         type: string
       upload_to_release:
@@ -17,8 +17,8 @@ on:
         required: false
   workflow_dispatch:
     inputs:
-      release_version:
-        description: 'Version label for the APK (leave empty to use package.json version)'
+      release_tag:
+        description: 'Git tag to attach the APK to (leave empty to skip release upload)'
         required: false
         type: string
 
@@ -33,16 +33,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 0
 
       - name: Determine APK version
         id: version
         run: |
-          if [ -n "${{ inputs.release_version }}" ]; then
-            VERSION="${{ inputs.release_version }}"
-          else
-            VERSION=$(node -p "require('./playground/react-native-playground/package.json').version")
-          fi
+          VERSION=$(node -p "require('./playground/react-native-playground/package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "APK version: $VERSION"
 
@@ -91,8 +86,6 @@ jobs:
           if [ -n "$INFURA_KEY" ]; then
             echo "EXPO_PUBLIC_INFURA_API_KEY=$INFURA_KEY" > .env
             echo "Infura API key configured from secret"
-          elif [ -f .env ]; then
-            echo "Using existing .env file"
           else
             cp .env.example .env
             echo "Warning: No INFURA_API_KEY secret set; using empty .env"
@@ -131,15 +124,14 @@ jobs:
           retention-days: 90
 
       - name: Upload APK to GitHub Release
-        if: inputs.upload_to_release == true && inputs.release_version != ''
+        if: inputs.upload_to_release == true && inputs.release_tag != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v${{ inputs.release_version }}")
-          echo "Uploading ${{ steps.apk.outputs.apk_name }} to release $TAG..."
+          echo "Uploading ${{ steps.apk.outputs.apk_name }} to release ${{ inputs.release_tag }}..."
 
-          gh release upload "$TAG" \
+          gh release upload "${{ inputs.release_tag }}" \
             "${{ steps.apk.outputs.apk_name }}" \
             --clobber
 
-          echo "APK uploaded to release $TAG"
+          echo "APK uploaded to release ${{ inputs.release_tag }}"
