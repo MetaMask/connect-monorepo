@@ -8,7 +8,7 @@
 
 - **Wallet Standard Compatible** - Automatically registers MetaMask with the wallet-standard registry
 - **Seamless Integration** - Works with `@solana/wallet-adapter-react` out of the box
-- **Session Management** - Handles session creation and revocation internally
+- **Session Management** - Handles session creation internally; disconnect revokes only Solana scopes
 - **Cross-Platform Support** - Works with browser extensions and mobile applications
 
 ## Installation
@@ -29,16 +29,13 @@ npm install @metamask/connect-solana
 import { createSolanaClient } from '@metamask/connect-solana';
 
 // Create a Solana client
+// MetaMask is automatically registered with the wallet-standard registry on creation
 const client = await createSolanaClient({
   dapp: {
     name: 'My Solana DApp',
     url: 'https://mydapp.com',
   },
 });
-
-// Register MetaMask with the wallet-standard registry
-// This makes MetaMask automatically discoverable by Solana dapps
-await client.registerWallet();
 ```
 
 ## Usage with Solana Wallet Adapter
@@ -61,14 +58,12 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 
 function App() {
   useEffect(() => {
-    // Register MetaMask wallet on app initialization
+    // MetaMask is automatically registered with the wallet-standard registry on creation
     createSolanaClient({
       dapp: {
         name: 'My Solana DApp',
         url: window.location.origin,
       },
-    }).then((client) => {
-      client.registerWallet();
     });
   }, []);
 
@@ -105,7 +100,7 @@ Creates a new Solana client instance. By default, the wallet is automatically re
 | `dapp.url`              | `string`                  | No       | URL of your dApp                                                       |
 | `dapp.iconUrl`          | `string`                  | No       | Icon URL for your dApp                                                 |
 | `api.supportedNetworks` | `SolanaSupportedNetworks` | No       | Map of network names (`mainnet`, `devnet`, `testnet`) to RPC URLs      |
-| `debug`                 | `boolean`                 | No       | Enable debug logging                                                   |
+| `debug`                 | `boolean`                 | No       | Reserved for future use; not currently forwarded to the underlying client |
 | `skipAutoRegister`      | `boolean`                 | No       | Skip auto-registering the wallet during creation (defaults to `false`) |
 
 #### Returns
@@ -144,7 +139,7 @@ Registers the MetaMask wallet with the wallet-standard registry. This is a no-op
 
 ##### `disconnect()`
 
-Disconnects from the wallet and revokes the session.
+Disconnects all Solana scopes from MetaMask. This only revokes the Solana-specific scopes (`mainnet`, `devnet`, `testnet`); it does not terminate the broader multichain session.
 
 **Returns**
 
