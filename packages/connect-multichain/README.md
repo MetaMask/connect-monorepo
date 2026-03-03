@@ -134,12 +134,14 @@ This package is written in TypeScript and includes full type definitions. No add
 
 Factory function to create a new Multichain SDK instance.
 
+> **Singleton:** `createMultichainClient` returns a single shared instance per global context. Calling it a second time with different options will merge the new `api.supportedNetworks`, `ui.*`, `mobile.*`, `transport.extensionId`, and `debug` values into the existing instance rather than creating a new one. The `dapp` value is never overwritten on subsequent calls.
+
 #### Parameters
 
 | Option                      | Type                                          | Required | Description                                    |
 | --------------------------- | --------------------------------------------- | -------- | ---------------------------------------------- |
 | `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                              |
-| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of CAIP chain IDs to RPC URLs              |
+| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of [CAIP-2 chain IDs](https://chainagnostic.org/CAIPs/caip-2) to RPC URLs              |
 | `dapp.url`                  | `string`                                      | No       | URL of your dApp                               |
 | `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                         |
 | `dapp.base64Icon`           | `string`                                      | No       | Base64-encoded icon (alternative to iconUrl)   |
@@ -347,7 +349,7 @@ Generates Infura RPC URLs for common networks keyed by CAIP Chain ID.
 
 **Returns**
 
-A map of hex chain IDs to Infura RPC URLs. See https://docs.metamask.io/services
+A map of [CAIP-2 chain IDs](https://chainagnostic.org/CAIPs/caip-2) to Infura RPC URLs. See https://docs.metamask.io/services
 
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
