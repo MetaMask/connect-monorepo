@@ -83,6 +83,7 @@ jobs:
     outputs:
       RELEASE_VERSION: ${{ steps.get-release-version.outputs.RELEASE_VERSION }}
       RELEASE_TAG: ${{ steps.get-release-version.outputs.RELEASE_TAG }}
+      RN_PLAYGROUND_RELEASED: ${{ steps.check-rn-playground.outputs.RELEASED }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -101,6 +102,20 @@ jobs:
           # Remove 'v' prefix for the version output
           VERSION=${TAG#v}
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+      - id: check-rn-playground
+        shell: bash
+        run: |
+          PKG_NAME=$(node -p "require('./playground/react-native-playground/package.json').name")
+          PKG_VERSION=$(node -p "require('./playground/react-native-playground/package.json').version")
+          PLAYGROUND_TAG="${PKG_NAME}@${PKG_VERSION}"
+
+          if git rev-parse "refs/tags/$PLAYGROUND_TAG" >/dev/null 2>&1; then
+            echo "RELEASED=true" >> "$GITHUB_OUTPUT"
+            echo "Tag $PLAYGROUND_TAG exists — RN playground is part of this release"
+          else
+            echo "RELEASED=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $PLAYGROUND_TAG not found — RN playground was not released"
+          fi
 
   publish-wagmi-to-gh-pages:
     name: Publish Wagmi Integration to `${{ needs.get-release-version.outputs.RELEASE_VERSION }}` directory of `gh-pages` branch
@@ -149,6 +164,7 @@ jobs:
   build-rn-playground-apk:
     name: Build and publish RN Playground APK
     needs: get-release-version
+    if: needs.get-release-version.outputs.RN_PLAYGROUND_RELEASED == 'true'
     permissions:
       contents: write
     uses: ./.github/workflows/build-rn-playground-apk.yml
