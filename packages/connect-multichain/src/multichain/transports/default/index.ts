@@ -262,21 +262,21 @@ export class DefaultTransport implements ExtendedTransport {
       return;
     }
 
-    this.#notificationCallbacks.clear();
+    // this.#notificationCallbacks.clear();
 
-    // Remove the message listener when disconnecting
-    if (this.#handleResponseListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleResponseListener);
-      this.#handleResponseListener = undefined;
-    }
+    // // Remove the message listener when disconnecting
+    // if (this.#handleResponseListener) {
+    //   // eslint-disable-next-line no-restricted-globals
+    //   window.removeEventListener('message', this.#handleResponseListener);
+    //   this.#handleResponseListener = undefined;
+    // }
 
-    // Remove the notification listener when disconnecting
-    if (this.#handleNotificationListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleNotificationListener);
-      this.#handleNotificationListener = undefined;
-    }
+    // // Remove the notification listener when disconnecting
+    // if (this.#handleNotificationListener) {
+    //   // eslint-disable-next-line no-restricted-globals
+    //   window.removeEventListener('message', this.#handleNotificationListener);
+    //   this.#handleNotificationListener = undefined;
+    // }
 
     // Reject all pending requests
     for (const [, request] of this.#pendingRequests) {
@@ -285,7 +285,7 @@ export class DefaultTransport implements ExtendedTransport {
     }
     this.#pendingRequests.clear();
 
-    await this.#transport.disconnect();
+    // await this.#transport.disconnect();
   }
 
   isConnected(): boolean {
