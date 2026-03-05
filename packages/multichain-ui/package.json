@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
   "license": "MIT",
   "sideEffects": false,
@@ -20,11 +20,11 @@
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/index.mjs"
+        "default": "./dist/index.js"
       },
       "require": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/index.cjs"
+        "default": "./dist/index.cjs.js"
       }
     },
     "./loader": {
@@ -47,8 +47,10 @@
   ],
   "collection": "dist/collection/collection-manifest.json",
   "scripts": {
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution unexpected-module-syntax",
     "build:docs": "typedoc",
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly --outDir dist/types",
+    "publint": "publint",
     "build:clean": "yarn clean && yarn build",
     "build": "stencil build --prod",
     "build:dev": "NODE_ENV=development stencil build --debug --dev",
