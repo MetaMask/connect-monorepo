@@ -112,9 +112,10 @@ export class DefaultTransport implements ExtendedTransport {
     const responseData = event?.data?.data?.data;
 
     if (
-      (typeof responseData === 'object' &&
-        responseData.method === 'metamask_chainChanged') ||
-      responseData.method === 'metamask_accountsChanged'
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      (responseData.method === 'metamask_chainChanged' ||
+        responseData.method === 'metamask_accountsChanged')
     ) {
       this.#notifyCallbacks(responseData);
     }
