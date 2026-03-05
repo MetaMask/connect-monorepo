@@ -112,9 +112,10 @@ export class DefaultTransport implements ExtendedTransport {
     const responseData = event?.data?.data?.data;
 
     if (
-      (typeof responseData === 'object' &&
-        responseData.method === 'metamask_chainChanged') ||
-      responseData.method === 'metamask_accountsChanged'
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      (responseData.method === 'metamask_chainChanged' ||
+        responseData.method === 'metamask_accountsChanged')
     ) {
       this.#notifyCallbacks(responseData);
     }
@@ -182,6 +183,11 @@ export class DefaultTransport implements ExtendedTransport {
         location.origin,
       );
     });
+  }
+
+  async init(): Promise<void> {
+    this.#setupMessageListener();
+    await this.#transport.connect();
   }
 
   async connect(options?: {
@@ -256,36 +262,12 @@ export class DefaultTransport implements ExtendedTransport {
     await this.request({ method: 'wallet_revokeSession', params: { scopes } });
 
     const response = await this.request({ method: 'wallet_getSession' });
-    const { sessionScopes } = response.result as SessionData;
+    const walletSession = response.result as SessionData;
 
-    if (Object.keys(sessionScopes).length > 0) {
-      return;
-    }
-
-    this.#notificationCallbacks.clear();
-
-    // Remove the message listener when disconnecting
-    if (this.#handleResponseListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleResponseListener);
-      this.#handleResponseListener = undefined;
-    }
-
-    // Remove the notification listener when disconnecting
-    if (this.#handleNotificationListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleNotificationListener);
-      this.#handleNotificationListener = undefined;
-    }
-
-    // Reject all pending requests
-    for (const [, request] of this.#pendingRequests) {
-      clearTimeout(request.timeout);
-      request.reject(new Error('Transport disconnected'));
-    }
-    this.#pendingRequests.clear();
-
-    await this.#transport.disconnect();
+    this.#notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: walletSession,
+    });
   }
 
   isConnected(): boolean {

@@ -281,18 +281,24 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #setupTransport(): Promise<void> {
     const transport = await this.#getStoredTransport();
     if (transport) {
-      if (!this.transport.isConnected()) {
-        this.status = 'connecting';
-        await this.transport.connect();
-      }
-      this.status = 'connected';
-      if (this.transport instanceof MWPTransport) {
+      if (transport instanceof MWPTransport) {
+        if (!this.transport.isConnected()) {
+          this.status = 'connecting';
+          await this.transport.connect();
+        }
+        this.status = 'connected';
         await this.storage.setTransport(TransportType.MWP);
       } else {
+        await transport.init();
         await this.storage.setTransport(TransportType.Browser);
       }
     } else {
-      this.status = 'loaded';
+      const hasExtensionInstalled = await hasExtension();
+      if (hasExtensionInstalled) {
+        await this.#setupDefaultTransport();
+      } else {
+        this.status = 'loaded';
+      }
     }
   }
 
@@ -557,6 +563,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {
+    if (this.#transport instanceof DefaultTransport) {
+      return this.#transport;
+    }
     this.status = 'connecting';
     await this.storage.setTransport(TransportType.Browser);
     const transport = new DefaultTransport();
@@ -565,6 +574,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     );
     this.#transport = transport;
     this.#providerTransportWrapper.setupTransportNotificationListener();
+    await transport.init();
     return transport;
   }
 
@@ -893,7 +903,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     await this.#transport?.disconnect(scopes);
 
-    if (remainingScopes.length === 0) {
+    this.status = 'disconnected';
+
+    if (remainingScopes.length === 0 && this.transportType !== TransportType.Browser) {
       await this.#listener?.();
       this.#beforeUnloadListener?.();
 
@@ -904,7 +916,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#transport = undefined;
       this.#providerTransportWrapper.clearTransportNotificationListener();
       this.#dappClient = undefined;
-      this.status = 'disconnected';
     }
   }
 
