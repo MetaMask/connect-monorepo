@@ -10,6 +10,7 @@ import App from './App';
 import { SDKProvider } from './sdk/SDKProvider';
 import { LegacyEVMSDKProvider } from './sdk/LegacyEVMSDKProvider';
 import { SolanaWalletProvider } from './sdk/SolanaProvider';
+import { BitcoinWalletProvider } from './sdk/BitcoinProvider';
 import { wagmiConfig } from './wagmi/config';
 
 const queryClient = new QueryClient({
@@ -44,7 +45,9 @@ root.render(
         <SDKProvider>
           <LegacyEVMSDKProvider>
             <SolanaWalletProvider>
-              <App />
+              <BitcoinWalletProvider>
+                <App />
+              </BitcoinWalletProvider>
             </SolanaWalletProvider>
           </LegacyEVMSDKProvider>
         </SDKProvider>
