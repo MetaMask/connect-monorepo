@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
@@ -16,6 +16,9 @@ import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { useSolanaSDK } from './sdk/SolanaProvider';
+import { BitcoinWalletCard } from './components/BitcoinWalletCard';
+import { BitcoinWalletSelectionModal } from './components/BitcoinWalletSelectionModal';
+import { useBitcoin, getWallets } from './sdk/BitcoinProvider';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -23,6 +26,7 @@ global.Buffer = Buffer;
 function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
+  const [bitcoinWalletSelectionModalOpen, setBitcoinWalletSelectionModalOpen] = useState(false);
 
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
 
@@ -61,6 +65,14 @@ function App() {
     wallets,
     select,
   } = useWallet();
+
+  const {
+    connected: bitcoinConnected,
+    selectedAccount: bitcoinSelectedAccount,
+    disconnect: bitcoinDisconnect,
+  } = useBitcoin();
+
+  const bitcoinWallets = useMemo(() => getWallets().get(), []);
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -166,15 +178,24 @@ function App() {
     }
   }, [wallets, select, clearSolanaError]);
 
+  const connectBitcoin = useCallback(async () => {
+    setBitcoinWalletSelectionModalOpen(true);
+  }, []);
+
   const isConnected = status === 'connected';
   const isConnecting = status === 'connecting';
   const isDisconnected =
     status === 'disconnected' || status === 'pending' || status === 'loaded';
 
   const disconnect = useCallback(async () => {
+    if (bitcoinConnected) {
+      await bitcoinDisconnect();
+    }
     await sdkDisconnect();
   }, [
     sdkDisconnect,
+    bitcoinDisconnect,
+    bitcoinConnected,
   ]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
@@ -267,6 +288,17 @@ function App() {
               </button>
             )}
 
+            {!bitcoinConnected && (
+              <button
+                type="button"
+                data-testid={TEST_IDS.app.btnConnect('bitcoin')}
+                onClick={connectBitcoin}
+                className="bg-orange-500 text-white px-5 py-2 rounded text-base hover:bg-orange-600 transition-colors"
+              >
+                Connect (Bitcoin)
+              </button>
+            )}
+
             {isConnected && scopesHaveChanged() && (
               <button
                 type="button"
@@ -279,7 +311,8 @@ function App() {
             {(isConnected ||
               legacyConnected ||
               wagmiConnected ||
-              solanaConnected) && (
+              solanaConnected ||
+              bitcoinConnected) && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnDisconnect}
@@ -404,6 +437,21 @@ function App() {
             </div>
           </section>
         )}
+        {bitcoinConnected && bitcoinSelectedAccount && (
+          <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Bitcoin Wallet Standard
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <BitcoinWalletCard />
+            </div>
+          </section>
+        )}
+        <BitcoinWalletSelectionModal
+          isOpen={bitcoinWalletSelectionModalOpen}
+          wallets={bitcoinWallets}
+          onClose={() => setBitcoinWalletSelectionModalOpen(false)}
+        />
       </div>
     </div>
   );
