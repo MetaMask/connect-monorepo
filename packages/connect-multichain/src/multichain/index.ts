@@ -1017,7 +1017,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async emitSessionChanged(): Promise<void> {
     const emptySession = { sessionScopes: {} };
 
-    if (this.status !== 'connected' && this.status !== 'connecting') {
+    // Unsure if this change is okay for MWP. May need to adjust or undo
+    if (!this.transport?.isConnected()) {
       // If we aren't connected or connecting, there definitely is no active CAIP session
       // so we optimistically emit an empty session to signify that to the ecosystem client consumers (EVM, Solana, etc.)
       this.emit('wallet_sessionChanged', emptySession);
