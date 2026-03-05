@@ -15,6 +15,7 @@ export const FEATURED_NETWORKS = {
   'zkSync Era Mainnet': 'eip155:324',
   'Base Mainnet': 'eip155:8453',
   'Solana Mainnet': 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+  'Bitcoin Mainnet': 'bip122:000000000019d6689c085ae165831e93',
 } as const;
 
 /**

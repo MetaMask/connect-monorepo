@@ -233,6 +233,37 @@ export const TEST_IDS = {
   },
 
   // ============================================
+  // BITCOIN CARD
+  // ============================================
+  bitcoin: {
+    card: 'bitcoin-card',
+    title: 'bitcoin-title',
+    btnDisconnect: 'bitcoin-btn-disconnect',
+    status: 'bitcoin-status',
+    addressContainer: 'bitcoin-address-container',
+    signMessageSection: 'bitcoin-section-sign-message',
+    inputMessage: 'bitcoin-input-message',
+    inputPsbt: 'bitcoin-input-psbt',
+    btnSignMessage: 'bitcoin-btn-sign-message',
+    signedMessageResult: 'bitcoin-signed-message-result',
+    transactionsSection: 'bitcoin-section-transactions',
+    errorContainer: 'bitcoin-error-container',
+    psbtSection: 'bitcoin-section-psbt',
+    btnSignPsbt: 'bitcoin-btn-sign-psbt',
+    inputRecipientAddress: 'bitcoin-input-recipient-address',
+    psbtSignatureResult: 'bitcoin-psbt-signature-result',
+    txIdResult: 'bitcoin-tx-id-result',
+    btnSendPayment: 'bitcoin-btn-send-payment',
+    walletSelectionModal: {
+      container: 'bitcoin-wallet-selection-modal',
+      walletList: 'bitcoin-wallet-selection-modal-wallet-list',
+      walletOption: 'bitcoin-wallet-selection-modal-wallet-option',
+      standardButton: 'bitcoin-wallet-selection-modal-standard-button',
+      satsConnectButton: 'bitcoin-wallet-selection-modal-sats-connect-button',
+    },
+  },
+
+  // ============================================
   // WALLET LIST (Browser only)
   // ============================================
   walletList: {
