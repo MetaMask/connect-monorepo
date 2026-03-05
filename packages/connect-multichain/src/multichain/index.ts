@@ -283,15 +283,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
 
       await this.storage.removeTransport(); // why do we remove the transport here?..
-    } else if (hasExtensionInstalled) {
-          const apiTransport = new DefaultTransport();
-          this.#transport = apiTransport;
-          this.#providerTransportWrapper.setupTransportNotificationListener();
-          this.#listener = apiTransport.onNotification(
-            this.#onTransportNotification.bind(this),
-          );
-          return apiTransport;
-      }
+    }
 
     return undefined;
   }
@@ -310,6 +302,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.storage.setTransport(TransportType.Browser);
       }
     } else {
+      const hasExtensionInstalled = await hasExtension();
+      if (hasExtensionInstalled) {
+        await this.#setupDefaultTransport();
+      }
       this.status = 'loaded';
     }
   }

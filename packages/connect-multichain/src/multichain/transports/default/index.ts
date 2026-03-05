@@ -184,16 +184,45 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
+  async init(): Promise<void> {
+    this.#setupMessageListener();
+    await this.#transport.connect();
+  }
+
+  async destroy(): Promise<void> {
+    this.#notificationCallbacks.clear();
+
+    // Remove the message listener when disconnecting
+    if (this.#handleResponseListener) {
+      // eslint-disable-next-line no-restricted-globals
+      window.removeEventListener('message', this.#handleResponseListener);
+      this.#handleResponseListener = undefined;
+    }
+
+    // Remove the notification listener when disconnecting
+    if (this.#handleNotificationListener) {
+      // eslint-disable-next-line no-restricted-globals
+      window.removeEventListener('message', this.#handleNotificationListener);
+      this.#handleNotificationListener = undefined;
+    }
+
+    // Reject all pending requests
+    for (const [, request] of this.#pendingRequests) {
+      clearTimeout(request.timeout);
+      request.reject(new Error('Transport disconnected'));
+    }
+    this.#pendingRequests.clear();
+
+    await this.#transport.disconnect();
+  }
+
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
-    // Ensure message listener is set up before connecting
-    this.#setupMessageListener();
-
-    await this.#transport.connect();
+    await this.init();
 
     // Get wallet session
     const sessionRequest = await this.request(
@@ -261,31 +290,6 @@ export class DefaultTransport implements ExtendedTransport {
     if (Object.keys(sessionScopes).length > 0) {
       return;
     }
-
-    // this.#notificationCallbacks.clear();
-
-    // // Remove the message listener when disconnecting
-    // if (this.#handleResponseListener) {
-    //   // eslint-disable-next-line no-restricted-globals
-    //   window.removeEventListener('message', this.#handleResponseListener);
-    //   this.#handleResponseListener = undefined;
-    // }
-
-    // // Remove the notification listener when disconnecting
-    // if (this.#handleNotificationListener) {
-    //   // eslint-disable-next-line no-restricted-globals
-    //   window.removeEventListener('message', this.#handleNotificationListener);
-    //   this.#handleNotificationListener = undefined;
-    // }
-
-    // Reject all pending requests
-    for (const [, request] of this.#pendingRequests) {
-      clearTimeout(request.timeout);
-      request.reject(new Error('Transport disconnected'));
-    }
-    this.#pendingRequests.clear();
-
-    // await this.#transport.disconnect();
   }
 
   isConnected(): boolean {
