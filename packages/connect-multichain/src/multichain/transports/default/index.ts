@@ -185,13 +185,9 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
-  async #init(): Promise<void> {
+  async init(): Promise<void> {
     this.#setupMessageListener();
     await this.#transport.connect();
-  }
-
-  constructor() {
-    this.#init().catch(console.error);
   }
 
   async destroy(): Promise<void> {
@@ -227,7 +223,7 @@ export class DefaultTransport implements ExtendedTransport {
     sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
-    await this.#init();
+    await this.init();
 
     // Get wallet session
     const sessionRequest = await this.request(
@@ -280,7 +276,9 @@ export class DefaultTransport implements ExtendedTransport {
       }
       walletSession = response.result as SessionData;
     }
-    // this shouldn't be needed?...
+    // I see... this is needed because we don't have listeners setup before we connect.
+    // but even if we had listeners setup, we may have missed the session changed event already.
+    // so we fake it here.
     this.#notifyCallbacks({
       method: 'wallet_sessionChanged',
       params: walletSession,

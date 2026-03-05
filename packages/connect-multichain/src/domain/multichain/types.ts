@@ -117,6 +117,8 @@ export type CreateMultichainFN = (
 ) => Promise<MultichainCore>;
 
 export type ExtendedTransport = Omit<Transport, 'connect'> & {
+  init: () => Promise<void>;
+
   connect: (props?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
