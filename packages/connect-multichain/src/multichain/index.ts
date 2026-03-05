@@ -303,7 +303,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
     } else {
       const hasExtensionInstalled = await hasExtension();
-      if (hasExtensionInstalled) {
+      const preferExtension = this.options.ui.preferExtension ?? true;
+      if (hasExtensionInstalled && preferExtension) {
         await this.#setupDefaultTransport();
       }
       this.status = 'loaded';
