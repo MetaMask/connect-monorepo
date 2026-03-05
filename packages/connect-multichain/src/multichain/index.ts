@@ -572,7 +572,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {
-    this.status = 'connecting';
+    if (this.#transport instanceof DefaultTransport) {
+      return this.#transport;
+    };
+
     await this.storage.setTransport(TransportType.Browser);
     const transport = new DefaultTransport();
     this.#listener = transport.onNotification(
