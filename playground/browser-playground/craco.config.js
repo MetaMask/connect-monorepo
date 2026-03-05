@@ -29,7 +29,33 @@ module.exports = {
       };
 
       // === ALIASES ===
-      // No aliases needed - using resolutions in package.json instead
+      // Force bitcoinjs-lib to use its ESM build so webpack can statically analyse
+      // named exports (the CJS build + "type":"module" causes interop issues in webpack 5).
+      // In a yarn workspace the real node_modules lives at the monorepo root, so we must
+      // also extend ModuleScopePlugin's allowedPaths to include it; otherwise CRA rejects
+      // the resolved absolute path as "outside src/".
+      const path = require('path');
+      const bitcoinjsLibCjs = require.resolve('bitcoinjs-lib');
+      const bitcoinjsLibEsm = bitcoinjsLibCjs.replace(
+        'src/cjs/index.cjs',
+        'src/esm/index.js',
+      );
+      const monorepoNodeModules = path.dirname(path.dirname(bitcoinjsLibCjs)); // …/node_modules
+
+      const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
+      webpackConfig.resolve.plugins = webpackConfig.resolve.plugins.map(
+        (plugin) => {
+          if (plugin instanceof ModuleScopePlugin) {
+            plugin.allowedPaths.push(monorepoNodeModules);
+          }
+          return plugin;
+        },
+      );
+
+      webpackConfig.resolve.alias = {
+        ...webpackConfig.resolve.alias,
+        'bitcoinjs-lib': bitcoinjsLibEsm,
+      };
 
       // === MODULE RULES ===
       // Handle ESM modules from node_modules that have issues
