@@ -296,6 +296,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.transport.connect();
       }
       this.status = 'connected';
+      // Why do do we this?..
       if (this.transport instanceof MWPTransport) {
         await this.storage.setTransport(TransportType.MWP);
       } else {
@@ -306,6 +307,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       const preferExtension = this.options.ui.preferExtension ?? true;
       if (hasExtensionInstalled && preferExtension) {
         await this.#setupDefaultTransport();
+        // We don't actually want getStoredTransport to return this transport
+        // since we aren't connecting to it
+        this.storage.removeTransport();
       }
       this.status = 'loaded';
     }
@@ -912,18 +916,20 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#transport?.disconnect(scopes);
 
     if (remainingScopes.length === 0) {
-      await this.#listener?.();
-      this.#beforeUnloadListener?.();
-
       await this.storage.removeTransport();
 
+      // We want to leave the DefaultTransport instance connected so that we can
+      // still listen for wallet_sessionChanged events.
       if (this.transportType !== TransportType.Browser) {
+        await this.#listener?.();
+        this.#beforeUnloadListener?.();
         this.#listener = undefined;
         this.#beforeUnloadListener = undefined;
         this.#transport = undefined;
         this.#providerTransportWrapper.clearTransportNotificationListener();
         this.#dappClient = undefined;
       }
+
       this.status = 'disconnected';
     }
   }
