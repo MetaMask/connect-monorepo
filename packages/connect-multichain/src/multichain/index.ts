@@ -239,6 +239,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       payload !== null &&
       'method' in payload
     ) {
+      if (payload.method === 'wallet_sessionChanged') {
+        const sessionScopes = (payload.params as SessionData | undefined)
+          ?.sessionScopes ?? {};
+        const hasScopes = Object.keys(sessionScopes).length > 0;
+        this.status =
+          hasScopes
+            ? 'connected'
+            : 'disconnected';
+      }
+
       this.emit(payload.method as string, payload.params ?? payload.result);
     }
   }
