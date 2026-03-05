@@ -292,8 +292,22 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.storage.setTransport(TransportType.Browser);
       }
     } else {
+      await this.#setupPassiveExtensionTransport();
       this.status = 'loaded';
     }
+  }
+
+  async #setupPassiveExtensionTransport(): Promise<void> {
+    const hasExtensionInstalled = await hasExtension();
+    if (!hasExtensionInstalled) {
+      return;
+    }
+    const apiTransport = new DefaultTransport();
+    this.#transport = apiTransport;
+    this.#providerTransportWrapper.setupTransportNotificationListener();
+    this.#listener = apiTransport.onNotification(
+      this.#onTransportNotification.bind(this),
+    );
   }
 
   async #init(): Promise<void> {
@@ -559,12 +573,15 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #setupDefaultTransport(): Promise<DefaultTransport> {
     this.status = 'connecting';
     await this.storage.setTransport(TransportType.Browser);
+    if (this.#transport instanceof DefaultTransport) {
+      return this.#transport;
+    }
     const transport = new DefaultTransport();
+    this.#transport = transport;
+    this.#providerTransportWrapper.setupTransportNotificationListener();
     this.#listener = transport.onNotification(
       this.#onTransportNotification.bind(this),
     );
-    this.#transport = transport;
-    this.#providerTransportWrapper.setupTransportNotificationListener();
     return transport;
   }
 
@@ -894,11 +911,15 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#transport?.disconnect(scopes);
 
     if (remainingScopes.length === 0) {
-      await this.#listener?.();
-      this.#beforeUnloadListener?.();
-
       await this.storage.removeTransport();
 
+      if (this.transportType === TransportType.Browser) {
+        this.status = 'disconnected';
+        return;
+      }
+
+      await this.#listener?.();
+      this.#beforeUnloadListener?.();
       this.#listener = undefined;
       this.#beforeUnloadListener = undefined;
       this.#transport = undefined;
