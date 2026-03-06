@@ -192,13 +192,15 @@ export class DefaultTransport implements ExtendedTransport {
 
   async init(): Promise<void> {
     await this.#init();
-    const sessionRequest = await this.request(
-      { method: 'wallet_getSession' },
-      this.#defaultRequestOptions,
-    );
-    const walletSession = sessionRequest.result as SessionData;
-    if (walletSession) {
-      return;
+    let walletSession: SessionData = {sessionScopes: {}} ;
+    try {
+      const sessionRequest = await this.request(
+        { method: 'wallet_getSession' },
+        this.#defaultRequestOptions,
+      );
+      walletSession = sessionRequest.result as SessionData;
+    } catch {
+      // wallet_getSession may fail if extension is not ready; treat as no session
     }
     this.#notifyCallbacks({
       method: 'wallet_sessionChanged',

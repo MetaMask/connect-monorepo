@@ -310,7 +310,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         // Normally calling DefaultTransport.connect() ensures that the transport is initialized
         // and that wallet_sessionChanged (faked) is emitted. But because we are not
         // calling transport.connect(), we need to initialize DefaultTransport manually.
-        await this.transport.init();
+        try {
+          await this.transport.init();
+        } catch {
+          // Passive init may fail if extension transport isn't ready
+        }
       }
       this.status = 'loaded';
     }
@@ -894,11 +898,15 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       sessionProperties: {},
     };
     if (this.#transport?.isConnected()) {
-      const response = await this.transport.request({
-        method: 'wallet_getSession',
-      });
-      if (response.result) {
-        sessionData = response.result as SessionData;
+      try {
+        const response = await this.transport.request({
+          method: 'wallet_getSession',
+        });
+        if (response.result) {
+          sessionData = response.result as SessionData;
+        }
+      } catch {
+        // If session retrieval fails, return empty session
       }
     }
     return sessionData;

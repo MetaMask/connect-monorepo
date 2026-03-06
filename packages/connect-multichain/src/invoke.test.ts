@@ -160,7 +160,7 @@ function testSuite<T extends MultichainOptions>({
           async () => mockSessionRequestData,
         );
         mockedData.mockWalletGetSession.mockImplementation(
-          async () => undefined as any,
+          async () => ({sessionScopes: {}}),
         );
         mockedData.mockWalletCreateSession.mockImplementation(
           async () => mockSessionData,
@@ -178,7 +178,12 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('loaded');
         // Provider is always available via wrapper transport (handles connection state internally)
         t.expect(sdk.provider).toBeDefined();
-        t.expect(() => sdk.transport).toThrow();
+        if (platform === 'web') {
+          // Web with extension sets up a DefaultTransport for passive listening
+          t.expect(sdk.transport).toBeDefined();
+        } else {
+          t.expect(() => sdk.transport).toThrow();
+        }
 
         await sdk.connect(scopes, caipAccountIds);
 
