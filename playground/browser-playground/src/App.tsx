@@ -166,15 +166,11 @@ function App() {
     }
   }, [wallets, select, clearSolanaError]);
 
-  const windowEthereumRequestAccounts = useCallback(async () => {
-    try {
-      const result = await (window as any).ethereum?.request({
-        method: 'eth_requestAccounts',
-      });
-      console.log('eth_requestAccounts result:', result);
-    } catch (err) {
-      console.error('eth_requestAccounts error:', err);
-    }
+  const connectWindowEthereum = useCallback(() => {
+    (window as any).ethereum?.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    });
   }, []);
 
   const isConnected = status === 'connected';
@@ -280,7 +276,7 @@ function App() {
 
             <button
               type="button"
-              onClick={windowEthereumRequestAccounts}
+              onClick={connectWindowEthereum}
               className="bg-orange-500 text-white px-5 py-2 rounded text-base hover:bg-orange-600 transition-colors"
             >
               Connect (window.ethereum)
