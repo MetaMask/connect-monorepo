@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix uncaught exception in `parseWalletError` when the wallet returns error codes outside the EIP-1193 provider range (1000–4999), such as standard JSON-RPC codes like `-32603` (Internal error). This prevented Solana request rejections from being handled gracefully. ([#189](https://github.com/MetaMask/connect-monorepo/pull/189))
 
+### Added
+
+- Enable `ConnectMultichain` to handle `wallet_sessionChanged` events when MetaMask extension is detected and `preferExtension: true` without needing the user to explicitly connect via `ConnectMultichain.connect()` ([#198](https://github.com/MetaMask/connect-monorepo/pull/198/))
+
 ## [0.6.0]
 
 ### Added
