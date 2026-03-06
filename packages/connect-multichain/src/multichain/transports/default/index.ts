@@ -206,33 +206,6 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
-  async destroy(): Promise<void> {
-    this.#notificationCallbacks.clear();
-
-    // Remove the message listener when disconnecting
-    if (this.#handleResponseListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleResponseListener);
-      this.#handleResponseListener = undefined;
-    }
-
-    // Remove the notification listener when disconnecting
-    if (this.#handleNotificationListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleNotificationListener);
-      this.#handleNotificationListener = undefined;
-    }
-
-    // Reject all pending requests
-    for (const [, request] of this.#pendingRequests) {
-      clearTimeout(request.timeout);
-      request.reject(new Error('Transport disconnected'));
-    }
-    this.#pendingRequests.clear();
-
-    await this.#transport.disconnect();
-  }
-
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
