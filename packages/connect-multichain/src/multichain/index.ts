@@ -240,13 +240,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       'method' in payload
     ) {
       if (payload.method === 'wallet_sessionChanged') {
-        const sessionScopes = (payload.params as SessionData | undefined)
-          ?.sessionScopes ?? {};
+        const sessionScopes =
+          (payload.params as SessionData | undefined)?.sessionScopes ?? {};
         const hasScopes = Object.keys(sessionScopes).length > 0;
-        this.status =
-          hasScopes
-            ? 'connected'
-            : 'disconnected';
+        this.status = hasScopes ? 'connected' : 'disconnected';
       }
 
       this.emit(payload.method as string, payload.params ?? payload.result);
@@ -271,7 +268,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           return apiTransport;
         }
       } else if (transportType === TransportType.MWP) {
-          // Why does this not use setupMWP?..
+        // Why does this not use setupMWP?..
         const { adapter: kvstore } = this.options.storage;
         const dappClient = await this.#createDappClient();
         const apiTransport = new MWPTransport(dappClient, kvstore);
@@ -311,13 +308,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.#setupDefaultTransport();
         // We don't actually want getStoredTransport to return this transport
         // since we aren't connecting to it
-        this.storage.removeTransport();
+        await this.storage.removeTransport();
         // Normally calling DefaultTransport.connect() ensures that the transport is initialized
         // and that wallet_sessionChanged (faked) is emitted. But because we are not
-        // calling transport.connect(), we need to do this ourselves
-        await this.transport.init()
+        // calling transport.connect(), we need to initialize DefaultTransport manually.
+        await this.transport.init();
         await this.emitSessionChanged();
-
       }
       this.status = 'loaded';
     }
@@ -586,7 +582,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #setupDefaultTransport(): Promise<DefaultTransport> {
     if (this.#transport instanceof DefaultTransport) {
       return this.#transport;
-    };
+    }
 
     await this.storage.setTransport(TransportType.Browser);
     const transport = new DefaultTransport();
