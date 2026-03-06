@@ -276,6 +276,7 @@ function App() {
 
             <button
               type="button"
+              data-testid={TEST_IDS.app.btnConnectWindowEthereum}
               onClick={connectWindowEthereum}
               className="bg-orange-500 text-white px-5 py-2 rounded text-base hover:bg-orange-600 transition-colors"
             >
