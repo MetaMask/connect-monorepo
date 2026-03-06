@@ -254,9 +254,9 @@ function testSuite<T extends MultichainOptions>({
         ] as any;
 
         // Empty initial session
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => ({sessionScopes: {}}),
-        );
+        mockedData.mockWalletGetSession.mockImplementation(async () => ({
+          sessionScopes: {},
+        }));
         mockedData.mockWalletCreateSession.mockImplementation(
           async () => mockSessionData,
         );
@@ -302,9 +302,9 @@ function testSuite<T extends MultichainOptions>({
         mockedData.mockSessionRequest.mockImplementation(
           async () => mockSessionRequestData,
         );
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => ({sessionScopes: {}}),
-        );
+        mockedData.mockWalletGetSession.mockImplementation(async () => ({
+          sessionScopes: {},
+        }));
         mockedData.mockWalletCreateSession.mockImplementation(
           async () => mockSessionData,
         );
@@ -379,9 +379,9 @@ function testSuite<T extends MultichainOptions>({
         mockedData.mockSessionRequest.mockImplementation(
           async () => mockSessionRequestData,
         );
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => ({sessionScopes: {}}),
-        );
+        mockedData.mockWalletGetSession.mockImplementation(async () => ({
+          sessionScopes: {},
+        }));
         mockedData.mockWalletCreateSession.mockImplementation(
           async () => mockSessionData,
         );
@@ -452,9 +452,9 @@ function testSuite<T extends MultichainOptions>({
         'eip155:1:0x1234567890abcdef1234567890abcdef12345678',
       ] as any;
 
-      mockedData.mockWalletGetSession.mockImplementation(
-        async () => ({sessionScopes: {}}),
-      );
+      mockedData.mockWalletGetSession.mockImplementation(async () => ({
+        sessionScopes: {},
+      }));
       mockedData.mockSessionRequest.mockImplementation(
         async () => mockSessionRequestData,
       );

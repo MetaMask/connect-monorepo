@@ -147,7 +147,7 @@ function testSuite<T extends MultichainOptions>({
         } else {
           t.expect(() => sdk.transport).toThrow();
         }
-      }
+      },
     );
 
     t.it(
