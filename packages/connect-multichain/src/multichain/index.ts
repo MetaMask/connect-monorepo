@@ -313,7 +313,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         // and that wallet_sessionChanged (faked) is emitted. But because we are not
         // calling transport.connect(), we need to initialize DefaultTransport manually.
         await this.transport.init();
-        await this.emitSessionChanged();
       }
       this.status = 'loaded';
     }

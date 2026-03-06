@@ -139,6 +139,11 @@ export class DefaultTransport implements ExtendedTransport {
     window.addEventListener('message', this.#handleNotificationListener);
   }
 
+  async #init(): Promise<void> {
+    this.#setupMessageListener();
+    await this.#transport.connect();
+  }
+
   async sendEip1193Message<
     TRequest extends TransportRequest,
     TResponse extends TransportResponse,
@@ -186,8 +191,19 @@ export class DefaultTransport implements ExtendedTransport {
   }
 
   async init(): Promise<void> {
-    this.#setupMessageListener();
-    await this.#transport.connect();
+    await this.#init();
+    const sessionRequest = await this.request(
+      { method: 'wallet_getSession' },
+      this.#defaultRequestOptions,
+    );
+    const walletSession = sessionRequest.result as SessionData;
+    if (walletSession) {
+      return;
+    }
+    this.#notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: walletSession,
+    });
   }
 
   async destroy(): Promise<void> {
@@ -223,7 +239,7 @@ export class DefaultTransport implements ExtendedTransport {
     sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
-    await this.init();
+    await this.#init();
 
     // Get wallet session
     const sessionRequest = await this.request(
@@ -276,13 +292,6 @@ export class DefaultTransport implements ExtendedTransport {
       }
       walletSession = response.result as SessionData;
     }
-    // I see... this is needed because we don't have listeners setup before we connect.
-    // but even if we had listeners setup, we may have missed the session changed event already.
-    // so we fake it here.
-    this.#notifyCallbacks({
-      method: 'wallet_sessionChanged',
-      params: walletSession,
-    });
   }
 
   async disconnect(scopes: Scope[] = []): Promise<void> {
