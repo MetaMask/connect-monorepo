@@ -1,10 +1,13 @@
-import { createMultichainClient } from '@metamask/connect-multichain';
+import {
+  createMultichainClient,
+  type Scope,
+} from '@metamask/connect-multichain';
 import {
   getWalletStandard,
   registerSolanaWalletStandard,
 } from '@metamask/solana-wallet-standard';
 
-import { convertNetworksToCAIP } from './networks';
+import { convertNetworksToCAIP, SOLANA_CAIP_IDS } from './networks';
 import type {
   SolanaClient,
   SolanaConnectOptions,
@@ -85,6 +88,7 @@ export async function createSolanaClient(
       }
       await registerSolanaWalletStandard({ client, walletName });
     },
-    disconnect: async () => await core.disconnect(),
+    disconnect: async () =>
+      await core.disconnect(Object.values(SOLANA_CAIP_IDS) as Scope[]),
   };
 }

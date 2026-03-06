@@ -216,11 +216,11 @@ Connects to MetaMask wallet.
 
 **Parameters**
 
-| Name                   | Type      | Required | Description                                                                              |
-| ---------------------- | --------- | -------- | ---------------------------------------------------------------------------------------- |
-| `options.chainIds`     | `Hex[]`   | No       | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided) |
-| `options.account`      | `string`  | No       | Specific account address to connect                                                      |
-| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                 |
+| Name                   | Type      | Required | Description                                                                                                                                                                              |
+| ---------------------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.chainIds`     | `Hex[]`   | No       | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided). Note: Ethereum mainnet (`0x1`) is always included in the request regardless of what is passed. |
+| `options.account`      | `string`  | No       | Specific account address to connect                                                                                                                                                      |
+| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                                                                                                                 |
 
 **Returns**
 
@@ -290,7 +290,7 @@ const result = await client.connectWith({
 
 ##### `disconnect()`
 
-Disconnects from the wallet and cleans up resources.
+Disconnects all EVM (`eip155`) scopes from MetaMask and cleans up local state. This only revokes the EVM-specific scopes currently held in the session; it does not terminate the broader multichain session if non-EVM scopes are also active.
 
 **Parameters**
 

@@ -28,6 +28,8 @@ export type { SessionData } from '@metamask/multichain-api-client';
 export type DappSettings = {
   name: string;
   url?: string;
+  /** The original non-http(s) URL before normalization on React Native platforms */
+  nativeScheme?: string;
 } & ({ iconUrl?: string } | { base64Icon?: string });
 
 export type ConnectionRequest = {

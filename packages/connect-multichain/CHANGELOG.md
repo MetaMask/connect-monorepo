@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Redact logs ([#191](https://github.com/MetaMask/connect-monorepo/pull/191]))
+
 ### Fixed
 
 - Fix uncaught exception in `parseWalletError` when the wallet returns error codes outside the EIP-1193 provider range (1000–4999), such as standard JSON-RPC codes like `-32603` (Internal error). This prevented Solana request rejections from being handled gracefully. ([#189](https://github.com/MetaMask/connect-monorepo/pull/189))
@@ -23,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Normalize non-http(s) dapp URLs to valid https URLs on React Native to prevent RPC middleware crashes ([#190](https://github.com/MetaMask/connect-monorepo/pull/190))
 - **BREAKING** `createMultichainClient()` now returns a singleton. Any incoming constructor params on subsequent calls to `createMultichainClient()` will be applied to the existing singleton instance except for the `dapp`, `storage`, and `ui.factory` param options. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 - **BREAKING** `ConnectMultichain.openDeeplinkIfNeeded()` is renamed to `openSimpleDeeplinkIfNeeded()` ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
 - `ConnectMultichain.connect()` now throws an `'Existing connection is pending. Please check your MetaMask Mobile app to continue.'` error if there is already an pending connection attempt. Previously it would abort that ongoing connection in favor of a new one. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
