@@ -258,7 +258,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (transportType) {
       if (transportType === TransportType.Browser) {
         if (hasExtensionInstalled) {
-          // Why does this not use setupDefaultTransport?..
           const apiTransport = new DefaultTransport();
           this.#transport = apiTransport;
           this.#providerTransportWrapper.setupTransportNotificationListener();
@@ -268,7 +267,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           return apiTransport;
         }
       } else if (transportType === TransportType.MWP) {
-        // Why does this not use setupMWP?..
         const { adapter: kvstore } = this.options.storage;
         const dappClient = await this.#createDappClient();
         const apiTransport = new MWPTransport(dappClient, kvstore);
@@ -281,7 +279,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         return apiTransport;
       }
 
-      await this.storage.removeTransport(); // why do we remove the transport here?..
+      await this.storage.removeTransport();
     }
 
     return undefined;
@@ -295,7 +293,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.transport.connect();
       }
       this.status = 'connected';
-      // Why do do we this?..
       if (this.transport instanceof MWPTransport) {
         await this.storage.setTransport(TransportType.MWP);
       } else {
@@ -307,7 +304,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       if (hasExtensionInstalled && preferExtension) {
         await this.#setupDefaultTransport();
         // We don't actually want getStoredTransport to return this transport
-        // since we aren't connecting to it
+        // since we aren't connecting it to the wallet with a CAIP session, only
+        // listening for wallet_sessionChanged events.
         await this.storage.removeTransport();
         // Normally calling DefaultTransport.connect() ensures that the transport is initialized
         // and that wallet_sessionChanged (faked) is emitted. But because we are not
