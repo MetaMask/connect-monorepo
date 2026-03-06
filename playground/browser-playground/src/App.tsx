@@ -166,6 +166,13 @@ function App() {
     }
   }, [wallets, select, clearSolanaError]);
 
+  const connectWindowEthereum = useCallback(() => {
+    (window as any).ethereum?.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    });
+  }, []);
+
   const isConnected = status === 'connected';
   const isConnecting = status === 'connecting';
   const isDisconnected =
@@ -266,6 +273,15 @@ function App() {
                 Connect (Solana)
               </button>
             )}
+
+            <button
+              type="button"
+              data-testid={TEST_IDS.app.btnConnectWindowEthereum}
+              onClick={connectWindowEthereum}
+              className="bg-orange-500 text-white px-5 py-2 rounded text-base hover:bg-orange-600 transition-colors"
+            >
+              Connect (window.ethereum)
+            </button>
 
             {isConnected && scopesHaveChanged() && (
               <button

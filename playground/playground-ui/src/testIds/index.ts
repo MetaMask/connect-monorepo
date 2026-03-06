@@ -42,6 +42,7 @@ export const TEST_IDS = {
     btnDisconnect: 'app-btn-disconnect',
     btnReconnect: 'app-btn-reconnect',
     btnCancel: 'app-btn-cancel',
+    btnConnectWindowEthereum: 'app-btn-connect-window-ethereum',
 
     // Sections
     sectionScopes: 'app-section-scopes',

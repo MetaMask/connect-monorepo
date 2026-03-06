@@ -239,6 +239,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       payload !== null &&
       'method' in payload
     ) {
+      if (payload.method === 'wallet_sessionChanged') {
+        const sessionScopes =
+          (payload.params as SessionData | undefined)?.sessionScopes ?? {};
+        const hasScopes = Object.keys(sessionScopes).length > 0;
+        this.status = hasScopes ? 'connected' : 'disconnected';
+      }
+
       this.emit(payload.method as string, payload.params ?? payload.result);
     }
   }
@@ -292,6 +299,23 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.storage.setTransport(TransportType.Browser);
       }
     } else {
+      const hasExtensionInstalled = await hasExtension();
+      const preferExtension = this.options.ui.preferExtension ?? true;
+      if (hasExtensionInstalled && preferExtension) {
+        await this.#setupDefaultTransport();
+        // We don't actually want getStoredTransport to return this transport
+        // since we aren't connecting it to the wallet with a CAIP session, only
+        // listening for wallet_sessionChanged events.
+        await this.storage.removeTransport();
+        // Normally calling DefaultTransport.connect() ensures that the transport is initialized
+        // and that wallet_sessionChanged (faked) is emitted. But because we are not
+        // calling transport.connect(), we need to initialize DefaultTransport manually.
+        try {
+          await this.transport.init();
+        } catch {
+          // Passive init may fail if extension transport isn't ready
+        }
+      }
       this.status = 'loaded';
     }
   }
@@ -557,7 +581,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async #setupDefaultTransport(): Promise<DefaultTransport> {
-    this.status = 'connecting';
+    if (this.#transport instanceof DefaultTransport) {
+      return this.#transport;
+    }
+
     await this.storage.setTransport(TransportType.Browser);
     const transport = new DefaultTransport();
     this.#listener = transport.onNotification(
@@ -870,12 +897,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       sessionScopes: {},
       sessionProperties: {},
     };
-    if (this.status === 'connected') {
-      const response = await this.transport.request({
-        method: 'wallet_getSession',
-      });
-      if (response.result) {
-        sessionData = response.result as SessionData;
+    if (this.#transport?.isConnected()) {
+      try {
+        const response = await this.transport.request({
+          method: 'wallet_getSession',
+        });
+        if (response.result) {
+          sessionData = response.result as SessionData;
+        }
+      } catch {
+        // If session retrieval fails, return empty session
       }
     }
     return sessionData;
@@ -894,16 +925,20 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#transport?.disconnect(scopes);
 
     if (remainingScopes.length === 0) {
-      await this.#listener?.();
-      this.#beforeUnloadListener?.();
-
       await this.storage.removeTransport();
 
-      this.#listener = undefined;
-      this.#beforeUnloadListener = undefined;
-      this.#transport = undefined;
-      this.#providerTransportWrapper.clearTransportNotificationListener();
-      this.#dappClient = undefined;
+      // We want to leave the DefaultTransport instance connected so that we can
+      // still listen for wallet_sessionChanged events.
+      if (this.transportType !== TransportType.Browser) {
+        await this.#listener?.();
+        this.#beforeUnloadListener?.();
+        this.#listener = undefined;
+        this.#beforeUnloadListener = undefined;
+        this.#transport = undefined;
+        this.#providerTransportWrapper.clearTransportNotificationListener();
+        this.#dappClient = undefined;
+      }
+
       this.status = 'disconnected';
     }
   }
@@ -983,7 +1018,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async emitSessionChanged(): Promise<void> {
     const emptySession = { sessionScopes: {} };
 
-    if (this.status !== 'connected' && this.status !== 'connecting') {
+    if (!this.#transport?.isConnected()) {
       // If we aren't connected or connecting, there definitely is no active CAIP session
       // so we optimistically emit an empty session to signify that to the ecosystem client consumers (EVM, Solana, etc.)
       this.emit('wallet_sessionChanged', emptySession);

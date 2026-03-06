@@ -377,6 +377,10 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  async init(): Promise<void> {
+    // no-op for MWP — passive init is only relevant for DefaultTransport
+  }
+
   // TODO: Rename this
   async sendEip1193Message<
     TRequest extends TransportRequest,
