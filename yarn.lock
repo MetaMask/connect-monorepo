@@ -4704,7 +4704,6 @@ __metadata:
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
     "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
-    "@metamask/mobile-wallet-protocol-core": "npm:^0.4.0"
     "@metamask/playground-ui": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
