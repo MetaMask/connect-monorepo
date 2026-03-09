@@ -1,8 +1,8 @@
 {
   "name": "@metamask/react-native-playground",
   "version": "0.1.3",
-  "description": "A React Native test dapp for multichain api",
   "private": true,
+  "description": "A React Native test dapp for multichain api",
   "keywords": [
     "MetaMask",
     "Ethereum"
