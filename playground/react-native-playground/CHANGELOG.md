@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove explicit dependency on `@metamask/mobile-wallet-protocol-core` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
+- Remove explicit dependency on `@metamask/mobile-wallet-protocol-wallet-client` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
+
+## [0.1.3]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-multichain@0.7.0
+
 ### Fixed
 
 - Fix malformed reported dapp URL causing issues in the wallet ([#187](https://github.com/MetaMask/connect-monorepo/pull/187))
@@ -44,7 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.2...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.3...HEAD
+[0.1.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.2...@metamask/react-native-playground@0.1.3
 [0.1.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.1...@metamask/react-native-playground@0.1.2
 [0.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.0...@metamask/react-native-playground@0.1.1
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/react-native-playground@0.1.0

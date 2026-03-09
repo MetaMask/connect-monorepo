@@ -808,7 +808,7 @@ export class MWPTransport implements ExtendedTransport {
 
   async getActiveSession(): Promise<Session | undefined> {
     const { kvstore } = this;
-    const sessionStore = new SessionStore(kvstore);
+    const sessionStore = await SessionStore.create(kvstore);
 
     try {
       const [activeSession] = await sessionStore.list();

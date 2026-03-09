@@ -342,7 +342,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   async #createDappClient(): Promise<DappClient> {
     const { adapter: kvstore } = this.options.storage;
-    const sessionstore = new SessionStore(kvstore);
+    const sessionstore = await SessionStore.create(kvstore);
     const websocket =
       // eslint-disable-next-line no-negated-condition
       typeof window !== 'undefined'
