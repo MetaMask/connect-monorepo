@@ -184,16 +184,18 @@ additional signing config can be added to the workflow.
 
 ### Android Release APK
 
-The release APK is built automatically on every connect-monorepo release via
-the `build-rn-playground-apk` GitHub Actions workflow and attached to the
-GitHub Release as `rn-playground-<version>.apk`.
+The release APK is built automatically when the `@metamask/react-native-playground`
+package is released. The `publish-release.yml` workflow detects whether the
+playground's package-scoped tag (e.g., `@metamask/react-native-playground@0.1.2`)
+was created on the current commit, and only then triggers the APK build. The APK
+is uploaded to a GitHub Release under that same playground-specific tag.
 
 **CI workflow** (`.github/workflows/build-rn-playground-apk.yml`):
 
-- Triggered automatically as part of `publish-release.yml`
+- Triggered only when the playground package itself is released
 - Can also be triggered manually via `workflow_dispatch`
 - Builds the APK using Expo prebuild + Gradle
-- Uploads as a GitHub Release asset (on release) and as a workflow artifact
+- Uploads as a GitHub Release asset on the playground tag and as a workflow artifact
 
 **Manual build:**
 
@@ -213,9 +215,10 @@ android/app/build/outputs/apk/release/app-release.apk
 **Fetching from downstream repos** (e.g., metamask-mobile):
 
 ```bash
-# Fetch the latest release APK
+# Fetch the APK for a specific playground version
+TAG="@metamask/react-native-playground@0.1.2"
 curl -fsSL -H "Authorization: token $GITHUB_TOKEN" \
-  "https://api.github.com/repos/MetaMask/connect-monorepo/releases/latest" \
+  "https://api.github.com/repos/MetaMask/connect-monorepo/releases/tags/$TAG" \
   | jq -r '.assets[] | select(.name | startswith("rn-playground-")) | .browser_download_url' \
   | xargs curl -fsSL -o rn-playground.apk
 ```

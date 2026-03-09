@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       release_tag:
-        description: 'Git tag of the GitHub Release to attach the APK to (e.g., "v17.0.0")'
+        description: 'Git tag to attach the APK to (e.g., "@metamask/react-native-playground@0.1.2")'
         required: false
         type: string
       upload_to_release:
@@ -128,10 +128,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Uploading ${{ steps.apk.outputs.apk_name }} to release ${{ inputs.release_tag }}..."
+          TAG="${{ inputs.release_tag }}"
+          APK="${{ steps.apk.outputs.apk_name }}"
 
-          gh release upload "${{ inputs.release_tag }}" \
-            "${{ steps.apk.outputs.apk_name }}" \
-            --clobber
+          # Ensure a GitHub Release exists for this tag (action-publish-release
+          # may only create one for the root monorepo tag). --notes-file /dev/null
+          # keeps it tidy; --verify-tag ensures the tag already exists in git.
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Creating GitHub Release for $TAG..."
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --verify-tag \
+              --notes "Android playground APK for $TAG"
+          fi
 
-          echo "APK uploaded to release ${{ inputs.release_tag }}"
+          echo "Uploading $APK to release $TAG..."
+          gh release upload "$TAG" "$APK"
+          echo "APK uploaded to release $TAG"

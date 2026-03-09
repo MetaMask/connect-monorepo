@@ -84,6 +84,7 @@ jobs:
       RELEASE_VERSION: ${{ steps.get-release-version.outputs.RELEASE_VERSION }}
       RELEASE_TAG: ${{ steps.get-release-version.outputs.RELEASE_TAG }}
       RN_PLAYGROUND_RELEASED: ${{ steps.check-rn-playground.outputs.RELEASED }}
+      RN_PLAYGROUND_TAG: ${{ steps.check-rn-playground.outputs.PLAYGROUND_TAG }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -108,13 +109,22 @@ jobs:
           PKG_NAME=$(node -p "require('./playground/react-native-playground/package.json').name")
           PKG_VERSION=$(node -p "require('./playground/react-native-playground/package.json').version")
           PLAYGROUND_TAG="${PKG_NAME}@${PKG_VERSION}"
+          echo "PLAYGROUND_TAG=$PLAYGROUND_TAG" >> "$GITHUB_OUTPUT"
 
-          if git rev-parse "refs/tags/$PLAYGROUND_TAG" >/dev/null 2>&1; then
+          # Check that the tag exists AND was created on this commit.
+          # A tag from a prior release would point to an older commit.
+          TAG_COMMIT=$(git rev-list -n 1 "refs/tags/$PLAYGROUND_TAG" 2>/dev/null || echo "")
+
+          if [ "$TAG_COMMIT" = "${{ github.sha }}" ]; then
             echo "RELEASED=true" >> "$GITHUB_OUTPUT"
-            echo "Tag $PLAYGROUND_TAG exists — RN playground is part of this release"
+            echo "$PLAYGROUND_TAG points to ${{ github.sha }} — released in this run"
           else
             echo "RELEASED=false" >> "$GITHUB_OUTPUT"
-            echo "Tag $PLAYGROUND_TAG not found — RN playground was not released"
+            if [ -z "$TAG_COMMIT" ]; then
+              echo "$PLAYGROUND_TAG does not exist — playground was not released"
+            else
+              echo "$PLAYGROUND_TAG points to $TAG_COMMIT, not ${{ github.sha }} — stale tag from a prior release"
+            fi
           fi
 
   publish-wagmi-to-gh-pages:
@@ -169,7 +179,7 @@ jobs:
       contents: write
     uses: ./.github/workflows/build-rn-playground-apk.yml
     with:
-      release_tag: ${{ needs.get-release-version.outputs.RELEASE_TAG }}
+      release_tag: ${{ needs.get-release-version.outputs.RN_PLAYGROUND_TAG }}
       upload_to_release: true
     secrets:
       INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
