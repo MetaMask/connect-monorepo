@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Bump `@metamask/mobile-wallet-protocol-core` to `^0.4.0` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
+- Bump `@metamask/mobile-wallet-protocol-dapp-client` to `^0.3.0` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
+
 ## [0.7.0]
 
 ### Changed
