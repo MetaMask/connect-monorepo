@@ -34,7 +34,7 @@ class KeyManager implements IKeyManager {
   }
 
   validatePeerKey(key: Uint8Array): void {
-    PublicKey.fromHex(Buffer.from(key).toString("hex"));
+    PublicKey.fromHex(Buffer.from(key).toString('hex'));
   }
 }
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Removed
+
 - Remove explicit dependency on `@metamask/mobile-wallet-protocol-core` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
 - Remove explicit dependency on `@metamask/mobile-wallet-protocol-wallet-client` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
 
