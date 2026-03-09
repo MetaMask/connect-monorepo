@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump workspace dependencies:
   - @metamask/connect-multichain@0.7.0
 
-
 ### Fixed
 
 - Fix malformed reported dapp URL causing issues in the wallet ([#187](https://github.com/MetaMask/connect-monorepo/pull/187))

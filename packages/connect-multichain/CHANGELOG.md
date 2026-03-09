@@ -9,14 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0]
 
-### Uncategorized
-
-- Correct README documentation across `connect-solana`, `connect-evm`, and `connect-multichain` to match actual API behaviour. ([#194](https://github.com/MetaMask/connect-monorepo/pull/194))
-- chore: pin eciesjs to exact version 0.4.17 ([#188](https://github.com/MetaMask/connect-monorepo/pull/188))
-
 ### Changed
 
+- Correct README documentation across `connect-solana`, `connect-evm`, and `connect-multichain` to match actual API behaviour. ([#194](https://github.com/MetaMask/connect-monorepo/pull/194))
 - Redact logs ([#191](https://github.com/MetaMask/connect-monorepo/pull/191]))
+- Pin eciesjs to exact version 0.4.17 ([#188](https://github.com/MetaMask/connect-monorepo/pull/188))
 
 ### Fixed
 
