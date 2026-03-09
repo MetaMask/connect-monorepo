@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- chore: pin eciesjs to exact version 0.4.17 ([#188](https://github.com/MetaMask/connect-monorepo/pull/188))
-
 ### Fixed
 
 - Fix malformed reported dapp URL causing issues in the wallet ([#187](https://github.com/MetaMask/connect-monorepo/pull/187))
