@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- Correct README documentation across `connect-solana`, `connect-evm`, and `connect-multichain` to match actual API behaviour. ([#194](https://github.com/MetaMask/connect-monorepo/pull/194))
+- add missing changelogs from Release/17.0.0 ([#186](https://github.com/MetaMask/connect-monorepo/pull/186))
+
 ### Fixed
 
 - Explicitly disconnect only Solana scopes when calling `SolanaClient.disconnect()`. Previously calling this function would result in the wallet connection being terminated entirely even if other ecosystems (evm, bitcoin, etc) were still connected ([#193](https://github.com/MetaMask/connect-monorepo/pull/193))
