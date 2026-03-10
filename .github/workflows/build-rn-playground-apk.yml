@@ -1,0 +1,147 @@
+name: Build React Native Playground APK
+
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'Git tag to attach the APK to (e.g., "@metamask/react-native-playground@0.1.2")'
+        required: false
+        type: string
+      upload_to_release:
+        description: 'Whether to upload the APK as a GitHub Release asset'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      INFURA_API_KEY:
+        required: false
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Git tag to attach the APK to (leave empty to skip release upload)'
+        required: false
+        type: string
+
+jobs:
+  build-rn-playground-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Determine APK version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./playground/react-native-playground/package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "APK version: $VERSION"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Corepack via Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install Yarn
+        run: corepack enable
+
+      - name: Restore Yarn cache
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+
+      - name: Restore Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-rn-playground-${{ hashFiles('playground/react-native-playground/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-rn-playground-
+            ${{ runner.os }}-gradle-
+
+      - name: Install dependencies
+        run: yarn --immutable
+
+      - name: Build workspace packages
+        run: yarn build
+
+      - name: Configure Infura API key
+        working-directory: playground/react-native-playground
+        env:
+          INFURA_KEY: ${{ secrets.INFURA_API_KEY }}
+        run: |
+          if [ -n "$INFURA_KEY" ]; then
+            echo "EXPO_PUBLIC_INFURA_API_KEY=$INFURA_KEY" > .env
+            echo "Infura API key configured from secret"
+          else
+            cp .env.example .env
+            echo "Warning: No INFURA_API_KEY secret set; using empty .env"
+          fi
+
+      - name: Generate native Android project
+        working-directory: playground/react-native-playground
+        run: npx expo prebuild --platform android --clean
+
+      - name: Build release APK
+        working-directory: playground/react-native-playground/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Rename APK with version
+        id: apk
+        run: |
+          APK_SOURCE="playground/react-native-playground/android/app/build/outputs/apk/release/app-release.apk"
+          APK_NAME="rn-playground-${{ steps.version.outputs.version }}.apk"
+
+          if [ ! -f "$APK_SOURCE" ]; then
+            echo "Error: APK not found at $APK_SOURCE"
+            ls -la playground/react-native-playground/android/app/build/outputs/apk/release/ || true
+            exit 1
+          fi
+
+          cp "$APK_SOURCE" "$APK_NAME"
+          echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
+          echo "apk_path=$(pwd)/$APK_NAME" >> "$GITHUB_OUTPUT"
+          echo "APK built: $APK_NAME ($(du -h "$APK_NAME" | cut -f1))"
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rn-playground-apk
+          path: ${{ steps.apk.outputs.apk_name }}
+          retention-days: 90
+
+      - name: Upload APK to GitHub Release
+        if: inputs.upload_to_release == true && inputs.release_tag != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          APK="${{ steps.apk.outputs.apk_name }}"
+
+          # Ensure a GitHub Release exists for this tag (action-publish-release
+          # may only create one for the root monorepo tag). --notes-file /dev/null
+          # keeps it tidy; --verify-tag ensures the tag already exists in git.
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Creating GitHub Release for $TAG..."
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --verify-tag \
+              --notes "Android playground APK for $TAG"
+          fi
+
+          echo "Uploading $APK to release $TAG..."
+          gh release upload "$TAG" "$APK"
+          echo "APK uploaded to release $TAG"

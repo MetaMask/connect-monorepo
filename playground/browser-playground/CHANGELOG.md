@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `Connect (window.ethereum)` button ([#198](https://github.com/MetaMask/connect-monorepo/pull/198/))
 
+### Changed
+
+- Update wagmi MetaMask connector ([#202](https://github.com/MetaMask/connect-monorepo/pull/202))
+
 ## [0.3.1]
 
 ### Changed
