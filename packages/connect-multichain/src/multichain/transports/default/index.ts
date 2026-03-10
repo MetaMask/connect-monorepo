@@ -200,7 +200,9 @@ export class DefaultTransport implements ExtendedTransport {
       );
       walletSession = sessionRequest.result as SessionData;
     } catch {
-      // wallet_getSession may fail if extension is not ready; treat as no session
+      console.error(
+        'Failed to get wallet session during DefaultTransport init',
+      );
     }
     this.#notifyCallbacks({
       method: 'wallet_sessionChanged',
