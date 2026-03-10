@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update wagmi MetaMask connector ([#202](https://github.com/MetaMask/connect-monorepo/pull/202))
+
 ### Removed
 
 - Remove explicit dependency on `@metamask/mobile-wallet-protocol-core` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
