@@ -96,6 +96,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   set status(value: ConnectionStatus) {
+    if (this._status === value) {
+      return;
+    }
     this._status = value;
     this.options.transport?.onNotification?.({
       method: 'stateChanged',
@@ -243,6 +246,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         const sessionScopes =
           (payload.params as SessionData | undefined)?.sessionScopes ?? {};
         const hasScopes = Object.keys(sessionScopes).length > 0;
+        // We don't want to set the status to disconnected if this is the first wallet_sessionChanged event
+        // triggered during #setupTransport() initialization for passive extension wallet_sessionChanged listening.
+        if (this.status === 'pending' && !hasScopes) {
+          this.status = 'loaded';
+          return;
+        }
         this.status = hasScopes ? 'connected' : 'disconnected';
       }
 
@@ -301,6 +310,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     } else {
       const hasExtensionInstalled = await hasExtension();
       const preferExtension = this.options.ui.preferExtension ?? true;
+      // Setup passive listening for extension wallet_sessionChanged events
       if (hasExtensionInstalled && preferExtension) {
         await this.#setupDefaultTransport();
         // We don't actually want getStoredTransport to return this transport
@@ -316,7 +326,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           // Passive init may fail if extension transport isn't ready
         }
       }
-      this.status = 'loaded';
     }
   }
 
