@@ -112,9 +112,10 @@ export class DefaultTransport implements ExtendedTransport {
     const responseData = event?.data?.data?.data;
 
     if (
-      (typeof responseData === 'object' &&
-        responseData.method === 'metamask_chainChanged') ||
-      responseData.method === 'metamask_accountsChanged'
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      (responseData.method === 'metamask_chainChanged' ||
+        responseData.method === 'metamask_accountsChanged')
     ) {
       this.#notifyCallbacks(responseData);
     }
@@ -136,6 +137,11 @@ export class DefaultTransport implements ExtendedTransport {
     window.addEventListener('message', this.#handleResponseListener);
     // eslint-disable-next-line no-restricted-globals
     window.addEventListener('message', this.#handleNotificationListener);
+  }
+
+  async #init(): Promise<void> {
+    this.#setupMessageListener();
+    await this.#transport.connect();
   }
 
   async sendEip1193Message<
@@ -184,16 +190,33 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
+  async init(): Promise<void> {
+    await this.#init();
+    let walletSession: SessionData = { sessionScopes: {} };
+    try {
+      const sessionRequest = await this.request(
+        { method: 'wallet_getSession' },
+        this.#defaultRequestOptions,
+      );
+      walletSession = sessionRequest.result as SessionData;
+    } catch {
+      console.error(
+        'Failed to get wallet session during DefaultTransport init',
+      );
+    }
+    this.#notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: walletSession,
+    });
+  }
+
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
-    // Ensure message listener is set up before connecting
-    this.#setupMessageListener();
-
-    await this.#transport.connect();
+    await this.#init();
 
     // Get wallet session
     const sessionRequest = await this.request(
@@ -254,38 +277,6 @@ export class DefaultTransport implements ExtendedTransport {
 
   async disconnect(scopes: Scope[] = []): Promise<void> {
     await this.request({ method: 'wallet_revokeSession', params: { scopes } });
-
-    const response = await this.request({ method: 'wallet_getSession' });
-    const { sessionScopes } = response.result as SessionData;
-
-    if (Object.keys(sessionScopes).length > 0) {
-      return;
-    }
-
-    this.#notificationCallbacks.clear();
-
-    // Remove the message listener when disconnecting
-    if (this.#handleResponseListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleResponseListener);
-      this.#handleResponseListener = undefined;
-    }
-
-    // Remove the notification listener when disconnecting
-    if (this.#handleNotificationListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleNotificationListener);
-      this.#handleNotificationListener = undefined;
-    }
-
-    // Reject all pending requests
-    for (const [, request] of this.#pendingRequests) {
-      clearTimeout(request.timeout);
-      request.reject(new Error('Transport disconnected'));
-    }
-    this.#pendingRequests.clear();
-
-    await this.#transport.disconnect();
   }
 
   isConnected(): boolean {

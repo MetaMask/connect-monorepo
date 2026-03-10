@@ -141,7 +141,12 @@ function testSuite<T extends MultichainOptions>({
       async () => {
         sdk = await createSDK(testOptions);
         t.expect(sdk.status).toBe('loaded');
-        t.expect(() => sdk.transport).toThrow();
+        if (platform === 'web') {
+          // Web with extension sets up a DefaultTransport for passive listening
+          t.expect(sdk.transport).toBeDefined();
+        } else {
+          t.expect(() => sdk.transport).toThrow();
+        }
       },
     );
 
