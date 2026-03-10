@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0]
+
 ### Added
 
 - Enable `ConnectMultichain` to automatically handle `wallet_sessionChanged` events when MetaMask extension is detected (Desktop Chrome/Firefox, or Mobile In-App Browser) and `preferExtension: true` without needing the user to explicitly connect via `ConnectMultichain.connect()` ([#198](https://github.com/MetaMask/connect-monorepo/pull/198/))
@@ -179,7 +181,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.7.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...HEAD
+[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.7.0...@metamask/connect-multichain@0.8.0
 [0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.6.0...@metamask/connect-multichain@0.7.0
 [0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...@metamask/connect-multichain@0.6.0
 [0.5.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.2...@metamask/connect-multichain@0.5.3
