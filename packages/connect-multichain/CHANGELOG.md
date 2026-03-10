@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+
 - Fix a bug where wallet_sessionChanged events were failing to propagate to the `ConnectMultichain` instance when the `DefaultTransport` is using the `WindowPostMessageTransport`. This was affecting Firefox, both iOS and Android in-app browsers ([#204](https://github.com/MetaMask/connect-monorepo/pull/204))
 
 ## [0.8.0]
