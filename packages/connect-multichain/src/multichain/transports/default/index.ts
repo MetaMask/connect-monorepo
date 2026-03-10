@@ -269,6 +269,10 @@ export class DefaultTransport implements ExtendedTransport {
       }
       walletSession = response.result as SessionData;
     }
+    this.#notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: walletSession,
+    });
   }
 
   async disconnect(scopes: Scope[] = []): Promise<void> {
