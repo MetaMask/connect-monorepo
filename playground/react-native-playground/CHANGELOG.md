@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- ci: add workflow to build and publish React Native Playground APK on release ([#192](https://github.com/MetaMask/connect-monorepo/pull/192))
-- chore: prevent react-native-playground from being published to npm ([#200](https://github.com/MetaMask/connect-monorepo/pull/200))
-
 ### Changed
 
 - Update wagmi MetaMask connector ([#202](https://github.com/MetaMask/connect-monorepo/pull/202))

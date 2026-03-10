@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- feat: passive wallet_sessionChanged listening for extension ([#198](https://github.com/MetaMask/connect-monorepo/pull/198))
-
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications
