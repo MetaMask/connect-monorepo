@@ -312,11 +312,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       const preferExtension = this.options.ui.preferExtension ?? true;
       // Setup passive listening for extension wallet_sessionChanged events
       if (hasExtensionInstalled && preferExtension) {
-        await this.#setupDefaultTransport();
-        // We don't actually want getStoredTransport to return this transport
-        // since we aren't connecting it to the wallet with a CAIP session, only
-        // listening for wallet_sessionChanged events.
-        await this.storage.removeTransport();
+        await this.#setupDefaultTransport({ persist: false });
         // Normally calling DefaultTransport.connect() ensures that the transport is initialized
         // and that wallet_sessionChanged (faked) is emitted. But because we are not
         // calling transport.connect(), we need to initialize DefaultTransport manually.
@@ -589,12 +585,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
   }
 
-  async #setupDefaultTransport(): Promise<DefaultTransport> {
+  async #setupDefaultTransport(
+    options: { persist?: boolean } = { persist: true },
+  ): Promise<DefaultTransport> {
     if (this.#transport instanceof DefaultTransport) {
       return this.#transport;
     }
 
-    await this.storage.setTransport(TransportType.Browser);
+    if (options?.persist) {
+      await this.storage.setTransport(TransportType.Browser);
+    }
     const transport = new DefaultTransport();
     this.#listener = transport.onNotification(
       this.#onTransportNotification.bind(this),
