@@ -19,7 +19,7 @@ import type { ExactPartial, OneOf, UnionCompute } from '@wagmi/core/internal';
 import {
   type Address,
   getAddress,
-  type Hex,
+  numberToHex,
   type ProviderConnectInfo,
   ResourceUnavailableRpcError,
   type RpcError,
@@ -30,7 +30,7 @@ import {
 } from 'viem';
 
 export type MetaMaskParameters = UnionCompute<
-  ExactPartial<Pick<CreateEVMClientParameters, 'dapp' | 'debug'>> & {
+  ExactPartial<Omit<CreateEVMClientParameters, 'api' | 'eventHandlers'>> & {
     /** @deprecated use `dapp` instead */
     dappMetadata?: CreateEVMClientParameters['dapp'];
     /** @deprecated use `debug` instead */
@@ -91,10 +91,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         let signResponse: string | undefined;
         let connectWithResponse: unknown | undefined;
         if (!accounts?.length) {
-          // Convert numeric chain IDs to hex format for connect-evm API
-          const chainIds = config.chains.map(
-            (chain): Hex => `0x${chain.id.toString(16)}`,
-          );
+          const chainIds = config.chains.map((chain) => numberToHex(chain.id));
           if (parameters.connectAndSign || parameters.connectWith) {
             if (parameters.connectAndSign) {
               signResponse = await instance.connectAndSign({
@@ -130,13 +127,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
         if (signResponse) {
           provider.emit('connectAndSign', {
             accounts,
-            chainId: `0x${currentChainId.toString(16)}`,
+            chainId: numberToHex(currentChainId),
             signResponse,
           });
         } else if (connectWithResponse) {
           provider.emit('connectWith', {
             accounts,
-            chainId: `0x${currentChainId.toString(16)}`,
+            chainId: numberToHex(currentChainId),
             connectWithResponse,
           });
         }
@@ -214,14 +211,15 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
       }
     },
     async switchChain({ addEthereumChainParameter, chainId }) {
-      const chain = config.chains.find(({ id }) => id === chainId);
+      const chain = config.chains.find(({ id }) => id === Number(chainId));
       if (!chain) {
         throw new SwitchChainError(new ChainNotConfiguredError());
       }
 
+      const hexChainId = numberToHex(chainId);
+
       try {
         const instance = await this.getInstance();
-        const hexChainId: Hex = `0x${chainId.toString(16)}`;
         await instance.switchChain({
           chainId: hexChainId,
           chainConfiguration: {
@@ -230,7 +228,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               : chain.blockExplorers?.default.url
                 ? [chain.blockExplorers.default.url]
                 : undefined,
-            chainId: `0x${chainId.toString(16)}`,
+            chainId: hexChainId,
             chainName: addEthereumChainParameter?.chainName ?? chain.name,
             iconUrls: addEthereumChainParameter?.iconUrls,
             nativeCurrency:
@@ -296,37 +294,27 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               throw new Error('dependency "@metamask/connect-evm" not found');
             }
           })();
+          const defaultDappParams =
+            typeof window === 'undefined'
+              ? { name: 'wagmi' }
+              : {
+                  name: window.location.hostname,
+                  url: window.location.href,
+                };
+
           metamaskPromise = createEVMClient({
+            ...parameters,
             api: {
-              // Use hex chain IDs as keys for supportedNetworks
               supportedNetworks: Object.fromEntries(
                 config.chains.map((chain) => [
-                  `0x${chain.id.toString(16)}`,
-                  chain.rpcUrls.default?.http[0],
+                  numberToHex(chain.id),
+                  chain.rpcUrls.default?.http[0] ?? '',
                 ]),
               ),
             },
-            dapp: (() => {
-              if (parameters.dappMetadata) {
-                return parameters.dappMetadata;
-              }
-              if (parameters.dapp) {
-                return parameters.dapp;
-              }
-              if (typeof window === 'undefined') {
-                return { name: 'wagmi' };
-              }
-              return {
-                name: window.location.hostname,
-                url: window.location.href,
-              };
-            })(),
-            debug: (() => {
-              if (parameters.logging) {
-                return true;
-              }
-              return parameters.debug;
-            })(),
+            dapp:
+              parameters.dappMetadata ?? parameters.dapp ?? defaultDappParams,
+            debug: parameters.logging ? true : parameters.debug,
             eventHandlers: {
               accountsChanged: this.onAccountsChanged.bind(this),
               chainChanged: this.onChainChanged.bind(this),
