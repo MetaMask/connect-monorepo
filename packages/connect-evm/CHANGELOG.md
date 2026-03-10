@@ -9,10 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.0]
 
-### Uncategorized
+### Added
 
-- Correct README documentation across `connect-solana`, `connect-evm`, and `connect-multichain` to match actual API behaviour. ([#194](https://github.com/MetaMask/connect-monorepo/pull/194))
-- add missing changelogs from Release/17.0.0 ([#186](https://github.com/MetaMask/connect-monorepo/pull/186))
+- Bump `@metamask/connect-multichain` to `^0.8.0` ([#203](https://github.com/MetaMask/connect-monorepo/pull/203))
 
 ## [0.5.0]
 
