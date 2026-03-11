@@ -527,7 +527,6 @@ export class MetamaskConnectEVM {
     const scope: Scope = `eip155:${hexToNumber(chainId)}`;
     const params = [{ chainId }];
 
-    await this.#trackWalletActionRequested(method, scope, params);
 
     // TODO (wenfix): better way to return here other than resolving.
     if (this.selectedChainId === chainId) {
@@ -542,9 +541,10 @@ export class MetamaskConnectEVM {
     ) {
       await this.#cacheChainId(chainId);
       this.#onChainChanged(chainId);
-      await this.#trackWalletActionSucceeded(method, scope, params);
       return Promise.resolve();
     }
+
+    await this.#trackWalletActionRequested(method, scope, params);
 
     try {
       const result = await this.#request({

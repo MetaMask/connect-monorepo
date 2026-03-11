@@ -211,16 +211,14 @@ export class RequestRouter {
    * @param options
    */
   private async handleWithRpcNode(options: InvokeMethodOptions): Promise<Json> {
-    return this.#withAnalyticsTracking(options, async () => {
-      try {
-        return await this.rpcClient.request(options);
-      } catch (error) {
-        if (error instanceof MissingRpcEndpointErr) {
-          return this.handleWithWallet(options);
-        }
-        throw error;
+    try {
+      return await this.rpcClient.request(options);
+    } catch (error) {
+      if (error instanceof MissingRpcEndpointErr) {
+        return this.handleWithWallet(options);
       }
-    });
+      throw error;
+    }
   }
 
   /**
