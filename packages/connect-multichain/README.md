@@ -134,7 +134,7 @@ This package is written in TypeScript and includes full type definitions. No add
 
 Factory function to create a new Multichain SDK instance.
 
-> **Singleton:** `createMultichainClient` returns a single shared instance per global context. Calling it a second time with different options will merge the new `api.supportedNetworks`, `ui.*`, `mobile.*`, `transport.extensionId`, and `debug` values into the existing instance rather than creating a new one. The `dapp` value is never overwritten on subsequent calls.
+> **Singleton:** `createMultichainClient` returns a single shared instance per global context. Calling it a second time with different options will merge the new `api.supportedNetworks`, `versions`, `ui.*`, `mobile.*`, `transport.extensionId`, and `debug` values into the existing instance rather than creating a new one. The `dapp` value is never overwritten on subsequent calls.
 
 #### Parameters
 
@@ -155,6 +155,7 @@ Factory function to create a new Multichain SDK instance.
 | `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                |
 | `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                           |
 | `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                          |
+| `versions`                  | `Partial<ConnectVersions>`                    | No       | Internal: set automatically by `createEVMClient` / `createSolanaClient`. Consumers do not need to provide this. |
 | `debug`                     | `boolean`                                     | No       | Enable debug logging                                                          |
 
 #### Returns

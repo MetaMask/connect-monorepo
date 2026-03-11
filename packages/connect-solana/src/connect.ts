@@ -2,6 +2,8 @@ import {
   createMultichainClient,
   type Scope,
 } from '@metamask/connect-multichain';
+
+declare const __PACKAGE_VERSION__: string;
 import {
   getWalletStandard,
   registerSolanaWalletStandard,
@@ -69,6 +71,7 @@ export async function createSolanaClient(
     api: {
       supportedNetworks,
     },
+    versions: { 'connect-solana': __PACKAGE_VERSION__ },
   });
 
   const client = core.provider;

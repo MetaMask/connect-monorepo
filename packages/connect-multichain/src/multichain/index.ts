@@ -27,7 +27,6 @@ import {
 } from '../config';
 import {
   getVersion,
-  getVersions,
   type InvokeMethodOptions,
   type MultichainOptions,
   type RPCAPI,
@@ -71,6 +70,8 @@ import {
 } from './utils';
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
+
+declare const __PACKAGE_VERSION__: string;
 
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
@@ -152,6 +153,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         ...(options.analytics ?? {}),
         integrationType,
       },
+      versions: {
+        'connect-multichain': __PACKAGE_VERSION__,
+        ...(options.versions ?? {}),
+      },
     };
 
     super(allOptions);
@@ -167,9 +172,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   // Creates a singleton instance of MetaMaskConnectMultichain.
   // If the singleton already exists, it merges the incoming options with the
   // existing singleton options for the following keys: `api.supportedNetworks`,
-  // `ui.*`, `mobile.*`, `transport.extensionId`, `debug`. Take note that the
-  // value for `dapp` is not merged as it does not make sense for subsequent calls to
-  // `createMultichainClient` to have a different `dapp` value.
+  // `versions`, `ui.*`, `mobile.*`, `transport.extensionId`, `debug`. Take note
+  // that the value for `dapp` is not merged as it does not make sense for
+  // subsequent calls to `createMultichainClient` to have a different `dapp` value.
   static async create(
     options: MultichainOptions,
   ): Promise<MetaMaskConnectMultichain> {
@@ -222,14 +227,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       return;
     }
 
-    const versions = getVersions();
     const dappId = getDappId(this.options.dapp);
     const anonId = await this.storage.getAnonId();
 
     const { integrationType } = this.options.analytics ?? {
       integrationType: '',
     };
-    analytics.setGlobalProperty('mmconnect_version', versions);
+    analytics.setGlobalProperty('mmconnect_version', this.options.versions ?? {});
     analytics.setGlobalProperty('dapp_id', dappId);
     analytics.setGlobalProperty('anon_id', anonId);
     analytics.setGlobalProperty('platform', platform);

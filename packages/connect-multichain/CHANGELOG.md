@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add version registry (`registerPackageVersion`, `getVersions`) so each connect package can report its version in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+- Add `versions` constructor option to `createMultichainClient` so chain-specific packages (`connect-evm`, `connect-solana`) can report their version in analytics events. Versions are merged into the singleton on each call, following the same pattern as `api.supportedNetworks`. ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
 
 ### Changed
 

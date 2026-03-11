@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Register `connect-evm` package version in the analytics version registry at module load ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+- Pass `connect-evm` package version to `createMultichainClient` via the `versions` option so it appears in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
 
 ### Fixed
 

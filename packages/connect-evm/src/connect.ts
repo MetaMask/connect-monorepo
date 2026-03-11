@@ -14,6 +14,8 @@ import {
   isRejectionError,
   TransportType,
 } from '@metamask/connect-multichain';
+
+declare const __PACKAGE_VERSION__: string;
 import { hexToNumber } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
@@ -1037,6 +1039,7 @@ export async function createEVMClient(
       api: {
         supportedNetworks: supportedNetworksCaipChainId,
       },
+      versions: { 'connect-evm': __PACKAGE_VERSION__ },
     });
 
     return MetamaskConnectEVM.create({
