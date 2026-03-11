@@ -1,4 +1,4 @@
-import pkg from '../../package.json';
+declare const __PACKAGE_VERSION__: string;
 
 export type ConnectPackageName =
   | 'connect-multichain'
@@ -44,4 +44,4 @@ export function getVersions(): ConnectVersions {
   return Object.fromEntries(versionRegistry) as ConnectVersions;
 }
 
-registerPackageVersion('connect-multichain', pkg.version);
+registerPackageVersion('connect-multichain', __PACKAGE_VERSION__);

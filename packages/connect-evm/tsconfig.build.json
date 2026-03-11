@@ -24,6 +24,6 @@
     { "path": "../analytics/tsconfig.build.json" },
     { "path": "../connect-multichain/tsconfig.build.json" }
   ],
-  "include": ["./src", "./package.json"],
+  "include": ["./src"],
   "exclude": ["node_modules", "dist", "./tests", "**/*.spec.ts", "**/*.test.ts"]
 }

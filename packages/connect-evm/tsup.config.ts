@@ -25,6 +25,11 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: {
+      __PACKAGE_VERSION__: JSON.stringify(
+        (pkg as { version: string }).version,
+      ),
+    },
     esbuildOptions: (options) => {
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];

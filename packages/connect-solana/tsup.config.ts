@@ -9,6 +9,10 @@ const peerDeps = Object.keys((pkg as any).peerDependencies ?? {});
 const external = [...deps, ...peerDeps];
 const entryName = (pkg as any).name.replace('@metamask/', '');
 
+const versionDefine = {
+  __PACKAGE_VERSION__: JSON.stringify((pkg as any).version),
+};
+
 export default defineConfig([
   // Browser ESM build
   {
@@ -22,6 +26,7 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: versionDefine,
     esbuildOptions: (options) => {
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
@@ -44,6 +49,7 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: versionDefine,
     esbuildOptions: (options) => {
       options.platform = 'node';
       options.mainFields = ['module', 'main'];
@@ -66,6 +72,7 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: versionDefine,
     esbuildOptions: (options) => {
       options.platform = 'node';
       options.mainFields = ['module', 'main'];

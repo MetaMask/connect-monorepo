@@ -1,8 +1,8 @@
 import { registerPackageVersion } from '@metamask/connect-multichain';
 
-import pkg from '../package.json';
+declare const __PACKAGE_VERSION__: string;
 
-registerPackageVersion('connect-evm', pkg.version);
+registerPackageVersion('connect-evm', __PACKAGE_VERSION__);
 
 export { getInfuraRpcUrls } from './utils/infura';
 export { createEVMClient, type MetamaskConnectEVM } from './connect';

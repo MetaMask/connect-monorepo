@@ -1,8 +1,8 @@
 import { registerPackageVersion } from '@metamask/connect-multichain';
 
-import pkg from '../package.json';
+declare const __PACKAGE_VERSION__: string;
 
-registerPackageVersion('connect-solana', pkg.version);
+registerPackageVersion('connect-solana', __PACKAGE_VERSION__);
 
 export { createSolanaClient } from './connect';
 export type {

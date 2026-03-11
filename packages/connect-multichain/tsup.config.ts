@@ -51,7 +51,10 @@ const baseConfig: Partial<Options> = {
   metafile: true,
   clean: false, // We handle cleaning via scripts
   dts: true, // Emit .d.ts alongside each env build
-  splitting: false, // Keep bundle as single file to match rollup,
+  splitting: false, // Keep bundle as single file to match rollup
+  define: {
+    __PACKAGE_VERSION__: JSON.stringify(pkg.version),
+  },
 };
 
 const entryName = packageJson.name.replace('@metamask/', '');
