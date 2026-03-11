@@ -6,6 +6,7 @@ import pkg from './package.json';
 
 export default defineConfig({
   define: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     __PACKAGE_VERSION__: JSON.stringify(pkg.version),
   },
   test: {

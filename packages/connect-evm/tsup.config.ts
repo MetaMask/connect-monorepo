@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Tsup config convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
 
 import { defineConfig } from 'tsup';
 
@@ -26,9 +27,7 @@ export default defineConfig([
     external,
     tsconfig: './tsconfig.json',
     define: {
-      __PACKAGE_VERSION__: JSON.stringify(
-        (pkg as { version: string }).version,
-      ),
+      __PACKAGE_VERSION__: JSON.stringify((pkg as { version: string }).version),
     },
     esbuildOptions: (options) => {
       options.platform = 'browser';

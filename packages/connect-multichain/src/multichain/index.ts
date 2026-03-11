@@ -233,7 +233,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     const { integrationType } = this.options.analytics ?? {
       integrationType: '',
     };
-    analytics.setGlobalProperty('mmconnect_version', this.options.versions ?? {});
+    analytics.setGlobalProperty(
+      'mmconnect_version',
+      this.options.versions ?? {},
+    );
     analytics.setGlobalProperty('dapp_id', dappId);
     analytics.setGlobalProperty('anon_id', anonId);
     analytics.setGlobalProperty('platform', platform);

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Tsup config */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
 import { defineConfig, type Options } from 'tsup';
 
