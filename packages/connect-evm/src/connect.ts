@@ -222,6 +222,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       analytics.track('mmconnect_wallet_action_requested', props);
     } catch (error) {
@@ -248,6 +249,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       analytics.track('mmconnect_wallet_action_succeeded', props);
     } catch (error) {
@@ -276,6 +278,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       const isRejection = isRejectionError(error);
       if (isRejection) {

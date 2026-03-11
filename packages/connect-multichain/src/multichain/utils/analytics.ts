@@ -75,12 +75,14 @@ export async function getBaseAnalyticsProperties(
  * @param options - Multichain options containing dapp and analytics config
  * @param storage - Storage client for getting anonymous ID
  * @param invokeOptions - The invoke method options containing method and scope
+ * @param transportType - The transport type to use for the analytics event
  * @returns Wallet action analytics properties
  */
 export async function getWalletActionAnalyticsProperties(
   options: MultichainOptions,
   storage: StoreClient,
   invokeOptions: InvokeMethodOptions,
+  transportType: TransportType,
 ): Promise<{
   mmconnect_version: string;
   dapp_id: string;
@@ -88,6 +90,7 @@ export async function getWalletActionAnalyticsProperties(
   integration_type: string;
   caip_chain_id: string;
   anon_id: string;
+  transport_type: TransportType;
 }> {
   const version = getVersion();
   const dappId = getDappId(options.dapp);
@@ -103,5 +106,6 @@ export async function getWalletActionAnalyticsProperties(
     integration_type: integrationType,
     caip_chain_id: invokeOptions.scope,
     anon_id: anonId,
+    transport_type: transportType,
   };
 }
