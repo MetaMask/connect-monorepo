@@ -329,15 +329,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     try {
       await this.#setupAnalytics();
       await this.#setupTransport();
-      try {
-        const baseProps = await getBaseAnalyticsProperties(
-          this.options,
-          this.storage,
-        );
-        analytics.track('mmconnect_initialized', baseProps);
-      } catch (error) {
-        logger('Error tracking initialized event', error);
-      }
     } catch (error) {
       await this.storage.removeTransport();
       this.status = 'pending';

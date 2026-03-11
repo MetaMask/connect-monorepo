@@ -101,17 +101,7 @@ function testSuite<T extends MultichainOptions>({
           t.expect(enableSpy).not.toHaveBeenCalled();
         } else {
           // For web and web-mobile platforms, analytics should be enabled
-          t.expect(enableSpy.mock.calls.length).toBeGreaterThan(0);
-          t.expect(trackSpy.mock.calls.length).toBeGreaterThan(0);
-          t.expect(trackSpy).toHaveBeenCalledWith(
-            'mmconnect_initialized',
-            t.expect.objectContaining({
-              mmconnect_version: t.expect.any(String),
-              dapp_id: t.expect.any(String),
-              platform: t.expect.any(String),
-              integration_type: t.expect.any(String),
-            }),
-          );
+          t.expect(enableSpy).toHaveBeenCalled();
         }
 
         enableSpy.mockRestore();
