@@ -506,10 +506,10 @@ Helper function to generate EVM Infura RPC URLs for common networks keyed by hex
 
 **Parameters**
 
-| Name           | Type     | Required | Description                               |
-| -------------- | -------- | -------- | ----------------------------------------- |
-| `infuraApiKey` | `string` | Yes      | Your Infura API key                       |
-| `chainIds`     | `Hex[]`  | No       | Hex chain IDs to filter the output        |
+| Name           | Type     | Required | Description                        |
+| -------------- | -------- | -------- | ---------------------------------- |
+| `infuraApiKey` | `string` | Yes      | Your Infura API key                |
+| `chainIds`     | `Hex[]`  | No       | Hex chain IDs to filter the output |
 
 **Returns**
 

@@ -343,10 +343,10 @@ Generates Infura RPC URLs for common networks keyed by CAIP Chain ID.
 
 **Parameters**
 
-| Name              | Type             | Required | Description                                          |
-| ----------------- | ---------------- | -------- | ---------------------------------------------------- |
-| `infuraApiKey`    | `string`         | Yes      | Your Infura API key                                  |
-| `caipChainIds`    | `CaipChainId[]`  | No       | CAIP-2 chain IDs to filter the output                |
+| Name           | Type            | Required | Description                           |
+| -------------- | --------------- | -------- | ------------------------------------- |
+| `infuraApiKey` | `string`        | Yes      | Your Infura API key                   |
+| `caipChainIds` | `CaipChainId[]` | No       | CAIP-2 chain IDs to filter the output |
 
 **Returns**
 

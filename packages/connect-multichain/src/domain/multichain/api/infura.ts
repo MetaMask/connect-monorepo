@@ -18,10 +18,13 @@ export function getInfuraRpcUrls({
   infuraApiKey: string;
   caipChainIds?: CaipChainId[];
 }): RpcUrlsMap {
-  const keys = caipChainIds && caipChainIds.length > 0 ? caipChainIds : Object.keys(infuraRpcUrls) as CaipChainId[];
+  const keys =
+    caipChainIds && caipChainIds.length > 0
+      ? caipChainIds
+      : (Object.keys(infuraRpcUrls) as CaipChainId[]);
 
   return keys.reduce<RpcUrlsMap>((acc, key) => {
-    const baseUrl = infuraRpcUrls[key as keyof typeof infuraRpcUrls];
+    const baseUrl = infuraRpcUrls[key];
     if (baseUrl) {
       acc[key] = `${baseUrl}${infuraApiKey}`;
     }
