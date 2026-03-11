@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add version registry (`registerPackageVersion`, `getVersions`) so each connect package can report its version in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
+### Changed
+
+- **BREAKING** `mmconnect_version` analytics property is now a `Record<string, string>` keyed by package name instead of a plain version string ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
 ### Fixed
 
 - Fix a bug where wallet_sessionChanged events were failing to propagate to the `ConnectMultichain` instance when the `DefaultTransport` is using the `WindowPostMessageTransport`. This was affecting Firefox, both iOS and Android in-app browsers ([#204](https://github.com/MetaMask/connect-monorepo/pull/204))

@@ -106,7 +106,7 @@ function testSuite<T extends MultichainOptions>({
           t.expect(trackSpy).toHaveBeenCalledWith(
             'mmconnect_initialized',
             t.expect.objectContaining({
-              mmconnect_version: t.expect.any(String),
+              mmconnect_version: t.expect.any(Object),
               dapp_id: t.expect.any(String),
               platform: t.expect.any(String),
               integration_type: t.expect.any(String),

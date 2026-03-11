@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Register `connect-evm` package version in the analytics version registry at module load ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
 ### Fixed
 
 - Fix an issue where `connect` would always return the default chain id regardless of other chains being specified. This also affected `connectWith` and `connectAndSign` ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))

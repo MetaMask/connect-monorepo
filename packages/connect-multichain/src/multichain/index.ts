@@ -27,6 +27,7 @@ import {
 } from '../config';
 import {
   getVersion,
+  getVersions,
   type InvokeMethodOptions,
   type MultichainOptions,
   type RPCAPI,
@@ -221,14 +222,14 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       return;
     }
 
-    const version = getVersion();
+    const versions = getVersions();
     const dappId = getDappId(this.options.dapp);
     const anonId = await this.storage.getAnonId();
 
     const { integrationType } = this.options.analytics ?? {
       integrationType: '',
     };
-    analytics.setGlobalProperty('mmconnect_version', version);
+    analytics.setGlobalProperty('mmconnect_version', versions);
     analytics.setGlobalProperty('dapp_id', dappId);
     analytics.setGlobalProperty('anon_id', anonId);
     analytics.setGlobalProperty('platform', platform);

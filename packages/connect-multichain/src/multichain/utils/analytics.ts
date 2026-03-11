@@ -8,7 +8,12 @@ import type {
   Scope,
   StoreClient,
 } from '../../domain';
-import { getPlatformType, getVersion, TransportType } from '../../domain';
+import {
+  type ConnectVersions,
+  getPlatformType,
+  getVersions,
+  TransportType,
+} from '../../domain';
 
 /**
  * Checks if an error represents a user rejection.
@@ -46,13 +51,13 @@ export async function getBaseAnalyticsProperties(
   options: MultichainOptions,
   storage: StoreClient,
 ): Promise<{
-  mmconnect_version: string;
+  mmconnect_version: ConnectVersions;
   dapp_id: string;
   platform: PlatformType;
   integration_type: string;
   anon_id: string;
 }> {
-  const version = getVersion();
+  const versions = getVersions();
   const dappId = getDappId(options.dapp);
   const platform = getPlatformType();
   const anonId = await storage.getAnonId();
@@ -61,7 +66,7 @@ export async function getBaseAnalyticsProperties(
       ?.integrationType ?? TransportType.UNKNOWN;
 
   return {
-    mmconnect_version: version,
+    mmconnect_version: versions,
     dapp_id: dappId,
     platform,
     integration_type: integrationType,
@@ -82,14 +87,14 @@ export async function getWalletActionAnalyticsProperties(
   storage: StoreClient,
   invokeOptions: InvokeMethodOptions,
 ): Promise<{
-  mmconnect_version: string;
+  mmconnect_version: ConnectVersions;
   dapp_id: string;
   method: string;
   integration_type: string;
   caip_chain_id: string;
   anon_id: string;
 }> {
-  const version = getVersion();
+  const versions = getVersions();
   const dappId = getDappId(options.dapp);
   const anonId = await storage.getAnonId();
   const integrationType =
@@ -97,7 +102,7 @@ export async function getWalletActionAnalyticsProperties(
       ?.integrationType ?? 'unknown';
 
   return {
-    mmconnect_version: version,
+    mmconnect_version: versions,
     dapp_id: dappId,
     method: invokeOptions.request.method,
     integration_type: integrationType,
