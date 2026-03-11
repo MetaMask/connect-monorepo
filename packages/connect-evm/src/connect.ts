@@ -642,16 +642,6 @@ export class MetamaskConnectEVM {
     }
 
     if (isAccountsRequest(request)) {
-      const { method } = request;
-      const decimalChainId = hexToNumber(
-        this.#provider.selectedChainId ?? '0x1',
-      );
-      const scope: Scope = `eip155:${decimalChainId}`;
-      const params: unknown[] = [];
-
-      await this.#trackWalletActionRequested(method, scope, params);
-      await this.#trackWalletActionSucceeded(method, scope, params);
-
       return this.#provider.accounts;
     }
 
