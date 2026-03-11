@@ -20,11 +20,14 @@ import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
 
+const CONNECT_AND_SIGN_MESSAGE = 'Hello from MetaMask Connect Playground!';
+
 function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
 
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
+  const [legacySignature, setLegacySignature] = useState<string | null>(null);
 
   // Get Solana wallet error from provider context
   const { walletError: solanaError, clearWalletError: clearSolanaError } = useSolanaSDK();
@@ -44,6 +47,7 @@ function App() {
     sdk: legacySDK,
     error: legacyError,
     connect: legacyConnect,
+    connectAndSign: legacyConnectAndSign,
     disconnect: legacyDisconnect,
   } = useLegacyEVMSDK();
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
@@ -121,6 +125,17 @@ function App() {
     const chainIds = convertCaipChainIdsToHex(selectedScopesArray) as Hex[];
     await legacyConnect(chainIds);
   }, [customScopes, legacyConnect]);
+
+  const connectLegacyEVMAndSign = useCallback(async () => {
+    setLegacySignature(null);
+    const selectedScopesArray = customScopes.filter((scope) => scope.length);
+    const chainIds = convertCaipChainIdsToHex(selectedScopesArray) as Hex[];
+    const signature = await legacyConnectAndSign(
+      CONNECT_AND_SIGN_MESSAGE,
+      chainIds,
+    );
+    setLegacySignature(signature);
+  }, [customScopes, legacyConnectAndSign]);
 
   const connectWagmi = useCallback(async () => {
     // Clear any previous error
@@ -249,6 +264,17 @@ function App() {
               </button>
             )}
 
+            {!legacyConnected && (
+              <button
+                type="button"
+                data-testid={TEST_IDS.legacyEvm.btnConnectAndSign}
+                onClick={connectLegacyEVMAndSign}
+                className="bg-green-700 text-white px-5 py-2 rounded text-base hover:bg-green-800 transition-colors"
+              >
+                Connect &amp; Sign (Legacy EVM)
+              </button>
+            )}
+
             {(!wagmiConnected) && (
               <button
                 type="button"
@@ -359,6 +385,20 @@ function App() {
             )}
           </section>
         )}
+        {legacySignature && (
+          <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-2">
+              connectAndSign Result
+            </h2>
+            <p className="text-xs text-gray-500 mb-1">
+              Message: &quot;{CONNECT_AND_SIGN_MESSAGE}&quot;
+            </p>
+            <p className="font-mono text-sm text-green-700 break-all">
+              {legacySignature}
+            </p>
+          </section>
+        )}
+
         <section
           data-testid={TEST_IDS.app.sectionConnected}
           className="bg-white rounded-lg p-8 mb-6 shadow-sm"

@@ -26,6 +26,12 @@ type MockCore = MultichainCore & {
       forceRequest?: boolean,
     ) => Promise<void>
   >;
+  invokeMethod: Mock<
+    (options: {
+      scope: string;
+      request: { method: string; params: unknown[] };
+    }) => Promise<unknown>
+  >;
 };
 
 /**
@@ -72,6 +78,7 @@ function createMockCore(): MockCore {
     }),
     disconnect: vi.fn().mockResolvedValue(undefined),
     connect: vi.fn().mockResolvedValue(undefined),
+    invokeMethod: vi.fn().mockResolvedValue('0xsignature'),
     transport: {
       sendEip1193Message,
       onNotification,
@@ -307,6 +314,160 @@ describe('MetamaskConnectEVM', () => {
         chainId: '0x1',
         accounts: ['0x1234567890123456789012345678901234567890'],
       });
+    });
+
+    it('returns the first explicitly requested chain when the session also includes the default chain', async () => {
+      const mockCore = createMockCore();
+      // Cache is empty — no prior selection
+      mockCore.storage.adapter.get.mockResolvedValue(null);
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        // Wallet grants both the requested chain and the default bootstrap chain
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+            'eip155:137': {
+              methods: [],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      // Caller explicitly requests Polygon — should get 0x89 back, not mainnet
+      const result = await client.connect({ chainIds: ['0x89'] });
+
+      expect(result.chainId).toBe('0x89');
+    });
+
+    it('returns the first explicitly requested chain when multiple chains are requested', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(null);
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+            'eip155:137': {
+              methods: [],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      // First element of chainIds should win regardless of order in session scopes
+      const result = await client.connect({ chainIds: ['0x89', '0x1'] });
+
+      expect(result.chainId).toBe('0x89');
+    });
+  });
+
+  describe('connectAndSign', () => {
+    it('routes personal_sign through the explicitly requested chain scope', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(null);
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: ['personal_sign'],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+            'eip155:137': {
+              methods: ['personal_sign'],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+      // Simulate supportedNetworks so the provider validates the scope
+      (mockCore as any).options = {
+        api: {
+          supportedNetworks: {
+            'eip155:137': 'https://polygon-rpc.com',
+            'eip155:1': 'https://mainnet.infura.io',
+          },
+        },
+      };
+      mockCore.invokeMethod.mockResolvedValue('0xsignature');
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await client.connectAndSign({ message: 'hello', chainIds: ['0x89'] });
+
+      // personal_sign must be invoked on the Polygon scope, not mainnet
+      expect(mockCore.invokeMethod).toHaveBeenCalledWith(
+        expect.objectContaining({ scope: 'eip155:137' }),
+      );
+    });
+  });
+
+  describe('connectWith', () => {
+    it('routes the method call through the explicitly requested chain scope', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(null);
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: ['eth_sendTransaction'],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+            'eip155:137': {
+              methods: ['eth_sendTransaction'],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+      (mockCore as any).options = {
+        api: {
+          supportedNetworks: {
+            'eip155:137': 'https://polygon-rpc.com',
+            'eip155:1': 'https://mainnet.infura.io',
+          },
+        },
+      };
+      mockCore.invokeMethod.mockResolvedValue('0xtxhash');
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await client.connectWith({
+        method: 'eth_sendTransaction',
+        params: (account) => [{ from: account, to: account, value: '0x0' }],
+        chainIds: ['0x89'],
+      });
+
+      expect(mockCore.invokeMethod).toHaveBeenCalledWith(
+        expect.objectContaining({ scope: 'eip155:137' }),
+      );
     });
   });
 
