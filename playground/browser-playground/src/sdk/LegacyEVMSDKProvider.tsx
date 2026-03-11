@@ -43,6 +43,7 @@ const LegacyEVMSDKContext = createContext<
       accounts: string[];
       error: Error | null;
       connect: (chainIds: Hex[]) => Promise<void>;
+      connectAndSign: (message: string, chainIds?: Hex[]) => Promise<string>;
       disconnect: () => Promise<void>;
     }
   | undefined
@@ -144,6 +145,23 @@ export const LegacyEVMSDKProvider = ({
     }
   }, []);
 
+  const connectAndSign = useCallback(
+    async (message: string, chainIds?: Hex[]): Promise<string> => {
+      setError(null);
+      if (!sdkRef.current) {
+        throw new Error('SDK not initialized');
+      }
+      const sdkInstance = await sdkRef.current;
+      const chainIdsToUse =
+        chainIds && chainIds.length > 0 ? chainIds : ['0x1' as Hex];
+      return sdkInstance.connectAndSign({
+        message,
+        chainIds: chainIdsToUse,
+      });
+    },
+    [],
+  );
+
   const disconnect = useCallback(async () => {
     try {
       if (!sdkRef.current) {
@@ -169,6 +187,7 @@ export const LegacyEVMSDKProvider = ({
         accounts,
         error,
         connect,
+        connectAndSign,
         disconnect,
       }}
     >

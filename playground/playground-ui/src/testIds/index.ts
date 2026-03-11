@@ -149,6 +149,7 @@ export const TEST_IDS = {
     responseText: 'legacy-evm-response-text',
 
     // Buttons
+    btnConnectAndSign: 'legacy-evm-btn-connect-and-sign',
     btnRequestPermissions: 'legacy-evm-btn-request-permissions',
     btnSignTypedDataV4: 'legacy-evm-btn-sign-typed-data-v4',
     btnPersonalSign: 'legacy-evm-btn-personal-sign',
