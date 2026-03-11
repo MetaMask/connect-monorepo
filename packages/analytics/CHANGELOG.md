@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING** `MMConnectProperties.mmconnect_version` type changed from `string` to `Record<string, string>` ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+- **BREAKING** `MMConnectProperties.mmconnect_versions` type changed from `string` to `Record<string, string>` ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
 
 ## [0.2.0]
 

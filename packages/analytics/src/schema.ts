@@ -556,7 +556,7 @@ export type components = {
     };
     MMConnectProperties: {
       /** @description Package versions keyed by connect package name */
-      mmconnect_version: Record<string, string>;
+      mmconnect_versions: Record<string, string>;
       dapp_id: string;
       /** Format: uuid */
       anon_id: string;

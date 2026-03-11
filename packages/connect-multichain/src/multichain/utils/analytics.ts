@@ -47,7 +47,7 @@ export async function getBaseAnalyticsProperties(
   options: MultichainOptions,
   storage: StoreClient,
 ): Promise<{
-  mmconnect_version: ConnectVersions | Partial<ConnectVersions>;
+  mmconnect_versions: ConnectVersions | Partial<ConnectVersions>;
   dapp_id: string;
   platform: PlatformType;
   integration_type: string;
@@ -61,7 +61,7 @@ export async function getBaseAnalyticsProperties(
       ?.integrationType ?? TransportType.UNKNOWN;
 
   return {
-    mmconnect_version: options.versions ?? {},
+    mmconnect_versions: options.versions ?? {},
     dapp_id: dappId,
     platform,
     integration_type: integrationType,
@@ -82,7 +82,7 @@ export async function getWalletActionAnalyticsProperties(
   storage: StoreClient,
   invokeOptions: InvokeMethodOptions,
 ): Promise<{
-  mmconnect_version: ConnectVersions | Partial<ConnectVersions>;
+  mmconnect_versions: ConnectVersions | Partial<ConnectVersions>;
   dapp_id: string;
   method: string;
   integration_type: string;
@@ -96,7 +96,7 @@ export async function getWalletActionAnalyticsProperties(
       ?.integrationType ?? 'unknown';
 
   return {
-    mmconnect_version: options.versions ?? {},
+    mmconnect_versions: options.versions ?? {},
     dapp_id: dappId,
     method: invokeOptions.request.method,
     integration_type: integrationType,

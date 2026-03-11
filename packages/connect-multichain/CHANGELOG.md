@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING** `mmconnect_version` analytics property is now a `Record<string, string>` keyed by package name instead of a plain version string ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+- **BREAKING** `mmconnect_versions` analytics property is now a `Record<string, string>` keyed by package name instead of a plain version string ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
 
 ### Fixed
 
