@@ -947,7 +947,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     const { transport, options } = this;
 
     const rpcClient = new RpcClient(options, this.#sdkInfo);
-    const requestRouter = new RequestRouter(transport, rpcClient, options, this.transportType);
+    const requestRouter = new RequestRouter(
+      transport,
+      rpcClient,
+      options,
+      this.transportType,
+    );
     // TODO: need read only method support for solana
     return requestRouter.invokeMethod(request);
   }

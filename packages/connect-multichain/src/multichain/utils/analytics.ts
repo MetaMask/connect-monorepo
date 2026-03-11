@@ -75,6 +75,7 @@ export async function getBaseAnalyticsProperties(
  * @param options - Multichain options containing dapp and analytics config
  * @param storage - Storage client for getting anonymous ID
  * @param invokeOptions - The invoke method options containing method and scope
+ * @param transportType - The transport type to use for the analytics event
  * @returns Wallet action analytics properties
  */
 export async function getWalletActionAnalyticsProperties(
