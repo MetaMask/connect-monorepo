@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- Scope type used in JSDoc */
 import { getDappId } from '.';
 import type {
-  ConnectVersions,
   InvokeMethodOptions,
   MultichainOptions,
   PlatformType,
@@ -47,7 +46,7 @@ export async function getBaseAnalyticsProperties(
   options: MultichainOptions,
   storage: StoreClient,
 ): Promise<{
-  mmconnect_versions: ConnectVersions | Partial<ConnectVersions>;
+  mmconnect_versions: Record<string, string>;
   dapp_id: string;
   platform: PlatformType;
   integration_type: string;
@@ -82,7 +81,7 @@ export async function getWalletActionAnalyticsProperties(
   storage: StoreClient,
   invokeOptions: InvokeMethodOptions,
 ): Promise<{
-  mmconnect_versions: ConnectVersions | Partial<ConnectVersions>;
+  mmconnect_versions: Record<string, string>;
   dapp_id: string;
   method: string;
   integration_type: string;

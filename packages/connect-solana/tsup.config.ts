@@ -3,15 +3,17 @@
 
 import { defineConfig } from 'tsup';
 
-import pkg from './package.json';
+import packageJson from './package.json';
 
-const deps = Object.keys((pkg as any).dependencies ?? {});
-const peerDeps = Object.keys((pkg as any).peerDependencies ?? {});
+const pkg: any = packageJson as any;
+
+const deps = Object.keys(pkg.dependencies ?? {});
+const peerDeps = Object.keys(pkg.peerDependencies ?? {});
 const external = [...deps, ...peerDeps];
-const entryName = (pkg as any).name.replace('@metamask/', '');
+const entryName = pkg.name.replace('@metamask/', '');
 
 const versionDefine = {
-  __PACKAGE_VERSION__: JSON.stringify((pkg as any).version),
+  __PACKAGE_VERSION__: JSON.stringify(pkg.version),
 };
 
 export default defineConfig([
