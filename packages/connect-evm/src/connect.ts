@@ -108,6 +108,14 @@ export class MetamaskConnectEVM {
   #status: ConnectEvmStatus = 'disconnected';
 
   /**
+   * The preferred chain ID to use for the active connect() call.
+   * Set to the first explicit chainId passed by the caller, cleared once the
+   * connect event resolves. Takes priority over the cache in #getSelectedChainId
+   * so that an explicit chainIds request always wins over a prior cached value.
+   */
+  #pendingPreferredChainId: Hex | undefined;
+
+  /**
    * Creates a new MetamaskConnectEVM instance.
    * Use the static `create()` method instead to ensure proper async initialization.
    *
@@ -281,12 +289,23 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Gets the currently selected chainId from cache, or falls back to the first permitted chain.
+   * Gets the currently selected chainId. Priority order:
+   * - Explicit caller preference from an active connect() call, if permitted.
+   * - Cached chainId from storage, if permitted.
+   * - First permitted chain as a fallback.
    *
    * @param permittedChainIds - Array of permitted chain IDs in hex format
    * @returns The selected chainId (hex string)
    */
   async #getSelectedChainId(permittedChainIds: Hex[]): Promise<Hex> {
+    // Honour an explicit caller preference set during an active connect() call
+    if (
+      this.#pendingPreferredChainId &&
+      permittedChainIds.includes(this.#pendingPreferredChainId)
+    ) {
+      return this.#pendingPreferredChainId;
+    }
+
     try {
       const cachedChainId =
         await this.#core.storage.adapter.get(CHAIN_STORE_KEY);
@@ -312,7 +331,7 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param [options.account] - Optional param to specify an account to connect to
    * @param [options.forceRequest] - Optional param to force a connection request regardless of whether there is a pre-existing session
-   * @param [options.chainIds] - Array of chain IDs to connect to (defaults to ethereum mainnet if not provided)
+   * @param [options.chainIds] - Array of chain IDs to request permission for (defaults to ethereum mainnet). The first entry is used as the active chain returned by the call. Ethereum mainnet is always included in the permission request as a bootstrap fallback.
    * @returns A promise that resolves with the connected accounts and chain ID
    */
   async connect({
@@ -326,6 +345,11 @@ export class MetamaskConnectEVM {
       throw new Error('chainIds must be an array of at least one chain ID');
     }
 
+    // The first explicitly-requested chain is preferred for chain selection.
+    // DEFAULT_CHAIN_ID is still included in the permission request as a bootstrap
+    // fallback, but it must not win over an explicit caller request.
+    this.#pendingPreferredChainId = chainIds[0];
+
     const caipChainIds = Array.from(
       new Set(chainIds.concat(DEFAULT_CHAIN_ID) ?? [DEFAULT_CHAIN_ID]),
     ).map((id) => `eip155:${hexToNumber(id)}`);
@@ -338,18 +362,20 @@ export class MetamaskConnectEVM {
 
     try {
       // Wait for the wallet_sessionChanged event to fire and set the provider properties
-      const result = new Promise((resolve) => {
-        this.#provider.once('connect', ({ chainId, accounts }) => {
-          logger('fulfilled-request: connect', {
-            chainId,
-            accounts,
+      const result = new Promise<{ accounts: Address[]; chainId: Hex }>(
+        (resolve) => {
+          this.#provider.once('connect', ({ chainId, accounts }) => {
+            logger('fulfilled-request: connect', {
+              chainId,
+              accounts,
+            });
+            resolve({
+              accounts,
+              chainId,
+            });
           });
-          resolve({
-            accounts,
-            chainId: chainId as Hex,
-          });
-        });
-      });
+        },
+      );
 
       await this.#core.connect(
         caipChainIds as Scope[],
@@ -358,11 +384,15 @@ export class MetamaskConnectEVM {
         forceRequest,
       );
 
-      return result as Promise<{ accounts: Address[]; chainId: Hex }>;
+      // Await here so the finally block always runs after #onSessionChanged
+      // has consumed #pendingPreferredChainId, not before.
+      return await result;
     } catch (error) {
       this.#status = 'disconnected';
       logger('Error connecting to wallet', error);
       throw error;
+    } finally {
+      this.#pendingPreferredChainId = undefined;
     }
   }
 
