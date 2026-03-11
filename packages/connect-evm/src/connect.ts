@@ -527,7 +527,6 @@ export class MetamaskConnectEVM {
     const scope: Scope = `eip155:${hexToNumber(chainId)}`;
     const params = [{ chainId }];
 
-
     // TODO (wenfix): better way to return here other than resolving.
     if (this.selectedChainId === chainId) {
       return Promise.resolve();
