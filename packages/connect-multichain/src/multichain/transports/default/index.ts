@@ -141,7 +141,13 @@ export class DefaultTransport implements ExtendedTransport {
 
   async #init(): Promise<void> {
     this.#setupMessageListener();
-    await this.#transport.connect();
+    // #transport.connect() internally calls disconnect() if the transport is connected,
+    // and clears all listeners in the process. This ensures that we don't lose any listeners
+    // by only connecting if we aren't already connected. Opting for this approach rather than a larger refactor
+    // of who is responsible for managing listener setup and cleanup.
+    if (!this.#transport.isConnected()) {
+      await this.#transport.connect();
+    }
   }
 
   async sendEip1193Message<
