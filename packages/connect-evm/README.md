@@ -216,11 +216,11 @@ Connects to MetaMask wallet.
 
 **Parameters**
 
-| Name                   | Type      | Required | Description                                                                                                                                                                              |
-| ---------------------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name                   | Type      | Required | Description                                                                                                                                                                                                                                                                         |
+| ---------------------- | --------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options.chainIds`     | `Hex[]`   | No       | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided). Note: Ethereum mainnet (`0x1`) is always included in the permission request regardless of what is passed. The **first** entry in the array becomes the active chain returned by the call. |
-| `options.account`      | `string`  | No       | Specific account address to connect                                                                                                                                                      |
-| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                                                                                                                 |
+| `options.account`      | `string`  | No       | Specific account address to connect                                                                                                                                                                                                                                                 |
+| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                                                                                                                                                                                                            |
 
 **Returns**
 
@@ -240,9 +240,9 @@ Connects and immediately signs a message using `personal_sign`.
 
 **Parameters**
 
-| Name               | Type     | Required | Description                                         |
-| ------------------ | -------- | -------- | --------------------------------------------------- |
-| `options.message`  | `string` | Yes      | The message to sign after connecting                                                                       |
+| Name               | Type     | Required | Description                                                                                                                 |
+| ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `options.message`  | `string` | Yes      | The message to sign after connecting                                                                                        |
 | `options.chainIds` | `Hex[]`  | No       | Hex chain IDs to request permission for (defaults to `['0x1']`). The first entry becomes the active chain used for signing. |
 
 **Returns**
@@ -262,13 +262,13 @@ Connects and immediately invokes a method with specified parameters.
 
 **Parameters**
 
-| Name                   | Type                                             | Required | Description                                                                             |
-| ---------------------- | ------------------------------------------------ | -------- | --------------------------------------------------------------------------------------- |
-| `options.method`       | `string`                                         | Yes      | The RPC method name to invoke                                                           |
-| `options.params`       | `unknown[] \| ((account: Address) => unknown[])` | Yes      | Method parameters, or a function that receives the connected account and returns params |
+| Name                   | Type                                             | Required | Description                                                                                                                         |
+| ---------------------- | ------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `options.method`       | `string`                                         | Yes      | The RPC method name to invoke                                                                                                       |
+| `options.params`       | `unknown[] \| ((account: Address) => unknown[])` | Yes      | Method parameters, or a function that receives the connected account and returns params                                             |
 | `options.chainIds`     | `Hex[]`                                          | No       | Hex chain IDs to request permission for (defaults to `['0x1']`). The first entry becomes the active chain used for the method call. |
-| `options.account`      | `string`                                         | No       | Specific account to connect                                                             |
-| `options.forceRequest` | `boolean`                                        | No       | Force a new connection request                                                          |
+| `options.account`      | `string`                                         | No       | Specific account to connect                                                                                                         |
+| `options.forceRequest` | `boolean`                                        | No       | Force a new connection request                                                                                                      |
 
 **Returns**
 
