@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.0]
 
-### Uncategorized
+### Fixed
 
 - fix: use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
 
