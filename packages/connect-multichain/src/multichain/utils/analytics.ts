@@ -8,7 +8,7 @@ import type {
   Scope,
   StoreClient,
 } from '../../domain';
-import { getPlatformType, getVersion, TransportType } from '../../domain';
+import { getPlatformType, TransportType } from '../../domain';
 
 /**
  * Checks if an error represents a user rejection.
@@ -46,13 +46,12 @@ export async function getBaseAnalyticsProperties(
   options: MultichainOptions,
   storage: StoreClient,
 ): Promise<{
-  mmconnect_version: string;
+  mmconnect_versions: Record<string, string>;
   dapp_id: string;
   platform: PlatformType;
   integration_type: string;
   anon_id: string;
 }> {
-  const version = getVersion();
   const dappId = getDappId(options.dapp);
   const platform = getPlatformType();
   const anonId = await storage.getAnonId();
@@ -61,7 +60,7 @@ export async function getBaseAnalyticsProperties(
       ?.integrationType ?? TransportType.UNKNOWN;
 
   return {
-    mmconnect_version: version,
+    mmconnect_versions: options.versions ?? {},
     dapp_id: dappId,
     platform,
     integration_type: integrationType,
@@ -75,21 +74,23 @@ export async function getBaseAnalyticsProperties(
  * @param options - Multichain options containing dapp and analytics config
  * @param storage - Storage client for getting anonymous ID
  * @param invokeOptions - The invoke method options containing method and scope
+ * @param transportType - The transport type to use for the analytics event
  * @returns Wallet action analytics properties
  */
 export async function getWalletActionAnalyticsProperties(
   options: MultichainOptions,
   storage: StoreClient,
   invokeOptions: InvokeMethodOptions,
+  transportType: TransportType,
 ): Promise<{
-  mmconnect_version: string;
+  mmconnect_versions: Record<string, string>;
   dapp_id: string;
   method: string;
   integration_type: string;
   caip_chain_id: string;
   anon_id: string;
+  transport_type: TransportType;
 }> {
-  const version = getVersion();
   const dappId = getDappId(options.dapp);
   const anonId = await storage.getAnonId();
   const integrationType =
@@ -97,11 +98,12 @@ export async function getWalletActionAnalyticsProperties(
       ?.integrationType ?? 'unknown';
 
   return {
-    mmconnect_version: version,
+    mmconnect_versions: options.versions ?? {},
     dapp_id: dappId,
     method: invokeOptions.request.method,
     integration_type: integrationType,
     caip_chain_id: invokeOptions.scope,
     anon_id: anonId,
+    transport_type: transportType,
   };
 }

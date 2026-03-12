@@ -11,9 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update `getInfuraRpcUrls` calls to use new options object parameter ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
 
+## [0.4.2]
+
+### Added
+
+- Add `integrationType: wagmi` to wagmi metamask connector([#215](https://github.com/MetaMask/connect-monorepo/pull/215/))
+
+## [0.4.1]
+
 ### Added
 
 - Add Connect button that calls legacy EVM `connectAndSign` method ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.7.0
+  - @metamask/connect-multichain@0.9.0
 
 ## [0.4.0]
 
@@ -88,7 +102,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.2...HEAD
+[0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2
+[0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.0...@metamask/browser-playground@0.4.1
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.3.1...@metamask/browser-playground@0.4.0
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.3.0...@metamask/browser-playground@0.3.1
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.2.0...@metamask/browser-playground@0.3.0

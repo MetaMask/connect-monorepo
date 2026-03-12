@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING** `getInfuraRpcUrls` now accepts a single options object `{ infuraApiKey, caipChainIds? }` instead of a positional `infuraApiKey` string. The optional `caipChainIds` parameter filters the output to only the specified CAIP-2 chain IDs ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
 
+## [0.9.0]
+
+### Added
+
+- Add `versions` constructor option to `createMultichainClient` so chain-specific packages (`connect-evm`, `connect-solana`) can report their version in analytics events. Versions are merged into the singleton on each call, following the same pattern as `api.supportedNetworks`. ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
+### Changed
+
+- **BREAKING** `mmconnect_versions` analytics property is now a `Record<string, string>` keyed by package name instead of a plain version string ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
+### Removed
+
+- Stop passing `sdkVersion` to install and OTP modals ([#212](https://github.com/MetaMask/connect-monorepo/pull/212))
+
 ### Fixed
 
 - Fix a bug where wallet_sessionChanged events were failing to propagate to the `ConnectMultichain` instance when the `DefaultTransport` is using the `WindowPostMessageTransport`. This was affecting Firefox, both iOS and Android in-app browsers ([#204](https://github.com/MetaMask/connect-monorepo/pull/204))
@@ -189,7 +203,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.9.0...HEAD
+[0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...@metamask/connect-multichain@0.9.0
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.7.0...@metamask/connect-multichain@0.8.0
 [0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.6.0...@metamask/connect-multichain@0.7.0
 [0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...@metamask/connect-multichain@0.6.0

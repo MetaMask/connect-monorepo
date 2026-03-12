@@ -9,7 +9,6 @@ export namespace Components {
     interface MmInstallModal {
         "expiresIn": number;
         "link": string;
-        "sdkVersion"?: string;
         "showInstallModal": boolean;
     }
     interface MmOtpModal {
@@ -18,7 +17,6 @@ export namespace Components {
          */
         "displayOTP"?: boolean;
         "otpCode": string;
-        "sdkVersion"?: string;
     }
 }
 export interface MmInstallModalCustomEvent<T> extends CustomEvent<T> {
@@ -82,7 +80,6 @@ declare namespace LocalJSX {
         "onStartDesktopOnboarding"?: (event: MmInstallModalCustomEvent<any>) => void;
         "onUpdateExpiresIn"?: (event: MmInstallModalCustomEvent<number>) => void;
         "onUpdateLink"?: (event: MmInstallModalCustomEvent<string>) => void;
-        "sdkVersion"?: string;
         "showInstallModal"?: boolean;
     }
     interface MmOtpModal {
@@ -94,7 +91,6 @@ declare namespace LocalJSX {
         "onDisconnect"?: (event: MmOtpModalCustomEvent<any>) => void;
         "onUpdateOTPCode"?: (event: MmOtpModalCustomEvent<{ otpCode: string }>) => void;
         "otpCode"?: string;
-        "sdkVersion"?: string;
     }
     interface IntrinsicElements {
         "mm-install-modal": MmInstallModal;

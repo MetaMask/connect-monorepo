@@ -134,28 +134,29 @@ This package is written in TypeScript and includes full type definitions. No add
 
 Factory function to create a new Multichain SDK instance.
 
-> **Singleton:** `createMultichainClient` returns a single shared instance per global context. Calling it a second time with different options will merge the new `api.supportedNetworks`, `ui.*`, `mobile.*`, `transport.extensionId`, and `debug` values into the existing instance rather than creating a new one. The `dapp` value is never overwritten on subsequent calls.
+> **Singleton:** `createMultichainClient` returns a single shared instance per global context. Calling it a second time with different options will merge the new `api.supportedNetworks`, `versions`, `ui.*`, `mobile.*`, `transport.extensionId`, and `debug` values into the existing instance rather than creating a new one. The `dapp` value is never overwritten on subsequent calls.
 
 #### Parameters
 
-| Option                      | Type                                          | Required | Description                                                                   |
-| --------------------------- | --------------------------------------------- | -------- | ----------------------------------------------------------------------------- |
-| `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                                                             |
-| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of [CAIP-2 chain IDs](https://chainagnostic.org/CAIPs/caip-2) to RPC URLs |
-| `dapp.url`                  | `string`                                      | No       | URL of your dApp                                                              |
-| `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                                                        |
-| `dapp.base64Icon`           | `string`                                      | No       | Base64-encoded icon (alternative to iconUrl)                                  |
-| `storage`                   | `StoreClient`                                 | No       | Custom storage adapter                                                        |
-| `ui.factory`                | `BaseModalFactory`                            | No       | Custom modal factory                                                          |
-| `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations)                                |
-| `ui.preferExtension`        | `boolean`                                     | No       | Prefer browser extension (default: true)                                      |
-| `ui.showInstallModal`       | `boolean`                                     | No       | Show installation modal                                                       |
-| `mobile.preferredOpenLink`  | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                                                       |
-| `mobile.useDeeplink`        | `boolean`                                     | No       | Use `metamask://` instead of universal links                                  |
-| `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                |
-| `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                           |
-| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                          |
-| `debug`                     | `boolean`                                     | No       | Enable debug logging                                                          |
+| Option                      | Type                                          | Required | Description                                                                                                     |
+| --------------------------- | --------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                                                                                               |
+| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of [CAIP-2 chain IDs](https://chainagnostic.org/CAIPs/caip-2) to RPC URLs                                   |
+| `dapp.url`                  | `string`                                      | No       | URL of your dApp                                                                                                |
+| `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                                                                                          |
+| `dapp.base64Icon`           | `string`                                      | No       | Base64-encoded icon (alternative to iconUrl)                                                                    |
+| `storage`                   | `StoreClient`                                 | No       | Custom storage adapter                                                                                          |
+| `ui.factory`                | `BaseModalFactory`                            | No       | Custom modal factory                                                                                            |
+| `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations)                                                                  |
+| `ui.preferExtension`        | `boolean`                                     | No       | Prefer browser extension (default: true)                                                                        |
+| `ui.showInstallModal`       | `boolean`                                     | No       | Show installation modal                                                                                         |
+| `mobile.preferredOpenLink`  | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                                                                                         |
+| `mobile.useDeeplink`        | `boolean`                                     | No       | Use `metamask://` instead of universal links                                                                    |
+| `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                                                  |
+| `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                                                             |
+| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                                                            |
+| `versions`                  | `Partial<ConnectVersions>`                    | No       | Internal: set automatically by `createEVMClient` / `createSolanaClient`. Consumers do not need to provide this. |
+| `debug`                     | `boolean`                                     | No       | Enable debug logging                                                                                            |
 
 #### Returns
 

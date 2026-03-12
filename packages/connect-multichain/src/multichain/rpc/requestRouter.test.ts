@@ -8,6 +8,7 @@ import {
   type InvokeMethodOptions,
   RPCInvokeMethodErr,
   type Scope,
+  TransportType,
 } from '../../domain';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
 
@@ -56,6 +57,7 @@ t.describe('RequestRouter', () => {
       mockTransport,
       mockRpcClient,
       mockConfig,
+      TransportType.Browser,
     );
     // Reset mocks
     mockTransport.request.mockClear();

@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
 import { analytics } from '@metamask/analytics';
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
@@ -38,6 +39,8 @@ import {
   isSwitchChainRequest,
   validSupportedChainsUrls,
 } from './utils/type-guards';
+
+declare const __PACKAGE_VERSION__: string;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -222,6 +225,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       analytics.track('mmconnect_wallet_action_requested', props);
     } catch (error) {
@@ -248,6 +252,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       analytics.track('mmconnect_wallet_action_succeeded', props);
     } catch (error) {
@@ -276,6 +281,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       const isRejection = isRejectionError(error);
       if (isRejection) {
@@ -968,6 +974,7 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of hex chain IDs to RPC URLs for read-only requests
+ * @param [options.analytics.integrationType] - Integration type for analytics
  * @param [options.ui] - UI configuration options
  * @param [options.ui.headless] - Whether to run without UI
  * @param [options.ui.preferExtension] - Whether to prefer browser extension
@@ -983,7 +990,10 @@ export class MetamaskConnectEVM {
  * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
+  options: Pick<
+    MultichainOptions,
+    'dapp' | 'mobile' | 'transport' | 'analytics'
+  > & {
     ui?: Omit<MultichainOptions['ui'], 'factory'>;
   } & {
     eventHandlers?: Partial<EventHandlers>;
@@ -1026,6 +1036,10 @@ export async function createEVMClient(
       api: {
         supportedNetworks: supportedNetworksCaipChainId,
       },
+      analytics: {
+        integrationType: options.analytics?.integrationType ?? 'direct',
+      },
+      versions: { 'connect-evm': __PACKAGE_VERSION__ },
     });
 
     return MetamaskConnectEVM.create({
