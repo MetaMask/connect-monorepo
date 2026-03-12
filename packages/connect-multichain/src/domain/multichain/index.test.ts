@@ -249,6 +249,45 @@ t.describe('MultichainCore', () => {
       t.expect(opts.debug).toBe(true);
     });
 
+    t.it('merges versions from partial over existing', () => {
+      const base = createBaseOptions();
+      base.versions = { 'connect-multichain': '1.0.0' };
+      const core = new MockMultichainCore(base);
+
+      core.mergeOptions({
+        versions: { 'connect-solana': '0.4.0' },
+      });
+
+      const opts = core.getOptions();
+      t.expect(opts.versions).toEqual({
+        'connect-multichain': '1.0.0',
+        'connect-solana': '0.4.0',
+      });
+    });
+
+    t.it('keeps existing versions when partial.versions is omitted', () => {
+      const base = createBaseOptions();
+      base.versions = { 'connect-multichain': '1.0.0' };
+      const core = new MockMultichainCore(base);
+
+      core.mergeOptions({});
+
+      const opts = core.getOptions();
+      t.expect(opts.versions).toEqual({ 'connect-multichain': '1.0.0' });
+    });
+
+    t.it('initializes versions from partial when base has no versions', () => {
+      const base = createBaseOptions();
+      const core = new MockMultichainCore(base);
+
+      core.mergeOptions({
+        versions: { 'connect-evm': '0.6.0' },
+      });
+
+      const opts = core.getOptions();
+      t.expect(opts.versions).toEqual({ 'connect-evm': '0.6.0' });
+    });
+
     t.it('does not mutate dapp, storage, or analytics', () => {
       const base = createBaseOptions();
       base.analytics = { integrationType: 'direct' };

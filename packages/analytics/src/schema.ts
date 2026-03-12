@@ -555,7 +555,8 @@ export type components = {
       properties: components['schemas']['MobileSDKConnectV2Properties'];
     };
     MMConnectProperties: {
-      mmconnect_version: string;
+      /** @description Package versions keyed by connect package name */
+      mmconnect_versions: Record<string, string>;
       dapp_id: string;
       /** Format: uuid */
       anon_id: string;

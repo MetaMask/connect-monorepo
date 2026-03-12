@@ -15,7 +15,11 @@ t.describe('Analytics Integration', () => {
   let scope: nock.Scope;
 
   const eventProperties: MMConnectProperties = {
-    mmconnect_version: '1.0.0',
+    mmconnect_versions: {
+      'connect-multichain': '0.8.0',
+      'connect-evm': '0.6.0',
+      'connect-solana': '0.4.0',
+    },
     dapp_id: 'aave.com',
     anon_id: 'bbbc1727-8b85-433a-a26a-e9df70ddc81c',
     platform: 'web-desktop',
@@ -69,8 +73,8 @@ t.describe('Analytics Integration', () => {
     analytics = new Analytics('http://127.0.0.2');
     analytics.enable();
     analytics.setGlobalProperty(
-      'mmconnect_version',
-      eventProperties.mmconnect_version,
+      'mmconnect_versions',
+      eventProperties.mmconnect_versions,
     );
     analytics.setGlobalProperty('anon_id', eventProperties.anon_id);
     analytics.setGlobalProperty('platform', eventProperties.platform);

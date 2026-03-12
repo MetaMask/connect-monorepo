@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Enable specifying the integration type for analytics. Defaults to `connect-evm` instead of `direct` for better branching. ([#213](https://github.com/MetaMask/connect-monorepo/pull/213))
+- Pass `connect-evm` package version to `createMultichainClient` via the `versions` option so it appears in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
 
 ### Fixed
 
