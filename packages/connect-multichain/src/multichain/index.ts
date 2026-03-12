@@ -185,6 +185,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (existing) {
       const instance = await existing;
       instance.mergeOptions(options);
+      analytics.setGlobalProperty(
+        'mmconnect_versions',
+        instance.options.versions ?? {},
+      );
       if (options.debug) {
         enableDebug('metamask-sdk:*');
       }

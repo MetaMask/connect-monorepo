@@ -207,6 +207,30 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should update mmconnect_versions analytics global when singleton merges new versions`,
+      async () => {
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        sdk = await createSDK(testOptions);
+        setGlobalSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          versions: { 'connect-solana': '0.4.0' },
+        } as any);
+
+        if (platform === 'web' || platform === 'web-mobile') {
+          t.expect(setGlobalSpy).toHaveBeenCalledWith(
+            'mmconnect_versions',
+            t.expect.objectContaining({ 'connect-solana': '0.4.0' }),
+          );
+        }
+
+        setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
       `${platform} Should gracefully handle init errors by just logging them and return non initialized sdk`,
       async () => {
         const testError = new Error('Test error');
