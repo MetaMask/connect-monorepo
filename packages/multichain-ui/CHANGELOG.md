@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove SDK version label from install and OTP modals ([#212](https://github.com/MetaMask/connect-monorepo/pull/212))
+- **BREAKING** Remove `sdkVersion` prop from `mm-install-modal` and `mm-otp-modal` components ([#212](https://github.com/MetaMask/connect-monorepo/pull/212))
+
 ## [0.3.0]
 
 ### Changed

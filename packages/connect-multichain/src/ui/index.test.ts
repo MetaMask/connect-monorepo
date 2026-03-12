@@ -289,7 +289,6 @@ t.describe('ModalFactory', () => {
             parentElement: mockContainer,
             connectionRequest,
             showInstallModal,
-            sdkVersion: getVersion(),
           }),
         );
         t.expect(mockModal.mount).toHaveBeenCalled();
