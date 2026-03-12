@@ -276,20 +276,17 @@ t.describe('MultichainCore', () => {
       t.expect(opts.versions).toEqual({ 'connect-multichain': '1.0.0' });
     });
 
-    t.it(
-      'initializes versions from partial when base has no versions',
-      () => {
-        const base = createBaseOptions();
-        const core = new MockMultichainCore(base);
+    t.it('initializes versions from partial when base has no versions', () => {
+      const base = createBaseOptions();
+      const core = new MockMultichainCore(base);
 
-        core.mergeOptions({
-          versions: { 'connect-evm': '0.6.0' },
-        });
+      core.mergeOptions({
+        versions: { 'connect-evm': '0.6.0' },
+      });
 
-        const opts = core.getOptions();
-        t.expect(opts.versions).toEqual({ 'connect-evm': '0.6.0' });
-      },
-    );
+      const opts = core.getOptions();
+      t.expect(opts.versions).toEqual({ 'connect-evm': '0.6.0' });
+    });
 
     t.it('does not mutate dapp, storage, or analytics', () => {
       const base = createBaseOptions();
