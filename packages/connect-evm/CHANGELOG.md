@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Enable specifying the integration type for analytics. Defaults to `connect-evm` instead of `direct` for better branching. ([213](https://github.com/MetaMask/connect-monorepo/pull/213))
+
 ### Fixed
 
 - Fix an issue where `connect` would always return the default chain id regardless of other chains being specified. This also affected `connectWith` and `connectAndSign` ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))
