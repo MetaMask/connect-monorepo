@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0]
+
 ### Added
 
 - Pass `connect-solana` package version to `createMultichainClient` via the `versions` option so it appears in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
@@ -47,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.5.0...HEAD
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.4.0...@metamask/connect-solana@0.5.0
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.3.0...@metamask/connect-solana@0.4.0
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.2.0...@metamask/connect-solana@0.3.0
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.1.0...@metamask/connect-solana@0.2.0

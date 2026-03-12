@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0]
+
 ### Added
 
 - Add `versions` constructor option to `createMultichainClient` so chain-specific packages (`connect-evm`, `connect-solana`) can report their version in analytics events. Versions are merged into the singleton on each call, following the same pattern as `api.supportedNetworks`. ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
@@ -197,7 +199,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.9.0...HEAD
+[0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...@metamask/connect-multichain@0.9.0
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.7.0...@metamask/connect-multichain@0.8.0
 [0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.6.0...@metamask/connect-multichain@0.7.0
 [0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...@metamask/connect-multichain@0.6.0
