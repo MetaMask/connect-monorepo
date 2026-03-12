@@ -1034,7 +1034,7 @@ export async function createEVMClient(
         supportedNetworks: supportedNetworksCaipChainId,
       },
       analytics: {
-        integrationType: options.analytics?.integrationType ?? 'connect-evm',
+        integrationType: options.analytics?.integrationType ?? 'direct',
       },
     });
 
