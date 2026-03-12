@@ -140,6 +140,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const integrationType = options.analytics?.integrationType || 'direct';
     const allOptions = {
       ...withDappMetadata,

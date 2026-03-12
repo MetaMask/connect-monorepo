@@ -7,8 +7,9 @@ import type {
   PlatformType,
   Scope,
   StoreClient,
+  TransportType,
 } from '../../domain';
-import { getPlatformType, TransportType } from '../../domain';
+import { getPlatformType } from '../../domain';
 
 /**
  * Checks if an error represents a user rejection.

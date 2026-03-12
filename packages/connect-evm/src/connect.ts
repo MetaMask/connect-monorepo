@@ -1037,6 +1037,7 @@ export async function createEVMClient(
         supportedNetworks: supportedNetworksCaipChainId,
       },
       analytics: {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         integrationType: options.analytics?.integrationType || 'direct',
       },
       versions: { 'connect-evm': __PACKAGE_VERSION__ },

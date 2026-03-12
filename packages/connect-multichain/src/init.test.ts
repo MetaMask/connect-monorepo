@@ -247,10 +247,9 @@ function testSuite<T extends MultichainOptions>({
         } as any);
 
         if (platform === 'web' || platform === 'web-mobile') {
-          t.expect(setGlobalSpy).toHaveBeenCalledWith(
-            'integration_types',
-            ['wagmi'],
-          );
+          t.expect(setGlobalSpy).toHaveBeenCalledWith('integration_types', [
+            'wagmi',
+          ]);
         }
 
         setGlobalSpy.mockRestore();
@@ -271,14 +270,12 @@ function testSuite<T extends MultichainOptions>({
         } as any);
 
         if (platform === 'web' || platform === 'web-mobile') {
-          t.expect(setGlobalSpy).toHaveBeenCalledWith(
-            'integration_types',
-            ['direct'],
-          );
-          t.expect(setGlobalSpy).not.toHaveBeenCalledWith(
-            'integration_types',
-            [''],
-          );
+          t.expect(setGlobalSpy).toHaveBeenCalledWith('integration_types', [
+            'direct',
+          ]);
+          t.expect(setGlobalSpy).not.toHaveBeenCalledWith('integration_types', [
+            '',
+          ]);
         }
 
         setGlobalSpy.mockRestore();
