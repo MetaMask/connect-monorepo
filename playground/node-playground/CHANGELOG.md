@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- feat: change mmconnect_version from string to versioned object ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
-
 ### Added
 
 - Add support for `@metamask/connect-solana` ([#169](https://github.com/MetaMask/connect-monorepo/pull/169))
