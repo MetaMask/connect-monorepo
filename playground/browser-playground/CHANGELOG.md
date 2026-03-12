@@ -9,16 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.1]
 
+### Added
+
+- Add Connect button that calls legacy EVM `connectAndSign` method ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))
+
 ### Changed
 
 - Bump workspace dependencies:
   - @metamask/connect-evm@0.7.0
   - @metamask/connect-multichain@0.9.0
-
-
-### Added
-
-- Add Connect button that calls legacy EVM `connectAndSign` method ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))
 
 ## [0.4.0]
 
