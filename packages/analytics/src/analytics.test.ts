@@ -103,7 +103,7 @@ t.describe('Analytics Integration', () => {
     scope.done();
   });
 
-  t.it('should merge repeated integration_types global updates', async () => {
+  t.it('should merge multiple integration_types global updates', async () => {
     let captured: EventV2[] = [];
     scope = nock('http://127.0.0.3')
       .post('/v2/events', (body) => {
