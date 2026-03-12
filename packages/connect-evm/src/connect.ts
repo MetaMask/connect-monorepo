@@ -1038,7 +1038,8 @@ export async function createEVMClient(
         supportedNetworks: supportedNetworksCaipChainId,
       },
       analytics: {
-        integrationType: options.analytics?.integrationType ?? 'direct',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        integrationType: options.analytics?.integrationType || 'direct',
       },
       versions: {
         // typeof guard needed: Metro (React Native) bundles TS source directly,

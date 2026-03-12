@@ -151,8 +151,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkUsedChainEvent: {
       /**
@@ -180,8 +180,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkConnectionInitiatedEvent: {
       /**
@@ -211,8 +211,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkConnectionEstablishedEvent: {
       /**
@@ -242,8 +242,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkConnectionRejectedEvent: {
       /**
@@ -273,8 +273,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkConnectionFailedEvent: {
       /**
@@ -304,8 +304,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     WalletConnectionRequestReceivedEvent: {
       /**
@@ -381,8 +381,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkActionSucceededEvent: {
       /**
@@ -410,8 +410,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkActionFailedEvent: {
       /**
@@ -439,8 +439,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     SdkActionRejectedEvent: {
       /**
@@ -468,8 +468,8 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      /** @description Type of integration used by the SDK. */
-      integration_type: string;
+      /** @description Types of integrations used by the SDK. */
+      integration_types: string[];
     };
     WalletActionReceivedEvent: {
       /**
@@ -566,7 +566,7 @@ export type components = {
         | 'nodejs'
         | 'in-app-browser'
         | 'react-native';
-      integration_type: string;
+      integration_types: string[];
       transport_type?: 'browser' | 'mwp' | 'unknown';
       method?: string;
       caip_chain_id?: string;

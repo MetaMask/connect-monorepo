@@ -141,7 +141,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
-    const integrationType = options.analytics?.integrationType ?? 'direct';
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    const integrationType = options.analytics?.integrationType || 'direct';
     const allOptions = {
       ...withDappMetadata,
       ui: {
@@ -195,6 +196,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         'mmconnect_versions',
         instance.options.versions ?? {},
       );
+      if (options.analytics?.integrationType) {
+        analytics.setGlobalProperty('integration_types', [
+          options.analytics.integrationType,
+        ]);
+      }
       if (options.debug) {
         enableDebug('metamask-sdk:*');
       }
@@ -250,7 +256,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     analytics.setGlobalProperty('dapp_id', dappId);
     analytics.setGlobalProperty('anon_id', anonId);
     analytics.setGlobalProperty('platform', platform);
-    analytics.setGlobalProperty('integration_type', integrationType);
+    if (integrationType) {
+      analytics.setGlobalProperty('integration_types', [integrationType]);
+    }
     analytics.enable();
   }
 

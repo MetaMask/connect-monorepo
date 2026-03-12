@@ -38,6 +38,18 @@ class Analytics {
     key: K,
     value: MMConnectProperties[K],
   ): void {
+    if (key === 'integration_types') {
+      const existing = Array.isArray(this.properties.integration_types)
+        ? this.properties.integration_types
+        : [];
+      const incoming = Array.isArray(value) ? value : [];
+
+      this.properties.integration_types = [
+        ...new Set([...existing, ...incoming]),
+      ];
+      return;
+    }
+
     this.properties[key] = value;
   }
 
