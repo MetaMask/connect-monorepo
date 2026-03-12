@@ -974,6 +974,7 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of hex chain IDs to RPC URLs for read-only requests
+ * @param [options.analytics.integrationType] - Integration type for analytics
  * @param [options.ui] - UI configuration options
  * @param [options.ui.headless] - Whether to run without UI
  * @param [options.ui.preferExtension] - Whether to prefer browser extension
@@ -989,7 +990,10 @@ export class MetamaskConnectEVM {
  * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
+  options: Pick<
+    MultichainOptions,
+    'dapp' | 'mobile' | 'transport' | 'analytics'
+  > & {
     ui?: Omit<MultichainOptions['ui'], 'factory'>;
   } & {
     eventHandlers?: Partial<EventHandlers>;
@@ -1031,6 +1035,9 @@ export async function createEVMClient(
       ...options,
       api: {
         supportedNetworks: supportedNetworksCaipChainId,
+      },
+      analytics: {
+        integrationType: options.analytics?.integrationType ?? 'direct',
       },
       versions: { 'connect-evm': __PACKAGE_VERSION__ },
     });
