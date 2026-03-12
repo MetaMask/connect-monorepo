@@ -128,24 +128,24 @@ jobs:
           fi
 
   publish-wagmi-to-gh-pages:
-    name: Publish Wagmi Integration to `${{ needs.get-release-version.outputs.RELEASE_VERSION }}` directory of `gh-pages` branch
+    name: Publish Wagmi Integration to `wagmi/${{ needs.get-release-version.outputs.RELEASE_VERSION }}` directory of `gh-pages` branch
     needs: get-release-version
     permissions:
       contents: write
     uses: ./.github/workflows/deploy-wagmi-to-gh-pages.yml
     with:
-      destination_dir: ${{ needs.get-release-version.outputs.RELEASE_VERSION }}
+      destination_dir: wagmi/${{ needs.get-release-version.outputs.RELEASE_VERSION }}
     secrets:
       PUBLISH_DOCS_TOKEN: ${{ secrets.PUBLISH_DOCS_TOKEN }}
 
   publish-wagmi-to-latest-gh-pages:
-    name: Publish Wagmi Integration to `latest` directory of `gh-pages` branch
+    name: Publish Wagmi Integration to `wagmi/latest` directory of `gh-pages` branch
     needs: publish-wagmi-to-gh-pages
     permissions:
       contents: write
     uses: ./.github/workflows/deploy-wagmi-to-gh-pages.yml
     with:
-      destination_dir: latest
+      destination_dir: wagmi/latest
     secrets:
       PUBLISH_DOCS_TOKEN: ${{ secrets.PUBLISH_DOCS_TOKEN }}
 
