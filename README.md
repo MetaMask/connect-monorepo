@@ -120,14 +120,14 @@ Full control over the multichain session. Request exactly the scopes you need, i
 
 ### Which option should I choose?
 
-|  | Ecosystem Clients (Option A) | Multichain Client (Option B) |
-| --- | --- | --- |
-| **Integration effort** | Low — drop-in replacement for existing provider code | Medium — requires adapting to scope-based API |
-| **EVM support** | EIP-1193 provider, works with ethers/viem/web3.js | Via `wallet_invokeMethod` with `eip155:*` scopes |
-| **Solana support** | Wallet Standard, works with Solana wallet adapter | Via `wallet_invokeMethod` with `solana:*` scopes |
-| **Cross-chain UX** | Separate connect flows per ecosystem | Single connect prompt for all ecosystems |
-| **Session management** | Handled automatically per-client | Full control over unified session |
-| **Best for** | Existing dApps wanting MetaMask Connect benefits with minimal code changes | New or multichain-native dApps wanting the best possible cross-chain UX |
+|                        | Ecosystem Clients (Option A)                                               | Multichain Client (Option B)                                            |
+| ---------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Integration effort** | Low — drop-in replacement for existing provider code                       | Medium — requires adapting to scope-based API                           |
+| **EVM support**        | EIP-1193 provider, works with ethers/viem/web3.js                          | Via `wallet_invokeMethod` with `eip155:*` scopes                        |
+| **Solana support**     | Wallet Standard, works with Solana wallet adapter                          | Via `wallet_invokeMethod` with `solana:*` scopes                        |
+| **Cross-chain UX**     | Separate connect flows per ecosystem                                       | Single connect prompt for all ecosystems                                |
+| **Session management** | Handled automatically per-client                                           | Full control over unified session                                       |
+| **Best for**           | Existing dApps wanting MetaMask Connect benefits with minimal code changes | New or multichain-native dApps wanting the best possible cross-chain UX |
 
 You can also **start with Option A and migrate to Option B** incrementally. The ecosystem clients are wrappers around the multichain client — they use the same transport, session, and relay infrastructure under the hood.
 
@@ -158,25 +158,25 @@ npm install @metamask/connect-multichain
 
 <!-- start package list -->
 
-| Package | npm | Description |
-| --- | --- | --- |
+| Package                                                       | npm                                                                                                                                        | Description                                                           |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
 | [`@metamask/connect-multichain`](packages/connect-multichain) | [![npm](https://img.shields.io/npm/v/@metamask/connect-multichain?color=blue)](https://www.npmjs.com/package/@metamask/connect-multichain) | Core — CAIP Multichain API, session management, transport negotiation |
-| [`@metamask/connect-evm`](packages/connect-evm) | [![npm](https://img.shields.io/npm/v/@metamask/connect-evm?color=blue)](https://www.npmjs.com/package/@metamask/connect-evm) | EVM adapter — EIP-1193 provider wrapping the multichain core |
-| [`@metamask/connect-solana`](packages/connect-solana) | [![npm](https://img.shields.io/npm/v/@metamask/connect-solana?color=blue)](https://www.npmjs.com/package/@metamask/connect-solana) | Solana adapter — Wallet Standard integration via the multichain core |
-| [`@metamask/connect`](packages/connect) | [![npm](https://img.shields.io/npm/v/@metamask/connect?color=blue)](https://www.npmjs.com/package/@metamask/connect) | Convenience re-export of EVM + Multichain APIs |
-| [`@metamask/multichain-ui`](packages/multichain-ui) | [![npm](https://img.shields.io/npm/v/@metamask/multichain-ui?color=blue)](https://www.npmjs.com/package/@metamask/multichain-ui) | Connection UI — install modals, OTP modals, QR codes |
-| [`@metamask/analytics`](packages/analytics) | [![npm](https://img.shields.io/npm/v/@metamask/analytics?color=blue)](https://www.npmjs.com/package/@metamask/analytics) | Telemetry — batched event tracking for the connection lifecycle |
+| [`@metamask/connect-evm`](packages/connect-evm)               | [![npm](https://img.shields.io/npm/v/@metamask/connect-evm?color=blue)](https://www.npmjs.com/package/@metamask/connect-evm)               | EVM adapter — EIP-1193 provider wrapping the multichain core          |
+| [`@metamask/connect-solana`](packages/connect-solana)         | [![npm](https://img.shields.io/npm/v/@metamask/connect-solana?color=blue)](https://www.npmjs.com/package/@metamask/connect-solana)         | Solana adapter — Wallet Standard integration via the multichain core  |
+| [`@metamask/connect`](packages/connect)                       | [![npm](https://img.shields.io/npm/v/@metamask/connect?color=blue)](https://www.npmjs.com/package/@metamask/connect)                       | Convenience re-export of EVM + Multichain APIs                        |
+| [`@metamask/multichain-ui`](packages/multichain-ui)           | [![npm](https://img.shields.io/npm/v/@metamask/multichain-ui?color=blue)](https://www.npmjs.com/package/@metamask/multichain-ui)           | Connection UI — install modals, OTP modals, QR codes                  |
+| [`@metamask/analytics`](packages/analytics)                   | [![npm](https://img.shields.io/npm/v/@metamask/analytics?color=blue)](https://www.npmjs.com/package/@metamask/analytics)                   | Telemetry — batched event tracking for the connection lifecycle       |
 
 <!-- end package list -->
 
 ### Playgrounds
 
-| Package | Description |
-| --- | --- |
-| [`@metamask/browser-playground`](playground/browser-playground) | Browser test dApp — React app for multichain, legacy EVM, and wagmi |
-| [`@metamask/node-playground`](playground/node-playground) | Node.js CLI playground — Inquirer-based with terminal QR codes |
-| [`@metamask/playground-ui`](playground/playground-ui) | Shared playground logic — constants, helpers, and types |
-| [`@metamask/react-native-playground`](playground/react-native-playground) | React Native test dApp — Expo app for mobile testing |
+| Package                                                                   | Description                                                         |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [`@metamask/browser-playground`](playground/browser-playground)           | Browser test dApp — React app for multichain, legacy EVM, and wagmi |
+| [`@metamask/node-playground`](playground/node-playground)                 | Node.js CLI playground — Inquirer-based with terminal QR codes      |
+| [`@metamask/playground-ui`](playground/playground-ui)                     | Shared playground logic — constants, helpers, and types             |
+| [`@metamask/react-native-playground`](playground/react-native-playground) | React Native test dApp — Expo app for mobile testing                |
 
 <!-- start dependency graph -->
 
