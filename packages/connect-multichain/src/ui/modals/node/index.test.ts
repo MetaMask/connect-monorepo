@@ -69,7 +69,6 @@ t.describe('Node Modals', () => {
     const expiresIn =
       (connectionRequest.sessionRequest.expiresAt - Date.now()) / 1000;
     const installModal = new NodeModals.InstallModal({
-      sdkVersion: getVersion(),
       showInstallModal: false,
       onClose: vi.fn(),
       startDesktopOnboarding: vi.fn(),
@@ -139,7 +138,6 @@ t.describe('Node Modals', () => {
         .fn()
         .mockResolvedValue(renewedConnectionRequest); // Only mock the renewal call
       const installModal = new NodeModals.InstallModal({
-        sdkVersion: getVersion(),
         showInstallModal: false,
         onClose: vi.fn(),
         startDesktopOnboarding: vi.fn(),
@@ -191,7 +189,6 @@ t.describe('Node Modals', () => {
       createOTPCode: vi.fn().mockResolvedValue(otpCode),
       updateOTPCode: vi.fn() as any,
       onDisconnect: vi.fn() as any,
-      sdkVersion: getVersion(),
     });
 
     t.expect(otpCodeModal).toBeDefined();
