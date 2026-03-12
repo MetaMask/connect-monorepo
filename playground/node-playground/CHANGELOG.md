@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update `getInfuraRpcUrls` call to use new options object parameter ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+
 ### Added
 
 - Add support for `@metamask/connect-solana` ([#169](https://github.com/MetaMask/connect-monorepo/pull/169))

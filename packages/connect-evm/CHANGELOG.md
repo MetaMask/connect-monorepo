@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING** `getInfuraRpcUrls` now accepts a single options object `{ infuraApiKey, chainIds? }` instead of a positional `infuraApiKey` string. The optional `chainIds` parameter accepts hex chain IDs to filter the output ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+
 ## [0.7.0]
 
 ### Added

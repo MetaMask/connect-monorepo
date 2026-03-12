@@ -68,7 +68,7 @@ export const LegacyEVMSDKProvider = ({
         const infuraApiKey = process.env.INFURA_API_KEY || '';
         // Get CAIP-keyed RPC URLs and convert to hex-keyed format
         const caipNetworks = infuraApiKey
-          ? getInfuraRpcUrls(infuraApiKey)
+          ? getInfuraRpcUrls({ infuraApiKey })
           : {
               // Fallback public RPC endpoints if no Infura key is provided
               'eip155:1': 'https://eth.llamarpc.com',

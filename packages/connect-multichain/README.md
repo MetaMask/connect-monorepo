@@ -32,7 +32,7 @@ const client = await createMultichainClient({
   api: {
     supportedNetworks: {
       // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
-      ...getInfuraRpcUrls(INFURA_API_KEY),
+      ...getInfuraRpcUrls({ infuraApiKey: INFURA_API_KEY }),
       // or specify your own CAIP Chain ID to rpc endpoint mapping
       'eip155:1': 'https://mainnet.example.io/rpc',
       'eip155:137': 'https://polygon-mainnet.example.io/rpc',
@@ -338,15 +338,16 @@ Emits an event to all registered handlers.
 
 ### Utilities
 
-#### `getInfuraRpcUrls(infuraApiKey)`
+#### `getInfuraRpcUrls(options)`
 
 Generates Infura RPC URLs for common networks keyed by CAIP Chain ID.
 
 **Parameters**
 
-| Name           | Type     | Required | Description         |
-| -------------- | -------- | -------- | ------------------- |
-| `infuraApiKey` | `string` | Yes      | Your Infura API key |
+| Name           | Type            | Required | Description                           |
+| -------------- | --------------- | -------- | ------------------------------------- |
+| `infuraApiKey` | `string`        | Yes      | Your Infura API key                   |
+| `caipChainIds` | `CaipChainId[]` | No       | CAIP-2 chain IDs to filter the output |
 
 **Returns**
 
@@ -355,12 +356,23 @@ A map of [CAIP-2 chain IDs](https://chainagnostic.org/CAIPs/caip-2) to Infura RP
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 
-const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
+// Get all supported Infura RPC URLs
+const rpcUrls = getInfuraRpcUrls({ infuraApiKey: 'YOUR_INFURA_KEY' });
 // {
 //   'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
 //   'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
 //   'eip155:11155111': 'https://sepolia.infura.io/v3/YOUR_KEY',
 //   ...
+// }
+
+// Filter to specific chains
+const filtered = getInfuraRpcUrls({
+  infuraApiKey: 'YOUR_INFURA_KEY',
+  caipChainIds: ['eip155:1', 'eip155:137'],
+});
+// {
+//   'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
+//   'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
 // }
 ```
 
