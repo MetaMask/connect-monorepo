@@ -1,6 +1,6 @@
 # MetaMask Connect
 
-A unified SDK for dApps to connect to MetaMask across all platforms and ecosystems. MetaMask Connect replaces the previous MetaMask SDK with a ground-up rewrite built on the [CAIP-25 Multichain API](https://github.com/MetaMask/metamask-improvement-proposals/blob/main/MIPs/mip-5.md).
+A unified SDK for dApps to connect to MetaMask across all platforms and ecosystems. MetaMask Connect replaces the [previous MetaMask SDK](https://github.com/MetaMask/metamask-sdk) with a ground-up rewrite built on the [CAIP-25 Multichain API](https://github.com/MetaMask/metamask-improvement-proposals/blob/main/MIPs/mip-5.md).
 
 A single integration handles:
 
@@ -82,8 +82,7 @@ const client = await createSolanaClient({
     },
   },
 });
-
-await client.registerWallet();
+// MetaMask auto-registers with Wallet Standard during initialization.
 ```
 
 MetaMask appears as a Solana wallet in any dApp using `@solana/wallet-adapter`. Users connect the same way they would with Phantom or Solflare.
