@@ -101,7 +101,6 @@ t.describe('WEB Modals', () => {
       onStartDesktopOnboarding = vi.fn();
 
       installModal = new WebModals.InstallModal({
-        sdkVersion: '1.0.0',
         showInstallModal: false,
         onClose,
         startDesktopOnboarding: onStartDesktopOnboarding,
@@ -129,7 +128,6 @@ t.describe('WEB Modals', () => {
       installModal.mount();
       const modalElement = document.querySelector('mm-install-modal');
       t.expect(modalElement?.showInstallModal).toBe(false);
-      t.expect(modalElement?.sdkVersion).toBe('1.0.0');
     });
 
     t.it('should handle close event', () => {
@@ -159,7 +157,6 @@ t.describe('WEB Modals', () => {
   t.it('Rendering OTPCodeModal on Web', async () => {
     const otpCodeModal = new WebModals.OTPCodeModal({
       parentElement: document.getElementById('root')!,
-      sdkVersion: '1.0.0',
       onClose: vi.fn(),
       createOTPCode: vi.fn().mockResolvedValue('123456'),
       updateOTPCode: vi.fn(),
