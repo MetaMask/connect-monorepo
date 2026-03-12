@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Enable specifying the integration type for analytics. Defaults to `connect-evm` instead of `direct` for better branching. ([213](https://github.com/MetaMask/connect-monorepo/pull/213))
+- Enable specifying the integration type for analytics. Defaults to `connect-evm` instead of `direct` for better branching. ([#213](https://github.com/MetaMask/connect-monorepo/pull/213))
 
 ### Fixed
 
