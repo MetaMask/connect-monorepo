@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- feat: add `transport_type` to wallet action events ([#210](https://github.com/MetaMask/connect-monorepo/pull/210))
+- feat: remove rpc method analytics. remove MWP optimistic chain switch analytics ([#209](https://github.com/MetaMask/connect-monorepo/pull/209))
+- disable mm init event ([#207](https://github.com/MetaMask/connect-monorepo/pull/207))
+
 ### Added
 
 - Add `versions` constructor option to `createMultichainClient` so chain-specific packages (`connect-evm`, `connect-solana`) can report their version in analytics events. Versions are merged into the singleton on each call, following the same pattern as `api.supportedNetworks`. ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))

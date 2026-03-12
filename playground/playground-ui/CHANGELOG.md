@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- fix(connect-evm): connect method always returns default chain id ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))
+
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications
