@@ -28,13 +28,11 @@ declare global {
    */
   type HTMLMmInstallModalElement = HTMLElement & {
     showInstallModal: boolean;
-    sdkVersion?: string;
     link: string;
     expiresIn: number;
   };
 
   type HTMLMmOtpModalElement = HTMLElement & {
-    sdkVersion?: string;
     otpCode: string;
     displayOTP?: boolean;
   };

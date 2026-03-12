@@ -13,7 +13,6 @@ import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from '../config';
 import {
   type ConnectionRequest,
   getPlatformType,
-  getVersion,
   type Modal,
   type OTPCode,
   PlatformType,
@@ -172,7 +171,6 @@ export abstract class BaseModalFactory<
       parentElement,
       showInstallModal,
       link: qrCodeLink,
-      sdkVersion: getVersion(),
       generateQRCode: async (request: ConnectionRequest) => {
         const newLink = this.createConnectionDeeplink(request);
         this.displayUriCallback?.(newLink);
@@ -202,7 +200,6 @@ export abstract class BaseModalFactory<
 
     const modal: AbstractOTPCodeModal = new this.options.OTPCodeModal({
       parentElement: container,
-      sdkVersion: getVersion(),
       otpCode,
       onClose: this.onCloseModal.bind(this),
       createOTPCode,
