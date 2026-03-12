@@ -24,7 +24,7 @@
     "changelog:update": "../../scripts/update-changelog.sh @metamask/node-playground",
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/node-playground",
     "clean": "rm -rf dist .sdk-comm",
-    "start": "node -r ts-node/register -r tsconfig-paths/register src/index.ts",
+    "start": "node -r ./preload.js -r ts-node/register -r tsconfig-paths/register src/index.ts",
     "test": "echo \"No test specified\""
   },
   "resolutions": {

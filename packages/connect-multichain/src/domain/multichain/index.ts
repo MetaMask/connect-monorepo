@@ -82,7 +82,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   /**
    * Merges the given options into the current instance options.
-   * Only the mergeable keys are updated (api.supportedNetworks, ui.*, mobile.*, transport.extensionId, debug).
+   * Only the mergeable keys are updated (api.supportedNetworks, versions, ui.*, mobile.*, transport.extensionId, debug).
    * The main thing to note is that the value for `dapp` is not merged as it does not make sense for
    * subsequent calls to `createMultichainClient` to have a different `dapp` value.
    * Used when createMultichainClient is called with an existing singleton.
@@ -99,6 +99,10 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
           ...opts.api.supportedNetworks,
           ...(partial.api?.supportedNetworks ?? {}),
         },
+      },
+      versions: {
+        ...opts.versions,
+        ...(partial.versions ?? {}),
       },
       ui: {
         ...opts.ui,

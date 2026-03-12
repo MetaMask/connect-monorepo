@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
 import {
   createMultichainClient,
   type Scope,
@@ -13,6 +14,8 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
+
+declare const __PACKAGE_VERSION__: string;
 
 /**
  * Creates a new Solana client for connecting to MetaMask via wallet-standard.
@@ -69,6 +72,7 @@ export async function createSolanaClient(
     api: {
       supportedNetworks,
     },
+    versions: { 'connect-solana': __PACKAGE_VERSION__ },
   });
 
   const client = core.provider;

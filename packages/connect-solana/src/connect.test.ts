@@ -73,6 +73,7 @@ describe('createSolanaClient', () => {
             'https://api.mainnet-beta.solana.com',
         },
       },
+      versions: { 'connect-solana': expect.any(String) },
     });
   });
 
@@ -93,6 +94,7 @@ describe('createSolanaClient', () => {
             'https://api.mainnet-beta.solana.com',
         },
       },
+      versions: { 'connect-solana': expect.any(String) },
     });
   });
 

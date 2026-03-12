@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
 import { analytics } from '@metamask/analytics';
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
@@ -38,6 +39,8 @@ import {
   isSwitchChainRequest,
   validSupportedChainsUrls,
 } from './utils/type-guards';
+
+declare const __PACKAGE_VERSION__: string;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -1029,6 +1032,7 @@ export async function createEVMClient(
       api: {
         supportedNetworks: supportedNetworksCaipChainId,
       },
+      versions: { 'connect-evm': __PACKAGE_VERSION__ },
     });
 
     return MetamaskConnectEVM.create({
