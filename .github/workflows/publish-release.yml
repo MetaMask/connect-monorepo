@@ -93,15 +93,11 @@ jobs:
       - id: get-release-version
         shell: bash
         run: |
-          # Get version from the latest git tag created by the release action
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -z "$TAG" ]; then
-            # Fallback to package.json version if no tag found
-            TAG="v$(node -p "require('./package.json').version")"
-          fi
+          # Read the released root package version directly so Pages paths track
+          # the monorepo release rather than whichever workspace tag git sees last.
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v$VERSION"
           echo "RELEASE_TAG=$TAG" >> "$GITHUB_OUTPUT"
-          # Remove 'v' prefix for the version output
-          VERSION=${TAG#v}
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_OUTPUT"
       - id: check-rn-playground
         shell: bash
