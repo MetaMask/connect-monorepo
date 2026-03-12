@@ -225,6 +225,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       analytics.track('mmconnect_wallet_action_requested', props);
     } catch (error) {
@@ -251,6 +252,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       analytics.track('mmconnect_wallet_action_succeeded', props);
     } catch (error) {
@@ -279,6 +281,7 @@ export class MetamaskConnectEVM {
         coreOptions,
         this.#core.storage,
         invokeOptions,
+        this.#core.transportType,
       );
       const isRejection = isRejectionError(error);
       if (isRejection) {
@@ -530,8 +533,6 @@ export class MetamaskConnectEVM {
     const scope: Scope = `eip155:${hexToNumber(chainId)}`;
     const params = [{ chainId }];
 
-    await this.#trackWalletActionRequested(method, scope, params);
-
     // TODO (wenfix): better way to return here other than resolving.
     if (this.selectedChainId === chainId) {
       return Promise.resolve();
@@ -545,9 +546,10 @@ export class MetamaskConnectEVM {
     ) {
       await this.#cacheChainId(chainId);
       this.#onChainChanged(chainId);
-      await this.#trackWalletActionSucceeded(method, scope, params);
       return Promise.resolve();
     }
+
+    await this.#trackWalletActionRequested(method, scope, params);
 
     try {
       const result = await this.#request({

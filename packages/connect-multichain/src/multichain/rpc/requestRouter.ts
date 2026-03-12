@@ -18,6 +18,7 @@ import {
   RPC_HANDLED_METHODS,
   RPCInvokeMethodErr,
   SDK_HANDLED_METHODS,
+  type TransportType,
 } from '../../domain';
 import { openDeeplink } from '../utils';
 import {
@@ -44,6 +45,7 @@ export class RequestRouter {
     private readonly transport: ExtendedTransport,
     private readonly rpcClient: RpcClient,
     private readonly config: MultichainOptions,
+    private readonly transportType: TransportType,
   ) {}
 
   /**
@@ -155,6 +157,7 @@ export class RequestRouter {
       this.config,
       this.config.storage,
       options,
+      this.transportType,
     );
     analytics.track('mmconnect_wallet_action_requested', props);
   }
@@ -171,6 +174,7 @@ export class RequestRouter {
       this.config,
       this.config.storage,
       options,
+      this.transportType,
     );
     analytics.track('mmconnect_wallet_action_succeeded', props);
   }
@@ -185,6 +189,7 @@ export class RequestRouter {
       this.config,
       this.config.storage,
       options,
+      this.transportType,
     );
     analytics.track('mmconnect_wallet_action_failed', props);
   }
@@ -201,6 +206,7 @@ export class RequestRouter {
       this.config,
       this.config.storage,
       options,
+      this.transportType,
     );
     analytics.track('mmconnect_wallet_action_rejected', props);
   }
@@ -211,16 +217,14 @@ export class RequestRouter {
    * @param options
    */
   private async handleWithRpcNode(options: InvokeMethodOptions): Promise<Json> {
-    return this.#withAnalyticsTracking(options, async () => {
-      try {
-        return await this.rpcClient.request(options);
-      } catch (error) {
-        if (error instanceof MissingRpcEndpointErr) {
-          return this.handleWithWallet(options);
-        }
-        throw error;
+    try {
+      return await this.rpcClient.request(options);
+    } catch (error) {
+      if (error instanceof MissingRpcEndpointErr) {
+        return this.handleWithWallet(options);
       }
-    });
+      throw error;
+    }
   }
 
   /**
