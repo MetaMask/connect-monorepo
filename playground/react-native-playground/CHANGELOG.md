@@ -7,13 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Uncategorized
 
-- Update `getInfuraRpcUrls` calls to use new options object parameter ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+- Release/20.0.0 ([#214](https://github.com/MetaMask/connect-monorepo/pull/214))
+- Release/19.0.0 ([#203](https://github.com/MetaMask/connect-monorepo/pull/203))
+- ci: add workflow to build and publish React Native Playground APK on release ([#192](https://github.com/MetaMask/connect-monorepo/pull/192))
+- chore: prevent react-native-playground from being published to npm ([#200](https://github.com/MetaMask/connect-monorepo/pull/200))
 
 ### Added
 
 - Add `integrationType: wagmi` to wagmi metamask connector([#215](https://github.com/MetaMask/connect-monorepo/pull/215/))
+
+### Changed
+
+- Update `getInfuraRpcUrls` calls to use new options object parameter ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
 
 ## [0.2.1]
 

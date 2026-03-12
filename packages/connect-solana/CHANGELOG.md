@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- fix: Fix react-native-playground consumption of **PACKAGE_VERSION** build-time constant in connect packages ([#221](https://github.com/MetaMask/connect-monorepo/pull/221))
+
 ## [0.5.0]
 
 ### Added

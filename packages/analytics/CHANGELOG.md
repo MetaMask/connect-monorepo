@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- fix: use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
+
 ## [0.3.0]
 
 ### Changed
