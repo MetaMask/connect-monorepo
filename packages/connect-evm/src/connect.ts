@@ -1044,9 +1044,9 @@ export async function createEVMClient(
         // typeof guard needed: Metro (React Native) bundles TS source directly,
         // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
         'connect-evm':
-          typeof __PACKAGE_VERSION__ !== 'undefined'
-            ? __PACKAGE_VERSION__
-            : 'unknown',
+          typeof __PACKAGE_VERSION__ === 'undefined'
+            ? 'unknown'
+            : __PACKAGE_VERSION__,
       },
     });
 
