@@ -834,32 +834,26 @@ export class MetamaskConnectEVM {
 
       this.#removeNotificationHandler?.();
 
-      // TODO: Verify if #core.on('metamask_accountsChanged') and #core.on('metamask_chainChanged')
-      // would work here instead
-      this.#removeNotificationHandler = this.#core.transport.onNotification(
-        (notification) => {
-          // @ts-expect-error TODO: address this
-          if (notification?.method === 'metamask_accountsChanged') {
-            // @ts-expect-error TODO: address this
-            const notificationAccounts = notification?.params;
-            logger('transport-event: accountsChanged', notificationAccounts);
-            // why are we not caching the accounts here?
-            this.#onAccountsChanged(notificationAccounts);
-          }
+      const onAccountsChanged = (accs: string[]): void => {
+        logger('core-event: accountsChanged', accs);
+        this.#onAccountsChanged(accs as Address[]);
+      };
 
-          // @ts-expect-error TODO: address this
-          if (notification?.method === 'metamask_chainChanged') {
-            // @ts-expect-error TODO: address this
-            const notificationChainId = notification?.params?.chainId;
-            logger('transport-event: chainChanged', notificationChainId);
-            // Cache the chainId for persistence across page refreshes
-            this.#cacheChainId(notificationChainId).catch((error) => {
-              logger('Error caching chainId in notification handler', error);
-            });
-            this.#onChainChanged(notificationChainId);
-          }
-        },
-      );
+      const onChainChanged = (chainChanged: { chainId: string }): void => {
+        logger('core-event: chainChanged', chainChanged.chainId);
+        this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
+          logger('Error caching chainId in notification handler', error);
+        });
+        this.#onChainChanged(chainChanged.chainId as Hex);
+      };
+
+      this.#core.on('metamask_accountsChanged', onAccountsChanged);
+      this.#core.on('metamask_chainChanged', onChainChanged);
+
+      this.#removeNotificationHandler = (): void => {
+        this.#core.off('metamask_accountsChanged', onAccountsChanged);
+        this.#core.off('metamask_chainChanged', onChainChanged);
+      };
     }
 
     this.#onChainChanged(chainId);
