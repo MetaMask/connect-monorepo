@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **BREAKING** `getInfuraRpcUrls` now accepts a single options object `{ infuraApiKey, chainIds? }` instead of a positional `infuraApiKey` string. The optional `chainIds` parameter accepts hex chain IDs to filter the output ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+- use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
 
 ### Fixed
 
-- fix: use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
 - fix: Fix react-native-playground consumption of **PACKAGE_VERSION** build-time constant in connect packages ([#221](https://github.com/MetaMask/connect-monorepo/pull/221))
 
 ## [0.7.0]
