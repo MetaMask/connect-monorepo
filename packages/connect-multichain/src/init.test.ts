@@ -231,6 +231,61 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should update integration_types analytics global when singleton sees a new integration`,
+      async () => {
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        sdk = await createSDK(testOptions);
+        setGlobalSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          analytics: {
+            ...testOptions.analytics,
+            integrationType: 'wagmi',
+          },
+        } as any);
+
+        if (platform === 'web' || platform === 'web-mobile') {
+          t.expect(setGlobalSpy).toHaveBeenCalledWith(
+            'integration_types',
+            ['wagmi'],
+          );
+        }
+
+        setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should normalize empty integrationType to direct for analytics globals`,
+      async () => {
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        await createSDK({
+          ...testOptions,
+          analytics: {
+            ...testOptions.analytics,
+            integrationType: '',
+          },
+        } as any);
+
+        if (platform === 'web' || platform === 'web-mobile') {
+          t.expect(setGlobalSpy).toHaveBeenCalledWith(
+            'integration_types',
+            ['direct'],
+          );
+          t.expect(setGlobalSpy).not.toHaveBeenCalledWith(
+            'integration_types',
+            [''],
+          );
+        }
+
+        setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
       `${platform} Should gracefully handle init errors by just logging them and return non initialized sdk`,
       async () => {
         const testError = new Error('Test error');
