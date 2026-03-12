@@ -40,7 +40,8 @@ import {
   validSupportedChainsUrls,
 } from './utils/type-guards';
 
-declare const __PACKAGE_VERSION__: string;
+// Value substitued by tsup at build time
+declare const __PACKAGE_VERSION__: string | undefined;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -1039,7 +1040,14 @@ export async function createEVMClient(
       analytics: {
         integrationType: options.analytics?.integrationType ?? 'direct',
       },
-      versions: { 'connect-evm': __PACKAGE_VERSION__ },
+      versions: {
+        // typeof guard needed: Metro (React Native) bundles TS source directly,
+        // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
+        'connect-evm':
+          typeof __PACKAGE_VERSION__ !== 'undefined'
+            ? __PACKAGE_VERSION__
+            : 'unknown',
+      },
     });
 
     return MetamaskConnectEVM.create({

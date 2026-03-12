@@ -71,7 +71,8 @@ import {
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
-declare const __PACKAGE_VERSION__: string;
+// Value substitued by tsup at build time
+declare const __PACKAGE_VERSION__: string | undefined;
 
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
@@ -154,7 +155,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         integrationType,
       },
       versions: {
-        'connect-multichain': __PACKAGE_VERSION__,
+        // typeof guard needed: Metro (React Native) bundles TS source directly,
+        // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
+        'connect-multichain':
+          typeof __PACKAGE_VERSION__ !== 'undefined'
+            ? __PACKAGE_VERSION__
+            : 'unknown',
         ...(options.versions ?? {}),
       },
     };
