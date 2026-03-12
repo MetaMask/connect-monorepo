@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0]
+
 ### Uncategorized
 
 - fix: use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
@@ -147,7 +149,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.7.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.8.0...HEAD
+[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.7.0...@metamask/connect-evm@0.8.0
 [0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.6.0...@metamask/connect-evm@0.7.0
 [0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.5.0...@metamask/connect-evm@0.6.0
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.1...@metamask/connect-evm@0.5.0
