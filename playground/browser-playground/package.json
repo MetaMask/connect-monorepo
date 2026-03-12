@@ -1,6 +1,6 @@
 {
   "name": "@metamask/browser-playground",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A browser test dapp for multichain api",
   "keywords": [
     "MetaMask",

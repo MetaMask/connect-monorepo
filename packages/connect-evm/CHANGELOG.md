@@ -9,15 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0]
 
-### Uncategorized
-
-- feat: add `transport_type` to wallet action events ([#210](https://github.com/MetaMask/connect-monorepo/pull/210))
-- feat: remove rpc method analytics. remove MWP optimistic chain switch analytics ([#209](https://github.com/MetaMask/connect-monorepo/pull/209))
-- remove eth_accounts analytics ([#208](https://github.com/MetaMask/connect-monorepo/pull/208))
-
 ### Added
 
-- Enable specifying the integration type for analytics. Defaults to `connect-evm` instead of `direct` for better branching. ([#213](https://github.com/MetaMask/connect-monorepo/pull/213))
+- Enable specifying the integration type for analytics. Defaults to `direct`. ([#213](https://github.com/MetaMask/connect-monorepo/pull/213))
 - Pass `connect-evm` package version to `createMultichainClient` via the `versions` option so it appears in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
 
 ### Fixed
