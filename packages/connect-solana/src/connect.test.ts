@@ -8,6 +8,7 @@ import {
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { createSolanaClient } from './connect';
+import { setMockWallets } from './mocks/wallet-standard-app';
 import type { SolanaConnectOptions } from './types';
 
 describe('createSolanaClient', () => {
@@ -37,6 +38,7 @@ describe('createSolanaClient', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    setMockWallets([]);
     (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
       mockCore,
     );
@@ -110,12 +112,20 @@ describe('createSolanaClient', () => {
 
       expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
         client: mockCore.provider,
-        walletName: 'MetaMask Connect',
+        walletName: 'MetaMask',
       });
     });
 
     it('should skip auto-registration when skipAutoRegister is true', async () => {
       await createSolanaClient({ ...mockOptions, skipAutoRegister: true });
+
+      expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+    });
+
+    it('should skip auto-registration when MetaMask extension is already registered', async () => {
+      setMockWallets([{ name: 'MetaMask' }]);
+
+      await createSolanaClient(mockOptions);
 
       expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
     });
@@ -133,7 +143,7 @@ describe('createSolanaClient', () => {
 
         expect(getWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask Connect',
+          walletName: 'MetaMask',
         });
         expect(wallet).toBe(mockWallet);
       });
@@ -150,7 +160,7 @@ describe('createSolanaClient', () => {
 
         expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask Connect',
+          walletName: 'MetaMask',
         });
       });
 
@@ -158,6 +168,18 @@ describe('createSolanaClient', () => {
         const client = await createSolanaClient(mockOptions);
 
         vi.clearAllMocks();
+        await client.registerWallet();
+
+        expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+      });
+
+      it('should skip registration when MetaMask extension is already registered', async () => {
+        const client = await createSolanaClient({
+          ...mockOptions,
+          skipAutoRegister: true,
+        });
+
+        setMockWallets([{ name: 'MetaMask' }]);
         await client.registerWallet();
 
         expect(registerSolanaWalletStandard).not.toHaveBeenCalled();

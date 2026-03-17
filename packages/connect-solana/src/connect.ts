@@ -14,6 +14,7 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
+import { isMetamaskExtensionRegistered, logger, enableDebug } from './utils';
 
 // Value substitued by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
@@ -58,6 +59,10 @@ declare const __PACKAGE_VERSION__: string | undefined;
 export async function createSolanaClient(
   options: SolanaConnectOptions,
 ): Promise<SolanaClient> {
+  if (options.debug) {
+    enableDebug();
+  }
+
   const defaultNetworks: SolanaSupportedNetworks = {
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
@@ -85,10 +90,14 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
-  const walletName = 'MetaMask Connect';
+  const walletName = 'MetaMask';
 
   if (!skipAutoRegister) {
-    await registerSolanaWalletStandard({ client, walletName });
+    if (isMetamaskExtensionRegistered()) {
+      logger('MetaMask extension is already registered. Skipping...');
+    } else {
+      await registerSolanaWalletStandard({ client, walletName });
+    }
   }
 
   return {
@@ -96,6 +105,10 @@ export async function createSolanaClient(
     getWallet: () => getWalletStandard({ client, walletName }),
     registerWallet: async (): Promise<void> => {
       if (!skipAutoRegister) {
+        return;
+      }
+      if (isMetamaskExtensionRegistered()) {
+        logger('MetaMask extension is already registered. Skipping...');
         return;
       }
       await registerSolanaWalletStandard({ client, walletName });

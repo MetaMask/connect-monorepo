@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Skip Solana wallet-standard registration when MetaMask extension is already present to avoid double-registration ([#231](https://github.com/MetaMask/connect-monorepo/pull/231))
+
 ## [0.6.0]
 
 ### Fixed
