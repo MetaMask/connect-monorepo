@@ -7,8 +7,9 @@ import type {
   PlatformType,
   Scope,
   StoreClient,
+  TransportType,
 } from '../../domain';
-import { getPlatformType, TransportType } from '../../domain';
+import { getPlatformType } from '../../domain';
 
 /**
  * Checks if an error represents a user rejection.
@@ -49,21 +50,16 @@ export async function getBaseAnalyticsProperties(
   mmconnect_versions: Record<string, string>;
   dapp_id: string;
   platform: PlatformType;
-  integration_type: string;
   anon_id: string;
 }> {
   const dappId = getDappId(options.dapp);
   const platform = getPlatformType();
   const anonId = await storage.getAnonId();
-  const integrationType =
-    (options.analytics as { enabled: true; integrationType: string })
-      ?.integrationType ?? TransportType.UNKNOWN;
 
   return {
     mmconnect_versions: options.versions ?? {},
     dapp_id: dappId,
     platform,
-    integration_type: integrationType,
     anon_id: anonId,
   };
 }
@@ -86,22 +82,17 @@ export async function getWalletActionAnalyticsProperties(
   mmconnect_versions: Record<string, string>;
   dapp_id: string;
   method: string;
-  integration_type: string;
   caip_chain_id: string;
   anon_id: string;
   transport_type: TransportType;
 }> {
   const dappId = getDappId(options.dapp);
   const anonId = await storage.getAnonId();
-  const integrationType =
-    (options.analytics as { enabled: true; integrationType: string })
-      ?.integrationType ?? 'unknown';
 
   return {
     mmconnect_versions: options.versions ?? {},
     dapp_id: dappId,
     method: invokeOptions.request.method,
-    integration_type: integrationType,
     caip_chain_id: invokeOptions.scope,
     anon_id: anonId,
     transport_type: transportType,

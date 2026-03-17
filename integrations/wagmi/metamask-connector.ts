@@ -322,6 +322,9 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
               disconnect: this.onDisconnect.bind(this),
               displayUri: this.onDisplayUri.bind(this),
             },
+            analytics: {
+              integrationType: 'wagmi',
+            },
             ...(parameters.mobile && { mobile: parameters.mobile }),
           });
         }

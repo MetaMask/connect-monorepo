@@ -51,7 +51,7 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
           url: 'https://playground.metamask.io',
         },
         api: {
-          supportedNetworks: getInfuraRpcUrls(process.env.INFURA_API_KEY || ''),
+          supportedNetworks: getInfuraRpcUrls({ infuraApiKey: process.env.INFURA_API_KEY || '' }),
         },
         transport: {
           extensionId: METAMASK_PROD_CHROME_ID,
