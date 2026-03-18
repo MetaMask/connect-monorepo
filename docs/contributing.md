@@ -289,12 +289,12 @@ This repository uses [Turborepo](https://turbo.build/repo) to orchestrate tasks 
 
 - Run `yarn build` to build all packages in topological order (dependencies first).
 - Run `yarn test` to run tests for all packages (with dependencies built first).
-- Run `npx turbo run <task> --filter=<packageName>` to run a task for a specific package and its dependencies.
+- Run `yarn turbo run <task> --filter=<packageName>` to run a task for a specific package and its dependencies.
 
 To run a task for a single package (with caching and dependency builds):
 
 ```
-npx turbo run <task> --filter=<packageName>
+yarn turbo run <task> --filter=<packageName>
 ```
 
 For running arbitrary shell commands that are not package scripts, use Yarn's [`yarn workspace`](https://yarnpkg.com/cli/workspace) `exec` command:
