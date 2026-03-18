@@ -3,10 +3,11 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput } from 
 import { formatEther, type Hex, parseEther } from 'viem';
 import {
   type BaseError,
-  useAccount,
   useBalance,
   useBlockNumber,
   useChainId,
+  useChains,
+  useConnection,
   useConnectorClient,
   useSendTransaction,
   useSignMessage,
@@ -17,9 +18,10 @@ import { TEST_IDS } from '@metamask/playground-ui';
 import { colors, sharedStyles } from '../styles/shared';
 
 export function WagmiCard() {
-  const account = useAccount();
+  const account = useConnection();
   const chainId = useChainId();
-  const { chains, switchChain } = useSwitchChain();
+  const chains = useChains();
+  const { switchChain } = useSwitchChain();
   const { data: balance } = useBalance({ address: account.address });
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { data: connectorClient } = useConnectorClient();
