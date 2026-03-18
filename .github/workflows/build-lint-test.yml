@@ -104,7 +104,7 @@ jobs:
           key: turbo-${{ runner.os }}-node${{ matrix.node-version }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-node${{ matrix.node-version }}-
-      - run: turbo run test
+      - run: yarn turbo run test
       - name: Require clean working directory
         shell: bash
         run: |

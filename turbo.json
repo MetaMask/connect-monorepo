@@ -31,7 +31,7 @@
     },
     "build:docs": {
       "dependsOn": ["build"],
-      "outputs": []
+      "outputs": ["docs/**"]
     },
     "changelog:validate": {
       "outputs": []

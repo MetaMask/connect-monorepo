@@ -51,7 +51,7 @@
   ],
   "scripts": {
     "allow-scripts": "",
-    "build": "yarn clean && tsc -b tsconfig.build.json && npx tsup",
+    "build": "tsc -b tsconfig.build.json && npx tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-multichain",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/connect-multichain",

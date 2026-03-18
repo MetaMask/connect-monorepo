@@ -45,7 +45,7 @@
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
-    "test": "vitest",
+    "test": "vitest run",
     "test:ci": "vitest run",
     "test:verbose": "vitest run --reporter=verbose"
   },
