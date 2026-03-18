@@ -70,6 +70,11 @@ function createMockCore(): MockCore {
       }
       handlers[event].push(handler);
     },
+    off(event: string, handler: (...args: unknown[]) => void): void {
+      if (handlers[event]) {
+        handlers[event] = handlers[event].filter((fn) => fn !== handler);
+      }
+    },
     emit(event: string, ...args: unknown[]): void {
       handlers[event]?.forEach((handler) => handler(...args));
     },
@@ -504,6 +509,82 @@ describe('MetamaskConnectEVM', () => {
         expect.arrayContaining(['eip155:1', 'eip155:137']),
       );
       expect(scopes).toHaveLength(2);
+    });
+  });
+
+  describe('core event subscriptions', () => {
+    let mockCore: MockCore;
+    let client: Awaited<ReturnType<typeof MetamaskConnectEVM.create>>;
+
+    beforeEach(async () => {
+      mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.emit('wallet_sessionChanged', session);
+      await new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+    });
+
+    it('handles metamask_accountsChanged via core.on()', async () => {
+      const accountsChangedPromise = new Promise<string[]>((resolve) => {
+        client.getProvider().once('accountsChanged', resolve);
+      });
+
+      mockCore.emit('metamask_accountsChanged', [
+        '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+      ]);
+
+      const accounts = await accountsChangedPromise;
+      expect(accounts).toEqual(['0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef']);
+    });
+
+    it('handles metamask_chainChanged via core.on()', async () => {
+      const chainChangedPromise = new Promise<string>((resolve) => {
+        client.getProvider().once('chainChanged', resolve);
+      });
+
+      mockCore.emit('metamask_chainChanged', { chainId: '0x89' });
+
+      const chainId = await chainChangedPromise;
+      expect(chainId).toBe('0x89');
+    });
+
+    it('caches the chainId when metamask_chainChanged fires', async () => {
+      const chainChangedPromise = new Promise<string>((resolve) => {
+        client.getProvider().once('chainChanged', resolve);
+      });
+
+      mockCore.emit('metamask_chainChanged', { chainId: '0x89' });
+
+      await chainChangedPromise;
+      expect(mockCore.storage.adapter.set).toHaveBeenCalledWith(
+        'cache_eth_chainId',
+        JSON.stringify('0x89'),
+      );
+    });
+
+    it('stops receiving events after removeNotificationHandler is called via disconnect', async () => {
+      await client.disconnect();
+
+      const accountsChangedSpy = vi.fn();
+      client.getProvider().on('accountsChanged', accountsChangedSpy);
+
+      mockCore.emit('metamask_accountsChanged', [
+        '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+      ]);
+
+      expect(accountsChangedSpy).not.toHaveBeenCalled();
     });
   });
 });
