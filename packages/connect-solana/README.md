@@ -123,9 +123,9 @@ Generates Solana Infura RPC URLs keyed by Solana network name. The return value 
 
 #### Parameters
 
-| Name           | Type              | Required | Description                                                        |
-| -------------- | ----------------- | -------- | ------------------------------------------------------------------ |
-| `infuraApiKey` | `string`          | Yes      | Your Infura API key                                                |
+| Name           | Type              | Required | Description                                                       |
+| -------------- | ----------------- | -------- | ----------------------------------------------------------------- |
+| `infuraApiKey` | `string`          | Yes      | Your Infura API key                                               |
 | `networks`     | `SolanaNetwork[]` | Yes      | Solana networks to include (for example, `['mainnet', 'devnet']`) |
 
 #### Returns
