@@ -32,6 +32,11 @@ export default defineConfig({
         __dirname,
         './src/mocks/solana-wallet-standard.ts',
       ),
+      '@wallet-standard/app': resolve(
+        // eslint-disable-next-line no-restricted-globals
+        __dirname,
+        './src/mocks/wallet-standard-app.ts',
+      ),
     },
   },
 });
