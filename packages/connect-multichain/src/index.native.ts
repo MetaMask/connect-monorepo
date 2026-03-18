@@ -23,10 +23,11 @@ export const createMultichainClient: CreateMultichainFN = async (options) => {
     let StoreAdapterRN;
     try {
       ({ StoreAdapterRN } = await import('./store/adapters/rn'));
-    } catch {
+    } catch (error) {
       throw new Error(
         '@metamask/connect-multichain: @react-native-async-storage/async-storage is required for React Native. ' +
           'Install it with: npm install @react-native-async-storage/async-storage',
+        { cause: error },
       );
     }
     const adapter = new StoreAdapterRN();
