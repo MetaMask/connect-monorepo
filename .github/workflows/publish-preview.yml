@@ -43,6 +43,13 @@ jobs:
         id: commit-sha
         run: echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - run: yarn prepare-preview-builds @metamask-previews ${{ steps.commit-sha.outputs.COMMIT_SHA }}
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-preview-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-preview-
       - run: yarn build
       - name: Publish preview build
         run: yarn publish-previews
