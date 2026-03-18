@@ -291,16 +291,21 @@ This repository uses [Turborepo](https://turbo.build/repo) to orchestrate tasks 
 - Run `yarn test` to run tests for all packages (with dependencies built first).
 - Run `npx turbo run <task> --filter=<packageName>` to run a task for a specific package and its dependencies.
 
-For one-off operations on individual packages, use Yarn's [`yarn workspace`](https://yarnpkg.com/cli/workspace) command:
+To run a task for a single package (with caching and dependency builds):
 
 ```
-yarn workspace <workspaceName> run <script>
+npx turbo run <task> --filter=<packageName>
+```
+
+For running arbitrary shell commands that are not package scripts, use Yarn's [`yarn workspace`](https://yarnpkg.com/cli/workspace) `exec` command:
+
+```
+yarn workspace <workspaceName> exec <command>
 ```
 
 > **Note**
 >
-> - `workspaceName` is the `name` field within a package's `package.json`, e.g., `@metamask/connect-evm`, not the directory where it is located, e.g., `packages/connect-evm`.
-> - `commandName` in the Yarn documentation is any sub-command that the `yarn` executable would usually take. Pay special attention to the difference between `run` vs `exec`. If you want to run a package script, you would use `run`, e.g., `yarn workspace @metamask/connect-evm run changelog:validate`; but if you want to run _any_ shell command, you'd use `exec`, e.g. `yarn workspace @metamask/connect-evm exec cat package.json | jq '.version'`.
+> - `workspaceName` / `packageName` is the `name` field within a package's `package.json`, e.g., `@metamask/connect-evm`, not the directory where it is located, e.g., `packages/connect-evm`.
 
 ## Adding new packages to the monorepo
 
