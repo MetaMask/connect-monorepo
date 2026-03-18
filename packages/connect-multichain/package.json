@@ -110,6 +110,11 @@
   "peerDependencies": {
     "@react-native-async-storage/async-storage": "^1.23"
   },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    }
+  },
   "engines": {
     "node": ">=20.19.0"
   },
