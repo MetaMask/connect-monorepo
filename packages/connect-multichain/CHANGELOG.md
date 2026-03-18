@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `DefaultTransport` now forwards all wallet notifications instead of filtering to only `metamask_chainChanged` and `metamask_accountsChanged`, matching `MWPTransport` behavior ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- `stateChanged` is now emitted via the `EventEmitter` so `client.on('stateChanged', cb)` fires correctly ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- `SDKEvents` type now includes explicit entries for `metamask_accountsChanged`, `metamask_chainChanged`, and `stateChanged` ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+
 ## [0.10.0]
 
 ### Changed

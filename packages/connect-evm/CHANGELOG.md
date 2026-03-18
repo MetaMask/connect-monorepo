@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Migrate `metamask_accountsChanged` and `metamask_chainChanged` subscriptions from `transport.onNotification()` to typed `core.on()`/`core.off()`, removing `@ts-expect-error` suppressions ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+
 ## [0.8.0]
 
 ### Changed
