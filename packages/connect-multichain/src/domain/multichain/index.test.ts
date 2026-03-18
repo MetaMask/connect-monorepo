@@ -96,7 +96,7 @@ t.describe('MultichainCore', () => {
         api: {
           supportedNetworks: {
             'eip155:1': 'https://overridden.example',
-            'solana:mainnet': 'https://solana.example',
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'https://solana.example',
           },
         },
       });
@@ -108,7 +108,7 @@ t.describe('MultichainCore', () => {
       t.expect(opts.api.supportedNetworks['eip155:11155111']).toBe(
         'https://eth.sepolia.example',
       );
-      t.expect(opts.api.supportedNetworks['solana:mainnet']).toBe(
+      t.expect(opts.api.supportedNetworks['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp']).toBe(
         'https://solana.example',
       );
     });
