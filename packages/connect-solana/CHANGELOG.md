@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `getInfuraRpcUrls({ infuraApiKey, networks })` helper to generate Solana `supportedNetworks` entries (mainnet/devnet) for `createSolanaClient`.
+- Add `getInfuraRpcUrls({ infuraApiKey, networks })` helper to generate Solana `supportedNetworks` entries (mainnet/devnet) for `createSolanaClient` ([#235](https://github.com/MetaMask/connect-monorepo/pull/235))
 
 ## [0.6.0]
 
