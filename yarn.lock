@@ -8859,22 +8859,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abitype@npm:^1.0.9":
-  version: 1.1.1
-  resolution: "abitype@npm:1.1.1"
-  peerDependencies:
-    typescript: ">=5.0.4"
-    zod: ^3.22.0 || ^4.0.0
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-    zod:
-      optional: true
-  checksum: 10/3193d4e228caf606e4c915858e0af78b0b2529fc3baa149c2516379db74c0f9e2ace1999bf479a515b4f8f06d27b1cf8fca37f60b4f73a251eedd7bcac11cf89
-  languageName: node
-  linkType: hard
-
-"abitype@npm:^1.1.1":
+"abitype@npm:^1.0.9, abitype@npm:^1.1.1":
   version: 1.2.3
   resolution: "abitype@npm:1.2.3"
   peerDependencies:
