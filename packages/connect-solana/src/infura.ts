@@ -1,4 +1,5 @@
 import { getInfuraRpcUrls as getInfuraRpcUrlsMultichain } from '@metamask/connect-multichain';
+import type { CaipChainId } from '@metamask/utils';
 
 import { SOLANA_CAIP_IDS } from './networks';
 import type { SolanaNetwork, SolanaSupportedNetworks } from './types';
@@ -20,14 +21,16 @@ export const getInfuraRpcUrls = ({
   infuraApiKey: string;
   networks: SolanaNetwork[];
 }): SolanaSupportedNetworks => {
-  const caipChainIds = networks.map((network) => SOLANA_CAIP_IDS[network]);
+  const caipChainIds = networks.map(
+    (network) => SOLANA_CAIP_IDS[network] as CaipChainId,
+  );
   const caipMap = getInfuraRpcUrlsMultichain({
     infuraApiKey,
     caipChainIds,
   });
 
   return networks.reduce<SolanaSupportedNetworks>((acc, network) => {
-    const caipId = SOLANA_CAIP_IDS[network];
+    const caipId = SOLANA_CAIP_IDS[network] as CaipChainId;
     const rpcUrl = caipMap[caipId];
     if (rpcUrl) {
       acc[network] = rpcUrl;
