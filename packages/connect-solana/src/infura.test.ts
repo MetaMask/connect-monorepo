@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
 import { getInfuraRpcUrls as getInfuraRpcUrlsMultichain } from '@metamask/connect-multichain';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 

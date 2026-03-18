@@ -108,9 +108,9 @@ t.describe('MultichainCore', () => {
       t.expect(opts.api.supportedNetworks['eip155:11155111']).toBe(
         'https://eth.sepolia.example',
       );
-      t.expect(opts.api.supportedNetworks['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp']).toBe(
-        'https://solana.example',
-      );
+      t.expect(
+        opts.api.supportedNetworks['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+      ).toBe('https://solana.example');
     });
 
     t.it(
