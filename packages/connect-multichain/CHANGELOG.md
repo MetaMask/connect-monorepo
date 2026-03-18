@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `RPCInvokeMethodErr` now carries the original numeric RPC code from the wallet (`rpcCode`) and the original wallet-facing message (`rpcMessage`) as separate fields, so higher layers can re-surface them without losing them inside internal error formatting. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+- `RequestRouter` now propagates the numeric RPC error code from wallet response errors and transport exceptions into `RPCInvokeMethodErr`, ensuring the code is not dropped during error wrapping. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+- `DefaultTransport` now attaches the numeric RPC code to errors produced from `window.postMessage` responses, so it survives the transport boundary. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+
 ## [0.10.0]
 
 ### Changed
