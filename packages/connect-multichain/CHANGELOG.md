@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Mark `@react-native-async-storage/async-storage` peer dependency as optional to prevent web/node consumers from pulling in the entire react-native toolchain ([#234](https://github.com/MetaMask/connect-monorepo/pull/234))
+
 ### Changed
 
 - `DefaultTransport` now forwards all wallet notifications instead of filtering to only `metamask_chainChanged` and `metamask_accountsChanged`, matching `MWPTransport` behavior ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
