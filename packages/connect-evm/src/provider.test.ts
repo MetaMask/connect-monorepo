@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
-/* eslint-disable @typescript-eslint/no-explicit-any -- mock core uses any for private options */
+/* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
 import { RPCInvokeMethodErr } from '@metamask/connect-multichain';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -81,8 +81,8 @@ describe('EIP1193Provider', () => {
       const provider = new EIP1193Provider(mockCore as any, vi.fn());
       provider.selectedChainId = '0x1';
 
-      const err = new RPCInvokeMethodErr('some internal error');
-      mockCore.invokeMethod.mockRejectedValue(err);
+      const rpcError = new RPCInvokeMethodErr('some internal error');
+      mockCore.invokeMethod.mockRejectedValue(rpcError);
 
       await expect(
         provider.request({ method: 'eth_blockNumber', params: [] }),

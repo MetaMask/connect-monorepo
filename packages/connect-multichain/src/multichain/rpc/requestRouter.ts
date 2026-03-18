@@ -143,8 +143,11 @@ export class RequestRouter {
       if (error instanceof RPCInvokeMethodErr) {
         throw error;
       }
-      const err = error as { message?: string; code?: number };
-      throw new RPCInvokeMethodErr(err.message ?? 'Unknown error', err.code);
+      const castError = error as { message?: string; code?: number };
+      throw new RPCInvokeMethodErr(
+        castError.message ?? 'Unknown error',
+        castError.code,
+      );
     }
   }
 
