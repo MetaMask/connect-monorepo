@@ -94,9 +94,16 @@ export class DefaultTransport implements ExtendedTransport {
 
         const response = responseData as TransportResponse;
         if ('error' in response && response.error) {
-          pendingRequest.reject(
-            new Error(response.error.message || 'Request failed'),
-          );
+          // Attach the numeric RPC code so it survives the transport boundary
+          // and can be re-surfaced as an EIP-1193 error by higher layers.
+          // This path is exercised by sendEip1193Message callers.
+          const error = new Error(
+            response.error.message || 'Request failed',
+          ) as Error & { code?: number };
+          if (typeof response.error.code === 'number') {
+            error.code = response.error.code;
+          }
+          pendingRequest.reject(error);
         } else {
           pendingRequest.resolve(response);
         }
