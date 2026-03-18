@@ -1,0 +1,50 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "tsconfig.build.tsbuildinfo"]
+    },
+    "@metamask/browser-playground#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**"]
+    },
+    "@metamask/react-native-playground#build": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test:verbose": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test:ci": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "lint": {
+      "outputs": []
+    },
+    "build:docs": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "changelog:validate": {
+      "outputs": []
+    },
+    "changelog:format": {
+      "outputs": []
+    },
+    "changelog:update": {
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    }
+  },
+  "ui": "stream"
+}
