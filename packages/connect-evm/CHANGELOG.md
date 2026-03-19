@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Migrate `metamask_accountsChanged` and `metamask_chainChanged` subscriptions from `transport.onNotification()` to typed `core.on()`/`core.off()`, removing `@ts-expect-error` suppressions ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
 
+### Fixed
+
+- `EIP1193Provider.request()` now re-surfaces the original numeric RPC error code as `error.code` on the thrown error, matching the EIP-1193 error shape expected by dApps, wagmi, and ethers.js. Previously `error.code` was always `undefined`. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+
 ## [0.8.0]
 
 ### Changed
