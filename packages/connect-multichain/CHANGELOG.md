@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SDKEvents` type now includes explicit entries for `metamask_accountsChanged`, `metamask_chainChanged`, and `stateChanged` ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
 - Mark `@react-native-async-storage/async-storage` peer dependency as optional — web/Node consumers no longer pull in the React Native toolchain ([#234](https://github.com/MetaMask/connect-monorepo/pull/234))
 - `getInfuraRpcUrls` now includes Solana mainnet and devnet CAIP chain IDs in the generated RPC URL map ([#235](https://github.com/MetaMask/connect-monorepo/pull/235))
-- Updated `infuraRpcUrls` to align with Infura's currently supported networks by removing deprecated testnets (Goerli variants, Mumbai, Palm testnet, Aurora) and adding new mainnet/testnet coverage across Base, Blast, zkSync, BSC/opBNB, Scroll, Mantle, Sei, Swellchain, Unichain, Hemi, MegaETH, Monad, and Celo Sepolia
+- Updated `infuraRpcUrls` to align with Infura's currently supported networks by removing deprecated testnets (Goerli variants, Mumbai, Palm testnet, Aurora) and adding new mainnet/testnet coverage across Base, Blast, zkSync, BSC/opBNB, Scroll, Mantle, Sei, Swellchain, Unichain, Hemi, MegaETH, Monad, and Celo Sepolia ([#237](https://github.com/MetaMask/connect-monorepo/pull/237))
 
 ### Fixed
 
