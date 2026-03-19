@@ -42,7 +42,11 @@ export class RPCReadonlyRequestErr extends BaseErr<'RPC', RPCErrorCodes> {
 export class RPCInvokeMethodErr extends BaseErr<'RPC', RPCErrorCodes> {
   static readonly code = 53;
 
-  constructor(public readonly reason: string) {
+  constructor(
+    public readonly reason: string,
+    public readonly rpcCode?: number,
+    public readonly rpcMessage?: string,
+  ) {
     super(
       `RPCErr${RPCInvokeMethodErr.code}: RPC Client invoke method reason (${reason})`,
       RPCInvokeMethodErr.code,
