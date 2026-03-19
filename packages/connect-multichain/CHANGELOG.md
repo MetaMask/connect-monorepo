@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0]
+
 ### Changed
 
 - `DefaultTransport` now forwards all wallet notifications instead of filtering to only `metamask_chainChanged` and `metamask_accountsChanged`, matching `MWPTransport` behavior ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
@@ -225,7 +227,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.10.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...HEAD
+[0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.10.0...@metamask/connect-multichain@0.11.0
 [0.10.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.9.0...@metamask/connect-multichain@0.10.0
 [0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...@metamask/connect-multichain@0.9.0
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.7.0...@metamask/connect-multichain@0.8.0
