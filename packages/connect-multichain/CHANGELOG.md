@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `stateChanged` is now emitted via the `EventEmitter` so `client.on('stateChanged', cb)` fires correctly ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
 - `SDKEvents` type now includes explicit entries for `metamask_accountsChanged`, `metamask_chainChanged`, and `stateChanged` ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
 - Mark `@react-native-async-storage/async-storage` peer dependency as optional — web/Node consumers no longer pull in the React Native toolchain ([#234](https://github.com/MetaMask/connect-monorepo/pull/234))
+- `getInfuraRpcUrls` now includes Solana mainnet and devnet CAIP chain IDs in the generated RPC URL map ([#235](https://github.com/MetaMask/connect-monorepo/pull/235))
 
 ## [0.10.0]
 

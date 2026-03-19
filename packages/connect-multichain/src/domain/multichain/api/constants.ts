@@ -62,6 +62,13 @@ export const infuraRpcUrls: RpcUrlsMap = {
   'eip155:42220': 'https://celo-mainnet.infura.io/v3/',
   // Alfajores Testnet
   'eip155:44787': 'https://celo-alfajores.infura.io/v3/',
+  // ###### Solana ######
+  // Mainnet
+  'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+    'https://solana-mainnet.infura.io/v3/',
+  // Devnet
+  'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1':
+    'https://solana-devnet.infura.io/v3/',
 };
 
 // Methods that are passed through to the RPC node

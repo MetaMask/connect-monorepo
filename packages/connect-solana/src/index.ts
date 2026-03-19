@@ -1,3 +1,4 @@
+export { getInfuraRpcUrls } from './infura';
 export { createSolanaClient } from './connect';
 export type {
   SolanaClient,
