@@ -233,8 +233,31 @@ t.describe('Platform Detection', () => {
       });
 
       const result = getPlatformType();
-      t.expect(result).toBe(PlatformType.NonBrowser);
+      // global.navigator.product === 'ReactNative' is the Hermes/modern RN signal;
+      // it must resolve to ReactNative, not NonBrowser, so analytics are enabled for RN consumers.
+      t.expect(result).toBe(PlatformType.ReactNative);
     });
+
+    t.it(
+      'should return ReactNative when window is undefined but global.navigator.product is ReactNative (Hermes engine)',
+      () => {
+        // Simulates a modern Hermes-based React Native app where window is not defined
+        // but global.navigator.product is set to 'ReactNative'.
+        // Before the fix, this resolved to NonBrowser, disabling analytics for all RN consumers.
+        t.vi.stubGlobal('window', undefined);
+        t.vi.stubGlobal('global', {
+          navigator: {
+            product: 'ReactNative',
+          },
+        });
+        t.vi.stubGlobal('navigator', {
+          product: 'ReactNative',
+        });
+
+        const result = getPlatformType();
+        t.expect(result).toBe(PlatformType.ReactNative);
+      },
+    );
   });
 });
 

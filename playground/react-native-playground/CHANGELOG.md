@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Add missing `navigator: { product: 'ReactNative' }` to the `window` polyfill so that `window.navigator` is consistent with `global.navigator` for platform detection ([#238](https://github.com/MetaMask/connect-monorepo/pull/238))
+
 ## [0.3.1]
 
 ### Changed

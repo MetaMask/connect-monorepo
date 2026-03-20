@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { createMultichainClient, type ConnectionStatus, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
+import { createMultichainClient, getPlatformType, type ConnectionStatus, type InvokeMethodOptions, type Scope, type SessionData, type MultichainCore, getInfuraRpcUrls } from '@metamask/connect-multichain';
 import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
 import type { CaipAccountId } from '@metamask/utils';
 import type React from 'react';
@@ -28,6 +28,10 @@ export const SDKProvider = ({ children }: { children: React.ReactNode }) => {
 
 	useEffect(() => {
 		if (!sdkRef.current) {
+			// E2E analytics validation: should log 'react-native' on a Hermes device.
+			// Log 'nodejs' means the platform detection fix is not in effect.
+			console.log('[Analytics] platform =', getPlatformType());
+
 			sdkRef.current = createMultichainClient({
 				dapp: {
 					name: 'playground',
