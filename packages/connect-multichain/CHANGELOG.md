@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix platform detection for Hermes-based React Native apps: `isReactNative()` now checks `global.navigator.product` before `window.navigator.product`, so modern RN environments where `window` is undefined correctly resolve to `PlatformType.ReactNative` instead of `PlatformType.NonBrowser`. This restores analytics for all React Native consumers — analytics were silently disabled because `#setupAnalytics()` only calls `analytics.enable()` for browser and `ReactNative` platforms ([#238](https://github.com/MetaMask/connect-monorepo/pull/238))
+
 ## [0.11.0]
 
 ### Changed

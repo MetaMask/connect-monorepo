@@ -27,6 +27,14 @@ if (typeof global !== 'undefined' && global.window) {
   windowObj = {};
 }
 
+// Ensure navigator exists with the React Native product identifier.
+// Without this, isReactNative() in connect-multichain falls back to checking
+// global.navigator (which works), but window.navigator.product would be missing,
+// meaning any code that reads window.navigator directly would not detect RN correctly.
+if (!windowObj.navigator) {
+  windowObj.navigator = { product: 'ReactNative' };
+}
+
 // Ensure location object exists
 if (!windowObj.location) {
   windowObj.location = {
