@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0]
+
+### Changed
+
+- `DefaultTransport` now forwards all wallet notifications instead of filtering to only `metamask_chainChanged` and `metamask_accountsChanged`, matching `MWPTransport` behavior ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- `stateChanged` is now emitted via the `EventEmitter` so `client.on('stateChanged', cb)` fires correctly ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- `SDKEvents` type now includes explicit entries for `metamask_accountsChanged`, `metamask_chainChanged`, and `stateChanged` ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- Mark `@react-native-async-storage/async-storage` peer dependency as optional — web/Node consumers no longer pull in the React Native toolchain ([#234](https://github.com/MetaMask/connect-monorepo/pull/234))
+- `getInfuraRpcUrls` now includes Solana mainnet and devnet CAIP chain IDs in the generated RPC URL map ([#235](https://github.com/MetaMask/connect-monorepo/pull/235))
+- Updated `infuraRpcUrls` to align with Infura's currently supported networks by removing deprecated testnets (Goerli variants, Mumbai, Palm testnet, Aurora) and adding new mainnet/testnet coverage across Base, Blast, zkSync, BSC/opBNB, Scroll, Mantle, Sei, Swellchain, Unichain, Hemi, MegaETH, Monad, and Celo Sepolia ([#237](https://github.com/MetaMask/connect-monorepo/pull/237))
+
+### Fixed
+
+- `RPCInvokeMethodErr` now carries the original numeric RPC code from the wallet (`rpcCode`) and the original wallet-facing message (`rpcMessage`) as separate fields, so higher layers can re-surface them without losing them inside internal error formatting. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+- `RequestRouter` now propagates the numeric RPC error code from wallet response errors and transport exceptions into `RPCInvokeMethodErr`, ensuring the code is not dropped during error wrapping. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+- `DefaultTransport` now attaches the numeric RPC code to errors produced from `window.postMessage` responses, so it survives the transport boundary. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+
+## [0.10.0]
+
+### Changed
+
+- **BREAKING** `getInfuraRpcUrls` now accepts a single options object `{ infuraApiKey, caipChainIds? }` instead of a positional `infuraApiKey` string. The optional `caipChainIds` parameter filters the output to only the specified CAIP-2 chain IDs ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+- use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
+
+### Fixed
+
+- fix: Fix react-native-playground consumption of **PACKAGE_VERSION** build-time constant in connect packages ([#221](https://github.com/MetaMask/connect-monorepo/pull/221))
+
+## [0.9.0]
+
 ### Added
 
 - Add `versions` constructor option to `createMultichainClient` so chain-specific packages (`connect-evm`, `connect-solana`) can report their version in analytics events. Versions are merged into the singleton on each call, following the same pattern as `api.supportedNetworks`. ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
@@ -197,7 +227,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...HEAD
+[0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.10.0...@metamask/connect-multichain@0.11.0
+[0.10.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.9.0...@metamask/connect-multichain@0.10.0
+[0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...@metamask/connect-multichain@0.9.0
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.7.0...@metamask/connect-multichain@0.8.0
 [0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.6.0...@metamask/connect-multichain@0.7.0
 [0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...@metamask/connect-multichain@0.6.0

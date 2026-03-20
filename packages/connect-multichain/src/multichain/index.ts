@@ -71,7 +71,8 @@ import {
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
-declare const __PACKAGE_VERSION__: string;
+// Value substitued by tsup at build time
+declare const __PACKAGE_VERSION__: string | undefined;
 
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
@@ -102,10 +103,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       return;
     }
     this._status = value;
-    this.options.transport?.onNotification?.({
-      method: 'stateChanged',
-      params: value,
-    });
+    this.emit('stateChanged', value);
   }
 
   get provider(): MultichainApiClient<RPCAPI> {
@@ -140,7 +138,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
-    const integrationType = options.analytics?.integrationType ?? 'direct';
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    const integrationType = options.analytics?.integrationType || 'direct';
     const allOptions = {
       ...withDappMetadata,
       ui: {
@@ -154,7 +153,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         integrationType,
       },
       versions: {
-        'connect-multichain': __PACKAGE_VERSION__,
+        // typeof guard needed: Metro (React Native) bundles TS source directly,
+        // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
+        'connect-multichain':
+          typeof __PACKAGE_VERSION__ === 'undefined'
+            ? 'unknown'
+            : __PACKAGE_VERSION__,
         ...(options.versions ?? {}),
       },
     };
@@ -189,6 +193,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         'mmconnect_versions',
         instance.options.versions ?? {},
       );
+      if (options.analytics?.integrationType) {
+        analytics.setGlobalProperty('integration_types', [
+          options.analytics.integrationType,
+        ]);
+      }
       if (options.debug) {
         enableDebug('metamask-sdk:*');
       }
@@ -244,7 +253,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     analytics.setGlobalProperty('dapp_id', dappId);
     analytics.setGlobalProperty('anon_id', anonId);
     analytics.setGlobalProperty('platform', platform);
-    analytics.setGlobalProperty('integration_type', integrationType);
+    if (integrationType) {
+      analytics.setGlobalProperty('integration_types', [integrationType]);
+    }
     analytics.enable();
   }
 

@@ -40,7 +40,8 @@ import {
   validSupportedChainsUrls,
 } from './utils/type-guards';
 
-declare const __PACKAGE_VERSION__: string;
+// Value substitued by tsup at build time
+declare const __PACKAGE_VERSION__: string | undefined;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -837,32 +838,26 @@ export class MetamaskConnectEVM {
 
       this.#removeNotificationHandler?.();
 
-      // TODO: Verify if #core.on('metamask_accountsChanged') and #core.on('metamask_chainChanged')
-      // would work here instead
-      this.#removeNotificationHandler = this.#core.transport.onNotification(
-        (notification) => {
-          // @ts-expect-error TODO: address this
-          if (notification?.method === 'metamask_accountsChanged') {
-            // @ts-expect-error TODO: address this
-            const notificationAccounts = notification?.params;
-            logger('transport-event: accountsChanged', notificationAccounts);
-            // why are we not caching the accounts here?
-            this.#onAccountsChanged(notificationAccounts);
-          }
+      const onAccountsChanged = (accs: string[]): void => {
+        logger('core-event: accountsChanged', accs);
+        this.#onAccountsChanged(accs as Address[]);
+      };
 
-          // @ts-expect-error TODO: address this
-          if (notification?.method === 'metamask_chainChanged') {
-            // @ts-expect-error TODO: address this
-            const notificationChainId = notification?.params?.chainId;
-            logger('transport-event: chainChanged', notificationChainId);
-            // Cache the chainId for persistence across page refreshes
-            this.#cacheChainId(notificationChainId).catch((error) => {
-              logger('Error caching chainId in notification handler', error);
-            });
-            this.#onChainChanged(notificationChainId);
-          }
-        },
-      );
+      const onChainChanged = (chainChanged: { chainId: string }): void => {
+        logger('core-event: chainChanged', chainChanged.chainId);
+        this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
+          logger('Error caching chainId in notification handler', error);
+        });
+        this.#onChainChanged(chainChanged.chainId as Hex);
+      };
+
+      this.#core.on('metamask_accountsChanged', onAccountsChanged);
+      this.#core.on('metamask_chainChanged', onChainChanged);
+
+      this.#removeNotificationHandler = (): void => {
+        this.#core.off('metamask_accountsChanged', onAccountsChanged);
+        this.#core.off('metamask_chainChanged', onChainChanged);
+      };
     }
 
     this.#onChainChanged(chainId);
@@ -974,6 +969,7 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of hex chain IDs to RPC URLs for read-only requests
+ * @param [options.analytics.integrationType] - Integration type for analytics
  * @param [options.ui] - UI configuration options
  * @param [options.ui.headless] - Whether to run without UI
  * @param [options.ui.preferExtension] - Whether to prefer browser extension
@@ -989,7 +985,10 @@ export class MetamaskConnectEVM {
  * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
-  options: Pick<MultichainOptions, 'dapp' | 'mobile' | 'transport'> & {
+  options: Pick<
+    MultichainOptions,
+    'dapp' | 'mobile' | 'transport' | 'analytics'
+  > & {
     ui?: Omit<MultichainOptions['ui'], 'factory'>;
   } & {
     eventHandlers?: Partial<EventHandlers>;
@@ -1032,7 +1031,18 @@ export async function createEVMClient(
       api: {
         supportedNetworks: supportedNetworksCaipChainId,
       },
-      versions: { 'connect-evm': __PACKAGE_VERSION__ },
+      analytics: {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        integrationType: options.analytics?.integrationType || 'direct',
+      },
+      versions: {
+        // typeof guard needed: Metro (React Native) bundles TS source directly,
+        // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
+        'connect-evm':
+          typeof __PACKAGE_VERSION__ === 'undefined'
+            ? 'unknown'
+            : __PACKAGE_VERSION__,
+      },
     });
 
     return MetamaskConnectEVM.create({

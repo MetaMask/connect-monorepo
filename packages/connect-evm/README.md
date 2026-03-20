@@ -37,7 +37,7 @@ const client = await createEVMClient({
   api: {
     supportedNetworks: {
       // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
-      ...getInfuraRpcUrls(INFURA_API_KEY),
+      ...getInfuraRpcUrls({ infuraApiKey: INFURA_API_KEY }),
       // or specify your own CAIP Chain ID to rpc endpoint mapping
       // Hex chain IDs mapped to RPC URLs
       '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY', // Ethereum Mainnet
@@ -500,15 +500,16 @@ provider.on('display_uri', (uri) => {
 
 ---
 
-### `getInfuraRpcUrls(infuraApiKey)`
+### `getInfuraRpcUrls(options)`
 
 Helper function to generate EVM Infura RPC URLs for common networks keyed by hex chain ID.
 
 **Parameters**
 
-| Name           | Type     | Required | Description         |
-| -------------- | -------- | -------- | ------------------- |
-| `infuraApiKey` | `string` | Yes      | Your Infura API key |
+| Name           | Type     | Required | Description                        |
+| -------------- | -------- | -------- | ---------------------------------- |
+| `infuraApiKey` | `string` | Yes      | Your Infura API key                |
+| `chainIds`     | `Hex[]`  | No       | Hex chain IDs to filter the output |
 
 **Returns**
 
@@ -517,8 +518,16 @@ A map of hex chain IDs to Infura RPC URLs. See https://docs.metamask.io/services
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-evm';
 
-const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
+// Get all supported Infura RPC URLs
+const rpcUrls = getInfuraRpcUrls({ infuraApiKey: 'YOUR_INFURA_KEY' });
 // Returns: { '0x1': 'https://mainnet.infura.io/v3/KEY', ... }
+
+// Filter to specific chains
+const filtered = getInfuraRpcUrls({
+  infuraApiKey: 'YOUR_INFURA_KEY',
+  chainIds: ['0x1', '0x89'],
+});
+// Returns: { '0x1': 'https://mainnet.infura.io/v3/KEY', '0x89': 'https://polygon-mainnet.infura.io/v3/KEY' }
 ```
 
 ---

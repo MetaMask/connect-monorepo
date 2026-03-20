@@ -7,8 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0]
+
+### Changed
+
+- Migrate `metamask_accountsChanged` and `metamask_chainChanged` subscriptions from `transport.onNotification()` to typed `core.on()`/`core.off()`, removing `@ts-expect-error` suppressions ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+
+### Fixed
+
+- `EIP1193Provider.request()` now re-surfaces the original numeric RPC error code as `error.code` on the thrown error, matching the EIP-1193 error shape expected by dApps, wagmi, and ethers.js. Previously `error.code` was always `undefined`. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+
+## [0.8.0]
+
+### Changed
+
+- **BREAKING** `getInfuraRpcUrls` now accepts a single options object `{ infuraApiKey, chainIds? }` instead of a positional `infuraApiKey` string. The optional `chainIds` parameter accepts hex chain IDs to filter the output ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+- use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
+
+### Fixed
+
+- fix: Fix react-native-playground consumption of **PACKAGE_VERSION** build-time constant in connect packages ([#221](https://github.com/MetaMask/connect-monorepo/pull/221))
+
+## [0.7.0]
+
 ### Added
 
+- Enable specifying the integration type for analytics. Defaults to `direct`. ([#213](https://github.com/MetaMask/connect-monorepo/pull/213))
 - Pass `connect-evm` package version to `createMultichainClient` via the `versions` option so it appears in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
 
 ### Fixed
@@ -135,7 +159,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.6.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.9.0...HEAD
+[0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.8.0...@metamask/connect-evm@0.9.0
+[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.7.0...@metamask/connect-evm@0.8.0
+[0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.6.0...@metamask/connect-evm@0.7.0
 [0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.5.0...@metamask/connect-evm@0.6.0
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.1...@metamask/connect-evm@0.5.0
 [0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.0...@metamask/connect-evm@0.4.1

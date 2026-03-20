@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises -- Legacy fire-and-forget pattern */
 /* eslint-disable jsdoc/require-returns -- Inherited from abstract class */
 import type { MultichainCore, Scope } from '@metamask/connect-multichain';
-import { EventEmitter } from '@metamask/connect-multichain';
+import { EventEmitter, RPCInvokeMethodErr } from '@metamask/connect-multichain';
 import { hexToNumber } from '@metamask/utils';
 
 import { INTERCEPTABLE_METHODS } from './constants';
@@ -94,13 +94,24 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
       );
     }
 
-    return this.#core.invokeMethod({
-      scope,
-      request: {
-        method: request.method,
-        params: request.params,
-      },
-    });
+    try {
+      return await this.#core.invokeMethod({
+        scope,
+        request: {
+          method: request.method,
+          params: request.params,
+        },
+      });
+    } catch (error) {
+      if (error instanceof RPCInvokeMethodErr && error.rpcCode !== undefined) {
+        const rpcError = new Error(
+          error.rpcMessage ?? error.reason,
+        ) as Error & { code: number };
+        rpcError.code = error.rpcCode;
+        throw rpcError;
+      }
+      throw error;
+    }
   }
 
   // Getters and setters
