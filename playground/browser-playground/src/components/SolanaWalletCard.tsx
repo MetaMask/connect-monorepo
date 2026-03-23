@@ -4,6 +4,7 @@ import {
   useDisconnectWallet,
   useSolanaClient,
 } from '@solana/react-hooks';
+import { useSolanaSelectedAccount } from '../hooks/useSolanaSelectedAccount';
 import {
   address,
   pipe,
@@ -66,7 +67,7 @@ export const SolanaWalletCard = () => {
   const client = useSolanaClient();
 
   const connected = session !== undefined;
-  const publicKey = session?.account.address ?? null;
+  const publicKey = useSolanaSelectedAccount(session);
 
   const [message, setMessage] = useState('Hello from MetaMask Connect!');
   const [signedMessage, setSignedMessage] = useState<string | null>(null);

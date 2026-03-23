@@ -19,6 +19,7 @@ import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
+import { useSolanaSelectedAccount } from './hooks/useSolanaSelectedAccount';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -63,7 +64,7 @@ function App() {
   const solanaSession = useWalletSession();
   const disconnectSolanaWallet = useDisconnectWallet();
   const solanaConnected = solanaSession !== undefined;
-  const solanaPublicKey = solanaSession?.account.address ?? null;
+  const solanaPublicKey = useSolanaSelectedAccount(solanaSession);
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
