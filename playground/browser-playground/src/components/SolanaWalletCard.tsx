@@ -1,26 +1,83 @@
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { uint8ArrayToBase64 } from '@metamask/playground-ui/config';
+import {
+  useWalletSession,
+  useDisconnectWallet,
+  useSolanaClient,
+} from '@solana/react-hooks';
+import {
+  address,
+  pipe,
+  createTransactionMessage,
+  setTransactionMessageFeePayerSigner,
+  setTransactionMessageLifetimeUsingBlockhash,
+  appendTransactionMessageInstruction,
+  compileTransaction,
+  createNoopSigner,
+  type Transaction,
+} from '@solana/kit';
+import type { SendableTransaction } from '@solana/kit';
+import { getTransferSolInstruction } from '@solana-program/system';
 import { useCallback, useState } from 'react';
 import { TEST_IDS } from '@metamask/playground-ui';
+
+type SolanaClient = ReturnType<typeof useSolanaClient>;
+
+async function buildTestTransaction(
+  publicKey: string,
+  client: SolanaClient,
+): Promise<SendableTransaction & Transaction> {
+  const {
+    value: { blockhash, lastValidBlockHeight },
+  } = await client.runtime.rpc.getLatestBlockhash().send();
+
+  const senderAddress = address(publicKey);
+  const signer = createNoopSigner(senderAddress);
+
+  const txMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (tx) => setTransactionMessageFeePayerSigner(signer, tx),
+    (tx) =>
+      setTransactionMessageLifetimeUsingBlockhash(
+        { blockhash, lastValidBlockHeight },
+        tx,
+      ),
+    (tx) =>
+      appendTransactionMessageInstruction(
+        getTransferSolInstruction({
+          source: signer,
+          destination: senderAddress,
+          amount: BigInt(0),
+        }),
+        tx,
+      ),
+  );
+
+  return compileTransaction(txMessage) as unknown as SendableTransaction &
+    Transaction;
+}
 
 /**
  * SolanaWalletCard component displays Solana wallet connection status
  * and provides functionality for signing messages and transactions.
  */
-export const SolanaWalletCard: React.FC = () => {
-  const { connection } = useConnection();
-  const { publicKey, connected, disconnect, signMessage, signTransaction, sendTransaction } =
-    useWallet();
+export const SolanaWalletCard = () => {
+  const session = useWalletSession();
+  const disconnect = useDisconnectWallet();
+  const client = useSolanaClient();
+
+  const connected = session !== undefined;
+  const publicKey = session?.account.address ?? null;
 
   const [message, setMessage] = useState('Hello from MetaMask Connect!');
   const [signedMessage, setSignedMessage] = useState<string | null>(null);
-  const [transactionSignature, setTransactionSignature] = useState<string | null>(null);
+  const [transactionSignature, setTransactionSignature] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignMessage = useCallback(async () => {
-    if (!publicKey || !signMessage) {
+    if (!session || !session.signMessage) {
       setError('Wallet not connected or signMessage not supported');
       return;
     }
@@ -31,17 +88,17 @@ export const SolanaWalletCard: React.FC = () => {
 
     try {
       const encodedMessage = new TextEncoder().encode(message);
-      const signature = await signMessage(encodedMessage);
-      setSignedMessage(Buffer.from(signature).toString('base64'));
+      const signature = await session.signMessage(encodedMessage);
+      setSignedMessage(uint8ArrayToBase64(signature));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign message');
     } finally {
       setLoading(false);
     }
-  }, [publicKey, signMessage, message]);
+  }, [session, message]);
 
   const handleSignTransaction = useCallback(async () => {
-    if (!publicKey || !signTransaction) {
+    if (!session || !session.signTransaction || !publicKey) {
       setError('Wallet not connected or signTransaction not supported');
       return;
     }
@@ -51,34 +108,23 @@ export const SolanaWalletCard: React.FC = () => {
     setTransactionSignature(null);
 
     try {
-      const { blockhash } = await connection.getLatestBlockhash();
-
-      // Create a simple transfer transaction (to self, 0 SOL)
-      const transaction = new Transaction({
-        feePayer: publicKey,
-        recentBlockhash: blockhash,
-      }).add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: publicKey,
-          lamports: 0,
-        }),
-      );
-
-      const signedTx = await signTransaction(transaction);
-      const signature = signedTx.signatures[0]?.signature;
-      if (signature) {
-        setTransactionSignature(Buffer.from(signature).toString('base64'));
+      const compiledTx = await buildTestTransaction(publicKey, client);
+      const signedTx = await session.signTransaction(compiledTx);
+      const firstSig = Object.values(signedTx.signatures)[0];
+      if (firstSig) {
+        setTransactionSignature(uint8ArrayToBase64(firstSig));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign transaction');
+      setError(
+        err instanceof Error ? err.message : 'Failed to sign transaction',
+      );
     } finally {
       setLoading(false);
     }
-  }, [publicKey, signTransaction, connection]);
+  }, [session, publicKey, client]);
 
   const handleSendTransaction = useCallback(async () => {
-    if (!publicKey || !sendTransaction) {
+    if (!session || !session.sendTransaction || !publicKey) {
       setError('Wallet not connected or sendTransaction not supported');
       return;
     }
@@ -88,33 +134,28 @@ export const SolanaWalletCard: React.FC = () => {
     setTransactionSignature(null);
 
     try {
-      const { blockhash } = await connection.getLatestBlockhash();
-
-      // Create a minimal transfer transaction (to self, minimum rent-exempt amount)
-      const transaction = new Transaction({
-        feePayer: publicKey,
-        recentBlockhash: blockhash,
-      }).add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: publicKey,
-          lamports: 0,
-        }),
-      );
-
-      const txSignature = await sendTransaction(transaction, connection);
-      setTransactionSignature(txSignature);
+      const compiledTx = await buildTestTransaction(publicKey, client);
+      const txSignature = await session.sendTransaction(compiledTx);
+      setTransactionSignature(txSignature as string); // Signature is a branded base58 string at runtime
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send transaction');
+      setError(
+        err instanceof Error ? err.message : 'Failed to send transaction',
+      );
     } finally {
       setLoading(false);
     }
-  }, [publicKey, sendTransaction, connection]);
+  }, [session, publicKey, client]);
 
   return (
-    <div data-testid={TEST_IDS.solana.card} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+    <div
+      data-testid={TEST_IDS.solana.card}
+      className="bg-white rounded-lg p-6 shadow-sm border border-gray-200"
+    >
       <div className="flex items-center justify-between mb-4">
-        <h3 data-testid={TEST_IDS.solana.title} className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        <h3
+          data-testid={TEST_IDS.solana.title}
+          className="text-lg font-semibold text-gray-800 flex items-center gap-2"
+        >
           <span className="text-2xl">☀️</span>
           Solana Wallet
         </h3>
@@ -132,7 +173,10 @@ export const SolanaWalletCard: React.FC = () => {
 
       <div className="space-y-4">
         {/* Connection Status */}
-        <div data-testid={TEST_IDS.solana.status} className="flex items-center gap-2">
+        <div
+          data-testid={TEST_IDS.solana.status}
+          className="flex items-center gap-2"
+        >
           <span
             className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-gray-400'}`}
           />
@@ -143,22 +187,33 @@ export const SolanaWalletCard: React.FC = () => {
 
         {/* Wallet Address */}
         {publicKey && (
-          <div data-testid={TEST_IDS.solana.addressContainer} className="bg-gray-50 rounded p-3">
+          <div
+            data-testid={TEST_IDS.solana.addressContainer}
+            className="bg-gray-50 rounded p-3"
+          >
             <p className="text-xs text-gray-500 mb-1">Address</p>
-            <p className="text-sm font-mono break-all">{publicKey.toBase58()}</p>
+            <p className="text-sm font-mono break-all">{publicKey}</p>
           </div>
         )}
 
-        {/* Wallet Buttons */}
+        {/* Connect Prompt */}
         {!connected && (
-          <div data-testid={TEST_IDS.solana.btnConnect} className="flex gap-2 flex-wrap">
-            <WalletMultiButton className="!bg-blue-500 hover:!bg-blue-600" />
+          <div
+            data-testid={TEST_IDS.solana.btnConnect}
+            className="flex gap-2 flex-wrap"
+          >
+            <p className="text-sm text-gray-500">
+              Use the &quot;Connect (Solana)&quot; button above to connect.
+            </p>
           </div>
         )}
 
         {/* Sign Message Section */}
         {connected && (
-          <div data-testid={TEST_IDS.solana.signMessageSection} className="border-t pt-4 mt-4">
+          <div
+            data-testid={TEST_IDS.solana.signMessageSection}
+            className="border-t pt-4 mt-4"
+          >
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Sign Message
             </h4>
@@ -174,14 +229,17 @@ export const SolanaWalletCard: React.FC = () => {
               type="button"
               data-testid={TEST_IDS.solana.btnSignMessage}
               onClick={handleSignMessage}
-              disabled={loading || !signMessage}
+              disabled={loading || !session?.signMessage}
               className="bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing...' : 'Sign Message'}
             </button>
 
             {signedMessage && (
-              <div data-testid={TEST_IDS.solana.signedMessageResult} className="mt-3 bg-green-50 rounded p-3">
+              <div
+                data-testid={TEST_IDS.solana.signedMessageResult}
+                className="mt-3 bg-green-50 rounded p-3"
+              >
                 <p className="text-xs text-green-700 mb-1">Signed Message</p>
                 <p className="text-xs font-mono break-all text-green-800">
                   {signedMessage}
@@ -193,7 +251,10 @@ export const SolanaWalletCard: React.FC = () => {
 
         {/* Transaction Section */}
         {connected && (
-          <div data-testid={TEST_IDS.solana.transactionsSection} className="border-t pt-4 mt-4">
+          <div
+            data-testid={TEST_IDS.solana.transactionsSection}
+            className="border-t pt-4 mt-4"
+          >
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Transactions
             </h4>
@@ -202,7 +263,7 @@ export const SolanaWalletCard: React.FC = () => {
                 type="button"
                 data-testid={TEST_IDS.solana.btnSignTransaction}
                 onClick={handleSignTransaction}
-                disabled={loading || !signTransaction}
+                disabled={loading || !session?.signTransaction}
                 className="bg-orange-500 text-white px-4 py-2 rounded text-sm hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {loading ? 'Signing...' : 'Sign Transaction'}
@@ -211,7 +272,7 @@ export const SolanaWalletCard: React.FC = () => {
                 type="button"
                 data-testid={TEST_IDS.solana.btnSendTransaction}
                 onClick={handleSendTransaction}
-                disabled={loading || !sendTransaction}
+                disabled={loading || !session?.sendTransaction}
                 className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {loading ? 'Sending...' : 'Sign & Send'}
@@ -219,8 +280,13 @@ export const SolanaWalletCard: React.FC = () => {
             </div>
 
             {transactionSignature && (
-              <div data-testid={TEST_IDS.solana.transactionSignatureResult} className="mt-3 bg-blue-50 rounded p-3">
-                <p className="text-xs text-blue-700 mb-1">Transaction Signature</p>
+              <div
+                data-testid={TEST_IDS.solana.transactionSignatureResult}
+                className="mt-3 bg-blue-50 rounded p-3"
+              >
+                <p className="text-xs text-blue-700 mb-1">
+                  Transaction Signature
+                </p>
                 <p className="text-xs font-mono break-all text-blue-800">
                   {transactionSignature}
                 </p>
@@ -231,7 +297,10 @@ export const SolanaWalletCard: React.FC = () => {
 
         {/* Error Display */}
         {error && (
-          <div data-testid={TEST_IDS.solana.errorContainer} className="bg-red-50 border border-red-200 rounded p-3">
+          <div
+            data-testid={TEST_IDS.solana.errorContainer}
+            className="bg-red-50 border border-red-200 rounded p-3"
+          >
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}

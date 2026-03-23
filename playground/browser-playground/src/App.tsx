@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletConnection, useWalletSession } from '@solana/react-hooks';
 import {
   FEATURED_NETWORKS,
   convertCaipChainIdsToHex,
@@ -15,12 +15,12 @@ import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
-import { useSolanaSDK } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
 
 const CONNECT_AND_SIGN_MESSAGE = 'Hello from MetaMask Connect Playground!';
+const METAMASK_SOLANA_CONNECTOR_ID = 'wallet-standard:metamask';
 
 function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
@@ -28,9 +28,6 @@ function App() {
 
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
   const [legacySignature, setLegacySignature] = useState<string | null>(null);
-
-  // Get Solana wallet error from provider context
-  const { walletError: solanaError, clearWalletError: clearSolanaError } = useSolanaSDK();
 
   const {
     error,
@@ -57,14 +54,11 @@ function App() {
     status: wagmiStatus,
   } = useConnect();
 
-  const {
-    connected: solanaConnected,
-    connecting: solanaConnecting,
-    disconnecting: solanaDisconnecting,
-    publicKey: solanaPublicKey,
-    wallets,
-    select,
-  } = useWallet();
+  const { connect: connectSolanaWallet, connectors: solanaConnectors } =
+    useWalletConnection();
+  const solanaSession = useWalletSession();
+  const solanaConnected = solanaSession !== undefined;
+  const solanaPublicKey = solanaSession?.account.address ?? null;
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
@@ -165,21 +159,18 @@ function App() {
   }, [customScopes, connectors, wagmiConnectAsync]);
 
   const connectSolana = useCallback(async () => {
-    // Clear any previous error
-    clearSolanaError();
-
-    // Find the MetaMask wallet in registered wallets
-    const metamaskWallet = wallets.find((w) =>
-      w.adapter.name.toLowerCase().includes('metamask connect'),
+    const metamaskConnector = solanaConnectors.find(
+      (c) => c.id === METAMASK_SOLANA_CONNECTOR_ID,
     );
-    if (metamaskWallet) {
-      // Just select the wallet - autoConnect in WalletProvider will handle connection
-      // Errors will be captured via onError callback in SolanaProvider
-      select(metamaskWallet.adapter.name);
+    if (metamaskConnector) {
+      await connectSolanaWallet(metamaskConnector.id);
     } else {
-      console.error('MetaMask wallet not found in registered wallets');
+      console.error(
+        'MetaMask Connect wallet not found. Available connectors:',
+        solanaConnectors.map((c) => c.id),
+      );
     }
-  }, [wallets, select, clearSolanaError]);
+  }, [solanaConnectors, connectSolanaWallet]);
 
   const connectWindowEthereum = useCallback(() => {
     (window as any).ethereum?.request({
@@ -195,9 +186,7 @@ function App() {
 
   const disconnect = useCallback(async () => {
     await sdkDisconnect();
-  }, [
-    sdkDisconnect,
-  ]);
+  }, [sdkDisconnect]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -275,7 +264,7 @@ function App() {
               </button>
             )}
 
-            {(!wagmiConnected) && (
+            {!wagmiConnected && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect('wagmi')}
@@ -315,7 +304,10 @@ function App() {
                 data-testid={TEST_IDS.app.btnReconnect}
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
-              > Reconnect (Multichain) </button>
+              >
+                {' '}
+                Reconnect (Multichain){' '}
+              </button>
             )}
 
             {(isConnected ||
@@ -333,7 +325,7 @@ function App() {
             )}
           </div>
         </section>
-        {(error || legacyError || wagmiError || solanaError) && (
+        {(error || legacyError || wagmiError) && (
           <section
             data-testid={TEST_IDS.app.sectionError}
             className="bg-white rounded-lg p-8 mb-6 shadow-sm"
@@ -368,17 +360,6 @@ function App() {
                 {(wagmiError as any).code && (
                   <span className="ml-2 text-sm text-gray-500">
                     (code: {(wagmiError as any).code})
-                  </span>
-                )}
-              </p>
-            )}
-            {solanaError && (
-              <p className="text-gray-700">
-                <span className="font-semibold">Solana:</span>{' '}
-                {solanaError.message.toString()}
-                {(solanaError as any).code && (
-                  <span className="ml-2 text-sm text-gray-500">
-                    (code: {(solanaError as any).code})
                   </span>
                 )}
               </p>
