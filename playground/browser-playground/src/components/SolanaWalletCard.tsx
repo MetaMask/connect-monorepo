@@ -15,7 +15,6 @@ import {
   createNoopSigner,
   type Transaction,
 } from '@solana/kit';
-import type { SendableTransaction } from '@solana/kit';
 import { getTransferSolInstruction } from '@solana-program/system';
 import { useCallback, useState } from 'react';
 import { TEST_IDS } from '@metamask/playground-ui';
@@ -25,7 +24,9 @@ type SolanaClient = ReturnType<typeof useSolanaClient>;
 async function buildTestTransaction(
   publicKey: string,
   client: SolanaClient,
-): Promise<SendableTransaction & Transaction> {
+): Promise<Transaction> {
+  // Blockhash is fetched at build time; transactions expire after ~90 seconds
+  // (lastValidBlockHeight). This is acceptable for a playground with no retry logic.
   const {
     value: { blockhash, lastValidBlockHeight },
   } = await client.runtime.rpc.getLatestBlockhash().send();
@@ -52,8 +53,7 @@ async function buildTestTransaction(
       ),
   );
 
-  return compileTransaction(txMessage) as unknown as SendableTransaction &
-    Transaction;
+  return compileTransaction(txMessage);
 }
 
 /**
@@ -73,7 +73,9 @@ export const SolanaWalletCard = () => {
   const [transactionSignature, setTransactionSignature] = useState<
     string | null
   >(null);
-  const [loading, setLoading] = useState(false);
+  const [signingMessage, setSigningMessage] = useState(false);
+  const [signingTx, setSigningTx] = useState(false);
+  const [sendingTx, setSendingTx] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignMessage = useCallback(async () => {
@@ -82,7 +84,7 @@ export const SolanaWalletCard = () => {
       return;
     }
 
-    setLoading(true);
+    setSigningMessage(true);
     setError(null);
     setSignedMessage(null);
 
@@ -93,7 +95,7 @@ export const SolanaWalletCard = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign message');
     } finally {
-      setLoading(false);
+      setSigningMessage(false);
     }
   }, [session, message]);
 
@@ -103,12 +105,14 @@ export const SolanaWalletCard = () => {
       return;
     }
 
-    setLoading(true);
+    setSigningTx(true);
     setError(null);
     setTransactionSignature(null);
 
     try {
       const compiledTx = await buildTestTransaction(publicKey, client);
+      // @ts-expect-error - compileTransaction returns an unsigned Transaction; the FullySignedTransaction
+      // brand is a kit compile-time constraint, but session.signTransaction accepts it at runtime.
       const signedTx = await session.signTransaction(compiledTx);
       const firstSig = Object.values(signedTx.signatures)[0];
       if (firstSig) {
@@ -119,7 +123,7 @@ export const SolanaWalletCard = () => {
         err instanceof Error ? err.message : 'Failed to sign transaction',
       );
     } finally {
-      setLoading(false);
+      setSigningTx(false);
     }
   }, [session, publicKey, client]);
 
@@ -129,12 +133,13 @@ export const SolanaWalletCard = () => {
       return;
     }
 
-    setLoading(true);
+    setSendingTx(true);
     setError(null);
     setTransactionSignature(null);
 
     try {
       const compiledTx = await buildTestTransaction(publicKey, client);
+      // @ts-expect-error - same as above: unsigned Transaction is structurally compatible at runtime.
       const txSignature = await session.sendTransaction(compiledTx);
       setTransactionSignature(txSignature as string); // Signature is a branded base58 string at runtime
     } catch (err) {
@@ -142,7 +147,7 @@ export const SolanaWalletCard = () => {
         err instanceof Error ? err.message : 'Failed to send transaction',
       );
     } finally {
-      setLoading(false);
+      setSendingTx(false);
     }
   }, [session, publicKey, client]);
 
@@ -229,10 +234,10 @@ export const SolanaWalletCard = () => {
               type="button"
               data-testid={TEST_IDS.solana.btnSignMessage}
               onClick={handleSignMessage}
-              disabled={loading || !session?.signMessage}
+              disabled={signingMessage || !session?.signMessage}
               className="bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing...' : 'Sign Message'}
+              {signingMessage ? 'Signing...' : 'Sign Message'}
             </button>
 
             {signedMessage && (
@@ -263,19 +268,19 @@ export const SolanaWalletCard = () => {
                 type="button"
                 data-testid={TEST_IDS.solana.btnSignTransaction}
                 onClick={handleSignTransaction}
-                disabled={loading || !session?.signTransaction}
+                disabled={signingTx || sendingTx || !session?.signTransaction}
                 className="bg-orange-500 text-white px-4 py-2 rounded text-sm hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {loading ? 'Signing...' : 'Sign Transaction'}
+                {signingTx ? 'Signing...' : 'Sign Transaction'}
               </button>
               <button
                 type="button"
                 data-testid={TEST_IDS.solana.btnSendTransaction}
                 onClick={handleSendTransaction}
-                disabled={loading || !session?.sendTransaction}
+                disabled={signingTx || sendingTx || !session?.sendTransaction}
                 className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {loading ? 'Sending...' : 'Sign & Send'}
+                {sendingTx ? 'Sending...' : 'Sign & Send'}
               </button>
             </div>
 

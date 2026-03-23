@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { useWalletConnection, useWalletSession } from '@solana/react-hooks';
+import {
+  useWalletConnection,
+  useWalletSession,
+  useDisconnectWallet,
+} from '@solana/react-hooks';
 import {
   FEATURED_NETWORKS,
   convertCaipChainIdsToHex,
@@ -57,6 +61,7 @@ function App() {
   const { connect: connectSolanaWallet, connectors: solanaConnectors } =
     useWalletConnection();
   const solanaSession = useWalletSession();
+  const disconnectSolanaWallet = useDisconnectWallet();
   const solanaConnected = solanaSession !== undefined;
   const solanaPublicKey = solanaSession?.account.address ?? null;
 
@@ -186,7 +191,8 @@ function App() {
 
   const disconnect = useCallback(async () => {
     await sdkDisconnect();
-  }, [sdkDisconnect]);
+    disconnectSolanaWallet();
+  }, [sdkDisconnect, disconnectSolanaWallet]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -283,9 +289,12 @@ function App() {
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect('solana')}
                 onClick={connectSolana}
-                className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors"
+                disabled={solanaConnectors.length === 0}
+                className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Connect (Solana)
+                {solanaConnectors.length === 0
+                  ? 'Initializing Solana...'
+                  : 'Connect (Solana)'}
               </button>
             )}
 
