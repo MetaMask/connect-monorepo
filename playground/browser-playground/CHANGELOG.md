@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Replaces `@solana/wallet-adapter-react` and `@solana/wallet-adapter-react-ui` with `@solana/react-hooks` + `@solana/kit` (web3.js v2) in the browser playground ([#240](https://github.com/MetaMask/connect-monorepo/pull/240))
+
 ## [0.5.1]
 
 ### Changed
