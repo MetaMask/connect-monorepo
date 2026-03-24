@@ -52,7 +52,7 @@
   ],
   "scripts": {
     "allow-scripts": "",
-    "attw": "npx attw --pack . --ignore-rules false-cjs no-resolution",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn clean && tsc -b tsconfig.build.json && npx tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-multichain",
@@ -61,7 +61,7 @@
     "clean": "npx rimraf ./dist",
     "dev": "tsup --watch",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
-    "publint": "npx publint",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "pretest": "yarn workspace @metamask/analytics run build && yarn workspace @metamask/multichain-ui run build",
@@ -92,6 +92,7 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@metamask/auto-changelog": "^3.4.4",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@types/jsdom": "^21.1.7",
@@ -104,6 +105,7 @@
     "jsdom": "^26.1.0",
     "nock": "^14.0.4",
     "prettier": "^3.3.3",
+    "publint": "^0.2.9",
     "tsup": "^8.4.0",
     "typedoc": "^0.28.14",
     "typedoc-plugin-missing-exports": "^4.1.2",

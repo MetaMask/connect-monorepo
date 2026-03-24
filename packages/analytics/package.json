@@ -37,7 +37,7 @@
     "dist/"
   ],
   "scripts": {
-    "attw": "npx attw --pack . --ignore-rules false-cjs no-resolution",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn clean && npx tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/analytics",
@@ -45,7 +45,7 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/analytics",
     "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
-    "publint": "npx publint",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest",
@@ -56,9 +56,11 @@
     "openapi-fetch": "^0.13.5"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@metamask/auto-changelog": "^3.4.4",
     "deepmerge": "^4.2.2",
     "nock": "^14.0.4",
+    "publint": "^0.2.9",
     "tsup": "^8.4.0",
     "typedoc": "^0.28.14",
     "typedoc-plugin-missing-exports": "^4.1.2",

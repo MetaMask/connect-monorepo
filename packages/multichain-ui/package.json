@@ -47,10 +47,10 @@
   ],
   "collection": "dist/collection/collection-manifest.json",
   "scripts": {
-    "attw": "npx attw --pack . --ignore-rules false-cjs no-resolution unexpected-module-syntax",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution unexpected-module-syntax",
     "build:docs": "typedoc",
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly --outDir dist/types",
-    "publint": "npx publint",
+    "publint": "publint",
     "build:clean": "yarn clean && yarn build",
     "build": "stencil build --prod",
     "build:dev": "NODE_ENV=development stencil build --debug --dev",
@@ -75,6 +75,7 @@
     "qr-code-styling": "^1.9.2"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@lavamoat/allow-scripts": "^3.0.4",
     "@metamask/auto-changelog": "^3.4.4",
     "@size-limit/preset-big-lib": "^11.0.2",
@@ -85,6 +86,7 @@
     "@types/prettier": "^2",
     "deepmerge": "^4.2.2",
     "jest": "^29.6.4",
+    "publint": "^0.2.9",
     "puppeteer": "^23.8.0",
     "rollup-plugin-visualizer": "^5.12.0",
     "size-limit": "^11.1.6",

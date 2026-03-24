@@ -131,7 +131,7 @@ module.exports = defineConfig({
 
         if (!isPrivate) {
           // All non-private packages must have publint and attw scripts.
-          expectWorkspaceField(workspace, 'scripts.publint', 'npx publint');
+          expectWorkspaceField(workspace, 'scripts.publint', 'publint');
 
           // multichain-ui needs an extra ignore rule for Stencil's output format
           const attwIgnoreRules =
@@ -141,7 +141,7 @@ module.exports = defineConfig({
           expectWorkspaceField(
             workspace,
             'scripts.attw',
-            `npx attw --pack . --ignore-rules ${attwIgnoreRules}`,
+            `attw --pack . --ignore-rules ${attwIgnoreRules}`,
           );
         }
 

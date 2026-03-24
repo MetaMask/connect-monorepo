@@ -57,7 +57,7 @@
     "dist/"
   ],
   "scripts": {
-    "attw": "npx attw --pack . --ignore-rules false-cjs no-resolution",
+    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts src/multichain/index.ts src/evm/index.ts --format esm,cjs --external @metamask/connect-multichain --external @metamask/connect-evm",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect",
@@ -65,7 +65,7 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect",
     "clean": "npx rimraf ./dist ./tsconfig.build.tsbuildinfo",
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
-    "publint": "npx publint",
+    "publint": "publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "echo \"No test specified\"",
@@ -76,9 +76,11 @@
     "@metamask/connect-multichain": "workspace:^"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@metamask/auto-changelog": "^3.4.4",
     "@types/jest": "^29.5.14",
     "deepmerge": "^4.2.2",
+    "publint": "^0.2.9",
     "ts-jest": "^27.1.4",
     "tsup": "^8.4.0",
     "typedoc": "^0.28.14",

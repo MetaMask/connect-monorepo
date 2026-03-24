@@ -3921,10 +3921,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/analytics@workspace:packages/analytics"
   dependencies:
+    "@arethetypeswrong/cli": "npm:^0.18.2"
     "@metamask/auto-changelog": "npm:^3.4.4"
     deepmerge: "npm:^4.2.2"
     nock: "npm:^14.0.4"
     openapi-fetch: "npm:^0.13.5"
+    publint: "npm:^0.2.9"
     tsup: "npm:^8.4.0"
     typedoc: "npm:^0.28.14"
     typedoc-plugin-missing-exports: "npm:^4.1.2"
@@ -4059,6 +4061,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/connect-evm@workspace:packages/connect-evm"
   dependencies:
+    "@arethetypeswrong/cli": "npm:^0.18.2"
     "@metamask/analytics": "workspace:^"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
@@ -4068,6 +4071,7 @@ __metadata:
     "@vitest/coverage-v8": "npm:^3.2.4"
     jsdom: "npm:^26.1.0"
     prettier: "npm:^3.3.3"
+    publint: "npm:^0.2.9"
     tsup: "npm:^8.4.0"
     typedoc: "npm:^0.28.14"
     typedoc-plugin-missing-exports: "npm:^4.1.2"
@@ -4134,6 +4138,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/connect-multichain@workspace:packages/connect-multichain"
   dependencies:
+    "@arethetypeswrong/cli": "npm:^0.18.2"
     "@metamask/analytics": "workspace:^"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/mobile-wallet-protocol-core": "npm:^0.4.0"
@@ -4161,6 +4166,7 @@ __metadata:
     nock: "npm:^14.0.4"
     pako: "npm:^2.1.0"
     prettier: "npm:^3.3.3"
+    publint: "npm:^0.2.9"
     tsup: "npm:^8.4.0"
     typedoc: "npm:^0.28.14"
     typedoc-plugin-missing-exports: "npm:^4.1.2"
@@ -4180,6 +4186,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/connect-solana@workspace:packages/connect-solana"
   dependencies:
+    "@arethetypeswrong/cli": "npm:^0.18.2"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/connect-multichain": "workspace:^"
     "@metamask/solana-wallet-standard": "npm:^0.6.0"
@@ -4188,6 +4195,7 @@ __metadata:
     "@wallet-standard/base": "npm:^1.1.0"
     jsdom: "npm:^26.1.0"
     prettier: "npm:^3.3.3"
+    publint: "npm:^0.2.9"
     tsup: "npm:^8.4.0"
     typedoc: "npm:^0.28.14"
     typedoc-plugin-missing-exports: "npm:^4.1.2"
@@ -4200,11 +4208,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/connect@workspace:packages/connect"
   dependencies:
+    "@arethetypeswrong/cli": "npm:^0.18.2"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
     "@types/jest": "npm:^29.5.14"
     deepmerge: "npm:^4.2.2"
+    publint: "npm:^0.2.9"
     ts-jest: "npm:^27.1.4"
     tsup: "npm:^8.4.0"
     typedoc: "npm:^0.28.14"
@@ -4466,6 +4476,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/multichain-ui@workspace:packages/multichain-ui"
   dependencies:
+    "@arethetypeswrong/cli": "npm:^0.18.2"
     "@lavamoat/allow-scripts": "npm:^3.0.4"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@paulmillr/qr": "npm:^0.2.1"
@@ -4477,6 +4488,7 @@ __metadata:
     "@types/prettier": "npm:^2"
     deepmerge: "npm:^4.2.2"
     jest: "npm:^29.6.4"
+    publint: "npm:^0.2.9"
     puppeteer: "npm:^23.8.0"
     qr-code-styling: "npm:^1.9.2"
     rollup-plugin-visualizer: "npm:^5.12.0"
