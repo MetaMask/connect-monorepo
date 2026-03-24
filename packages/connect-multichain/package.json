@@ -77,7 +77,7 @@
     "@metamask/multichain-ui": "workspace:^",
     "@metamask/onboarding": "^1.0.1",
     "@metamask/rpc-errors": "^7.0.3",
-    "@metamask/utils": "^11.8.1",
+    "@metamask/utils": "^11.10.0",
     "@paulmillr/qr": "^0.2.1",
     "bowser": "^2.11.0",
     "buffer": "^6.0.3",
