@@ -26,7 +26,9 @@ npm install @metamask/connect-solana
 ## Quick Start
 
 ```typescript
-import { createSolanaClient } from '@metamask/connect-solana';
+import { createSolanaClient, getInfuraRpcUrls } from '@metamask/connect-solana';
+
+const INFURA_API_KEY = 'YOUR_INFURA_API_KEY';
 
 // Create a Solana client
 // MetaMask is automatically registered with the wallet-standard registry on creation
@@ -34,6 +36,12 @@ const client = await createSolanaClient({
   dapp: {
     name: 'My Solana DApp',
     url: 'https://mydapp.com',
+  },
+  api: {
+    supportedNetworks: getInfuraRpcUrls({
+      infuraApiKey: INFURA_API_KEY,
+      networks: ['mainnet', 'devnet'],
+    }),
   },
 });
 ```
@@ -106,6 +114,37 @@ Creates a new Solana client instance. By default, the wallet is automatically re
 #### Returns
 
 `Promise<SolanaClient>`
+
+---
+
+### `getInfuraRpcUrls(options)`
+
+Generates Solana Infura RPC URLs keyed by Solana network name. The return value can be passed directly to `createSolanaClient({ api: { supportedNetworks } })`.
+
+#### Parameters
+
+| Name           | Type              | Required | Description                                                       |
+| -------------- | ----------------- | -------- | ----------------------------------------------------------------- |
+| `infuraApiKey` | `string`          | Yes      | Your Infura API key                                               |
+| `networks`     | `SolanaNetwork[]` | Yes      | Solana networks to include (for example, `['mainnet', 'devnet']`) |
+
+#### Returns
+
+`SolanaSupportedNetworks`
+
+```typescript
+import { getInfuraRpcUrls } from '@metamask/connect-solana';
+
+const supportedNetworks = getInfuraRpcUrls({
+  infuraApiKey: 'YOUR_INFURA_API_KEY',
+  networks: ['mainnet', 'devnet'],
+});
+
+// {
+//   mainnet: 'https://solana-mainnet.infura.io/v3/YOUR_INFURA_API_KEY',
+//   devnet: 'https://solana-devnet.infura.io/v3/YOUR_INFURA_API_KEY',
+// }
+```
 
 ---
 

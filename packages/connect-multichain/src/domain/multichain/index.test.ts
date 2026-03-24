@@ -15,7 +15,19 @@ import type { StoreClient } from '../store/client';
 class MockMultichainCore extends MultichainCore {
   storage = {} as StoreClient;
 
-  status: ConnectionStatus = 'loaded';
+  _status: ConnectionStatus = 'loaded';
+
+  get status(): ConnectionStatus {
+    return this._status;
+  }
+
+  set status(value: ConnectionStatus) {
+    if (this._status === value) {
+      return;
+    }
+    this._status = value;
+    this.emit('stateChanged', value);
+  }
 
   provider = {} as MultichainApiClient<RPCAPI>;
 
@@ -84,7 +96,7 @@ t.describe('MultichainCore', () => {
         api: {
           supportedNetworks: {
             'eip155:1': 'https://overridden.example',
-            'solana:mainnet': 'https://solana.example',
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'https://solana.example',
           },
         },
       });
@@ -96,9 +108,9 @@ t.describe('MultichainCore', () => {
       t.expect(opts.api.supportedNetworks['eip155:11155111']).toBe(
         'https://eth.sepolia.example',
       );
-      t.expect(opts.api.supportedNetworks['solana:mainnet']).toBe(
-        'https://solana.example',
-      );
+      t.expect(
+        opts.api.supportedNetworks['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+      ).toBe('https://solana.example');
     });
 
     t.it(
@@ -342,6 +354,51 @@ t.describe('MultichainCore', () => {
       t.expect(opts.mobile).toEqual({ useDeeplink: true });
       t.expect(opts.transport?.extensionId).toBe('merged-ext');
       t.expect(opts.debug).toBe(true);
+    });
+  });
+
+  t.describe('stateChanged event', () => {
+    t.it('fires stateChanged when status is set to a new value', () => {
+      const base = createBaseOptions();
+      const core = new MockMultichainCore(base);
+      const handler = t.vi.fn();
+
+      core.on('stateChanged', handler);
+      core.status = 'connected';
+
+      t.expect(handler).toHaveBeenCalledTimes(1);
+      t.expect(handler).toHaveBeenCalledWith('connected');
+    });
+
+    t.it(
+      'does not fire stateChanged when status is set to the same value',
+      () => {
+        const base = createBaseOptions();
+        const core = new MockMultichainCore(base);
+        core.status = 'connected';
+
+        const handler = t.vi.fn();
+        core.on('stateChanged', handler);
+        core.status = 'connected';
+
+        t.expect(handler).not.toHaveBeenCalled();
+      },
+    );
+
+    t.it('fires stateChanged for each distinct status transition', () => {
+      const base = createBaseOptions();
+      const core = new MockMultichainCore(base);
+      const handler = t.vi.fn();
+
+      core.on('stateChanged', handler);
+      core.status = 'connecting';
+      core.status = 'connected';
+      core.status = 'disconnected';
+
+      t.expect(handler).toHaveBeenCalledTimes(3);
+      t.expect(handler).toHaveBeenNthCalledWith(1, 'connecting');
+      t.expect(handler).toHaveBeenNthCalledWith(2, 'connected');
+      t.expect(handler).toHaveBeenNthCalledWith(3, 'disconnected');
     });
   });
 });

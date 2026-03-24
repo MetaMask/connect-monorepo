@@ -104,6 +104,8 @@ export class RequestRouter {
         const { error } = response;
         throw new RPCInvokeMethodErr(
           `RPC Request failed with code ${error.code}: ${error.message}`,
+          error.code,
+          error.message,
         );
       }
 
@@ -141,7 +143,11 @@ export class RequestRouter {
       if (error instanceof RPCInvokeMethodErr) {
         throw error;
       }
-      throw new RPCInvokeMethodErr(error.message);
+      const castError = error as { message?: string; code?: number };
+      throw new RPCInvokeMethodErr(
+        castError.message ?? 'Unknown error',
+        castError.code,
+      );
     }
   }
 

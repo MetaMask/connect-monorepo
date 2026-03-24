@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `@tanstack/react-query` from `>=5.45.1` to `^5.90.21` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@tanstack/react-query-persist-client` and `@tanstack/query-async-storage-persister` from `5.0.5` to `^5.90.24` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 
+## [0.3.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.9.0
+  - @metamask/connect-multichain@0.11.0
+
 ## [0.3.0]
 
 ### Added
@@ -87,7 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.1...HEAD
+[0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.0...@metamask/react-native-playground@0.3.1
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.2.1...@metamask/react-native-playground@0.3.0
 [0.2.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.2.0...@metamask/react-native-playground@0.2.1
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.1.3...@metamask/react-native-playground@0.2.0

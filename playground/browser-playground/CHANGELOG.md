@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `@tanstack/react-query` from `>=5.45.1` to `^5.90.21` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@tanstack/react-query-persist-client`, `@tanstack/query-sync-storage-persister`, and `@tanstack/react-query-devtools` from `5.0.5` to latest (`^5.90.24` / `^5.91.3`) ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 
+## [0.5.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.9.0
+  - @metamask/connect-multichain@0.11.0
+
 ## [0.5.0]
 
 ### Changed
@@ -111,7 +119,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...HEAD
+[0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.0...@metamask/browser-playground@0.5.1
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.2...@metamask/browser-playground@0.5.0
 [0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2
 [0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.0...@metamask/browser-playground@0.4.1

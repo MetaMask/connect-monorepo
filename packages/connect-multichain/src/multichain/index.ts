@@ -103,10 +103,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       return;
     }
     this._status = value;
-    this.options.transport?.onNotification?.({
-      method: 'stateChanged',
-      params: value,
-    });
+    this.emit('stateChanged', value);
   }
 
   get provider(): MultichainApiClient<RPCAPI> {
