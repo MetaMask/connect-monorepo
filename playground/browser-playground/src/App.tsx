@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import {
   useWalletConnection,
   useWalletSession,
   useDisconnectWallet,
   useSolanaClient,
 } from '@solana/react-hooks';
+import { useConnection, useConnect } from 'wagmi';
 import {
   FEATURED_NETWORKS,
   convertCaipChainIdsToHex,
@@ -54,7 +54,8 @@ function App() {
     connectAndSign: legacyConnectAndSign,
     disconnect: legacyDisconnect,
   } = useLegacyEVMSDK();
-  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+  const { address: wagmiAddress, isConnected: wagmiConnected } =
+    useConnection();
   const {
     connectors,
     connectAsync: wagmiConnectAsync,
