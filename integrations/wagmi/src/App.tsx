@@ -3,22 +3,24 @@ import type { FormEvent } from 'react';
 import { formatEther, type Hex, parseAbi, parseEther } from 'viem';
 import {
   type BaseError,
-  useAccount,
-  useAccountEffect,
   useBalance,
   useBlockNumber,
   useChainId,
+  useChains,
   useConnect,
+  useConnection,
+  useConnectionEffect,
   useConnections,
   useConnectorClient,
+  useConnectors,
   useDisconnect,
   useEnsName,
   useReadContract,
   useReadContracts,
   useSendTransaction,
   useSignMessage,
-  useSwitchAccount,
   useSwitchChain,
+  useSwitchConnection,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
@@ -27,7 +29,7 @@ import { optimism } from 'wagmi/chains';
 import { wagmiContractConfig } from './contracts';
 
 function App() {
-  useAccountEffect({
+  useConnectionEffect({
     onConnect(_data) {
       // console.log('onConnect', data)
     },
@@ -56,7 +58,7 @@ function App() {
 }
 
 function Account() {
-  const account = useAccount();
+  const account = useConnection();
   const { disconnect } = useDisconnect();
   const { data: ensName } = useEnsName({
     address: account.address,
@@ -85,7 +87,8 @@ function Account() {
 
 function Connect() {
   const chainId = useChainId();
-  const { connectors, connectAsync, status, error } = useConnect();
+  const connectors = useConnectors();
+  const { connectAsync, status, error } = useConnect();
 
   return (
     <div>
@@ -116,9 +119,11 @@ function Connect() {
 }
 
 function SwitchAccount() {
-  const account = useAccount();
+  const account = useConnection();
   console.log('switch account', { account });
-  const { connectors, switchAccount } = useSwitchAccount();
+  const { mutate: switchConnection } = useSwitchConnection();
+  const connections = useConnections();
+  const connectors = connections.map((connection) => connection.connector);
 
   return (
     <div>
@@ -129,7 +134,7 @@ function SwitchAccount() {
           id={`switch-account-${connector.name}`}
           disabled={account.connector?.uid === connector.uid}
           key={connector.uid}
-          onClick={() => switchAccount({ connector })}
+          onClick={() => switchConnection({ connector })}
           type="button"
         >
           {connector.name}
@@ -141,7 +146,8 @@ function SwitchAccount() {
 
 function SwitchChain() {
   const chainId = useChainId();
-  const { chains, switchChain, error } = useSwitchChain();
+  const chains = useChains();
+  const { switchChain, error } = useSwitchChain();
 
   return (
     <div>
@@ -207,7 +213,7 @@ function Connections() {
 }
 
 function Balance() {
-  const { address } = useAccount();
+  const { address } = useConnection();
 
   const { data: default_ } = useBalance({ address });
   const { data: account_ } = useBalance({ address });

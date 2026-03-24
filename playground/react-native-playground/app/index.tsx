@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet } fr
 import { StatusBar } from 'expo-status-bar';
 import type { Scope, SessionData } from '@metamask/connect-multichain';
 import { hexToNumber, type CaipAccountId, type Hex } from '@metamask/utils';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useConnection, useConnect, useDisconnect } from 'wagmi';
 import { TEST_IDS } from '@metamask/playground-ui';
 
 import { useSDK, useLegacyEVMSDK } from '../src/sdk';
@@ -28,7 +28,7 @@ export default function Page() {
 		connect: legacyConnect,
 		disconnect: legacyDisconnect,
 	} = useLegacyEVMSDK();
-	const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+	const { address: wagmiAddress, isConnected: wagmiConnected } = useConnection();
 	const { connectors, connectAsync: wagmiConnectAsync, status: wagmiStatus } = useConnect();
 	const { disconnect: wagmiDisconnect } = useDisconnect();
 
