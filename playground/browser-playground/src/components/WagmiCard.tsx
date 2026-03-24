@@ -2,10 +2,11 @@ import { useState, type FormEvent } from 'react';
 import { formatEther, type Hex, parseEther } from 'viem';
 import {
   type BaseError,
-  useAccount,
   useBalance,
   useBlockNumber,
   useChainId,
+  useChains,
+  useConnection,
   useConnectorClient,
   useDisconnect,
   useSendTransaction,
@@ -16,10 +17,11 @@ import {
 import { TEST_IDS } from '@metamask/playground-ui';
 
 export function WagmiCard() {
-  const account = useAccount();
+  const account = useConnection();
   const chainId = useChainId();
   const { disconnect } = useDisconnect();
-  const { chains, switchChain } = useSwitchChain();
+  const chains = useChains();
+  const { switchChain } = useSwitchChain();
   const { data: balance } = useBalance({ address: account.address });
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { data: connectorClient } = useConnectorClient();
