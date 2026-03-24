@@ -26,14 +26,12 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
-    "lint": {
-      "outputs": []
-    },
     "build:docs": {
       "dependsOn": ["build"],
       "outputs": ["docs/**"]
     },
     "changelog:validate": {
+      "inputs": ["CHANGELOG.md", "package.json"],
       "outputs": []
     },
     "changelog:format": {
@@ -41,9 +39,6 @@
     },
     "changelog:update": {
       "outputs": []
-    },
-    "clean": {
-      "cache": false
     }
   },
   "ui": "stream"

@@ -297,6 +297,8 @@ To run a task for a single package (with caching and dependency builds):
 yarn turbo run <task> --filter=<packageName>
 ```
 
+> **Note:** `publish-previews` intentionally stays on `yarn workspaces foreach` — publishing is a side-effectful release operation, not a build pipeline task, so Turbo's caching and topological ordering don't apply.
+
 For running arbitrary shell commands that are not package scripts, use Yarn's [`yarn workspace`](https://yarnpkg.com/cli/workspace) `exec` command:
 
 ```
