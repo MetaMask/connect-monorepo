@@ -36,7 +36,7 @@
     "dist/"
   ],
   "scripts": {
-    "build": "yarn clean && tsc -b --force tsconfig.build.json && npx tsup src/index.ts --format esm,cjs",
+    "build": "tsc -b --force tsconfig.build.json && npx tsup src/index.ts --format esm,cjs",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/analytics",
     "changelog:update": "../../scripts/update-changelog.sh @metamask/analytics",
@@ -45,7 +45,7 @@
     "prepare-manifest:preview": "../../scripts/prepare-preview-manifest.sh",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
-    "test": "vitest",
+    "test": "vitest run",
     "test:ci": "vitest run",
     "test:verbose": "vitest run --reporter=verbose"
   },

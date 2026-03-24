@@ -42,3 +42,6 @@ playground/*/*.tsbuildinfo
 
 # env files
 **/.env
+
+# Turborepo
+.turbo
