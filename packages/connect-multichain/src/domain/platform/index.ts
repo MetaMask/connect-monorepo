@@ -25,23 +25,23 @@ function isNotBrowser(): boolean {
   if (!window?.navigator) {
     return true;
   }
+  return navigator?.product === 'ReactNative';
+}
+
+function isReactNative(): boolean {
+  // Modern Hermes-based RN: window is undefined, but global.navigator.product is set.
+  // This check must come first so getPlatformType() resolves to ReactNative rather
+  // than NonBrowser when isNotBrowser() would otherwise catch this case.
   if (
     typeof global !== 'undefined' &&
     global?.navigator?.product === 'ReactNative'
   ) {
     return true;
   }
-  return navigator?.product === 'ReactNative';
-}
 
-function isReactNative(): boolean {
+  // Legacy RN environments where window === global
   const hasWindowNavigator =
     typeof window !== 'undefined' && window.navigator !== undefined;
-  const nav = hasWindowNavigator ? window.navigator : undefined;
-
-  if (!nav) {
-    return false;
-  }
 
   return hasWindowNavigator && window.navigator?.product === 'ReactNative';
 }
