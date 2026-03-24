@@ -14,10 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `@tanstack/react-query` from `>=5.45.1` to `^5.90.21` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@tanstack/react-query-persist-client` and `@tanstack/query-async-storage-persister` from `5.0.5` to `^5.90.24` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 
-### Fixed
-
-- Add missing `navigator: { product: 'ReactNative' }` to the `window` polyfill so that `window.navigator` is consistent with `global.navigator` for platform detection ([#238](https://github.com/MetaMask/connect-monorepo/pull/238))
-
 ## [0.3.1]
 
 ### Changed
