@@ -228,9 +228,6 @@ t.describe('Platform Detection', () => {
           product: 'ReactNative',
         },
       });
-      t.vi.stubGlobal('navigator', {
-        product: 'ReactNative',
-      });
 
       const result = getPlatformType();
       // global.navigator.product === 'ReactNative' is the Hermes/modern RN signal;
@@ -249,9 +246,6 @@ t.describe('Platform Detection', () => {
           navigator: {
             product: 'ReactNative',
           },
-        });
-        t.vi.stubGlobal('navigator', {
-          product: 'ReactNative',
         });
 
         const result = getPlatformType();
