@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Fix `exports` map paths to match actual Stencil build output (`.js`/`.cjs.js` instead of `.mjs`/`.cjs`) ([#110](https://github.com/MetaMask/connect-monorepo/pull/110))
+
 ## [0.3.0]
 
 ### Changed

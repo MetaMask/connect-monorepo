@@ -43,7 +43,7 @@
     "dist/"
   ],
   "scripts": {
-    "attw": "attw --pack . --ignore-rules false-cjs no-resolution",
+    "attw": "npx attw --pack . --ignore-rules false-cjs no-resolution",
     "build": "yarn tsup",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/connect-solana",
@@ -51,7 +51,7 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/connect-solana",
     "clean": "npx rimraf ./dist",
     "dev": "tsup --watch",
-    "publint": "publint",
+    "publint": "npx publint",
     "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "test": "vitest run",

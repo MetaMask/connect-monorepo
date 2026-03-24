@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING** Fix package exports: `require` now serves Node CJS build, `main` points to Node CJS, added `browser` condition for browser ESM ([#110](https://github.com/MetaMask/connect-monorepo/pull/110))
 - **BREAKING** Standardize `chainId` to use `Hex` format throughout the public API ([#150](https://github.com/MetaMask/connect-monorepo/pull/150))
   - `connect()`, `connectAndSign()`, and `connectWith()` now expect `chainIds` as hex strings instead of decimal numbers
   - `connect()` now returns `{ accounts, chainId: Hex }` instead of `{ accounts, chainId: number }`

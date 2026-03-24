@@ -129,6 +129,22 @@ module.exports = defineConfig({
         // All non-root packages must have a valid "build" script.
         expectWorkspaceField(workspace, 'scripts.build');
 
+        if (!isPrivate) {
+          // All non-private packages must have publint and attw scripts.
+          expectWorkspaceField(workspace, 'scripts.publint', 'npx publint');
+
+          // multichain-ui needs an extra ignore rule for Stencil's output format
+          const attwIgnoreRules =
+            workspace.ident === '@metamask/multichain-ui'
+              ? 'false-cjs no-resolution unexpected-module-syntax'
+              : 'false-cjs no-resolution';
+          expectWorkspaceField(
+            workspace,
+            'scripts.attw',
+            `npx attw --pack . --ignore-rules ${attwIgnoreRules}`,
+          );
+        }
+
         if (isPrivate) {
           // All private, non-root packages must not have a "publish:preview"
           // script.
