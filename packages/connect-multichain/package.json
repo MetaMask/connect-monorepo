@@ -42,9 +42,9 @@
     },
     "./package.json": "./package.json"
   },
-  "browser": "./dist/browser/es/connect-multichain.mjs",
   "main": "./dist/node/cjs/connect-multichain.js",
   "module": "./dist/browser/es/connect-multichain.mjs",
+  "browser": "./dist/browser/es/connect-multichain.mjs",
   "react-native": "./dist/react-native/es/connect-multichain.mjs",
   "types": "./dist/types/connect-multichain.d.ts",
   "files": [
