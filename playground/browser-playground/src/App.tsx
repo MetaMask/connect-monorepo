@@ -6,6 +6,7 @@ import {
   useWalletConnection,
   useWalletSession,
   useDisconnectWallet,
+  useSolanaClient,
 } from '@solana/react-hooks';
 import {
   FEATURED_NETWORKS,
@@ -20,6 +21,7 @@ import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { useSolanaSelectedAccount } from './hooks/useSolanaSelectedAccount';
+import { installSolanaDisconnectRecursionGuard } from './utils/installSolanaDisconnectRecursionGuard';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
@@ -61,6 +63,7 @@ function App() {
 
   const { connect: connectSolanaWallet, connectors: solanaConnectors } =
     useWalletConnection();
+  const solanaClient = useSolanaClient();
   const solanaSession = useWalletSession();
   const disconnectSolanaWallet = useDisconnectWallet();
   const solanaConnected = solanaSession !== undefined;
@@ -76,6 +79,10 @@ function App() {
     },
     [customScopes],
   );
+
+  useEffect(() => {
+    installSolanaDisconnectRecursionGuard(solanaClient);
+  }, [solanaClient]);
 
   useEffect(() => {
     if (session) {
