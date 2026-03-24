@@ -453,7 +453,7 @@ const main = async (): Promise<void> => {
   console.log('------------------------------------');
 
   const infuraApiKey = process.env.INFURA_API_KEY ?? 'demo';
-  const supportedNetworks = getInfuraRpcUrls(infuraApiKey);
+  const supportedNetworks = getInfuraRpcUrls({ infuraApiKey });
   // Convert CAIP-keyed RPC URLs to hex-keyed format for EVM SDK
   const hexKeyedNetworks = convertCaipToHexKeys(supportedNetworks);
 

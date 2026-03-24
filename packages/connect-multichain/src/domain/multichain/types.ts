@@ -28,6 +28,8 @@ export type { SessionData } from '@metamask/multichain-api-client';
 export type DappSettings = {
   name: string;
   url?: string;
+  /** The original non-http(s) URL before normalization on React Native platforms */
+  nativeScheme?: string;
 } & ({ iconUrl?: string } | { base64Icon?: string });
 
 export type ConnectionRequest = {
@@ -37,6 +39,15 @@ export type ConnectionRequest = {
     sdk: { version: string; platform: PlatformType };
   };
 };
+
+/**
+ * Package versions keyed by connect package name.
+ * connect-multichain is always present; chain-specific packages
+ * appear only when their client is instantiated.
+ */
+export type ConnectVersions = { 'connect-multichain': string } & Partial<
+  Record<'connect-evm' | 'connect-solana', string>
+>;
 
 /**
  * Constructor options for creating a Multichain SDK instance.
@@ -81,12 +92,32 @@ export type MultichainOptions = {
   };
   /** Enable debug logging */
   debug?: boolean;
+  /** Package versions contributed by chain-specific clients (merged on each createMultichainClient call) */
+  versions?: Partial<ConnectVersions>;
 };
 
 type MultiChainFNOptions = Omit<MultichainOptions, 'storage' | 'ui'> & {
   ui?: Omit<MultichainOptions['ui'], 'factory'>;
 } & {
   storage?: StoreClient;
+};
+
+/**
+ * Options that can be merged/overwritten when createMultichainClient is called
+ * with an existing singleton.
+ */
+export type MergeableMultichainOptions = Omit<
+  MultichainOptions,
+  'dapp' | 'analytics' | 'storage' | 'api' | 'ui' | 'transport' | 'versions'
+> & {
+  api?: MultichainOptions['api'];
+  ui?: Pick<
+    MultichainOptions['ui'],
+    'headless' | 'preferExtension' | 'showInstallModal'
+  >;
+  transport?: Pick<NonNullable<MultichainOptions['transport']>, 'extensionId'>;
+  debug?: boolean;
+  versions?: Partial<ConnectVersions>;
 };
 
 /**
@@ -100,6 +131,8 @@ export type CreateMultichainFN = (
 ) => Promise<MultichainCore>;
 
 export type ExtendedTransport = Omit<Transport, 'connect'> & {
+  init: () => Promise<void>;
+
   connect: (props?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
@@ -118,4 +151,8 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   ) => Promise<TResponse>;
 
   getActiveSession: () => Promise<Session | undefined>;
+
+  getStoredPendingSessionRequest: () => Promise<SessionRequest | null>;
+
+  disconnect: (scopes: Scope[]) => Promise<void>;
 };

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /* eslint-disable consistent-return */
-/* eslint-disable no-plusplus */
 /* eslint-disable promise/param-names */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-shadow */
@@ -26,7 +25,7 @@ import {
   type TransportResponse,
   TransportTimeoutError,
 } from '@metamask/multichain-api-client';
-import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import { JsonRpcError, providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
 
 import {
@@ -40,6 +39,7 @@ import {
 import {
   addValidAccounts,
   getOptionalScopes,
+  getUniqueRequestId,
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
@@ -53,6 +53,7 @@ const DEFAULT_RESUME_TIMEOUT = 10 * 1000;
 const SESSION_STORE_KEY = 'cache_wallet_getSession';
 const ACCOUNTS_STORE_KEY = 'cache_eth_accounts';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
+const PENDING_SESSION_REQUEST_KEY = 'pending_session_request';
 
 const CACHED_METHOD_LIST = [
   'wallet_getSession',
@@ -79,8 +80,6 @@ const logger = createLogger('metamask-sdk:transport');
  * Bridges the MWP DappClient with the multichain API client Transport interface
  */
 export class MWPTransport implements ExtendedTransport {
-  private __reqId = 0;
-
   private __pendingRequests = new Map<string, PendingRequests>();
 
   private notificationCallbacks = new Set<(data: unknown) => void>();
@@ -115,6 +114,20 @@ export class MWPTransport implements ExtendedTransport {
     },
   ) {
     this.dappClient.on('message', this.handleMessage.bind(this));
+    // We store the pending session request in the KVStore so that we can:
+    // 1. Use it to regenerate the deeplink to re-prompt the user with if they
+    // attempt to connect while there is a pending connection attempt.
+    // 2. Determine if there was a pending connection attempt when MultichainConnect
+    // is initializing itself for the first time on page load and correctly set
+    // the appropriate timeout duration for that connection attempt.
+    this.dappClient.on('session_request', (sessionRequest: SessionRequest) => {
+      this.currentSessionRequest = sessionRequest;
+      this.kvstore
+        .set(PENDING_SESSION_REQUEST_KEY, JSON.stringify(sessionRequest))
+        .catch((err) => {
+          logger('Failed to store pending session request', err);
+        });
+    });
     if (
       typeof window !== 'undefined' &&
       typeof window.addEventListener !== 'undefined'
@@ -122,6 +135,32 @@ export class MWPTransport implements ExtendedTransport {
       this.windowFocusHandler = this.onWindowFocus.bind(this);
       window.addEventListener('focus', this.windowFocusHandler);
     }
+  }
+
+  /**
+   * Returns the stored pending session request from the dappClient session_request event, if any.
+   *
+   * @returns The stored SessionRequest, or null if none or invalid.
+   */
+  async getStoredPendingSessionRequest(): Promise<SessionRequest | null> {
+    try {
+      const raw = await this.kvstore.get(PENDING_SESSION_REQUEST_KEY);
+      if (!raw) {
+        return null;
+      }
+      return JSON.parse(raw) as SessionRequest;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Removes the stored pending session request from the KVStore.
+   * This is necessary to ensure that ConnectMultichain is able to correctly
+   * infer the MWP Transport connection attempt status.
+   */
+  private async removeStoredPendingSessionRequest(): Promise<void> {
+    await this.kvstore.delete(PENDING_SESSION_REQUEST_KEY);
   }
 
   private onWindowFocus(): void {
@@ -153,10 +192,13 @@ export class MWPTransport implements ExtendedTransport {
       typeof errorData.code === 'number' &&
       typeof errorData.message === 'string'
     ) {
-      return providerErrors.custom({
-        code: errorData.code,
-        message: errorData.message,
-      });
+      const { code, message } = errorData;
+
+      if (code >= 1000 && code <= 4999) {
+        return providerErrors.custom({ code, message });
+      }
+
+      return new JsonRpcError(code, message);
     }
 
     const message =
@@ -324,6 +366,7 @@ export class MWPTransport implements ExtendedTransport {
         }
         walletSession = response.result as SessionData;
       }
+      await this.removeStoredPendingSessionRequest();
       this.notifyCallbacks({
         method: 'wallet_sessionChanged',
         params: walletSession,
@@ -334,6 +377,10 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  async init(): Promise<void> {
+    // no-op for MWP — passive init is only relevant for DefaultTransport
+  }
+
   // TODO: Rename this
   async sendEip1193Message<
     TRequest extends TransportRequest,
@@ -341,7 +388,7 @@ export class MWPTransport implements ExtendedTransport {
   >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
     const request = {
       jsonrpc: '2.0',
-      id: `${this.__reqId++}`,
+      id: String(getUniqueRequestId()),
       ...payload,
     };
 
@@ -385,8 +432,15 @@ export class MWPTransport implements ExtendedTransport {
 
     const session = await this.getActiveSession();
     if (session) {
-      logger('active session found', session);
+      logger('active session found', {
+        id: session.id,
+        channel: session.channel,
+        expiresAt: session.expiresAt,
+      });
     }
+
+    const storedSessionRequestBeforeConnectionAttempt =
+      await this.getStoredPendingSessionRequest();
 
     let timeout: NodeJS.Timeout;
     let initialConnectionMessageHandler:
@@ -418,7 +472,7 @@ export class MWPTransport implements ExtendedTransport {
             };
             const request = {
               jsonrpc: '2.0',
-              id: `${this.__reqId++}`,
+              id: String(getUniqueRequestId()),
               method: 'wallet_createSession',
               params: sessionRequest,
             };
@@ -459,6 +513,7 @@ export class MWPTransport implements ExtendedTransport {
                 request,
                 messagePayload as TransportResponse,
               );
+              await this.removeStoredPendingSessionRequest();
               this.notifyCallbacks(messagePayload);
               return resolveConnection();
             };
@@ -486,15 +541,23 @@ export class MWPTransport implements ExtendedTransport {
         );
       }
 
-      timeout = setTimeout(() => {
-        reject(new TransportTimeoutError());
-      }, this.options.connectionTimeout);
+      timeout = setTimeout(
+        () => {
+          reject(new TransportTimeoutError());
+        },
+        storedSessionRequestBeforeConnectionAttempt
+          ? this.options.resumeTimeout
+          : this.options.connectionTimeout,
+      );
 
       connection.then(resolve).catch(reject);
     });
 
     return connectionPromise
-      .catch((error) => {
+      .catch(async (error) => {
+        // Clean up the MWP session from the KVStore so stale sessions
+        // don't cause subsequent connect attempts to enter the resume path
+        await this.dappClient.disconnect();
         throw error;
       })
       .finally(() => {
@@ -505,28 +568,87 @@ export class MWPTransport implements ExtendedTransport {
           this.dappClient.off('message', initialConnectionMessageHandler);
           initialConnectionMessageHandler = undefined;
         }
+        this.removeStoredPendingSessionRequest();
       });
   }
 
   /**
    * Disconnects from the Mobile Wallet Protocol
    *
+   * @param [scopes] - The scopes to revoke. If not provided or empty, all scopes will be revoked.
    * @returns Nothing
    */
-  async disconnect(): Promise<void> {
-    // Clean up window focus event listener
-    if (
-      typeof window !== 'undefined' &&
-      typeof window.removeEventListener !== 'undefined' &&
-      this.windowFocusHandler
-    ) {
-      window.removeEventListener('focus', this.windowFocusHandler);
-      this.windowFocusHandler = undefined;
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    const cachedSession = await this.getCachedResponse({
+      jsonrpc: '2.0',
+      id: '0',
+      method: 'wallet_getSession',
+    });
+    const cachedSessionScopes =
+      (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
+
+    const remainingScopes =
+      scopes.length === 0
+        ? []
+        : Object.keys(cachedSessionScopes).filter(
+            (scope) => !scopes.includes(scope as Scope),
+          );
+
+    const newSessionScopes = Object.fromEntries(
+      Object.entries(cachedSessionScopes).filter(([key]) =>
+        remainingScopes.includes(key),
+      ),
+    );
+
+    // NOTE: Purposely not awaiting this to avoid blocking the disconnect flow.
+    // This might not actually get executed on the wallet if the user doesn't open
+    // their wallet before the message TTL or if the underlying transport isn't actually connected
+    this.request({ method: 'wallet_revokeSession', params: { scopes } }).catch(
+      (err) => {
+        console.error('error revoking session', err);
+      },
+    );
+
+    // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
+    const remainingScopesIncludeEip155 = remainingScopes.some((scope) =>
+      scope.includes('eip155'),
+    );
+    if (!remainingScopesIncludeEip155) {
+      this.kvstore.delete(ACCOUNTS_STORE_KEY);
+      this.kvstore.delete(CHAIN_STORE_KEY);
     }
-    this.kvstore.delete(SESSION_STORE_KEY);
-    this.kvstore.delete(ACCOUNTS_STORE_KEY);
-    this.kvstore.delete(CHAIN_STORE_KEY);
-    return this.dappClient.disconnect();
+
+    if (remainingScopes.length > 0) {
+      this.kvstore.set(
+        SESSION_STORE_KEY,
+        JSON.stringify({
+          result: {
+            sessionScopes: newSessionScopes,
+          },
+        }),
+      );
+    } else {
+      this.kvstore.delete(SESSION_STORE_KEY);
+
+      // Clean up window focus event listener
+      if (
+        typeof window !== 'undefined' &&
+        typeof window.removeEventListener !== 'undefined' &&
+        this.windowFocusHandler
+      ) {
+        window.removeEventListener('focus', this.windowFocusHandler);
+        this.windowFocusHandler = undefined;
+      }
+
+      await this.dappClient.disconnect();
+    }
+
+    this.notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: {
+        sessionScopes: newSessionScopes,
+      },
+    });
   }
 
   /**
@@ -638,7 +760,7 @@ export class MWPTransport implements ExtendedTransport {
   >(payload: TRequest, options?: { timeout?: number }): Promise<TResponse> {
     const request = {
       jsonrpc: '2.0',
-      id: `${this.__reqId++}`,
+      id: String(getUniqueRequestId()),
       ...payload,
     };
 
@@ -686,7 +808,7 @@ export class MWPTransport implements ExtendedTransport {
 
   async getActiveSession(): Promise<Session | undefined> {
     const { kvstore } = this;
-    const sessionStore = new SessionStore(kvstore);
+    const sessionStore = await SessionStore.create(kvstore);
 
     try {
       const [activeSession] = await sessionStore.list();
@@ -733,6 +855,7 @@ export class MWPTransport implements ExtendedTransport {
     const timeoutPromise = new Promise<void>((_resolve, reject) => {
       setTimeout(() => {
         unsubscribe();
+        this.removeStoredPendingSessionRequest();
         reject(new TransportTimeoutError());
       }, this.options.resumeTimeout);
     });

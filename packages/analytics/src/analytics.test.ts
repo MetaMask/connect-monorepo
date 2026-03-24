@@ -15,11 +15,15 @@ t.describe('Analytics Integration', () => {
   let scope: nock.Scope;
 
   const eventProperties: MMConnectProperties = {
-    mmconnect_version: '1.0.0',
+    mmconnect_versions: {
+      'connect-multichain': '0.8.0',
+      'connect-evm': '0.6.0',
+      'connect-solana': '0.4.0',
+    },
     dapp_id: 'aave.com',
     anon_id: 'bbbc1727-8b85-433a-a26a-e9df70ddc81c',
     platform: 'web-desktop',
-    integration_type: 'direct',
+    integration_types: ['direct'],
   };
 
   t.afterAll(() => {
@@ -69,14 +73,14 @@ t.describe('Analytics Integration', () => {
     analytics = new Analytics('http://127.0.0.2');
     analytics.enable();
     analytics.setGlobalProperty(
-      'mmconnect_version',
-      eventProperties.mmconnect_version,
+      'mmconnect_versions',
+      eventProperties.mmconnect_versions,
     );
     analytics.setGlobalProperty('anon_id', eventProperties.anon_id);
     analytics.setGlobalProperty('platform', eventProperties.platform);
     analytics.setGlobalProperty(
-      'integration_type',
-      eventProperties.integration_type,
+      'integration_types',
+      eventProperties.integration_types,
     );
     analytics.track('mmconnect_initialized', {
       dapp_id: 'dapp_id',
@@ -95,6 +99,44 @@ t.describe('Analytics Integration', () => {
       },
     };
     t.expect(captured).toEqual([expectedEvent]);
+
+    scope.done();
+  });
+
+  t.it('should merge multiple integration_types global updates', async () => {
+    let captured: EventV2[] = [];
+    scope = nock('http://127.0.0.3')
+      .post('/v2/events', (body) => {
+        captured = body;
+        return true;
+      })
+      .reply(
+        200,
+        { status: 'success' },
+        { 'Content-Type': 'application/json' },
+      );
+
+    analytics = new Analytics('http://127.0.0.3');
+    analytics.enable();
+    analytics.setGlobalProperty(
+      'mmconnect_versions',
+      eventProperties.mmconnect_versions,
+    );
+    analytics.setGlobalProperty('anon_id', eventProperties.anon_id);
+    analytics.setGlobalProperty('platform', eventProperties.platform);
+    analytics.setGlobalProperty('dapp_id', eventProperties.dapp_id);
+    analytics.setGlobalProperty('integration_types', ['wagmi']);
+    analytics.setGlobalProperty('integration_types', ['direct']);
+
+    analytics.track('mmconnect_initialized', {});
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const event = captured[0] as MMConnectPayload | undefined;
+    t.expect(event?.properties).toMatchObject({
+      dapp_id: eventProperties.dapp_id,
+      integration_types: ['wagmi', 'direct'],
+    });
 
     scope.done();
   });

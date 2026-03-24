@@ -57,6 +57,10 @@ function testSuite<T extends MultichainOptions>({
       testOptions = {
         ...originalSdkOptions,
         ui: uiOptions,
+        api: {
+          ...originalSdkOptions.api,
+          supportedNetworks: {},
+        },
         analytics: {
           ...originalSdkOptions.analytics,
           enabled: platform === 'web' || platform === 'web-mobile',
@@ -97,17 +101,7 @@ function testSuite<T extends MultichainOptions>({
           t.expect(enableSpy).not.toHaveBeenCalled();
         } else {
           // For web and web-mobile platforms, analytics should be enabled
-          t.expect(enableSpy.mock.calls.length).toBeGreaterThan(0);
-          t.expect(trackSpy.mock.calls.length).toBeGreaterThan(0);
-          t.expect(trackSpy).toHaveBeenCalledWith(
-            'mmconnect_initialized',
-            t.expect.objectContaining({
-              mmconnect_version: t.expect.any(String),
-              dapp_id: t.expect.any(String),
-              platform: t.expect.any(String),
-              integration_type: t.expect.any(String),
-            }),
-          );
+          t.expect(enableSpy).toHaveBeenCalled();
         }
 
         enableSpy.mockRestore();
@@ -137,7 +131,12 @@ function testSuite<T extends MultichainOptions>({
       async () => {
         sdk = await createSDK(testOptions);
         t.expect(sdk.status).toBe('loaded');
-        t.expect(() => sdk.transport).toThrow();
+        if (platform === 'web') {
+          // Web with extension sets up a DefaultTransport for passive listening
+          t.expect(sdk.transport).toBeDefined();
+        } else {
+          t.expect(() => sdk.transport).toThrow();
+        }
       },
     );
 
@@ -204,6 +203,82 @@ function testSuite<T extends MultichainOptions>({
           method: 'stateChanged',
           params: 'connected',
         });
+      },
+    );
+
+    t.it(
+      `${platform} should update mmconnect_versions analytics global when singleton merges new versions`,
+      async () => {
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        sdk = await createSDK(testOptions);
+        setGlobalSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          versions: { 'connect-solana': '0.4.0' },
+        } as any);
+
+        if (platform === 'web' || platform === 'web-mobile') {
+          t.expect(setGlobalSpy).toHaveBeenCalledWith(
+            'mmconnect_versions',
+            t.expect.objectContaining({ 'connect-solana': '0.4.0' }),
+          );
+        }
+
+        setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should update integration_types analytics global when singleton sees a new integration`,
+      async () => {
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        sdk = await createSDK(testOptions);
+        setGlobalSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          analytics: {
+            ...testOptions.analytics,
+            integrationType: 'wagmi',
+          },
+        } as any);
+
+        if (platform === 'web' || platform === 'web-mobile') {
+          t.expect(setGlobalSpy).toHaveBeenCalledWith('integration_types', [
+            'wagmi',
+          ]);
+        }
+
+        setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should normalize empty integrationType to direct for analytics globals`,
+      async () => {
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        await createSDK({
+          ...testOptions,
+          analytics: {
+            ...testOptions.analytics,
+            integrationType: '',
+          },
+        } as any);
+
+        if (platform === 'web' || platform === 'web-mobile') {
+          t.expect(setGlobalSpy).toHaveBeenCalledWith('integration_types', [
+            'direct',
+          ]);
+          t.expect(setGlobalSpy).not.toHaveBeenCalledWith('integration_types', [
+            '',
+          ]);
+        }
+
+        setGlobalSpy.mockRestore();
       },
     );
 

@@ -1,15 +1,22 @@
-import { createMultichainClient } from '@metamask/connect-multichain';
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+import {
+  createMultichainClient,
+  type Scope,
+} from '@metamask/connect-multichain';
 import {
   getWalletStandard,
   registerSolanaWalletStandard,
 } from '@metamask/solana-wallet-standard';
 
-import { convertNetworksToCAIP } from './networks';
+import { convertNetworksToCAIP, SOLANA_CAIP_IDS } from './networks';
 import type {
   SolanaClient,
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
+
+// Value substitued by tsup at build time
+declare const __PACKAGE_VERSION__: string | undefined;
 
 /**
  * Creates a new Solana client for connecting to MetaMask via wallet-standard.
@@ -23,12 +30,14 @@ import type {
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param options.debug - Enable debug logging
+ * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
  * @returns A promise that resolves to the Solana client instance
  *
  * @example
  * ```typescript
  * import { createSolanaClient } from '@metamask/connect-solana';
  *
+ * // Wallet is auto-registered and ready to use
  * const client = await createSolanaClient({
  *   dapp: {
  *     name: 'My Solana DApp',
@@ -42,10 +51,7 @@ import type {
  *   },
  * });
  *
- * // Register the wallet to make it discoverable by Solana dapps
- * await client.registerWallet();
- *
- * // Or get the wallet instance directly
+ * // Get the wallet instance directly
  * const wallet = client.getWallet();
  * ```
  */
@@ -56,6 +62,8 @@ export async function createSolanaClient(
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
 
+  const skipAutoRegister = options.skipAutoRegister ?? false;
+
   const supportedNetworks = convertNetworksToCAIP(
     options.api?.supportedNetworks ?? defaultNetworks,
   );
@@ -65,16 +73,34 @@ export async function createSolanaClient(
     api: {
       supportedNetworks,
     },
+    versions: {
+      // typeof guard needed: Metro (React Native) bundles TS source directly,
+      // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
+      'connect-solana':
+        typeof __PACKAGE_VERSION__ === 'undefined'
+          ? 'unknown'
+          : __PACKAGE_VERSION__,
+    },
   });
 
   const client = core.provider;
 
+  const walletName = 'MetaMask Connect';
+
+  if (!skipAutoRegister) {
+    await registerSolanaWalletStandard({ client, walletName });
+  }
+
   return {
     core,
-    getWallet: (walletName?: string) =>
-      getWalletStandard({ client, walletName }),
-    registerWallet: async (walletName = 'MetaMask Connect') =>
-      registerSolanaWalletStandard({ client, walletName }),
-    disconnect: async () => await core.disconnect(),
+    getWallet: () => getWalletStandard({ client, walletName }),
+    registerWallet: async (): Promise<void> => {
+      if (!skipAutoRegister) {
+        return;
+      }
+      await registerSolanaWalletStandard({ client, walletName });
+    },
+    disconnect: async () =>
+      await core.disconnect(Object.values(SOLANA_CAIP_IDS) as Scope[]),
   };
 }

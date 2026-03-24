@@ -1,6 +1,7 @@
 {
   "name": "@metamask/react-native-playground",
-  "version": "0.1.1",
+  "version": "0.3.1",
+  "private": true,
   "description": "A React Native test dapp for multichain api",
   "keywords": [
     "MetaMask",
@@ -16,10 +17,6 @@
   },
   "license": "MIT",
   "main": "expo-router/entry",
-  "types": "./dist/index.d.cts",
-  "files": [
-    "dist/"
-  ],
   "scripts": {
     "allow-scripts": "",
     "android": "yarn copy-wagmi-connector && expo start --android",
@@ -29,7 +26,6 @@
     "changelog:validate": "../../scripts/validate-changelog.sh @metamask/react-native-playground",
     "copy-wagmi-connector": "node scripts/copy-wagmi-connector.js",
     "ios": "yarn copy-wagmi-connector && expo start --ios",
-    "publish:preview": "yarn npm publish --tag preview",
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "start": "yarn copy-wagmi-connector && expo start --tunnel",
     "test": "echo \"No test specified\"",
@@ -41,8 +37,6 @@
     "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect-evm": "workspace:^",
     "@metamask/connect-multichain": "workspace:^",
-    "@metamask/mobile-wallet-protocol-core": "^0.3.0",
-    "@metamask/mobile-wallet-protocol-wallet-client": "0.2.1",
     "@metamask/utils": "^11.8.1",
     "@open-rpc/meta-schema": "^1.14.9",
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -51,12 +45,12 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "@solana/web3.js": "^1.98.0",
-    "@tanstack/query-sync-storage-persister": "5.0.5",
-    "@tanstack/react-query": ">=5.45.1",
-    "@tanstack/react-query-persist-client": "5.0.5",
-    "@wagmi/core": "^2.22.1",
+    "@tanstack/query-async-storage-persister": "^5.90.24",
+    "@tanstack/react-query": "^5.90.21",
+    "@tanstack/react-query-persist-client": "^5.90.24",
+    "@wagmi/core": "^3.4.0",
     "buffer": "^6.0.3",
-    "eciesjs": "^0.4.15",
+    "eciesjs": "0.4.17",
     "expo": "^54.0.0",
     "expo-camera": "~17.0.8",
     "expo-constants": "~18.0.9",
@@ -81,7 +75,7 @@
     "react-native-web": "^0.21.0",
     "react-native-worklets": "^0.5.0",
     "viem": "2.*",
-    "wagmi": "^2.19.2"
+    "wagmi": "^3.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
@@ -91,16 +85,14 @@
     "@types/react": "19.1.0",
     "@types/react-native-get-random-values": "^1.8.2",
     "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "readable-stream": "^4.7.0",
     "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20.19.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   },
   "lavamoat": {
     "allowScripts": {

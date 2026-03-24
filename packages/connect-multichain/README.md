@@ -32,7 +32,7 @@ const client = await createMultichainClient({
   api: {
     supportedNetworks: {
       // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
-      ...getInfuraRpcUrls(INFURA_API_KEY),
+      ...getInfuraRpcUrls({ infuraApiKey: INFURA_API_KEY }),
       // or specify your own CAIP Chain ID to rpc endpoint mapping
       'eip155:1': 'https://mainnet.example.io/rpc',
       'eip155:137': 'https://polygon-mainnet.example.io/rpc',
@@ -134,26 +134,29 @@ This package is written in TypeScript and includes full type definitions. No add
 
 Factory function to create a new Multichain SDK instance.
 
+> **Singleton:** `createMultichainClient` returns a single shared instance per global context. Calling it a second time with different options will merge the new `api.supportedNetworks`, `versions`, `ui.*`, `mobile.*`, `transport.extensionId`, and `debug` values into the existing instance rather than creating a new one. The `dapp` value is never overwritten on subsequent calls.
+
 #### Parameters
 
-| Option                      | Type                                          | Required | Description                                    |
-| --------------------------- | --------------------------------------------- | -------- | ---------------------------------------------- |
-| `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                              |
-| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of CAIP chain IDs to RPC URLs              |
-| `dapp.url`                  | `string`                                      | No       | URL of your dApp                               |
-| `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                         |
-| `dapp.base64Icon`           | `string`                                      | No       | Base64-encoded icon (alternative to iconUrl)   |
-| `storage`                   | `StoreClient`                                 | No       | Custom storage adapter                         |
-| `ui.factory`                | `BaseModalFactory`                            | No       | Custom modal factory                           |
-| `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations) |
-| `ui.preferExtension`        | `boolean`                                     | No       | Prefer browser extension (default: true)       |
-| `ui.showInstallModal`       | `boolean`                                     | No       | Show installation modal                        |
-| `mobile.preferredOpenLink`  | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                        |
-| `mobile.useDeeplink`        | `boolean`                                     | No       | Use `metamask://` instead of universal links   |
-| `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                 |
-| `transport.extensionId`     | `string`                                      | No       | Custom extension ID                            |
-| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                           |
-| `debug`                     | `boolean`                                     | No       | Enable debug logging                           |
+| Option                      | Type                                          | Required | Description                                                                                                     |
+| --------------------------- | --------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                                                                                               |
+| `api.supportedNetworks`     | `RpcUrlsMap`                                  | Yes      | Map of [CAIP-2 chain IDs](https://chainagnostic.org/CAIPs/caip-2) to RPC URLs                                   |
+| `dapp.url`                  | `string`                                      | No       | URL of your dApp                                                                                                |
+| `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                                                                                          |
+| `dapp.base64Icon`           | `string`                                      | No       | Base64-encoded icon (alternative to iconUrl)                                                                    |
+| `storage`                   | `StoreClient`                                 | No       | Custom storage adapter                                                                                          |
+| `ui.factory`                | `BaseModalFactory`                            | No       | Custom modal factory                                                                                            |
+| `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations)                                                                  |
+| `ui.preferExtension`        | `boolean`                                     | No       | Prefer browser extension (default: true)                                                                        |
+| `ui.showInstallModal`       | `boolean`                                     | No       | Show installation modal                                                                                         |
+| `mobile.preferredOpenLink`  | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                                                                                         |
+| `mobile.useDeeplink`        | `boolean`                                     | No       | Use `metamask://` instead of universal links                                                                    |
+| `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                                                  |
+| `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                                                             |
+| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                                                            |
+| `versions`                  | `Partial<ConnectVersions>`                    | No       | Internal: set automatically by `createEVMClient` / `createSolanaClient`. Consumers do not need to provide this. |
+| `debug`                     | `boolean`                                     | No       | Enable debug logging                                                                                            |
 
 #### Returns
 
@@ -203,20 +206,26 @@ await client.connect(
 );
 ```
 
-##### `disconnect()`
+##### `disconnect(scopes?)`
 
-Disconnects from the wallet and cleans up resources.
+Disconnects from the wallet. If `scopes` are provided, only the specified scopes are revoked; if there are remaining scopes, the connection stays alive. If omitted or empty, all scopes are revoked and the connection is fully torn down.
 
 **Parameters**
 
-None.
+| Name     | Type      | Required | Description                                                          |
+| -------- | --------- | -------- | -------------------------------------------------------------------- |
+| `scopes` | `Scope[]` | No       | Array of CAIP-2 chain identifiers to revoke (defaults to all scopes) |
 
 **Returns**
 
 `Promise<void>`
 
 ```typescript
+// Fully disconnect
 await client.disconnect();
+
+// Disconnect only specific scopes
+await client.disconnect(['eip155:1']);
 ```
 
 ##### `invokeMethod(options)`
@@ -329,29 +338,41 @@ Emits an event to all registered handlers.
 
 ### Utilities
 
-#### `getInfuraRpcUrls(infuraApiKey)`
+#### `getInfuraRpcUrls(options)`
 
 Generates Infura RPC URLs for common networks keyed by CAIP Chain ID.
 
 **Parameters**
 
-| Name           | Type     | Required | Description         |
-| -------------- | -------- | -------- | ------------------- |
-| `infuraApiKey` | `string` | Yes      | Your Infura API key |
+| Name           | Type            | Required | Description                           |
+| -------------- | --------------- | -------- | ------------------------------------- |
+| `infuraApiKey` | `string`        | Yes      | Your Infura API key                   |
+| `caipChainIds` | `CaipChainId[]` | No       | CAIP-2 chain IDs to filter the output |
 
 **Returns**
 
-A map of hex chain IDs to Infura RPC URLs. See https://docs.metamask.io/services
+A map of [CAIP-2 chain IDs](https://chainagnostic.org/CAIPs/caip-2) to Infura RPC URLs. See https://docs.metamask.io/services
 
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-multichain';
 
-const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
+// Get all supported Infura RPC URLs
+const rpcUrls = getInfuraRpcUrls({ infuraApiKey: 'YOUR_INFURA_KEY' });
 // {
 //   'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
 //   'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
 //   'eip155:11155111': 'https://sepolia.infura.io/v3/YOUR_KEY',
 //   ...
+// }
+
+// Filter to specific chains
+const filtered = getInfuraRpcUrls({
+  infuraApiKey: 'YOUR_INFURA_KEY',
+  caipChainIds: ['eip155:1', 'eip155:137'],
+});
+// {
+//   'eip155:1': 'https://mainnet.infura.io/v3/YOUR_KEY',
+//   'eip155:137': 'https://polygon-mainnet.infura.io/v3/YOUR_KEY',
 // }
 ```
 

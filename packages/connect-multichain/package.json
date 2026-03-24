@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-multichain",
-  "version": "0.5.3",
+  "version": "0.11.0",
   "description": "Multichain package for MetaMask Connect",
   "keywords": [
     "MetaMask",
@@ -74,8 +74,8 @@
   },
   "dependencies": {
     "@metamask/analytics": "workspace:^",
-    "@metamask/mobile-wallet-protocol-core": "^0.3.0",
-    "@metamask/mobile-wallet-protocol-dapp-client": "^0.2.1",
+    "@metamask/mobile-wallet-protocol-core": "^0.4.0",
+    "@metamask/mobile-wallet-protocol-dapp-client": "^0.3.0",
     "@metamask/multichain-api-client": "^0.10.1",
     "@metamask/multichain-ui": "workspace:^",
     "@metamask/onboarding": "^1.0.1",
@@ -85,7 +85,7 @@
     "bowser": "^2.11.0",
     "buffer": "^6.0.3",
     "cross-fetch": "^4.1.0",
-    "eciesjs": "^0.4.15",
+    "eciesjs": "0.4.17",
     "eventemitter3": "^5.0.1",
     "pako": "^2.1.0",
     "uuid": "^11.1.0",
@@ -112,6 +112,11 @@
   },
   "peerDependencies": {
     "@react-native-async-storage/async-storage": "^1.23"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=20.19.0"

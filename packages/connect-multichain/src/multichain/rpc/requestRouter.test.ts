@@ -8,6 +8,7 @@ import {
   type InvokeMethodOptions,
   RPCInvokeMethodErr,
   type Scope,
+  TransportType,
 } from '../../domain';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
 
@@ -56,6 +57,7 @@ t.describe('RequestRouter', () => {
       mockTransport,
       mockRpcClient,
       mockConfig,
+      TransportType.Browser,
     );
     // Reset mocks
     mockTransport.request.mockClear();
@@ -137,6 +139,46 @@ t.describe('RequestRouter', () => {
               .rejects.toThrow(
                 'RPC Request failed with code -32603: Internal error',
               );
+          },
+        );
+
+        t.it(
+          'should preserve the original RPC error code on RPCInvokeMethodErr when response contains an error',
+          async () => {
+            mockTransport.request.mockResolvedValue({
+              error: {
+                code: 4001,
+                message:
+                  'MetaMask Tx Signature: User denied transaction signature.',
+              },
+            });
+
+            await t
+              .expect(requestRouter.invokeMethod(baseOptions))
+              .rejects.toSatisfy((error: RPCInvokeMethodErr) => {
+                return (
+                  error instanceof RPCInvokeMethodErr && error.rpcCode === 4001
+                );
+              });
+          },
+        );
+
+        t.it(
+          'should preserve the original RPC error code when transport rejects with a coded error',
+          async () => {
+            const codedError = new Error(
+              'MetaMask Tx Signature: User denied transaction signature.',
+            ) as Error & { code: number };
+            codedError.code = 4001;
+            mockTransport.request.mockRejectedValue(codedError);
+
+            await t
+              .expect(requestRouter.invokeMethod(baseOptions))
+              .rejects.toSatisfy((error: RPCInvokeMethodErr) => {
+                return (
+                  error instanceof RPCInvokeMethodErr && error.rpcCode === 4001
+                );
+              });
           },
         );
       },

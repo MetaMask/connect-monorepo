@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0]
+
+### Changed
+
+- Migrate `metamask_accountsChanged` and `metamask_chainChanged` subscriptions from `transport.onNotification()` to typed `core.on()`/`core.off()`, removing `@ts-expect-error` suppressions ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+
+### Fixed
+
+- `EIP1193Provider.request()` now re-surfaces the original numeric RPC error code as `error.code` on the thrown error, matching the EIP-1193 error shape expected by dApps, wagmi, and ethers.js. Previously `error.code` was always `undefined`. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+
+## [0.8.0]
+
+### Changed
+
+- **BREAKING** `getInfuraRpcUrls` now accepts a single options object `{ infuraApiKey, chainIds? }` instead of a positional `infuraApiKey` string. The optional `chainIds` parameter accepts hex chain IDs to filter the output ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+- use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
+
+### Fixed
+
+- fix: Fix react-native-playground consumption of **PACKAGE_VERSION** build-time constant in connect packages ([#221](https://github.com/MetaMask/connect-monorepo/pull/221))
+
+## [0.7.0]
+
+### Added
+
+- Enable specifying the integration type for analytics. Defaults to `direct`. ([#213](https://github.com/MetaMask/connect-monorepo/pull/213))
+- Pass `connect-evm` package version to `createMultichainClient` via the `versions` option so it appears in analytics events ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
+### Fixed
+
+- Fix an issue where `connect` would always return the default chain id regardless of other chains being specified. This also affected `connectWith` and `connectAndSign` ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))
+
+## [0.6.0]
+
+### Added
+
+- Bump `@metamask/connect-multichain` to `^0.8.0` ([#203](https://github.com/MetaMask/connect-monorepo/pull/203))
+
+## [0.5.0]
+
 ### Changed
 
 - **BREAKING** Fix package exports: `require` now serves Node CJS build, `main` points to Node CJS, added `browser` condition for browser ESM ([#110](https://github.com/MetaMask/connect-monorepo/pull/110))
@@ -17,9 +57,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `createEVMClient()` param option `api.supportedNetworks` now expects hex chain IDs as keys (e.g., `'0x1'`) instead of CAIP chain IDs
   - Event handler types for `connectAndSign` and `connectWith` now use `Hex` for `chainId`
 - **BREAKING** `getInfuraRpcUrls` now returns a rpc url map keyed by hex chain ID rather than CAIP Chain ID ([#152](https://github.com/MetaMask/connect-monorepo/pull/152))
+- **BREAKING** `disconnect()` now revokes only `eip155:*` scopes instead of revoking the entire multichain session. Non-EVM scopes (for example Solana) are preserved. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- **BREAKING** EIP-1193 `connect` event payload now includes accounts: `{ chainId: Hex; accounts: Address[] }` (previously `{ chainId: Hex }`). ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
 - The `debug` option param used by `createEVMClient()` now enables console debug logs of the underlying `MultichainClient` instance ([#149](https://github.com/MetaMask/connect-monorepo/pull/149))
 - update `connect()` and `createEVMClient()` typings to be more accurate ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
 - update `switchChain()` to return `Promise<void>` ([#153](https://github.com/MetaMask/connect-monorepo/pull/153))
+- Make `ConnectEvm` rely on `wallet_sessionChanged` events from `ConnectMultichain` rather than explicit connect/disconnect events ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- Chain add/switch deeplink now calls `openSimpleDeeplinkIfNeeded()` instead of `openDeeplinkIfNeeded()` to align with `@metamask/connect-multichain` changes ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
+
+### Fixed
+
+- Fix `display_uri` and `wallet_sessionChanged` events not firing after disconnect and reconnect in headless mode ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))
 
 ## [0.4.1]
 
@@ -112,7 +160,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.9.0...HEAD
+[0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.8.0...@metamask/connect-evm@0.9.0
+[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.7.0...@metamask/connect-evm@0.8.0
+[0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.6.0...@metamask/connect-evm@0.7.0
+[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.5.0...@metamask/connect-evm@0.6.0
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.1...@metamask/connect-evm@0.5.0
 [0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.4.0...@metamask/connect-evm@0.4.1
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.3.1...@metamask/connect-evm@0.4.0
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.3.0...@metamask/connect-evm@0.3.1

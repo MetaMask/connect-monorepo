@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix `exports` map paths to match actual Stencil build output (`.js`/`.cjs.js` instead of `.mjs`/`.cjs`) ([#110](https://github.com/MetaMask/connect-monorepo/pull/110))
 
+## [0.4.0]
+
+### Removed
+
+- Remove SDK version label from install and OTP modals ([#212](https://github.com/MetaMask/connect-monorepo/pull/212))
+- **BREAKING** Remove `sdkVersion` prop from `mm-install-modal` and `mm-otp-modal` components ([#212](https://github.com/MetaMask/connect-monorepo/pull/212))
+
 ## [0.3.0]
 
 ### Changed
@@ -34,7 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.3.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.4.0...HEAD
+[0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.3.0...@metamask/multichain-ui@0.4.0
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.2.0...@metamask/multichain-ui@0.3.0
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/multichain-ui@0.1.0...@metamask/multichain-ui@0.2.0
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/multichain-ui@0.1.0

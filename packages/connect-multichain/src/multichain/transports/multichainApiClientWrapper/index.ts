@@ -1,10 +1,10 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
 /* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
-/* eslint-disable no-plusplus -- Increment operator is safe here */
-/* eslint-disable @typescript-eslint/no-floating-promises -- Promise is intentionally not awaited */
+
 import type {
   CreateSessionParams,
+  RevokeSessionParams,
   Transport,
   TransportRequest,
   TransportResponse,
@@ -14,22 +14,14 @@ import type { CaipAccountId } from '@metamask/utils';
 import type { InvokeMethodOptions, RPCAPI, Scope } from 'src/domain';
 import type { MetaMaskConnectMultichain } from 'src/multichain';
 
-// uint32 (two's complement) max
-// more conservative than Number.MAX_SAFE_INTEGER
-const MAX = 4_294_967_295;
-let idCounter = Math.floor(Math.random() * MAX);
-
-const getUniqueId = (): number => {
-  idCounter = (idCounter + 1) % MAX;
-  return idCounter;
-};
+import { getUniqueRequestId } from '../../utils';
 
 type TransportRequestWithId = TransportRequest & { id: number };
 
 export class MultichainApiClientWrapperTransport implements Transport {
-  #requestId = getUniqueId();
-
   readonly #notificationCallbacks = new Set<(data: unknown) => void>();
+
+  notificationListener: (() => void) | undefined;
 
   constructor(
     private readonly metamaskConnectMultichain: MetaMaskConnectMultichain,
@@ -53,16 +45,24 @@ export class MultichainApiClientWrapperTransport implements Transport {
     });
   }
 
-  setupNotifcationListener(): void {
-    this.metamaskConnectMultichain.transport.onNotification(
-      this.notifyCallbacks.bind(this),
-    );
+  clearTransportNotificationListener(): void {
+    this.notificationListener?.();
+    this.notificationListener = undefined;
+  }
+
+  setupTransportNotificationListener(): void {
+    if (!this.isTransportDefined() || this.notificationListener) {
+      return;
+    }
+    this.notificationListener =
+      this.metamaskConnectMultichain.transport.onNotification(
+        this.notifyCallbacks.bind(this),
+      );
   }
 
   async connect(): Promise<void> {
     console.log('📚 connect');
-    // noop
-    return Promise.resolve();
+    await this.metamaskConnectMultichain.emitSessionChanged();
   }
 
   async disconnect(): Promise<void> {
@@ -80,7 +80,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
     params: ParamsType,
     _options: { timeout?: number } = {},
   ): Promise<ReturnType> {
-    const id = this.#requestId++;
+    const id = getUniqueRequestId();
     const requestPayload = {
       id,
       jsonrpc: '2.0',
@@ -104,18 +104,14 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   onNotification(callback: (data: unknown) => void): () => void {
-    if (!this.isTransportDefined()) {
-      this.#notificationCallbacks.add(callback);
-      return () => {
-        this.#notificationCallbacks.delete(callback);
-      };
-    }
-
-    return this.metamaskConnectMultichain.transport.onNotification(callback);
+    this.setupTransportNotificationListener();
+    this.#notificationCallbacks.add(callback);
+    return () => {
+      this.#notificationCallbacks.delete(callback);
+    };
   }
 
   async #walletCreateSession(request: TransportRequestWithId) {
-    console.log('📚 #walletCreateSession', request);
     const createSessionParams = request.params as CreateSessionParams<RPCAPI>;
     const scopes = Object.keys({
       ...createSessionParams.optionalScopes,
@@ -168,8 +164,13 @@ export class MultichainApiClientWrapperTransport implements Transport {
       return { jsonrpc: '2.0', id: request.id, result: true };
     }
 
+    const revokeSessionParams = request.params as
+      | RevokeSessionParams<RPCAPI>
+      | undefined;
+    const scopes = revokeSessionParams?.scopes ?? [];
+
     try {
-      this.metamaskConnectMultichain.disconnect();
+      await this.metamaskConnectMultichain.disconnect(scopes as Scope[]);
       return { jsonrpc: '2.0', id: request.id, result: true };
     } catch (_error) {
       return { jsonrpc: '2.0', id: request.id, result: false };

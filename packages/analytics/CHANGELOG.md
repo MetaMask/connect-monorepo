@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0]
+
+### Changed
+
+- use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
+
+## [0.3.0]
+
+### Changed
+
+- **BREAKING** `MMConnectProperties.mmconnect_versions` type changed from `string` to `Record<string, string>` ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
 ## [0.2.0]
 
 ### Added
@@ -33,7 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.4.0...HEAD
+[0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.3.0...@metamask/analytics@0.4.0
+[0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.2.0...@metamask/analytics@0.3.0
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.1.1...@metamask/analytics@0.2.0
 [0.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.1.0...@metamask/analytics@0.1.1
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/analytics@0.1.0

@@ -118,6 +118,10 @@ function testSuite<T extends MultichainOptions>({
       // Set the transport type as a string in storage (this is how it's stored)
       testOptions = {
         ...originalSdkOptions,
+        api: {
+          ...originalSdkOptions.api,
+          supportedNetworks: {},
+        },
         analytics: {
           ...originalSdkOptions.analytics,
           enabled: platform !== 'node',
@@ -166,7 +170,12 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.status).toBe('loaded');
       // Provider is always available via wrapper transport (handles connection state internally)
       t.expect(sdk.provider).toBeDefined();
-      t.expect(() => sdk.transport).toThrow();
+      if (platform === 'web') {
+        // Web with extension sets up a DefaultTransport for passive listening
+        t.expect(sdk.transport).toBeDefined();
+      } else {
+        t.expect(() => sdk.transport).toThrow();
+      }
 
       // Expect sdk.connect to reject if transport cannot connect
       // Add timeout wrapper for web-mobile platform to prevent hanging
@@ -245,9 +254,9 @@ function testSuite<T extends MultichainOptions>({
         ] as any;
 
         // Empty initial session
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => undefined as any,
-        );
+        mockedData.mockWalletGetSession.mockImplementation(async () => ({
+          sessionScopes: {},
+        }));
         mockedData.mockWalletCreateSession.mockImplementation(
           async () => mockSessionData,
         );
@@ -260,7 +269,11 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('loaded');
         // Provider is always available via wrapper transport (handles connection state internally)
         t.expect(sdk.provider).toBeDefined();
-        t.expect(() => sdk.transport).toThrow();
+        if (platform === 'web') {
+          t.expect(sdk.transport).toBeDefined();
+        } else {
+          t.expect(() => sdk.transport).toThrow();
+        }
 
         await sdk.connect(scopes, caipAccountIds);
 
@@ -289,9 +302,9 @@ function testSuite<T extends MultichainOptions>({
         mockedData.mockSessionRequest.mockImplementation(
           async () => mockSessionRequestData,
         );
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => undefined as any,
-        );
+        mockedData.mockWalletGetSession.mockImplementation(async () => ({
+          sessionScopes: {},
+        }));
         mockedData.mockWalletCreateSession.mockImplementation(
           async () => mockSessionData,
         );
@@ -366,9 +379,9 @@ function testSuite<T extends MultichainOptions>({
         mockedData.mockSessionRequest.mockImplementation(
           async () => mockSessionRequestData,
         );
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => undefined as any,
-        );
+        mockedData.mockWalletGetSession.mockImplementation(async () => ({
+          sessionScopes: {},
+        }));
         mockedData.mockWalletCreateSession.mockImplementation(
           async () => mockSessionData,
         );
@@ -377,7 +390,11 @@ function testSuite<T extends MultichainOptions>({
         unloadSpy = t.vi.spyOn((sdk as any).options.ui.factory, 'unload');
 
         t.expect(sdk.status).toBe('loaded');
-        t.expect(() => sdk.transport).toThrow();
+        if (platform === 'web') {
+          t.expect(sdk.transport).toBeDefined();
+        } else {
+          t.expect(() => sdk.transport).toThrow();
+        }
 
         if (platform !== 'web' && platform !== 'web-mobile') {
           showModalPromise = waitForInstallModal(sdk).catch(() => {
@@ -435,9 +452,9 @@ function testSuite<T extends MultichainOptions>({
         'eip155:1:0x1234567890abcdef1234567890abcdef12345678',
       ] as any;
 
-      mockedData.mockWalletGetSession.mockImplementation(
-        async () => undefined as any,
-      );
+      mockedData.mockWalletGetSession.mockImplementation(async () => ({
+        sessionScopes: {},
+      }));
       mockedData.mockSessionRequest.mockImplementation(
         async () => mockSessionRequestData,
       );
@@ -446,7 +463,11 @@ function testSuite<T extends MultichainOptions>({
       sdk = await createSDK(testOptions);
 
       t.expect(sdk.status).toBe('loaded');
-      t.expect(() => sdk.transport).toThrow();
+      if (platform === 'web') {
+        t.expect(sdk.transport).toBeDefined();
+      } else {
+        t.expect(() => sdk.transport).toThrow();
+      }
 
       // Add timeout wrapper for web-mobile platform to prevent hanging
       let timeoutId: NodeJS.Timeout;
@@ -521,7 +542,11 @@ function testSuite<T extends MultichainOptions>({
       await sdk.disconnect();
 
       if (platform === 'web') {
-        t.expect(mockedData.mockDefaultTransport.disconnect).toHaveBeenCalled();
+        // DefaultTransport.disconnect() sends wallet_revokeSession via the inner transport's request()
+        t.expect(mockedData.mockDefaultTransport.request).toHaveBeenCalledWith(
+          t.expect.objectContaining({ method: 'wallet_revokeSession' }),
+          t.expect.anything(),
+        );
       } else {
         t.expect(mockedData.mockDappClient.disconnect).toHaveBeenCalled();
       }
@@ -543,11 +568,7 @@ function testSuite<T extends MultichainOptions>({
       mockedData.mockWalletCreateSession.mockResolvedValue(mockSessionData);
       mockedData.mockWalletRevokeSession.mockResolvedValue(undefined);
 
-      if (platform === 'web') {
-        mockedData.mockDefaultTransport.disconnect.mockRejectedValue(
-          disconnectError,
-        );
-      } else {
+      if (platform !== 'web') {
         mockedData.mockDappClient.disconnect.mockRejectedValue(disconnectError);
       }
 
@@ -556,6 +577,12 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.status).toBe('connected');
       t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.transport).toBeDefined();
+
+      if (platform === 'web') {
+        // DefaultTransport.disconnect() sends wallet_revokeSession via the inner transport's request(),
+        // so we mock the RPC handler to reject
+        mockedData.mockWalletRevokeSession.mockRejectedValue(disconnectError);
+      }
 
       await t
         .expect(sdk.disconnect())

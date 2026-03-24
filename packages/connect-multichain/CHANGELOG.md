@@ -7,6 +7,98 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0]
+
+### Changed
+
+- `DefaultTransport` now forwards all wallet notifications instead of filtering to only `metamask_chainChanged` and `metamask_accountsChanged`, matching `MWPTransport` behavior ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- `stateChanged` is now emitted via the `EventEmitter` so `client.on('stateChanged', cb)` fires correctly ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- `SDKEvents` type now includes explicit entries for `metamask_accountsChanged`, `metamask_chainChanged`, and `stateChanged` ([#230](https://github.com/MetaMask/connect-monorepo/pull/230))
+- Mark `@react-native-async-storage/async-storage` peer dependency as optional — web/Node consumers no longer pull in the React Native toolchain ([#234](https://github.com/MetaMask/connect-monorepo/pull/234))
+- `getInfuraRpcUrls` now includes Solana mainnet and devnet CAIP chain IDs in the generated RPC URL map ([#235](https://github.com/MetaMask/connect-monorepo/pull/235))
+- Updated `infuraRpcUrls` to align with Infura's currently supported networks by removing deprecated testnets (Goerli variants, Mumbai, Palm testnet, Aurora) and adding new mainnet/testnet coverage across Base, Blast, zkSync, BSC/opBNB, Scroll, Mantle, Sei, Swellchain, Unichain, Hemi, MegaETH, Monad, and Celo Sepolia ([#237](https://github.com/MetaMask/connect-monorepo/pull/237))
+
+### Fixed
+
+- `RPCInvokeMethodErr` now carries the original numeric RPC code from the wallet (`rpcCode`) and the original wallet-facing message (`rpcMessage`) as separate fields, so higher layers can re-surface them without losing them inside internal error formatting. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+- `RequestRouter` now propagates the numeric RPC error code from wallet response errors and transport exceptions into `RPCInvokeMethodErr`, ensuring the code is not dropped during error wrapping. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+- `DefaultTransport` now attaches the numeric RPC code to errors produced from `window.postMessage` responses, so it survives the transport boundary. ([#232](https://github.com/MetaMask/connect-monorepo/pull/232))
+
+## [0.10.0]
+
+### Changed
+
+- **BREAKING** `getInfuraRpcUrls` now accepts a single options object `{ infuraApiKey, caipChainIds? }` instead of a positional `infuraApiKey` string. The optional `caipChainIds` parameter filters the output to only the specified CAIP-2 chain IDs ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+- use merged integration types in analytics ([#223](https://github.com/MetaMask/connect-monorepo/pull/223))
+
+### Fixed
+
+- fix: Fix react-native-playground consumption of **PACKAGE_VERSION** build-time constant in connect packages ([#221](https://github.com/MetaMask/connect-monorepo/pull/221))
+
+## [0.9.0]
+
+### Added
+
+- Add `versions` constructor option to `createMultichainClient` so chain-specific packages (`connect-evm`, `connect-solana`) can report their version in analytics events. Versions are merged into the singleton on each call, following the same pattern as `api.supportedNetworks`. ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
+### Changed
+
+- **BREAKING** `mmconnect_versions` analytics property is now a `Record<string, string>` keyed by package name instead of a plain version string ([#206](https://github.com/MetaMask/connect-monorepo/pull/206))
+
+### Removed
+
+- Stop passing `sdkVersion` to install and OTP modals ([#212](https://github.com/MetaMask/connect-monorepo/pull/212))
+
+### Fixed
+
+- Fix a bug where wallet_sessionChanged events were failing to propagate to the `ConnectMultichain` instance when the `DefaultTransport` is using the `WindowPostMessageTransport`. This was affecting Firefox, both iOS and Android in-app browsers ([#204](https://github.com/MetaMask/connect-monorepo/pull/204))
+
+## [0.8.0]
+
+### Added
+
+- Enable `ConnectMultichain` to automatically handle `wallet_sessionChanged` events when MetaMask extension is detected (Desktop Chrome/Firefox, or Mobile In-App Browser) and `preferExtension: true` without needing the user to explicitly connect via `ConnectMultichain.connect()` ([#198](https://github.com/MetaMask/connect-monorepo/pull/198/))
+
+### Changed
+
+- Bump `@metamask/mobile-wallet-protocol-core` to `^0.4.0` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
+- Bump `@metamask/mobile-wallet-protocol-dapp-client` to `^0.3.0` ([#201](https://github.com/MetaMask/connect-monorepo/pull/201))
+
+## [0.7.0]
+
+### Changed
+
+- Correct README documentation across `connect-solana`, `connect-evm`, and `connect-multichain` to match actual API behaviour. ([#194](https://github.com/MetaMask/connect-monorepo/pull/194))
+- Redact logs ([#191](https://github.com/MetaMask/connect-monorepo/pull/191]))
+- Pin eciesjs to exact version 0.4.17 ([#188](https://github.com/MetaMask/connect-monorepo/pull/188))
+
+### Fixed
+
+- Fix uncaught exception in `parseWalletError` when the wallet returns error codes outside the EIP-1193 provider range (1000–4999), such as standard JSON-RPC codes like `-32603` (Internal error). This prevented Solana request rejections from being handled gracefully. ([#189](https://github.com/MetaMask/connect-monorepo/pull/189))
+
+## [0.6.0]
+
+### Added
+
+- When `ConnectMultichain.connect()` is called while a connection is already pending, the user is re-prompted with the pending connection deeplink. ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
+
+### Changed
+
+- Normalize non-http(s) dapp URLs to valid https URLs on React Native to prevent RPC middleware crashes ([#190](https://github.com/MetaMask/connect-monorepo/pull/190))
+- **BREAKING** `createMultichainClient()` now returns a singleton. Any incoming constructor params on subsequent calls to `createMultichainClient()` will be applied to the existing singleton instance except for the `dapp`, `storage`, and `ui.factory` param options. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- **BREAKING** `ConnectMultichain.openDeeplinkIfNeeded()` is renamed to `openSimpleDeeplinkIfNeeded()` ([#176](https://github.com/MetaMask/connect-monorepo/pull/176))
+- `ConnectMultichain.connect()` now throws an `'Existing connection is pending. Please check your MetaMask Mobile app to continue.'` error if there is already an pending connection attempt. Previously it would abort that ongoing connection in favor of a new one. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- `ConnectMultichain.connect()` adds newly requested scopes and accounts onto any existing permissions rather than fully replacing them. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- `ConnectMultichain.disconnect()` accepts an optional array of scopes. When provided, only those scopes will be revoked from the existing permissions. If no scopes remain after a partial revoke, then the underly connection is fully discarded. If no scopes are specified ()`[]`), then all scopes will be removed. By default all scopes will be removed. ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+
+### Fixed
+
+- `ConnectMultichain` now waits 10 seconds (rather than 2 minutes) when attempting to resume a pending connection on initial instantiation via `createMultichainClient()` ([#175](https://github.com/MetaMask/connect-monorepo/pull/175))
+- Fix `beforeunload` event listener not being properly removed on disconnect due to `.bind()` creating different function references, causing a listener leak on each connect/disconnect cycle ([#170](https://github.com/MetaMask/connect-monorepo/pull/170))
+- Rename `StoreAdapterWeb.DB_NAME` from `mmsdk` to `mmconnect` to prevent IndexedDB collisions when the legacy MetaMask SDK and MM Connect run in the same browser context ([#177](https://github.com/MetaMask/connect-monorepo/pull/177))
+- Clean up stale MWP session from KVStore on connection rejection so subsequent QR code connection attempts are not blocked ([#180](https://github.com/MetaMask/connect-monorepo/pull/180))
+- Fix bug with JSON-RPC requests where previously used `id` value could be re-used causing the wallet to ignore the request when a dapp was refreshed/reloaded. ([#183](https://github.com/MetaMask/connect-monorepo/pull/183))
+
 ## [0.5.3]
 
 ### Added
@@ -135,7 +227,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...HEAD
+[0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.10.0...@metamask/connect-multichain@0.11.0
+[0.10.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.9.0...@metamask/connect-multichain@0.10.0
+[0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...@metamask/connect-multichain@0.9.0
+[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.7.0...@metamask/connect-multichain@0.8.0
+[0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.6.0...@metamask/connect-multichain@0.7.0
+[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.3...@metamask/connect-multichain@0.6.0
 [0.5.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.2...@metamask/connect-multichain@0.5.3
 [0.5.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.1...@metamask/connect-multichain@0.5.2
 [0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.5.0...@metamask/connect-multichain@0.5.1

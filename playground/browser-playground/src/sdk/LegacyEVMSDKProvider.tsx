@@ -12,12 +12,6 @@ import {
   useState,
 } from 'react';
 
-import {
-  isProviderActive,
-  setProviderActive,
-  removeProviderActive,
-} from '../utils/activeProviderStorage';
-
 /**
  * Converts CAIP-2 keyed RPC URLs map to hex-keyed format.
  * Example: { 'eip155:1': 'url' } -> { '0x1': 'url' }
@@ -49,6 +43,7 @@ const LegacyEVMSDKContext = createContext<
       accounts: string[];
       error: Error | null;
       connect: (chainIds: Hex[]) => Promise<void>;
+      connectAndSign: (message: string, chainIds?: Hex[]) => Promise<string>;
       disconnect: () => Promise<void>;
     }
   | undefined
@@ -73,7 +68,7 @@ export const LegacyEVMSDKProvider = ({
         const infuraApiKey = process.env.INFURA_API_KEY || '';
         // Get CAIP-keyed RPC URLs and convert to hex-keyed format
         const caipNetworks = infuraApiKey
-          ? getInfuraRpcUrls(infuraApiKey)
+          ? getInfuraRpcUrls({ infuraApiKey })
           : {
               // Fallback public RPC endpoints if no Infura key is provided
               'eip155:1': 'https://eth.llamarpc.com',
@@ -95,7 +90,9 @@ export const LegacyEVMSDKProvider = ({
         const providerInstance = await clientSDK.getProvider();
 
         if (providerInstance) {
-          providerInstance.on('connect', () => {
+          providerInstance.on('connect', ({ chainId, accounts }: { chainId: string; accounts: string[] }) => {
+            setChainId(chainId);
+            setAccounts(accounts);
             setConnected(true);
           });
 
@@ -116,20 +113,11 @@ export const LegacyEVMSDKProvider = ({
           setSDK(clientSDK);
           setProvider(providerInstance);
 
-          // Check if legacy-evm was previously active and restore connection state
-          // This handles page refresh scenarios where the SDK may have restored
-          // the session but didn't emit a connect event
-          if (isProviderActive('legacy-evm')) {
-            // Check if the SDK actually has a valid session
-            if (clientSDK.accounts.length > 0) {
-              setConnected(true);
-              setAccounts(clientSDK.accounts);
-              if (clientSDK.selectedChainId) {
-                setChainId(clientSDK.selectedChainId);
-              }
-            } else {
-              // SDK doesn't have accounts, clear stale localStorage state
-              removeProviderActive('legacy-evm');
+          if (clientSDK.accounts.length > 0) {
+            setConnected(true);
+            setAccounts(clientSDK.accounts);
+            if (clientSDK.selectedChainId) {
+              setChainId(clientSDK.selectedChainId);
             }
           }
         }
@@ -151,12 +139,28 @@ export const LegacyEVMSDKProvider = ({
       // Ensure at least one chain ID is provided, default to mainnet if empty
       const chainIdsToUse = chainIds.length > 0 ? chainIds : ['0x1' as Hex];
       await sdkInstance.connect({ chainIds: chainIdsToUse });
-      setProviderActive('legacy-evm');
     } catch (err) {
       console.error('Failed to connect:', err);
       setError(err as Error);
     }
   }, []);
+
+  const connectAndSign = useCallback(
+    async (message: string, chainIds?: Hex[]): Promise<string> => {
+      setError(null);
+      if (!sdkRef.current) {
+        throw new Error('SDK not initialized');
+      }
+      const sdkInstance = await sdkRef.current;
+      const chainIdsToUse =
+        chainIds && chainIds.length > 0 ? chainIds : ['0x1' as Hex];
+      return sdkInstance.connectAndSign({
+        message,
+        chainIds: chainIdsToUse,
+      });
+    },
+    [],
+  );
 
   const disconnect = useCallback(async () => {
     try {
@@ -168,7 +172,6 @@ export const LegacyEVMSDKProvider = ({
       setConnected(false);
       setAccounts([]);
       setChainId(undefined);
-      removeProviderActive('legacy-evm');
     } catch (error) {
       console.error('Failed to disconnect:', error);
     }
@@ -184,6 +187,7 @@ export const LegacyEVMSDKProvider = ({
         accounts,
         error,
         connect,
+        connectAndSign,
         disconnect,
       }}
     >

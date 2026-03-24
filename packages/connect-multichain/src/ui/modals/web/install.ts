@@ -15,7 +15,6 @@ export class InstallModal extends AbstractInstallModal {
     ) as HTMLMmInstallModalElement;
 
     modal.showInstallModal = options.showInstallModal;
-    modal.sdkVersion = options.sdkVersion;
     modal.addEventListener('close', (ev: Event) => {
       const { detail } = ev as MmInstallModalCustomEvent<{
         shouldTerminate?: boolean;

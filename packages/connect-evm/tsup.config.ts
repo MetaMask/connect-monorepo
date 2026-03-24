@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Tsup config convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
 
 import { defineConfig } from 'tsup';
 
-import pkg from './package.json';
+import packageJson from './package.json';
 
-const deps = Object.keys(
-  (pkg as { dependencies?: Record<string, string> }).dependencies ?? {},
-);
-const peerDeps = Object.keys(
-  (pkg as { peerDependencies?: Record<string, string> }).peerDependencies ?? {},
-);
+const pkg: any = packageJson as any;
+
+const deps = Object.keys(pkg.dependencies ?? {});
+const peerDeps = Object.keys(pkg.peerDependencies ?? {});
 const external = [...deps, ...peerDeps];
-const entryName = (pkg as { name: string }).name.replace('@metamask/', '');
+const entryName = pkg.name.replace('@metamask/', '');
 
 export default defineConfig([
   {
@@ -25,6 +24,9 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: {
+      __PACKAGE_VERSION__: JSON.stringify(pkg.version),
+    },
     esbuildOptions: (options) => {
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];

@@ -11,7 +11,7 @@ type KvStores = 'sdk-kv-store' | 'key-value-pairs';
 export class StoreAdapterWeb extends StoreAdapter {
   static readonly stores: KvStores[] = ['sdk-kv-store', 'key-value-pairs'];
 
-  static readonly DB_NAME = 'mmsdk';
+  static readonly DB_NAME = 'mmconnect';
 
   readonly platform = 'web';
 

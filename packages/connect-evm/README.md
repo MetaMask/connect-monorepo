@@ -37,7 +37,7 @@ const client = await createEVMClient({
   api: {
     supportedNetworks: {
       // use the `getInfuraRpcUrls` helper to generate a map of Infura RPC endpoints
-      ...getInfuraRpcUrls(INFURA_API_KEY),
+      ...getInfuraRpcUrls({ infuraApiKey: INFURA_API_KEY }),
       // or specify your own CAIP Chain ID to rpc endpoint mapping
       // Hex chain IDs mapped to RPC URLs
       '0x1': 'https://mainnet.infura.io/v3/YOUR_KEY', // Ethereum Mainnet
@@ -216,11 +216,11 @@ Connects to MetaMask wallet.
 
 **Parameters**
 
-| Name                   | Type      | Required | Description                                                                              |
-| ---------------------- | --------- | -------- | ---------------------------------------------------------------------------------------- |
-| `options.chainIds`     | `Hex[]`   | No       | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided) |
-| `options.account`      | `string`  | No       | Specific account address to connect                                                      |
-| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                 |
+| Name                   | Type      | Required | Description                                                                                                                                                                                                                                                                         |
+| ---------------------- | --------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.chainIds`     | `Hex[]`   | No       | Array of hex chain IDs to request permission for (defaults to `['0x1']` if not provided). Note: Ethereum mainnet (`0x1`) is always included in the permission request regardless of what is passed. The **first** entry in the array becomes the active chain returned by the call. |
+| `options.account`      | `string`  | No       | Specific account address to connect                                                                                                                                                                                                                                                 |
+| `options.forceRequest` | `boolean` | No       | Force a new connection request even if already connected                                                                                                                                                                                                                            |
 
 **Returns**
 
@@ -240,10 +240,10 @@ Connects and immediately signs a message using `personal_sign`.
 
 **Parameters**
 
-| Name               | Type     | Required | Description                                         |
-| ------------------ | -------- | -------- | --------------------------------------------------- |
-| `options.message`  | `string` | Yes      | The message to sign after connecting                |
-| `options.chainIds` | `Hex[]`  | No       | Hex chain IDs to connect to (defaults to `['0x1']`) |
+| Name               | Type     | Required | Description                                                                                                                 |
+| ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `options.message`  | `string` | Yes      | The message to sign after connecting                                                                                        |
+| `options.chainIds` | `Hex[]`  | No       | Hex chain IDs to request permission for (defaults to `['0x1']`). The first entry becomes the active chain used for signing. |
 
 **Returns**
 
@@ -262,13 +262,13 @@ Connects and immediately invokes a method with specified parameters.
 
 **Parameters**
 
-| Name                   | Type                                             | Required | Description                                                                             |
-| ---------------------- | ------------------------------------------------ | -------- | --------------------------------------------------------------------------------------- |
-| `options.method`       | `string`                                         | Yes      | The RPC method name to invoke                                                           |
-| `options.params`       | `unknown[] \| ((account: Address) => unknown[])` | Yes      | Method parameters, or a function that receives the connected account and returns params |
-| `options.chainIds`     | `Hex[]`                                          | No       | Hex chain IDs to connect to (defaults to `['0x1']`)                                     |
-| `options.account`      | `string`                                         | No       | Specific account to connect                                                             |
-| `options.forceRequest` | `boolean`                                        | No       | Force a new connection request                                                          |
+| Name                   | Type                                             | Required | Description                                                                                                                         |
+| ---------------------- | ------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `options.method`       | `string`                                         | Yes      | The RPC method name to invoke                                                                                                       |
+| `options.params`       | `unknown[] \| ((account: Address) => unknown[])` | Yes      | Method parameters, or a function that receives the connected account and returns params                                             |
+| `options.chainIds`     | `Hex[]`                                          | No       | Hex chain IDs to request permission for (defaults to `['0x1']`). The first entry becomes the active chain used for the method call. |
+| `options.account`      | `string`                                         | No       | Specific account to connect                                                                                                         |
+| `options.forceRequest` | `boolean`                                        | No       | Force a new connection request                                                                                                      |
 
 **Returns**
 
@@ -290,7 +290,7 @@ const result = await client.connectWith({
 
 ##### `disconnect()`
 
-Disconnects from the wallet and cleans up resources.
+Disconnects all EVM (`eip155`) scopes from MetaMask and cleans up local state. This only revokes the EVM-specific scopes currently held in the session; it does not terminate the broader multichain session if non-EVM scopes are also active.
 
 **Parameters**
 
@@ -500,15 +500,16 @@ provider.on('display_uri', (uri) => {
 
 ---
 
-### `getInfuraRpcUrls(infuraApiKey)`
+### `getInfuraRpcUrls(options)`
 
 Helper function to generate EVM Infura RPC URLs for common networks keyed by hex chain ID.
 
 **Parameters**
 
-| Name           | Type     | Required | Description         |
-| -------------- | -------- | -------- | ------------------- |
-| `infuraApiKey` | `string` | Yes      | Your Infura API key |
+| Name           | Type     | Required | Description                        |
+| -------------- | -------- | -------- | ---------------------------------- |
+| `infuraApiKey` | `string` | Yes      | Your Infura API key                |
+| `chainIds`     | `Hex[]`  | No       | Hex chain IDs to filter the output |
 
 **Returns**
 
@@ -517,8 +518,16 @@ A map of hex chain IDs to Infura RPC URLs. See https://docs.metamask.io/services
 ```typescript
 import { getInfuraRpcUrls } from '@metamask/connect-evm';
 
-const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
+// Get all supported Infura RPC URLs
+const rpcUrls = getInfuraRpcUrls({ infuraApiKey: 'YOUR_INFURA_KEY' });
 // Returns: { '0x1': 'https://mainnet.infura.io/v3/KEY', ... }
+
+// Filter to specific chains
+const filtered = getInfuraRpcUrls({
+  infuraApiKey: 'YOUR_INFURA_KEY',
+  chainIds: ['0x1', '0x89'],
+});
+// Returns: { '0x1': 'https://mainnet.infura.io/v3/KEY', '0x89': 'https://polygon-mainnet.infura.io/v3/KEY' }
 ```
 
 ---
@@ -529,7 +538,7 @@ const rpcUrls = getInfuraRpcUrls('YOUR_INFURA_KEY');
 
 ```typescript
 type EventHandlers = {
-  connect: (result: { chainId: Hex }) => void;
+  connect: (result: { chainId: Hex; accounts: Address[] }) => void;
   disconnect: () => void;
   accountsChanged: (accounts: Address[]) => void;
   chainChanged: (chainId: Hex) => void;

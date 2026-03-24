@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump wagmi from `^2.19.2` to `^3.5.0` and apply v3 migration changes: use `useConnectors()` instead of `useConnect().connectors`, `useChains()` instead of `useSwitchChain().chains`, and rename `useAccount` to `useConnection` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
+- Bump `@wagmi/core` from `^2.22.1` to `^3.4.0` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
+- Bump `@tanstack/react-query` from `>=5.45.1` to `^5.90.21` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
+- Bump `@tanstack/react-query-persist-client`, `@tanstack/query-sync-storage-persister`, and `@tanstack/react-query-devtools` from `5.0.5` to latest (`^5.90.24` / `^5.91.3`) ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
+
+## [0.5.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.9.0
+  - @metamask/connect-multichain@0.11.0
+
+## [0.5.0]
+
+### Changed
+
+- Update `getInfuraRpcUrls` calls to use new options object parameter ([#211](https://github.com/MetaMask/connect-monorepo/pull/211))
+
+## [0.4.2]
+
+### Added
+
+- Add `integrationType: wagmi` to wagmi metamask connector([#215](https://github.com/MetaMask/connect-monorepo/pull/215/))
+
+## [0.4.1]
+
+### Added
+
+- Add Connect button that calls legacy EVM `connectAndSign` method ([#205](https://github.com/MetaMask/connect-monorepo/pull/205))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.7.0
+  - @metamask/connect-multichain@0.9.0
+
+## [0.4.0]
+
+### Added
+
+- Add `Connect (window.ethereum)` button ([#198](https://github.com/MetaMask/connect-monorepo/pull/198/))
+
+### Changed
+
+- Update wagmi MetaMask connector ([#202](https://github.com/MetaMask/connect-monorepo/pull/202))
+
+## [0.3.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-multichain@0.7.0
+
+## [0.3.0]
+
+### Added
+
+- Add disconnect buttons to cards ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- Add `data-testid` attributes to Solana components ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
+- Add `data-testid` attributes to Legacy EVM and Wagmi disconnect buttons ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
+
+### Changed
+
+- Patch `@solana/wallet-adapter-react` to work with android native browser ([#174](https://github.com/MetaMask/connect-monorepo/pull/174))
+- Remove manual registration of `connect-solana` ([#178](https://github.com/MetaMask/connect-monorepo/pull/178))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.5.0
+  - @metamask/connect-multichain@0.6.0
+  - @metamask/connect-solana@0.2.0
+
+### Removed
+
+- Remove the explicit ActiveProviderStorage pattern. Now all providers (cards) are "Active" even without user input to connect to a specific ecosystem ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+
+### Fixed
+
+- Fixes EVM Provider setChainId and setAccounts to also use the connect event ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+- Multichain Card and button properly reflect initial instantiation connecting status ([#157](https://github.com/MetaMask/connect-monorepo/pull/157))
+
 ## [0.2.0]
 
 ### Added
@@ -37,7 +119,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...HEAD
+[0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.0...@metamask/browser-playground@0.5.1
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.2...@metamask/browser-playground@0.5.0
+[0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2
+[0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.0...@metamask/browser-playground@0.4.1
+[0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.3.1...@metamask/browser-playground@0.4.0
+[0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.3.0...@metamask/browser-playground@0.3.1
+[0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.2.0...@metamask/browser-playground@0.3.0
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.1.1...@metamask/browser-playground@0.2.0
 [0.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.1.0...@metamask/browser-playground@0.1.1
 [0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/browser-playground@0.1.0

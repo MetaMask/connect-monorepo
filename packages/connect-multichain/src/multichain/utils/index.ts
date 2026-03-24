@@ -2,6 +2,7 @@
 /* eslint-disable jsdoc/require-param-description -- Auto-generated JSDoc */
 /* eslint-disable jsdoc/require-returns -- Auto-generated JSDoc */
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Inferred types are sufficient */
+import type { SessionProperties } from '@metamask/multichain-api-client';
 import {
   type CaipAccountId,
   type CaipChainId,
@@ -20,6 +21,27 @@ import {
 } from '../../domain';
 
 export type OptionalScopes = Record<Scope, SessionData['sessionScopes'][Scope]>;
+
+/**
+ * Returns the global object for the current JS environment.
+ *
+ * @returns The global object as a record for indexing
+ */
+export function getGlobalObject(): Record<string, unknown> {
+  if (typeof globalThis !== 'undefined') {
+    return globalThis as unknown as Record<string, unknown>;
+  }
+  if (typeof global !== 'undefined') {
+    return global as unknown as Record<string, unknown>;
+  }
+  if (typeof self !== 'undefined') {
+    return self as unknown as Record<string, unknown>;
+  }
+  if (typeof window !== 'undefined') {
+    return window as unknown as Record<string, unknown>;
+  }
+  throw new Error('Unable to locate global object');
+}
 
 /**
  * Cross-platform base64 encoding
@@ -98,6 +120,53 @@ export function openDeeplink(
 }
 
 /**
+ * Merges existing session (from getCaipSession) with newly requested scopes, accounts, and session properties.
+ * Derives existing scopes/accounts from sessionData.sessionScopes, then merges with requested values.
+ *
+ * @param sessionData - Current CAIP session data
+ * @param scopes - Newly requested scopes
+ * @param caipAccountIds - Newly requested account IDs
+ * @param sessionProperties - New session properties to merge over existing
+ * @returns requestedScopes, requestedCaipAccountIds, and requestedSessionProperties
+ */
+export function mergeRequestedSessionWithExisting(
+  sessionData: SessionData,
+  scopes: Scope[],
+  caipAccountIds: CaipAccountId[],
+  sessionProperties?: SessionProperties,
+): {
+  mergedScopes: Scope[];
+  mergedCaipAccountIds: CaipAccountId[];
+  mergedSessionProperties: SessionProperties;
+} {
+  const existingCaipChainIds = Object.keys(sessionData.sessionScopes);
+  const existingCaipAccountIds: string[] = [];
+  Object.values(sessionData.sessionScopes).forEach((scopeObject) => {
+    if (scopeObject?.accounts && Array.isArray(scopeObject.accounts)) {
+      scopeObject.accounts.forEach((account) => {
+        existingCaipAccountIds.push(account);
+      });
+    }
+  });
+
+  const mergedScopes = Array.from(
+    new Set([...existingCaipChainIds, ...scopes]),
+  ) as Scope[];
+  const mergedCaipAccountIds = Array.from(
+    new Set([...existingCaipAccountIds, ...caipAccountIds]),
+  ) as CaipAccountId[];
+  const mergedSessionProperties = {
+    ...sessionData.sessionProperties,
+    ...sessionProperties,
+  };
+  return {
+    mergedScopes,
+    mergedCaipAccountIds,
+    mergedSessionProperties,
+  };
+}
+
+/**
  *
  * @param scopes
  */
@@ -136,6 +205,40 @@ export const extractFavicon = () => {
 };
 
 /**
+ * Normalizes a non-http(s) URL from a React Native app into a valid https URL.
+ * Extracts the scheme, sanitizes it to a DNS-safe label, and builds a .rn.dapp.local URL.
+ *
+ * @param url - The original URL to normalize
+ * @returns An object with the normalized URL and original scheme, or undefined if no normalization needed
+ */
+function normalizeNativeUrl(
+  url: string,
+): { url: string; nativeScheme: string } | undefined {
+  // Matches "http://" or "https://"
+  const httpPattern = /^https?:\/\//u;
+  if (httpPattern.test(url)) {
+    return undefined;
+  }
+
+  // Captures the scheme before "://" — e.g. "myapp" from "myapp://path"
+  const schemeMatch = url.match(/^([^:]*):\/\//u);
+  const rawScheme = schemeMatch?.[1] ?? url;
+  const sanitized = rawScheme
+    .toLowerCase()
+    // Replace non-DNS chars with hyphens — e.g. "My.App" -> "my-app"
+    .replace(/[^a-z0-9-]/gu, '-')
+    // Strip leading/trailing hyphens — e.g. "-my-app-" -> "my-app"
+    .replace(/^-+|-+$/gu, '');
+
+  const subdomain = (sanitized || 'unknown').slice(0, 63).replace(/-+$/u, '');
+
+  return {
+    url: `https://${subdomain}.rn.dapp.local`,
+    nativeScheme: url,
+  };
+}
+
+/**
  *
  * @param options
  */
@@ -160,6 +263,22 @@ export function setupDappMetadata(
   if (!options.dapp?.url) {
     throw new Error('You must provide dapp url');
   }
+
+  // Normalize non-http(s) URLs on React Native platforms
+  if (platform === PlatformType.ReactNative && options.dapp.url) {
+    const normalized = normalizeNativeUrl(options.dapp.url);
+    if (normalized) {
+      console.info(
+        `Normalizing dapp URL for React Native: "${options.dapp.url}" -> "${normalized.url}"`,
+      );
+      options.dapp = {
+        ...options.dapp,
+        url: normalized.url,
+        nativeScheme: normalized.nativeScheme,
+      };
+    }
+  }
+
   const BASE_64_ICON_MAX_LENGTH = 163400;
   // Check if iconUrl and url are valid
   const urlPattern = /^(http|https):\/\/[^\s]*$/u; // Regular expression for URLs starting with http:// or https://
@@ -330,3 +449,13 @@ export function addValidAccounts(
 
   return result;
 }
+
+// uint32 (two's complement) max
+// more conservative than Number.MAX_SAFE_INTEGER
+const MAX = 4_294_967_295;
+let idCounter = Math.floor(Math.random() * MAX);
+
+export const getUniqueRequestId = (): number => {
+  idCounter = (idCounter + 1) % MAX;
+  return idCounter;
+};

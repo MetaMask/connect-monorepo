@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-monorepo",
-  "version": "16.0.0",
+  "version": "23.0.0",
   "private": true,
   "description": "MetaMask Connect Monorepo",
   "repository": {
@@ -47,6 +47,7 @@
     "pre-push": "yarn lint && yarn lint:package-config"
   },
   "resolutions": {
+    "@solana/wallet-adapter-react@npm:^0.15.39": "patch:@solana/wallet-adapter-react@npm%3A0.15.39#~/.yarn/patches/@solana-wallet-adapter-react-npm-0.15.39-86277fdcc0.patch",
     "bs58": "4.0.1"
   },
   "devDependencies": {

@@ -37,6 +37,8 @@ export type SolanaConnectOptions = Pick<MultichainOptions, 'dapp'> & {
   };
   /** Enable debug logging */
   debug?: boolean;
+  /** Skip auto-registering the wallet during creation. Defaults to false. Set to true for manual control. */
+  skipAutoRegister?: boolean;
 };
 
 /**
@@ -46,19 +48,16 @@ export type SolanaClient = {
   /** The underlying MultichainCore instance */
   core: MultichainCore;
   /**
-   * Gets a wallet-standard compatible wallet instance.
+   * Gets the wallet-standard compatible MetaMask wallet instance.
    *
-   * @param walletName - Optional custom name for the wallet
    * @returns The wallet instance
    */
-  getWallet: (walletName?: string) => Wallet;
+  getWallet: () => Wallet;
   /**
    * Registers the MetaMask wallet with the wallet-standard registry.
    * This makes MetaMask automatically discoverable by Solana dapps.
-   *
-   * @param walletName - Optional custom name for the wallet
    */
-  registerWallet: (walletName?: string) => Promise<void>;
+  registerWallet: () => Promise<void>;
   /**
    * Disconnects from the wallet and revokes the session.
    */

@@ -1,4 +1,5 @@
 import type { Session } from '@metamask/mobile-wallet-protocol-core';
+import type { SessionRequest } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
   type SessionProperties,
   type CreateSessionParams,
@@ -13,6 +14,7 @@ import type { ExtendedTransport, RPCAPI, Scope, SessionData } from 'src/domain';
 import {
   addValidAccounts,
   getOptionalScopes,
+  getUniqueRequestId,
   getValidAccounts,
   isSameScopesAndAccounts,
 } from '../../utils';
@@ -33,9 +35,6 @@ export class DefaultTransport implements ExtendedTransport {
   readonly #defaultRequestOptions = {
     timeout: DEFAULT_REQUEST_TIMEOUT,
   };
-
-  // Use timestamp-based ID to avoid conflicts across disconnect/reconnect cycles
-  #reqId = Date.now();
 
   readonly #pendingRequests = new Map<string, PendingRequest>();
 
@@ -95,9 +94,16 @@ export class DefaultTransport implements ExtendedTransport {
 
         const response = responseData as TransportResponse;
         if ('error' in response && response.error) {
-          pendingRequest.reject(
-            new Error(response.error.message || 'Request failed'),
-          );
+          // Attach the numeric RPC code so it survives the transport boundary
+          // and can be re-surfaced as an EIP-1193 error by higher layers.
+          // This path is exercised by sendEip1193Message callers.
+          const error = new Error(
+            response.error.message || 'Request failed',
+          ) as Error & { code?: number };
+          if (typeof response.error.code === 'number') {
+            error.code = response.error.code;
+          }
+          pendingRequest.reject(error);
         } else {
           pendingRequest.resolve(response);
         }
@@ -113,9 +119,9 @@ export class DefaultTransport implements ExtendedTransport {
     const responseData = event?.data?.data?.data;
 
     if (
-      (typeof responseData === 'object' &&
-        responseData.method === 'metamask_chainChanged') ||
-      responseData.method === 'metamask_accountsChanged'
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      'method' in responseData
     ) {
       this.#notifyCallbacks(responseData);
     }
@@ -139,6 +145,17 @@ export class DefaultTransport implements ExtendedTransport {
     window.addEventListener('message', this.#handleNotificationListener);
   }
 
+  async #init(): Promise<void> {
+    this.#setupMessageListener();
+    // #transport.connect() internally calls disconnect() if the transport is connected,
+    // and clears all listeners in the process. This ensures that we don't lose any listeners
+    // by only connecting if we aren't already connected. Opting for this approach rather than a larger refactor
+    // of who is responsible for managing listener setup and cleanup.
+    if (!this.#transport.isConnected()) {
+      await this.#transport.connect();
+    }
+  }
+
   async sendEip1193Message<
     TRequest extends TransportRequest,
     TResponse extends TransportResponse,
@@ -147,8 +164,7 @@ export class DefaultTransport implements ExtendedTransport {
     this.#setupMessageListener();
 
     // Generate unique request ID - increment counter to ensure uniqueness
-    this.#reqId += 1;
-    const requestId = `${this.#reqId}`;
+    const requestId = String(getUniqueRequestId());
 
     // Create request with ID - MetaMask expects JSON-RPC format
     const request = {
@@ -186,16 +202,33 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
+  async init(): Promise<void> {
+    await this.#init();
+    let walletSession: SessionData = { sessionScopes: {} };
+    try {
+      const sessionRequest = await this.request(
+        { method: 'wallet_getSession' },
+        this.#defaultRequestOptions,
+      );
+      walletSession = sessionRequest.result as SessionData;
+    } catch {
+      console.error(
+        'Failed to get wallet session during DefaultTransport init',
+      );
+    }
+    this.#notifyCallbacks({
+      method: 'wallet_sessionChanged',
+      params: walletSession,
+    });
+  }
+
   async connect(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
-    // Ensure message listener is set up before connecting
-    this.#setupMessageListener();
-
-    await this.#transport.connect();
+    await this.#init();
 
     // Get wallet session
     const sessionRequest = await this.request(
@@ -229,10 +262,6 @@ export class DefaultTransport implements ExtendedTransport {
       );
 
       if (!hasSameScopesAndAccounts) {
-        await this.request(
-          { method: 'wallet_revokeSession', params: walletSession },
-          this.#defaultRequestOptions,
-        );
         const response = await this.request(
           { method: 'wallet_createSession', params: createSessionParams },
           this.#defaultRequestOptions,
@@ -258,33 +287,8 @@ export class DefaultTransport implements ExtendedTransport {
     });
   }
 
-  async disconnect(): Promise<void> {
-    this.#notificationCallbacks.clear();
-
-    await this.request({ method: 'wallet_revokeSession', params: {} });
-
-    // Remove the message listener when disconnecting
-    if (this.#handleResponseListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleResponseListener);
-      this.#handleResponseListener = undefined;
-    }
-
-    // Remove the notification listener when disconnecting
-    if (this.#handleNotificationListener) {
-      // eslint-disable-next-line no-restricted-globals
-      window.removeEventListener('message', this.#handleNotificationListener);
-      this.#handleNotificationListener = undefined;
-    }
-
-    // Reject all pending requests
-    for (const [, request] of this.#pendingRequests) {
-      clearTimeout(request.timeout);
-      request.reject(new Error('Transport disconnected'));
-    }
-    this.#pendingRequests.clear();
-
-    return this.#transport.disconnect();
+  async disconnect(scopes: Scope[] = []): Promise<void> {
+    await this.request({ method: 'wallet_revokeSession', params: { scopes } });
   }
 
   isConnected(): boolean {
@@ -315,6 +319,12 @@ export class DefaultTransport implements ExtendedTransport {
     // and so it is only implemented for the MWPTransport.
     throw new Error(
       'getActiveSession is purposely not implemented for the DefaultTransport',
+    );
+  }
+
+  async getStoredPendingSessionRequest(): Promise<SessionRequest | null> {
+    throw new Error(
+      'getStoredPendingSessionRequest is purposely not implemented for the DefaultTransport',
     );
   }
 }
