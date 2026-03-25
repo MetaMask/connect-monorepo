@@ -1,55 +1,35 @@
-import { createSolanaClient, type SolanaClient } from '@metamask/connect-solana';
-import { METAMASK_PROD_CHROME_ID } from '@metamask/playground-ui';
-import {
-  ConnectionProvider,
-  WalletProvider,
-  useConnection,
-  useWallet,
-} from '@solana/wallet-adapter-react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import type { WalletError } from '@solana/wallet-adapter-base';
+import { createSolanaClient } from '@metamask/connect-solana';
+import { SolanaProvider as FrameworkKitSolanaProvider } from '@solana/react-hooks';
 import type React from 'react';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-
-import '@solana/wallet-adapter-react-ui/styles.css';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const SOLANA_DEVNET_ENDPOINT = 'https://api.devnet.solana.com';
 const SOLANA_MAINNET_ENDPOINT = 'https://api.mainnet-beta.solana.com';
 
-type SolanaSDKContextType = {
-  client: SolanaClient | null;
-  isRegistered: boolean;
-  endpoint: string;
-  setEndpoint: (endpoint: string) => void;
-  walletError: Error | null;
-  clearWalletError: () => void;
-};
+type SolanaInitContextValue = { isSolanaInitializing: boolean };
+const SolanaInitContext = createContext<SolanaInitContextValue>({
+  isSolanaInitializing: true,
+});
 
-const SolanaSDKContext = createContext<SolanaSDKContextType | undefined>(
-  undefined,
-);
+export function useSolanaInit(): SolanaInitContextValue {
+  return useContext(SolanaInitContext);
+}
 
 /**
- * Provider that initializes the Solana client and registers the MetaMask wallet.
+ * Provider that initializes the Solana client and registers the MetaMask wallet,
+ * then wraps children with the framework-kit SolanaProvider for RPC and wallet hooks.
+ *
+ * Wallet persistence (auto-reconnect on refresh) is disabled while createSolanaClient
+ * resolves. This prevents a race where the framework-kit's WalletPersistence component
+ * tries to auto-connect before the MetaMask wallet-standard connector is registered.
+ * Once initialization completes, persistence is enabled with autoConnect so the
+ * framework-kit can find the connector and restore the session.
  */
 const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [client, setClient] = useState<SolanaClient | null>(null);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [endpoint, setEndpoint] = useState(SOLANA_DEVNET_ENDPOINT);
-  const [walletError, setWalletError] = useState<Error | null>(null);
   const initRef = useRef(false);
-
-  const clearWalletError = useCallback(() => setWalletError(null), []);
+  const [isSolanaInitializing, setIsSolanaInitializing] = useState(true);
 
   useEffect(() => {
     if (initRef.current) return;
@@ -67,38 +47,25 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
         },
       },
     })
-      .then((solanaClient) => {
-        setClient(solanaClient);
-        setIsRegistered(true);
-      })
       .catch((error) => {
         console.error('Failed to initialize Solana client:', error);
+      })
+      .finally(() => {
+        setIsSolanaInitializing(false);
       });
   }, []);
 
-  const contextValue = useMemo(
-    () => ({ client, isRegistered, endpoint, setEndpoint, walletError, clearWalletError }),
-    [client, isRegistered, endpoint, walletError, clearWalletError],
-  );
-
-  // Handle wallet adapter errors (connection rejections, etc.)
-  // Skip WalletNotSelectedError as it's a transient state during wallet selection
-  const onWalletError = useCallback((error: WalletError) => {
-    console.error('Solana wallet error:', error.name, error.message);
-    // Only set meaningful errors (not WalletNotSelectedError which is transient)
-    if (error.name !== 'WalletNotSelectedError') {
-      setWalletError(error);
-    }
-  }, []);
-
   return (
-    <SolanaSDKContext.Provider value={contextValue}>
-      <ConnectionProvider endpoint={endpoint} config={{ commitment: 'confirmed' }}>
-        <WalletProvider wallets={[]} autoConnect onError={onWalletError}>
-          <WalletModalProvider>{children}</WalletModalProvider>
-        </WalletProvider>
-      </ConnectionProvider>
-    </SolanaSDKContext.Provider>
+    <SolanaInitContext.Provider value={{ isSolanaInitializing }}>
+      <FrameworkKitSolanaProvider
+        config={{ endpoint: SOLANA_DEVNET_ENDPOINT }}
+        walletPersistence={
+          isSolanaInitializing ? false : { autoConnect: true }
+        }
+      >
+        {children}
+      </FrameworkKitSolanaProvider>
+    </SolanaInitContext.Provider>
   );
 };
 
@@ -110,20 +77,3 @@ export const SolanaWalletProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   return <SolanaClientInitializer>{children}</SolanaClientInitializer>;
 };
-
-/**
- * Hook to access the Solana SDK context.
- */
-export const useSolanaSDK = () => {
-  const context = useContext(SolanaSDKContext);
-  if (context === undefined) {
-    throw new Error('useSolanaSDK must be used within a SolanaWalletProvider');
-  }
-  return context;
-};
-
-/**
- * Hook to access Solana wallet functionality.
- * Re-exports @solana/wallet-adapter-react hooks for convenience.
- */
-export { useConnection, useWallet };
