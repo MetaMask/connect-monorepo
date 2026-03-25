@@ -57,7 +57,7 @@
     "@metamask/analytics": "workspace:^",
     "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/connect-multichain": "workspace:^",
-    "@metamask/utils": "^11.8.1"
+    "@metamask/utils": "^11.10.0"
   },
   "devDependencies": {
     "@metamask/auto-changelog": "^3.4.4",
