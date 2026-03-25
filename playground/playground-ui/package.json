@@ -17,7 +17,7 @@
     "type": "git",
     "url": "https://github.com/MetaMask/connect-monorepo.git"
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
   "sideEffects": false,
   "exports": {
     ".": {
