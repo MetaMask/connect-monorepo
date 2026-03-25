@@ -22,12 +22,13 @@ import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { useSolanaSelectedAccount } from './hooks/useSolanaSelectedAccount';
 import { installSolanaDisconnectRecursionGuard } from './utils/installSolanaDisconnectRecursionGuard';
+import { useSolanaInit } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
 
 global.Buffer = Buffer;
 
 const CONNECT_AND_SIGN_MESSAGE = 'Hello from MetaMask Connect Playground!';
-const METAMASK_SOLANA_CONNECTOR_ID = 'wallet-standard:metamask';
+const METAMASK_SOLANA_CONNECTOR_ID = 'wallet-standard:metamask-connect';
 
 function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
@@ -64,6 +65,7 @@ function App() {
 
   const { connect: connectSolanaWallet, connectors: solanaConnectors } =
     useWalletConnection();
+  const { isSolanaInitializing } = useSolanaInit();
   const solanaClient = useSolanaClient();
   const solanaSession = useWalletSession();
   const disconnectSolanaWallet = useDisconnectWallet();
@@ -298,10 +300,10 @@ function App() {
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect('solana')}
                 onClick={connectSolana}
-                disabled={solanaConnectors.length === 0}
+                disabled={isSolanaInitializing}
                 className="bg-purple-500 text-white px-5 py-2 rounded text-base hover:bg-purple-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {solanaConnectors.length === 0
+                {isSolanaInitializing
                   ? 'Initializing Solana...'
                   : 'Connect (Solana)'}
               </button>

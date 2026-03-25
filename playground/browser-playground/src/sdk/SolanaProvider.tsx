@@ -1,10 +1,19 @@
 import { createSolanaClient } from '@metamask/connect-solana';
 import { SolanaProvider as FrameworkKitSolanaProvider } from '@solana/react-hooks';
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const SOLANA_DEVNET_ENDPOINT = 'https://api.devnet.solana.com';
 const SOLANA_MAINNET_ENDPOINT = 'https://api.mainnet-beta.solana.com';
+
+type SolanaInitContextValue = { isSolanaInitializing: boolean };
+const SolanaInitContext = createContext<SolanaInitContextValue>({
+  isSolanaInitializing: true,
+});
+
+export function useSolanaInit(): SolanaInitContextValue {
+  return useContext(SolanaInitContext);
+}
 
 /**
  * Provider that initializes the Solana client and registers the MetaMask wallet,
@@ -18,6 +27,7 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const initRef = useRef(false);
+  const [isSolanaInitializing, setIsSolanaInitializing] = useState(true);
 
   useEffect(() => {
     if (initRef.current) return;
@@ -34,15 +44,21 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
           mainnet: SOLANA_MAINNET_ENDPOINT,
         },
       },
-    }).catch((error) => {
-      console.error('Failed to initialize Solana client:', error);
-    });
+    })
+      .catch((error) => {
+        console.error('Failed to initialize Solana client:', error);
+      })
+      .finally(() => {
+        setIsSolanaInitializing(false);
+      });
   }, []);
 
   return (
-    <FrameworkKitSolanaProvider config={{ endpoint: SOLANA_DEVNET_ENDPOINT }}>
-      {children}
-    </FrameworkKitSolanaProvider>
+    <SolanaInitContext.Provider value={{ isSolanaInitializing }}>
+      <FrameworkKitSolanaProvider config={{ endpoint: SOLANA_DEVNET_ENDPOINT }}>
+        {children}
+      </FrameworkKitSolanaProvider>
+    </SolanaInitContext.Provider>
   );
 };
 
