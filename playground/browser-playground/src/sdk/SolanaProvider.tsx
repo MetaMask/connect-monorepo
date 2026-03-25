@@ -19,9 +19,11 @@ export function useSolanaInit(): SolanaInitContextValue {
  * Provider that initializes the Solana client and registers the MetaMask wallet,
  * then wraps children with the framework-kit SolanaProvider for RPC and wallet hooks.
  *
- * Note: FrameworkKitSolanaProvider mounts immediately while createSolanaClient
- * resolves asynchronously. This is intentional — the framework-kit provider detects
- * the wallet-standard registration whenever it completes, so no mount gating is needed.
+ * Wallet persistence (auto-reconnect on refresh) is disabled while createSolanaClient
+ * resolves. This prevents a race where the framework-kit's WalletPersistence component
+ * tries to auto-connect before the MetaMask wallet-standard connector is registered.
+ * Once initialization completes, persistence is enabled with autoConnect so the
+ * framework-kit can find the connector and restore the session.
  */
 const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -55,7 +57,12 @@ const SolanaClientInitializer: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <SolanaInitContext.Provider value={{ isSolanaInitializing }}>
-      <FrameworkKitSolanaProvider config={{ endpoint: SOLANA_DEVNET_ENDPOINT }}>
+      <FrameworkKitSolanaProvider
+        config={{ endpoint: SOLANA_DEVNET_ENDPOINT }}
+        walletPersistence={
+          isSolanaInitializing ? false : { autoConnect: true }
+        }
+      >
         {children}
       </FrameworkKitSolanaProvider>
     </SolanaInitContext.Provider>
