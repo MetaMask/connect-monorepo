@@ -195,15 +195,10 @@ describe('MetamaskConnectEVM', () => {
         );
       });
 
-      it('connects using accounts from a eth_accounts response when the MultichainClient is connected', async () => {
+      it('connects using accounts from session scopes when the MultichainClient is connected', async () => {
         const mockCore = createMockCore();
         mockCore._status = 'connected';
         mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
-        mockCore.transport.sendEip1193Message.mockResolvedValue({
-          result: ['0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
-          id: 1,
-          jsonrpc: '2.0',
-        });
 
         const client = await MetamaskConnectEVM.create({ core: mockCore });
 
@@ -228,9 +223,9 @@ describe('MetamaskConnectEVM', () => {
         const connectData = await connectPromise;
         expect(connectData.chainId).toBe('0x1');
         expect(connectData.accounts).toContain(
-          '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+          '0x1234567890123456789012345678901234567890',
         );
-        expect(mockCore.transport.sendEip1193Message).toHaveBeenCalledWith({
+        expect(mockCore.transport.sendEip1193Message).not.toHaveBeenCalledWith({
           method: 'eth_accounts',
           params: [],
         });
@@ -473,6 +468,53 @@ describe('MetamaskConnectEVM', () => {
       expect(mockCore.invokeMethod).toHaveBeenCalledWith(
         expect.objectContaining({ scope: 'eip155:137' }),
       );
+    });
+  });
+
+  describe('#requestInterceptor', () => {
+    it('wallet_requestPermissions uses session chain IDs when session exists', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x89'));
+
+      // First establish a session with multiple chains
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0xabc0000000000000000000000000000000000001'],
+            },
+            'eip155:137': {
+              methods: [],
+              notifications: [],
+              accounts: [
+                'eip155:137:0xabc0000000000000000000000000000000000001',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      // Initial connect to establish session scopes
+      await client.connect({ chainIds: ['0x89', '0x1'] });
+
+      // Now call wallet_requestPermissions — should use session chain IDs
+      await client.getProvider().request({
+        method: 'wallet_requestPermissions',
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        params: [{ eth_accounts: {} }],
+      });
+
+      // The second connect call (from requestInterceptor) should include
+      // the session chain IDs, not just DEFAULT_CHAIN_ID
+      const secondConnectCall = mockCore.connect.mock.calls[1];
+      const scopes = secondConnectCall[0] as string[];
+      expect(scopes).toContain('eip155:1');
+      expect(scopes).toContain('eip155:137');
     });
   });
 

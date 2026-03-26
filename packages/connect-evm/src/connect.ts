@@ -617,14 +617,16 @@ export class MetamaskConnectEVM {
         request.method === 'wallet_requestPermissions';
 
       const { method, params } = request;
-      const initiallySelectedChainId = DEFAULT_CHAIN_ID;
-      const scope: Scope = `eip155:${initiallySelectedChainId}`;
+      const sessionChainIds = getPermittedEthChainIds(this.#sessionScopes);
+      const chainIds: Hex[] =
+        sessionChainIds.length > 0 ? sessionChainIds : [DEFAULT_CHAIN_ID];
+      const scope: Scope = `eip155:${chainIds[0]}`;
 
       await this.#trackWalletActionRequested(method, scope, params);
 
       try {
         const result = await this.connect({
-          chainIds: [initiallySelectedChainId],
+          chainIds,
           forceRequest: shouldForceConnectionRequest,
         });
         await this.#trackWalletActionSucceeded(method, scope, params);
@@ -757,17 +759,7 @@ export class MetamaskConnectEVM {
     if (hexPermittedChainIds.length === 0) {
       this.#onDisconnect();
     } else {
-      let initialAccounts: Address[] = [];
-      if (this.#core.status === 'connected') {
-        const ethAccountsResponse =
-          await this.#core.transport.sendEip1193Message({
-            method: 'eth_accounts',
-            params: [],
-          });
-        initialAccounts = ethAccountsResponse.result as Address[];
-      } else {
-        initialAccounts = getEthAccounts(this.#sessionScopes);
-      }
+      const initialAccounts = getEthAccounts(this.#sessionScopes);
 
       const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
 
