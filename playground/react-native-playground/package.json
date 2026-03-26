@@ -15,7 +15,7 @@
     "type": "git",
     "url": "https://github.com/MetaMask/connect-monorepo.git"
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
   "main": "expo-router/entry",
   "scripts": {
     "allow-scripts": "",

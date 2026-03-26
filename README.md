@@ -215,6 +215,14 @@ linkStyle default opacity:0.5
 
 (This section may be regenerated at any time by running `yarn update-readme-content`.)
 
+## Security Audits
+
+MetaMask Connect has been independently audited. Reports are stored in the [`audits/`](./audits) directory.
+
+| Auditor                     | Report                                                      | Date       | Scope                                                                                                                                                                                                                                                              | Findings                                                                                       |
+| --------------------------- | ----------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| [Cyfrin](https://cyfrin.io) | [PDF](./audits/2026-03-05-cyfrin-metamask-connect-v2.0.pdf) | March 2026 | Cryptographic implementation (ECIES, key management), session management, transport layer security, input validation, third-party dependency review across `connect-monorepo`, `mobile-wallet-protocol`, `metamask-mobile`, `metamask-extension`, and relay server | 14 issues (0 critical, 1 high, 5 medium, 5 low, 3 informational) — 12 resolved, 2 acknowledged |
+
 ## Contributing
 
 See the [Contributor Guide](./docs/contributing.md) for help on:

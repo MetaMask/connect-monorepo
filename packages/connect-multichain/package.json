@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/MetaMask/connect-monorepo.git"
   },
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "sideEffects": [
     "./src/polyfills/buffer-shim.ts",
     "./dist/**/polyfills/buffer-shim.*"
