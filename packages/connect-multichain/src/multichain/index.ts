@@ -4,14 +4,8 @@
 /* eslint-disable promise/always-return -- Event handlers */
 /* eslint-disable no-async-promise-executor -- Async promise executor needed for complex flow */
 import { analytics } from '@metamask/analytics';
-import {
-  ErrorCode,
-  ProtocolError,
-  type SessionRequest,
-  SessionStore,
-  WebSocketTransport,
-} from '@metamask/mobile-wallet-protocol-core';
-import { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
+import type { SessionRequest } from '@metamask/mobile-wallet-protocol-core';
+import type { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
   type SessionProperties,
   getMultichainClient,
@@ -59,8 +53,6 @@ import { RpcClient } from './rpc/handlers/rpcClient';
 import { RequestRouter } from './rpc/requestRouter';
 import { DefaultTransport } from './transports/default';
 import { MultichainApiClientWrapperTransport } from './transports/multichainApiClientWrapper';
-import { MWPTransport } from './transports/mwp';
-import { keymanager } from './transports/mwp/KeyManager';
 import {
   getDappId,
   getGlobalObject,
@@ -89,6 +81,14 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   #dappClient: DappClient | undefined = undefined;
 
   #beforeUnloadListener: (() => void) | undefined;
+
+  #mwpModules?: Pick<
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    typeof import('@metamask/mobile-wallet-protocol-core'),
+    'ProtocolError' | 'ErrorCode'
+  >;
+
+  #transportType?: TransportType;
 
   public _status: ConnectionStatus = 'pending';
 
@@ -129,9 +129,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   get transportType(): TransportType {
-    return this.#transport instanceof MWPTransport
-      ? TransportType.MWP
-      : TransportType.Browser;
+    return this.#transportType ?? TransportType.Browser;
   }
 
   readonly #sdkInfo = `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
@@ -281,9 +279,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
   }
 
-  async #getStoredTransport(): Promise<
-    DefaultTransport | MWPTransport | undefined
-  > {
+  async #getStoredTransport(): Promise<ExtendedTransport | undefined> {
     const transportType = await this.storage.getTransport();
     const hasExtensionInstalled = await hasExtension();
     if (transportType) {
@@ -291,6 +287,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         if (hasExtensionInstalled) {
           const apiTransport = new DefaultTransport();
           this.#transport = apiTransport;
+          this.#transportType = TransportType.Browser;
           this.#providerTransportWrapper.setupTransportNotificationListener();
           this.#listener = apiTransport.onNotification(
             this.#onTransportNotification.bind(this),
@@ -300,9 +297,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       } else if (transportType === TransportType.MWP) {
         const { adapter: kvstore } = this.options.storage;
         const dappClient = await this.#createDappClient();
-        const apiTransport = new MWPTransport(dappClient, kvstore);
+        const { MWPTransport: MWPTransportClass } = await import(
+          './transports/mwp'
+        );
+        const apiTransport = new MWPTransportClass(dappClient, kvstore);
         this.#dappClient = dappClient;
         this.#transport = apiTransport;
+        this.#transportType = TransportType.MWP;
         this.#providerTransportWrapper.setupTransportNotificationListener();
         this.#listener = apiTransport.onNotification(
           this.#onTransportNotification.bind(this),
@@ -324,7 +325,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         await this.transport.connect();
       }
       this.status = 'connected';
-      if (this.transport instanceof MWPTransport) {
+      if (this.#transportType === TransportType.MWP) {
         await this.storage.setTransport(TransportType.MWP);
       } else {
         await this.storage.setTransport(TransportType.Browser);
@@ -360,32 +361,52 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async #createDappClient(): Promise<DappClient> {
+    const [mwpCore, { DappClient: DappClientClass }, { createKeyManager }] =
+      await Promise.all([
+        import('@metamask/mobile-wallet-protocol-core'),
+        import('@metamask/mobile-wallet-protocol-dapp-client'),
+        import('./transports/mwp/KeyManager'),
+      ]);
+    const keymanager = await createKeyManager();
+
+    this.#mwpModules = {
+      ProtocolError: mwpCore.ProtocolError,
+      ErrorCode: mwpCore.ErrorCode,
+    };
+
     const { adapter: kvstore } = this.options.storage;
-    const sessionstore = await SessionStore.create(kvstore);
+    const sessionstore = await mwpCore.SessionStore.create(kvstore);
     const websocket =
       // eslint-disable-next-line no-negated-condition
       typeof window !== 'undefined'
         ? WebSocket
         : (await import('ws')).WebSocket;
-    const transport = await WebSocketTransport.create({
+    const transport = await mwpCore.WebSocketTransport.create({
       url: MWP_RELAY_URL,
       kvstore,
       websocket,
     });
-    const dappClient = new DappClient({ transport, sessionstore, keymanager });
+    const dappClient = new DappClientClass({
+      transport,
+      sessionstore,
+      keymanager,
+    });
     return dappClient;
   }
 
   async #setupMWP(): Promise<void> {
-    if (this.#transport instanceof MWPTransport) {
+    if (this.#transportType === TransportType.MWP) {
       return;
     }
-    // Only setup MWP if it is not already mwp
     const { adapter: kvstore } = this.options.storage;
     const dappClient = await this.#createDappClient();
     this.#dappClient = dappClient;
-    const apiTransport = new MWPTransport(dappClient, kvstore);
+    const { MWPTransport: MWPTransportClass } = await import(
+      './transports/mwp'
+    );
+    const apiTransport = new MWPTransportClass(dappClient, kvstore);
     this.#transport = apiTransport;
+    this.#transportType = TransportType.MWP;
     this.#providerTransportWrapper.setupTransportNotificationListener();
     this.#listener = this.transport.onNotification(
       this.#onTransportNotification.bind(this),
@@ -466,9 +487,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
                   this.status = 'connected';
                   await this.storage.setTransport(TransportType.MWP);
                 } catch (error) {
-                  if (error instanceof ProtocolError) {
-                    // Ignore Request expired errors to allow modal to regenerate expired qr codes
-                    if (error.code !== ErrorCode.REQUEST_EXPIRED) {
+                  if (
+                    this.#mwpModules &&
+                    error instanceof this.#mwpModules.ProtocolError
+                  ) {
+                    if (
+                      error.code !== this.#mwpModules.ErrorCode.REQUEST_EXPIRED
+                    ) {
                       this.status = 'disconnected';
                       // Close the modal on error
                       await this.options.ui.factory.unload(error);
@@ -584,7 +609,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           resolve();
         })
         .catch(async (error) => {
-          if (error instanceof ProtocolError) {
+          if (
+            this.#mwpModules &&
+            error instanceof this.#mwpModules.ProtocolError
+          ) {
             // In headless mode, we don't auto-regenerate QR codes
             // since there's no modal to display them
             this.status = 'disconnected';
@@ -602,7 +630,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #setupDefaultTransport(
     options: { persist?: boolean } = { persist: true },
   ): Promise<DefaultTransport> {
-    if (this.#transport instanceof DefaultTransport) {
+    if (
+      this.#transportType === TransportType.Browser &&
+      this.#transport instanceof DefaultTransport
+    ) {
       return this.#transport;
     }
 
@@ -614,6 +645,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       this.#onTransportNotification.bind(this),
     );
     this.#transport = transport;
+    this.#transportType = TransportType.Browser;
     this.#providerTransportWrapper.setupTransportNotificationListener();
     return transport;
   }
@@ -835,7 +867,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
             forceRequest,
           })
           .then(async () => {
-            if (this.#transport instanceof MWPTransport) {
+            if (this.#transportType === TransportType.MWP) {
               return this.storage.setTransport(TransportType.MWP);
             }
             return this.storage.setTransport(TransportType.Browser);
@@ -958,6 +990,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         this.#listener = undefined;
         this.#beforeUnloadListener = undefined;
         this.#transport = undefined;
+        this.#transportType = undefined;
         this.#providerTransportWrapper.clearTransportNotificationListener();
         this.#dappClient = undefined;
       }
