@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `wallet_requestPermissions` now correctly re-prompts account selection on MWP (mobile) without requiring a full disconnect/reconnect cycle. The request forwards `forceRequest: true` through to `MWPTransport`, which previously ignored it and silently returned the existing session. ([#243](https://github.com/MetaMask/connect-monorepo/pull/243))
+- `wallet_requestPermissions` now uses the current session's chain IDs when re-prompting, instead of hardcoding mainnet (`0x1`). This preserves scope parity with the original connection. ([#243](https://github.com/MetaMask/connect-monorepo/pull/243))
+- `#onSessionChanged` now always derives accounts from session scopes via `getEthAccounts()` rather than making an `eth_accounts` RPC call when connected. On MWP, the `eth_accounts` cache may not yet reflect the updated session at the time `wallet_sessionChanged` fires, causing stale accounts to be emitted. ([#243](https://github.com/MetaMask/connect-monorepo/pull/243))
+
 ## [0.9.0]
 
 ### Changed
