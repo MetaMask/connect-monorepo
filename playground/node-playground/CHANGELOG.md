@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- chore: align sub-package licenses with root ConsenSys 2022 license ([#241](https://github.com/MetaMask/connect-monorepo/pull/241))
-- chore: turborepo ([#239](https://github.com/MetaMask/connect-monorepo/pull/239))
-
 ### Added
 
 - Add support for `@metamask/connect-solana` ([#169](https://github.com/MetaMask/connect-monorepo/pull/169))

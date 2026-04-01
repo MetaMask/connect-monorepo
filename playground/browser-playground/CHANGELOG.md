@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0]
+
 ### Uncategorized
 
 - chore: align sub-package licenses with root ConsenSys 2022 license ([#241](https://github.com/MetaMask/connect-monorepo/pull/241))
@@ -125,7 +127,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.0...HEAD
+[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...@metamask/browser-playground@0.6.0
 [0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.0...@metamask/browser-playground@0.5.1
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.2...@metamask/browser-playground@0.5.0
 [0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2

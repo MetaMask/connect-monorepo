@@ -7,17 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Uncategorized
-
-- chore: align sub-package licenses with root ConsenSys 2022 license ([#241](https://github.com/MetaMask/connect-monorepo/pull/241))
-- fix(platform): resolve ReactNative platform type for Hermes-based RN apps ([#238](https://github.com/MetaMask/connect-monorepo/pull/238))
-- Release/23.0.0 ([#236](https://github.com/MetaMask/connect-monorepo/pull/236))
-- Release/22.0.0 ([#224](https://github.com/MetaMask/connect-monorepo/pull/224))
-- Release/20.0.0 ([#214](https://github.com/MetaMask/connect-monorepo/pull/214))
-- Release/19.0.0 ([#203](https://github.com/MetaMask/connect-monorepo/pull/203))
-- ci: add workflow to build and publish React Native Playground APK on release ([#192](https://github.com/MetaMask/connect-monorepo/pull/192))
-- chore: prevent react-native-playground from being published to npm ([#200](https://github.com/MetaMask/connect-monorepo/pull/200))
-
 ### Changed
 
 - Bump wagmi from `^2.19.2` to `^3.5.0` and apply v3 migration changes: use `useConnectors()` instead of `useConnect().connectors`, `useChains()` instead of `useSwitchChain().chains`, and rename `useAccount` to `useConnection` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
