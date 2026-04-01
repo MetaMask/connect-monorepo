@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.0]
 
-
 ### Changed
 
 - Change LegacyEVM card's `sendTransaction` to have an address field and default it to the connected address ([#247](https://github.com/MetaMask/connect-monorepo/pull/247))
