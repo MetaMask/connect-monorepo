@@ -1,11 +1,11 @@
 /* eslint-disable no-restricted-globals -- Browser playground uses window */
 import { createConfig, http } from 'wagmi';
-import { mainnet, sepolia, optimism, celo } from 'wagmi/chains';
+import { mainnet, sepolia, optimism, celo, localhost } from 'wagmi/chains';
 
 import { metaMask } from './metamask-connector';
 
 export const wagmiConfig = createConfig({
-  chains: [mainnet, sepolia, optimism, celo],
+  chains: [mainnet, sepolia, optimism, celo, localhost],
   connectors: [
     metaMask({
       dapp: {
@@ -19,6 +19,7 @@ export const wagmiConfig = createConfig({
     [sepolia.id]: http(),
     [optimism.id]: http(),
     [celo.id]: http(),
+    [localhost.id]: http(),
   },
 });
 
