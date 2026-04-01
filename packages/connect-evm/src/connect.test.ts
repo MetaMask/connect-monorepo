@@ -476,6 +476,84 @@ describe('MetamaskConnectEVM', () => {
     });
   });
 
+  describe('#requestInterceptor', () => {
+    it('wallet_requestPermissions passes forceRequest: true to core.connect', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+
+      // Establish a session on connect
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0xabc0000000000000000000000000000000000001'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      // Initial connect
+      await client.connect({ chainIds: ['0x1'] });
+
+      // Call wallet_requestPermissions — should force a new request
+      await client.getProvider().request({
+        method: 'wallet_requestPermissions',
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        params: [{ eth_accounts: {} }],
+      });
+
+      // The second connect call (from requestInterceptor) should pass forceRequest=true
+      const secondConnectCall = mockCore.connect.mock.calls[1];
+      const forceRequestArg = secondConnectCall[3];
+      expect(forceRequestArg).toBe(true);
+    });
+
+    it('wallet_requestPermissions keeps cached chain first in chainIds when still permitted', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x89'));
+
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0xabc0000000000000000000000000000000000001'],
+            },
+            'eip155:137': {
+              methods: [],
+              notifications: [],
+              accounts: [
+                'eip155:137:0xabc0000000000000000000000000000000000001',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await client.connect({ chainIds: ['0x89', '0x1'] });
+
+      await client.getProvider().request({
+        method: 'wallet_requestPermissions',
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        params: [{ eth_accounts: {} }],
+      });
+
+      const secondConnectCall = mockCore.connect.mock.calls[1];
+      const scopes = secondConnectCall[0] as string[];
+      expect(scopes[0]).toBe('eip155:137');
+      expect(scopes).toContain('eip155:1');
+    });
+  });
+
   describe('disconnect', () => {
     it('calls core.disconnect with all eip155 scopes from the current session', async () => {
       const mockCore = createMockCore();
