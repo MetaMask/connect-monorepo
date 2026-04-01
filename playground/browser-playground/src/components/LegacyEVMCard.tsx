@@ -19,6 +19,7 @@ export function LegacyEVMCard({
   disconnect,
 }: LegacyEVMCardProps) {
   const [response, setResponse] = useState<string>('');
+  const [toAddress, setToAddress] = useState<string>(accounts[0] ?? '');
 
   const requestPermissions = async () => {
     if (!provider) {
@@ -112,7 +113,7 @@ export function LegacyEVMCard({
       setResponse('No account available');
       return;
     }
-    const to = '0x0000000000000000000000000000000000000000';
+    const to = toAddress || accounts[0];
     const transactionParameters = {
       to, // Required except during contract publications.
       from: accounts[0], // must match user's active address.
@@ -251,6 +252,13 @@ export function LegacyEVMCard({
           personal_sign
         </button>
 
+        <input
+          type="text"
+          value={toAddress}
+          onChange={(e) => setToAddress(e.target.value)}
+          placeholder={accounts[0] ?? '0x...'}
+          className="w-full border rounded px-3 py-2 text-sm font-mono"
+        />
         <button
           type="button"
           data-testid={TEST_IDS.legacyEvm.btnSendTransaction}
