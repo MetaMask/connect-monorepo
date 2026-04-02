@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1]
+
+### Changed
+
+- chore: align sub-package licenses with root ConsenSys 2022 license ([#241](https://github.com/MetaMask/connect-monorepo/pull/241))
+- chore: turborepo ([#239](https://github.com/MetaMask/connect-monorepo/pull/239))
+
 ### Fixed
 
 - `MWPTransport.connect()` now accepts and forwards a `forceRequest` option. When `true`, `onResumeSuccess` skips the `isSameScopesAndAccounts` check and unconditionally sends `wallet_createSession`, allowing consumers to re-prompt account selection on an existing MWP session. Previously `forceRequest` was silently ignored, causing `wallet_requestPermissions` to no-op on mobile. ([#243](https://github.com/MetaMask/connect-monorepo/pull/243))
@@ -232,7 +239,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.1...HEAD
+[0.11.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...@metamask/connect-multichain@0.11.1
 [0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.10.0...@metamask/connect-multichain@0.11.0
 [0.10.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.9.0...@metamask/connect-multichain@0.10.0
 [0.9.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.8.0...@metamask/connect-multichain@0.9.0
