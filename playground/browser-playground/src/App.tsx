@@ -23,7 +23,11 @@ global.Buffer = Buffer;
 const CONNECT_AND_SIGN_MESSAGE = 'Hello from MetaMask Connect Playground!';
 
 function App() {
-  const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
+  const [customScopes, setCustomScopes] = useState<string[]>(
+    window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+      ? ['eip155:1337']
+      : ['eip155:1'],
+  );
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
 
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
