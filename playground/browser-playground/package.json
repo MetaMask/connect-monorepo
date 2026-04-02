@@ -60,7 +60,7 @@
     "@metamask/connect-evm": "workspace:^",
     "@metamask/connect-multichain": "workspace:^",
     "@metamask/playground-ui": "workspace:^",
-    "@metamask/utils": "^11.8.1",
+    "@metamask/utils": "^11.10.0",
     "@open-rpc/meta-schema": "^1.14.9",
     "@open-rpc/schema-utils-js": "^2.0.5",
     "@solana/wallet-adapter-react": "patch:@solana/wallet-adapter-react@npm%3A0.15.39#~/.yarn/patches/@solana-wallet-adapter-react-npm-0.15.39-86277fdcc0.patch",
