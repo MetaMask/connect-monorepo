@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 import {
   createMultichainClient,
   type Scope,
@@ -7,6 +7,7 @@ import {
   getWalletStandard,
   registerSolanaWalletStandard,
 } from '@metamask/solana-wallet-standard';
+import { satisfies } from 'semver';
 
 import { convertNetworksToCAIP, SOLANA_CAIP_IDS } from './networks';
 import type {
@@ -15,8 +16,9 @@ import type {
   SolanaSupportedNetworks,
 } from './types';
 
-// Value substitued by tsup at build time
+// Values substituted by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
+declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
 
 /**
  * Creates a new Solana client for connecting to MetaMask via wallet-standard.
@@ -82,6 +84,17 @@ export async function createSolanaClient(
           : __PACKAGE_VERSION__,
     },
   });
+
+  if (
+    typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'string' &&
+    __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ !== '' &&
+    __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ !== core.version &&
+    !satisfies(core.version, __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__)
+  ) {
+    console.warn(
+      `@metamask/connect-solana expected @metamask/connect-multichain version ${__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__}, but got ${core.version}. This may lead to unexpected behavior.`,
+    );
+  }
 
   const client = core.provider;
 

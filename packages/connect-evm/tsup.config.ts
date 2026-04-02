@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Tsup config convention */
-/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 
 import { defineConfig } from 'tsup';
 
@@ -26,6 +26,9 @@ export default defineConfig([
     tsconfig: './tsconfig.json',
     define: {
       __PACKAGE_VERSION__: JSON.stringify(pkg.version),
+      __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: JSON.stringify(
+        pkg.peerDependencies?.['@metamask/connect-multichain'] ?? '',
+      ),
     },
     esbuildOptions: (options) => {
       options.platform = 'browser';

@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
-/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 import { analytics } from '@metamask/analytics';
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
@@ -16,6 +16,7 @@ import {
   TransportType,
 } from '@metamask/connect-multichain';
 import { hexToNumber } from '@metamask/utils';
+import { satisfies } from 'semver';
 
 import { IGNORED_METHODS } from './constants';
 import { enableDebug, logger } from './logger';
@@ -40,8 +41,9 @@ import {
   validSupportedChainsUrls,
 } from './utils/type-guards';
 
-// Value substitued by tsup at build time
+// Values substituted by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
+declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -1045,8 +1047,7 @@ export async function createEVMClient(
         supportedNetworks: supportedNetworksCaipChainId,
       },
       analytics: {
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        integrationType: options.analytics?.integrationType || 'direct',
+        integrationType: options.analytics?.integrationType ?? 'direct',
       },
       versions: {
         // typeof guard needed: Metro (React Native) bundles TS source directly,
@@ -1057,6 +1058,17 @@ export async function createEVMClient(
             : __PACKAGE_VERSION__,
       },
     });
+
+    if (
+      typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'string' &&
+      __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ !== '' &&
+      __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ !== core.version &&
+      !satisfies(core.version, __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__)
+    ) {
+      console.warn(
+        `@metamask/connect-evm expected @metamask/connect-multichain version ${__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__}, but got ${core.version}. This may lead to unexpected behavior.`,
+      );
+    }
 
     return MetamaskConnectEVM.create({
       core,

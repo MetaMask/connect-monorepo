@@ -4002,14 +4002,18 @@ __metadata:
     "@metamask/connect-multichain": "workspace:^"
     "@metamask/utils": "npm:^11.8.1"
     "@types/jsdom": "npm:^21.1.7"
+    "@types/semver": "npm:^7.7.1"
     "@vitest/coverage-v8": "npm:^3.2.4"
     jsdom: "npm:^26.1.0"
     prettier: "npm:^3.3.3"
+    semver: "npm:^7.7.4"
     tsup: "npm:^8.4.0"
     typedoc: "npm:^0.28.14"
     typedoc-plugin-missing-exports: "npm:^4.1.2"
     typescript: "npm:^5.9.3"
     vitest: "npm:^3.1.2"
+  peerDependencies:
+    "@metamask/connect-multichain": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -4120,15 +4124,19 @@ __metadata:
     "@metamask/connect-multichain": "workspace:^"
     "@metamask/solana-wallet-standard": "npm:^0.6.0"
     "@types/jsdom": "npm:^21.1.7"
+    "@types/semver": "npm:^7.7.1"
     "@vitest/coverage-v8": "npm:^3.2.4"
     "@wallet-standard/base": "npm:^1.1.0"
     jsdom: "npm:^26.1.0"
     prettier: "npm:^3.3.3"
+    semver: "npm:^7.7.4"
     tsup: "npm:^8.4.0"
     typedoc: "npm:^0.28.14"
     typedoc-plugin-missing-exports: "npm:^4.1.2"
     typescript: "npm:^5.9.3"
     vitest: "npm:^3.1.2"
+  peerDependencies:
+    "@metamask/connect-multichain": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -7704,7 +7712,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/semver@npm:^7, @types/semver@npm:^7.3.12, @types/semver@npm:^7.3.6":
+"@types/semver@npm:^7, @types/semver@npm:^7.3.12, @types/semver@npm:^7.3.6, @types/semver@npm:^7.7.1":
   version: 7.7.1
   resolution: "@types/semver@npm:7.7.1"
   checksum: 10/8f09e7e6ca3ded67d78ba7a8f7535c8d9cf8ced83c52e7f3ac3c281fe8c689c3fe475d199d94390dc04fc681d51f2358b430bb7b2e21c62de24f2bee2c719068
@@ -23801,6 +23809,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10/1ef3a85bd02a760c6ef76a45b8c1ce18226de40831e02a00bad78485390b98b6ccaa31046245fc63bba4a47a6a592b6c7eedc65cc47126e60489f9cc1ce3ed7e
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.7.4":
+  version: 7.7.4
+  resolution: "semver@npm:7.7.4"
+  bin:
+    semver: bin/semver.js
+  checksum: 10/26bdc6d58b29528f4142d29afb8526bc335f4fc04c4a10f2b98b217f277a031c66736bf82d3d3bb354a2f6a3ae50f18fd62b053c4ac3f294a3d10a61f5075b75
   languageName: node
   linkType: hard
 
