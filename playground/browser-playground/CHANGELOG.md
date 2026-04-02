@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add global `localhost` scopes ([#250](https://github.com/MetaMask/connect-monorepo/pull/250))
+
 ## [0.6.0]
 
 ### Changed
