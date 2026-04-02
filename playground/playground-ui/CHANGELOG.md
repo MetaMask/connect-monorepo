@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- fix: localhost scopes for legacy-evm ([#250](https://github.com/MetaMask/connect-monorepo/pull/250))
+
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications

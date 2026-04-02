@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- chore: align sub-package licenses with root ConsenSys 2022 license ([#241](https://github.com/MetaMask/connect-monorepo/pull/241))
+- chore: turborepo ([#239](https://github.com/MetaMask/connect-monorepo/pull/239))
+
 ### Fixed
 
 - `wallet_requestPermissions` now correctly re-prompts account selection on MWP (mobile) without requiring a full disconnect/reconnect cycle. The request forwards `forceRequest: true` through to `MWPTransport`, which previously ignored it and silently returned the existing session. ([#243](https://github.com/MetaMask/connect-monorepo/pull/243))
