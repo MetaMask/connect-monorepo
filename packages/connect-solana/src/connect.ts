@@ -85,14 +85,18 @@ export async function createSolanaClient(
     },
   });
 
+  const multichainClientPeerRange =
+    typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'undefined'
+      ? 'unknown'
+      : __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__;
+
   if (
-    typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'string' &&
-    __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ !== '' &&
-    __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ !== core.version &&
-    !satisfies(core.version, __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__)
+    multichainClientPeerRange !== 'unknown' &&
+    multichainClientPeerRange !== '' &&
+    !satisfies(core.version, multichainClientPeerRange)
   ) {
     console.warn(
-      `@metamask/connect-solana expected @metamask/connect-multichain version ${__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__}, but got ${core.version}. This may lead to unexpected behavior.`,
+      `@metamask/connect-solana expected @metamask/connect-multichain version ${multichainClientPeerRange}, but got ${core.version}. This may lead to unexpected behavior.`,
     );
   }
 
