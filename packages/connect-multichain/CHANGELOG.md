@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Lazy-load MWP transport dependencies: `@metamask/mobile-wallet-protocol-core`, `@metamask/mobile-wallet-protocol-dapp-client`, and `eciesjs` are now dynamically imported only when MWP transport is actually used, allowing bundlers to code-split the entire MWP + crypto dependency tree for consumers who only use the browser extension flow ([#244](https://github.com/MetaMask/connect-monorepo/pull/244))
+
 ### Fixed
 
 - `MWPTransport.connect()` now accepts and forwards a `forceRequest` option. When `true`, `onResumeSuccess` skips the `isSameScopesAndAccounts` check and unconditionally sends `wallet_createSession`, allowing consumers to re-prompt account selection on an existing MWP session. Previously `forceRequest` was silently ignored, causing `wallet_requestPermissions` to no-op on mobile. ([#243](https://github.com/MetaMask/connect-monorepo/pull/243))
