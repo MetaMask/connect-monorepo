@@ -184,6 +184,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       | undefined;
     if (existing) {
       const instance = await existing;
+
+      if (instance.version !== getVersion()) {
+        console.warn(
+          `MetaMask Connect does not support using multiple versions of @metamask/connect-multichain.
+          Attempted to create a new instance with version ${getVersion()}, but an existing ${instance.version} singleton was already initialized.
+          Using the existing ${instance.version} singleton. This is NOT supported and may lead to unexpected behavior.
+          Please ensure there is only one version of @metamask/connect-multichain package resolved in your application.`
+        );
+      }
+
       instance.mergeOptions(options);
       analytics.setGlobalProperty(
         'mmconnect_versions',
