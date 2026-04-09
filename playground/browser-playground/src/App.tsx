@@ -72,18 +72,18 @@ function App() {
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
-      if (isChecked) {
-        setCustomScopes(Array.from(new Set([...customScopes, value])));
-      } else {
-        setCustomScopes(customScopes.filter((item) => item !== value));
-      }
+      setCustomScopes((prev) =>
+        isChecked
+          ? Array.from(new Set([...prev, value]))
+          : prev.filter((item) => item !== value),
+      );
     },
-    [customScopes],
+    [],
   );
 
   useEffect(() => {
-    if (session) {
-      const scopes = Object.keys(session?.sessionScopes ?? {});
+    if (session && Object.keys(session?.sessionScopes ?? {}).length > 0) {
+      const scopes = Object.keys(session.sessionScopes);
       setCustomScopes(scopes);
 
       // Accumulate all accounts from all scopes
