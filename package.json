@@ -57,7 +57,7 @@
     "@metamask/eslint-config-jest": "^14.0.0",
     "@metamask/eslint-config-nodejs": "^14.0.0",
     "@metamask/eslint-config-typescript": "^14.0.0",
-    "@metamask/utils": "^11.8.1",
+    "@metamask/utils": "^11.10.0",
     "@ts-bridge/cli": "^0.5.1",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.14.191",
