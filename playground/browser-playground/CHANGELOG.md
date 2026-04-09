@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix potential stale closure in `handleCheckboxChange` and unconditional `useEffect` on session change ([#257](https://github.com/MetaMask/connect-monorepo/pull/257))
+
 ## [0.6.1]
 
 ### Added
