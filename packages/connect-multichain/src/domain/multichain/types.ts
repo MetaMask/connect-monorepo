@@ -38,7 +38,7 @@ export type ConnectionRequest = {
     dapp: DappSettings;
     sdk: { version: string; platform: PlatformType };
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    analytics?: { anon_id: string };
+    analytics?: { remote_session_id: string };
   };
 };
 

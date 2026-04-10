@@ -357,7 +357,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       sdk: { version: getVersion(), platform: getPlatformType() },
     };
     if (this.#anonId) {
-      metadata.analytics = { anon_id: this.#anonId };
+      metadata.analytics = { remote_session_id: this.#anonId };
     }
     return metadata;
   }
