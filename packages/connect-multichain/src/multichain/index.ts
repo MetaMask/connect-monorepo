@@ -365,7 +365,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #init(): Promise<void> {
     try {
       await this.#setupAnalytics();
-      this.#anonId ??= await this.storage.getAnonId();
       await this.#setupTransport();
     } catch (error) {
       await this.storage.removeTransport();
