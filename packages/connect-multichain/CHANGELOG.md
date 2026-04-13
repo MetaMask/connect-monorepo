@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Include `analytics.anon_id` in V2 connection metadata so the wallet can correlate dapp-side and wallet-side analytics events ([#256](https://github.com/MetaMask/connect-monorepo/pull/256))
+- Include `analytics.remote_session_id` in V2 connection metadata so the wallet can correlate dapp-side and wallet-side analytics events ([#256](https://github.com/MetaMask/connect-monorepo/pull/256))
 
 ## [0.11.1]
 
