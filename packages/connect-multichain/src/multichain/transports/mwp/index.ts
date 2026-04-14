@@ -305,7 +305,11 @@ export class MWPTransport implements ExtendedTransport {
   private async onResumeSuccess(
     resumeResolve: () => void,
     resumeReject: (err: Error) => void,
-    options?: { scopes: Scope[]; caipAccountIds: CaipAccountId[] },
+    options?: {
+      scopes: Scope[];
+      caipAccountIds: CaipAccountId[];
+      forceRequest?: boolean;
+    },
   ): Promise<void> {
     try {
       await this.waitForWalletSessionIfNotCached();
@@ -329,7 +333,7 @@ export class MWPTransport implements ExtendedTransport {
           walletSession,
           proposedCaipAccountIds,
         );
-        if (!hasSameScopesAndAccounts) {
+        if (options.forceRequest || !hasSameScopesAndAccounts) {
           const optionalScopes = addValidAccounts(
             getOptionalScopes(options?.scopes ?? []),
             getValidAccounts(options?.caipAccountIds ?? []),
@@ -426,6 +430,7 @@ export class MWPTransport implements ExtendedTransport {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
+    forceRequest?: boolean;
   }): Promise<void> {
     const { dappClient } = this;
 

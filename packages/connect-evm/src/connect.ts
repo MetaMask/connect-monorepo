@@ -617,14 +617,27 @@ export class MetamaskConnectEVM {
         request.method === 'wallet_requestPermissions';
 
       const { method, params } = request;
-      const initiallySelectedChainId = DEFAULT_CHAIN_ID;
-      const scope: Scope = `eip155:${initiallySelectedChainId}`;
+      const permitted = getPermittedEthChainIds(this.#sessionScopes);
+      if (permitted.length === 0) {
+        permitted.push(DEFAULT_CHAIN_ID);
+      }
+
+      const selected = this.#provider.selectedChainId;
+      const preferred =
+        selected && permitted.includes(selected) ? selected : permitted[0];
+
+      const chainIds = [
+        preferred,
+        ...permitted.filter((id) => id !== preferred),
+      ];
+
+      const scope: Scope = `eip155:${hexToNumber(preferred)}`;
 
       await this.#trackWalletActionRequested(method, scope, params);
 
       try {
         const result = await this.connect({
-          chainIds: [initiallySelectedChainId],
+          chainIds,
           forceRequest: shouldForceConnectionRequest,
         });
         await this.#trackWalletActionSucceeded(method, scope, params);

@@ -7,8 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2]
+
+### Fixed
+
+- Fix potential stale closure in `handleCheckboxChange` and unconditional `useEffect` on session change ([#257](https://github.com/MetaMask/connect-monorepo/pull/257))
+
+## [0.6.1]
+
+### Added
+
+- Add global `localhost` scopes ([#250](https://github.com/MetaMask/connect-monorepo/pull/250))
+
 ### Changed
 
+- Bump workspace dependencies: @metamask/connect-evm@0.9.1, @metamask/connect-multichain@0.11.1
+
+## [0.6.0]
+
+### Changed
+
+- Change LegacyEVM card's `sendTransaction` to have an address field and default it to the connected address ([#247](https://github.com/MetaMask/connect-monorepo/pull/247))
+- Add `localhost` to wagmi's configured chains ([#246](https://github.com/MetaMask/connect-monorepo/pull/246))
 - Bump wagmi from `^2.19.2` to `^3.5.0` and apply v3 migration changes: use `useConnectors()` instead of `useConnect().connectors`, `useChains()` instead of `useSwitchChain().chains`, and rename `useAccount` to `useConnection` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@wagmi/core` from `^2.22.1` to `^3.4.0` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@tanstack/react-query` from `>=5.45.1` to `^5.90.21` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
@@ -119,7 +139,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.2...HEAD
+[0.6.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.1...@metamask/browser-playground@0.6.2
+[0.6.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.0...@metamask/browser-playground@0.6.1
+[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...@metamask/browser-playground@0.6.0
 [0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.0...@metamask/browser-playground@0.5.1
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.2...@metamask/browser-playground@0.5.0
 [0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2

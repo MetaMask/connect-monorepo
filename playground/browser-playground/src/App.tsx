@@ -23,7 +23,11 @@ global.Buffer = Buffer;
 const CONNECT_AND_SIGN_MESSAGE = 'Hello from MetaMask Connect Playground!';
 
 function App() {
-  const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
+  const [customScopes, setCustomScopes] = useState<string[]>(
+    window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+      ? ['eip155:1337']
+      : ['eip155:1'],
+  );
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
 
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
@@ -68,18 +72,18 @@ function App() {
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
-      if (isChecked) {
-        setCustomScopes(Array.from(new Set([...customScopes, value])));
-      } else {
-        setCustomScopes(customScopes.filter((item) => item !== value));
-      }
+      setCustomScopes((prev) =>
+        isChecked
+          ? Array.from(new Set([...prev, value]))
+          : prev.filter((item) => item !== value),
+      );
     },
-    [customScopes],
+    [],
   );
 
   useEffect(() => {
-    if (session) {
-      const scopes = Object.keys(session?.sessionScopes ?? {});
+    if (session && Object.keys(session?.sessionScopes ?? {}).length > 0) {
+      const scopes = Object.keys(session.sessionScopes);
       setCustomScopes(scopes);
 
       // Accumulate all accounts from all scopes
