@@ -82,12 +82,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   #beforeUnloadListener: (() => void) | undefined;
 
-  #mwpModules?: Pick<
-    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-    typeof import('@metamask/mobile-wallet-protocol-core'),
-    'ProtocolError' | 'ErrorCode'
-  >;
-
   #transportType?: TransportType;
 
   public _status: ConnectionStatus = 'pending';
@@ -300,10 +294,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       } else if (transportType === TransportType.MWP) {
         const { adapter: kvstore } = this.options.storage;
         const dappClient = await this.#createDappClient();
-        const { MWPTransport: MWPTransportClass } = await import(
-          './transports/mwp'
-        );
-        const apiTransport = new MWPTransportClass(dappClient, kvstore);
+        const { MWPTransport } = await import('./transports/mwp');
+        const apiTransport = new MWPTransport(dappClient, kvstore);
         this.#dappClient = dappClient;
         this.#transport = apiTransport;
         this.#transportType = TransportType.MWP;
@@ -383,11 +375,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       ]);
     const keymanager = await createKeyManager();
 
-    this.#mwpModules = {
-      ProtocolError: mwpCore.ProtocolError,
-      ErrorCode: mwpCore.ErrorCode,
-    };
-
     const { adapter: kvstore } = this.options.storage;
     const sessionstore = await mwpCore.SessionStore.create(kvstore);
     const websocket =
@@ -415,10 +402,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     const { adapter: kvstore } = this.options.storage;
     const dappClient = await this.#createDappClient();
     this.#dappClient = dappClient;
-    const { MWPTransport: MWPTransportClass } = await import(
-      './transports/mwp'
-    );
-    const apiTransport = new MWPTransportClass(dappClient, kvstore);
+    const { MWPTransport } = await import('./transports/mwp');
+    const apiTransport = new MWPTransport(dappClient, kvstore);
     this.#transport = apiTransport;
     this.#transportType = TransportType.MWP;
     this.#providerTransportWrapper.setupTransportNotificationListener();
@@ -495,13 +480,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
                   this.status = 'connected';
                   await this.storage.setTransport(TransportType.MWP);
                 } catch (error) {
-                  if (
-                    this.#mwpModules &&
-                    error instanceof this.#mwpModules.ProtocolError
-                  ) {
-                    if (
-                      error.code !== this.#mwpModules.ErrorCode.REQUEST_EXPIRED
-                    ) {
+                  const { ProtocolError, ErrorCode } = await import(
+                    '@metamask/mobile-wallet-protocol-core'
+                  );
+                  if (error instanceof ProtocolError) {
+                    if (error.code !== ErrorCode.REQUEST_EXPIRED) {
                       this.status = 'disconnected';
                       // Close the modal on error
                       await this.options.ui.factory.unload(error);
@@ -611,10 +594,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           resolve();
         })
         .catch(async (error) => {
-          if (
-            this.#mwpModules &&
-            error instanceof this.#mwpModules.ProtocolError
-          ) {
+          const { ProtocolError } = await import(
+            '@metamask/mobile-wallet-protocol-core'
+          );
+          if (error instanceof ProtocolError) {
             // In headless mode, we don't auto-regenerate QR codes
             // since there's no modal to display them
             this.status = 'disconnected';
