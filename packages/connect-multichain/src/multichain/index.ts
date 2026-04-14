@@ -615,10 +615,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #setupDefaultTransport(
     options: { persist?: boolean } = { persist: true },
   ): Promise<DefaultTransport> {
-    if (
-      this.#transportType === TransportType.Browser &&
-      this.#transport instanceof DefaultTransport
-    ) {
+    if (this.#transport instanceof DefaultTransport) {
       return this.#transport;
     }
 
