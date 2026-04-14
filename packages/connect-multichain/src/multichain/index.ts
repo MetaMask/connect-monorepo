@@ -91,6 +91,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   #listener: (() => void | Promise<void>) | undefined;
 
+  #anonId: string | undefined;
+
   get status(): ConnectionStatus {
     return this._status;
   }
@@ -248,6 +250,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     const dappId = getDappId(this.options.dapp);
     const anonId = await this.storage.getAnonId();
+    this.#anonId = anonId;
 
     const { integrationType } = this.options.analytics ?? {
       integrationType: '',
@@ -354,6 +357,17 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
   }
 
+  #buildConnectionMetadata(): ConnectionRequest['metadata'] {
+    const metadata: ConnectionRequest['metadata'] = {
+      dapp: this.options.dapp,
+      sdk: { version: getVersion(), platform: getPlatformType() },
+    };
+    if (this.#anonId) {
+      metadata.analytics = { remote_session_id: this.#anonId };
+    }
+    return metadata;
+  }
+
   async #init(): Promise<void> {
     try {
       await this.#setupAnalytics();
@@ -449,13 +463,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
                 (sessionRequest: SessionRequest) => {
                   _resolve({
                     sessionRequest,
-                    metadata: {
-                      dapp: this.options.dapp,
-                      sdk: {
-                        version: getVersion(),
-                        platform: getPlatformType(),
-                      },
-                    },
+                    metadata: this.#buildConnectionMetadata(),
                   });
                 },
               );
@@ -565,13 +573,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         (sessionRequest: SessionRequest) => {
           const connectionRequest: ConnectionRequest = {
             sessionRequest,
-            metadata: {
-              dapp: this.options.dapp,
-              sdk: {
-                version: getVersion(),
-                platform: getPlatformType(),
-              },
-            },
+            metadata: this.#buildConnectionMetadata(),
           };
 
           // Generate and emit the QR code link
@@ -667,10 +669,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           (sessionRequest: SessionRequest) => {
             const connectionRequest = {
               sessionRequest,
-              metadata: {
-                dapp: this.options.dapp,
-                sdk: { version: getVersion(), platform: getPlatformType() },
-              },
+              metadata: this.#buildConnectionMetadata(),
             };
             const deeplink =
               this.options.ui.factory.createConnectionDeeplink(
@@ -1028,10 +1027,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     const connectionRequest = {
       sessionRequest: storedSessionRequest,
-      metadata: {
-        dapp: this.options.dapp,
-        sdk: { version: getVersion(), platform: getPlatformType() },
-      },
+      metadata: this.#buildConnectionMetadata(),
     };
     const deeplink =
       this.options.ui.factory.createConnectionDeeplink(connectionRequest);
