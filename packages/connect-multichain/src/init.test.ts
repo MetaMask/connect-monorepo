@@ -248,9 +248,7 @@ function testSuite<T extends MultichainOptions>({
         await createSDK(testOptions);
 
         t.expect(warnSpy).toHaveBeenCalledWith(
-          t.expect.stringContaining(
-            'does not support using multiple versions',
-          ),
+          t.expect.stringContaining('does not support using multiple versions'),
         );
 
         warnSpy.mockRestore();
@@ -270,9 +268,7 @@ function testSuite<T extends MultichainOptions>({
         await createSDK(testOptions);
 
         t.expect(warnSpy).not.toHaveBeenCalledWith(
-          t.expect.stringContaining(
-            'does not support using multiple versions',
-          ),
+          t.expect.stringContaining('does not support using multiple versions'),
         );
 
         warnSpy.mockRestore();

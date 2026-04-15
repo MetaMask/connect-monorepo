@@ -1,3 +1,6 @@
+/* eslint-disable n/no-extraneous-import -- vitest is a root devDependency */
+/* eslint-disable import-x/no-extraneous-dependencies -- vitest is a root devDependency */
+/* eslint-disable @typescript-eslint/no-shadow -- vitest globals */
 import { describe, it, expect } from 'vitest';
 
 import { resolveWorkspaceRange } from './resolve-workspace-range';
@@ -24,8 +27,6 @@ describe('resolveWorkspaceRange', () => {
   });
 
   it('returns the specifier for other workspace: ranges', () => {
-    expect(resolveWorkspaceRange('workspace:>=2.0.0', '1.2.3')).toBe(
-      '>=2.0.0',
-    );
+    expect(resolveWorkspaceRange('workspace:>=2.0.0', '1.2.3')).toBe('>=2.0.0');
   });
 });

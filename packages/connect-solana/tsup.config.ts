@@ -3,9 +3,9 @@
 
 import { defineConfig } from 'tsup';
 
+import packageJson from './package.json';
 import { resolveWorkspaceRange } from '../../scripts/resolve-workspace-range';
 import multichainPackageJson from '../connect-multichain/package.json';
-import packageJson from './package.json';
 
 const pkg: any = packageJson as any;
 const multichainPkg: any = multichainPackageJson as any;
@@ -22,9 +22,8 @@ const multichainPeerRange = resolveWorkspaceRange(
 
 const versionDefine = {
   __PACKAGE_VERSION__: JSON.stringify(pkg.version),
-  __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: JSON.stringify(
-    multichainPeerRange,
-  ),
+  __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__:
+    JSON.stringify(multichainPeerRange),
 };
 
 export default defineConfig([
