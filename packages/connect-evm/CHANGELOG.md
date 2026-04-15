@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.10.0]
 
+### Changed
+
 - Bump `@metamask/connect-multichain` to `^0.12.0` ([#261](https://github.com/MetaMask/connect-monorepo/pull/261))
 
 ## [0.9.1]
