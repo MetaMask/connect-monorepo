@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { EIP1193Provider } from '@metamask/connect/evm';
+import type { EIP1193Provider } from '@metamask/connect-evm';
 import { TEST_IDS } from '@metamask/playground-ui';
 import { send_eth_signTypedData_v4, send_personal_sign } from '../helpers/SignHelpers';
 
