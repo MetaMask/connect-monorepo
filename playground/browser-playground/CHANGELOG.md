@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `@metamask/connect/evm` import path to use `@metamask/connect-evm` directly ([#263](https://github.com/MetaMask/connect-monorepo/pull/263))
+
 ## [0.6.3]
 
 ### Changed
