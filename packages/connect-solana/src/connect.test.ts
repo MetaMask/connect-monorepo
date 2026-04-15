@@ -73,6 +73,7 @@ describe('createSolanaClient', () => {
             'https://api.mainnet-beta.solana.com',
         },
       },
+      analytics: { integrationType: 'direct' },
       versions: { 'connect-solana': expect.any(String) },
     });
   });
@@ -94,6 +95,7 @@ describe('createSolanaClient', () => {
             'https://api.mainnet-beta.solana.com',
         },
       },
+      analytics: { integrationType: 'direct' },
       versions: { 'connect-solana': expect.any(String) },
     });
   });
