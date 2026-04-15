@@ -16,9 +16,7 @@ describe('resolveWorkspaceRange', () => {
   });
 
   it('returns literal specifier for workspace:<range>', () => {
-    expect(resolveWorkspaceRange('workspace:>=1.0.0', '3.0.0')).toBe(
-      '>=1.0.0',
-    );
+    expect(resolveWorkspaceRange('workspace:>=1.0.0', '3.0.0')).toBe('>=1.0.0');
   });
 
   it('passes through non-workspace range unchanged', () => {
