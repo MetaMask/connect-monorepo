@@ -3,6 +3,7 @@
 
 import { defineConfig } from 'tsup';
 
+import { resolveWorkspaceRange } from '../../scripts/resolve-workspace-range';
 import multichainPackageJson from '../connect-multichain/package.json';
 import packageJson from './package.json';
 
@@ -13,26 +14,6 @@ const deps = Object.keys(pkg.dependencies ?? {});
 const peerDeps = Object.keys(pkg.peerDependencies ?? {});
 const external = [...deps, ...peerDeps];
 const entryName = pkg.name.replace('@metamask/', '');
-
-function resolveWorkspaceRange(
-  range: string | undefined,
-  actualVersion: string,
-): string {
-  if (!range?.startsWith('workspace:')) {
-    return range ?? '';
-  }
-  const specifier = range.replace('workspace:', '');
-  if (specifier === '*') {
-    return '*';
-  }
-  if (specifier === '^') {
-    return `^${actualVersion}`;
-  }
-  if (specifier === '~') {
-    return `~${actualVersion}`;
-  }
-  return specifier;
-}
 
 const multichainPeerRange = resolveWorkspaceRange(
   pkg.peerDependencies?.['@metamask/connect-multichain'],
