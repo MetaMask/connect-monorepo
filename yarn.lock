@@ -3999,7 +3999,7 @@ __metadata:
     "@metamask/analytics": "workspace:^"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
-    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect-multichain": "npm:^0.12.0"
     "@metamask/utils": "npm:^11.8.1"
     "@types/jsdom": "npm:^21.1.7"
     "@types/semver": "npm:^7.7.1"
@@ -4013,7 +4013,7 @@ __metadata:
     typescript: "npm:^5.9.3"
     vitest: "npm:^3.1.2"
   peerDependencies:
-    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect-multichain": ^0.0.0
   languageName: unknown
   linkType: soft
 
@@ -4035,7 +4035,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/lodash": "npm:^4.14.191"
     "@types/node": "npm:^22.9.0"
-    "@types/semver": "npm:^7"
+    "@types/semver": "npm:^7.7.1"
     "@typescript-eslint/eslint-plugin": "npm:^5.62.0"
     "@typescript-eslint/parser": "npm:^5.62.0"
     "@yarnpkg/types": "npm:^4.0.0"
@@ -4060,7 +4060,7 @@ __metadata:
     prettier-2: "npm:prettier@^2.8.8"
     prettier-plugin-packagejson: "npm:^2.4.5"
     rimraf: "npm:^5.0.5"
-    semver: "npm:^7.6.3"
+    semver: "npm:^7.7.4"
     simple-git-hooks: "npm:^2.8.0"
     tsx: "npm:^4.19.3"
     turbo: "npm:^2.8.17"
@@ -4070,7 +4070,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@metamask/connect-multichain@workspace:^, @metamask/connect-multichain@workspace:packages/connect-multichain":
+"@metamask/connect-multichain@npm:^0.12.0, @metamask/connect-multichain@workspace:^, @metamask/connect-multichain@workspace:packages/connect-multichain":
   version: 0.0.0-use.local
   resolution: "@metamask/connect-multichain@workspace:packages/connect-multichain"
   dependencies:
@@ -4121,7 +4121,7 @@ __metadata:
   resolution: "@metamask/connect-solana@workspace:packages/connect-solana"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.4"
-    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect-multichain": "npm:^0.12.0"
     "@metamask/solana-wallet-standard": "npm:^0.6.0"
     "@types/jsdom": "npm:^21.1.7"
     "@types/semver": "npm:^7.7.1"
@@ -4136,7 +4136,7 @@ __metadata:
     typescript: "npm:^5.9.3"
     vitest: "npm:^3.1.2"
   peerDependencies:
-    "@metamask/connect-multichain": "workspace:^"
+    "@metamask/connect-multichain": ^0.0.0
   languageName: unknown
   linkType: soft
 
@@ -7712,7 +7712,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/semver@npm:^7, @types/semver@npm:^7.3.12, @types/semver@npm:^7.3.6, @types/semver@npm:^7.7.1":
+"@types/semver@npm:^7.3.12, @types/semver@npm:^7.3.6, @types/semver@npm:^7.7.1":
   version: 7.7.1
   resolution: "@types/semver@npm:7.7.1"
   checksum: 10/8f09e7e6ca3ded67d78ba7a8f7535c8d9cf8ced83c52e7f3ac3c281fe8c689c3fe475d199d94390dc04fc681d51f2358b430bb7b2e21c62de24f2bee2c719068
