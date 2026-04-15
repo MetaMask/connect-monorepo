@@ -31,6 +31,8 @@ declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
+ * @param [options.analytics] - Analytics configuration
+ * @param [options.analytics.integrationType] - Integration type for analytics (defaults to 'direct')
  * @param options.debug - Enable debug logging
  * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
  * @returns A promise that resolves to the Solana client instance
@@ -74,6 +76,10 @@ export async function createSolanaClient(
     dapp: options.dapp,
     api: {
       supportedNetworks,
+    },
+    analytics: {
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      integrationType: options.analytics?.integrationType || 'direct',
     },
     versions: {
       // typeof guard needed: Metro (React Native) bundles TS source directly,
