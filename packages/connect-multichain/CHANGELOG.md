@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0]
+
 ### Added
 
 - Include `analytics.remote_session_id` in V2 connection metadata so the wallet can correlate dapp-side and wallet-side analytics events ([#256](https://github.com/MetaMask/connect-monorepo/pull/256))
@@ -243,7 +245,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.0...HEAD
+[0.12.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.1...@metamask/connect-multichain@0.12.0
 [0.11.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...@metamask/connect-multichain@0.11.1
 [0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.10.0...@metamask/connect-multichain@0.11.0
 [0.10.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.9.0...@metamask/connect-multichain@0.10.0
