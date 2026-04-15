@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.10.0
+  - @metamask/connect-multichain@0.12.0
+
 ### Fixed
 
 - Fix `@metamask/connect/evm` import path to use `@metamask/connect-evm` directly ([#263](https://github.com/MetaMask/connect-monorepo/pull/263))
@@ -143,7 +151,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.2...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.3...HEAD
+[0.6.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.2...@metamask/browser-playground@0.6.3
 [0.6.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.1...@metamask/browser-playground@0.6.2
 [0.6.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.0...@metamask/browser-playground@0.6.1
 [0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...@metamask/browser-playground@0.6.0
