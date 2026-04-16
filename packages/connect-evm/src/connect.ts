@@ -970,8 +970,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The current connection status
    */
-  get status(): ConnectionStatus {
-    return this.#core.status;
+  get status(): ConnectEvmStatus {
+    return this.#status;
   }
 }
 
