@@ -802,8 +802,8 @@ export class MetamaskConnectEVM {
     }
     logger('handler: chainChanged', { chainId });
     this.#provider.selectedChainId = chainId;
-    this.#eventHandlers?.chainChanged?.(chainId);
     this.#provider.emit('chainChanged', chainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
   }
 
   /**
