@@ -427,6 +427,44 @@ describe('MetamaskConnectEVM', () => {
         expect.objectContaining({ scope: 'eip155:137' }),
       );
     });
+
+    it('returns accounts, chainId, and signature together', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(null);
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:137': {
+              methods: ['personal_sign'],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+      (mockCore as any).options = {
+        api: {
+          supportedNetworks: { 'eip155:137': 'https://polygon-rpc.com' },
+        },
+      };
+      mockCore.invokeMethod.mockResolvedValue('0xsignature');
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const result = await client.connectAndSign({
+        message: 'hello',
+        chainIds: ['0x89'],
+      });
+
+      expect(result.accounts).toEqual([
+        '0x1234567890123456789012345678901234567890',
+      ]);
+      expect(result.chainId).toBe('0x89');
+      expect(result.signature).toBe('0xsignature');
+    });
   });
 
   describe('connectWith', () => {
@@ -473,6 +511,45 @@ describe('MetamaskConnectEVM', () => {
       expect(mockCore.invokeMethod).toHaveBeenCalledWith(
         expect.objectContaining({ scope: 'eip155:137' }),
       );
+    });
+
+    it('returns accounts, chainId, and result together', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(null);
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:137': {
+              methods: ['eth_sendTransaction'],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+      (mockCore as any).options = {
+        api: {
+          supportedNetworks: { 'eip155:137': 'https://polygon-rpc.com' },
+        },
+      };
+      mockCore.invokeMethod.mockResolvedValue('0xtxhash');
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const connectWithResult = await client.connectWith({
+        method: 'eth_sendTransaction',
+        params: (account) => [{ from: account, to: account, value: '0x0' }],
+        chainIds: ['0x89'],
+      });
+
+      expect(connectWithResult.accounts).toEqual([
+        '0x1234567890123456789012345678901234567890',
+      ]);
+      expect(connectWithResult.chainId).toBe('0x89');
+      expect(connectWithResult.result).toBe('0xtxhash');
     });
   });
 
