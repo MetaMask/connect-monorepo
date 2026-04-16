@@ -601,9 +601,9 @@ describe('MetamaskConnectEVM', () => {
       const mockCore = createMockCore();
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
 
-      let resolveConnect: () => void;
+      let resolveConnect: () => void = () => undefined;
       mockCore.connect.mockImplementation(
-        () =>
+        async () =>
           new Promise<void>((resolve) => {
             resolveConnect = resolve;
           }),
@@ -625,7 +625,7 @@ describe('MetamaskConnectEVM', () => {
         },
       };
       mockCore.emit('wallet_sessionChanged', session);
-      resolveConnect!();
+      resolveConnect();
       await connectPromise;
     });
 

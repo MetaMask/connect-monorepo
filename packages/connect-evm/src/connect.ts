@@ -3,7 +3,6 @@
 import { analytics } from '@metamask/analytics';
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
-  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
