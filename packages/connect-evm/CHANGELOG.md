@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING** `EvmClient.status` now reflects the actual internal status of the `EvmClient` instance instead of proxying the underlying `MultichainClient.status`. The return type changes from `ConnectionStatus` to `ConnectEvmStatus`. ([#270](https://github.com/MetaMask/connect-monorepo/pull/270))
+
 ## [0.10.0]
 
 ### Changed
