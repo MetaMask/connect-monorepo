@@ -195,6 +195,69 @@ describe('MetamaskConnectEVM', () => {
         );
       });
 
+      it('has provider accounts and chainId populated before the connect event fires', async () => {
+        const mockCore = createMockCore();
+        mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+        const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+        const connectPromise = new Promise<void>((resolve) => {
+          client.getProvider().once('connect', () => {
+            expect(client.accounts).toEqual([
+              '0x1234567890123456789012345678901234567890',
+            ]);
+            expect(client.selectedChainId).toBe('0x1');
+            resolve();
+          });
+        });
+
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+
+        await connectPromise;
+      });
+
+      it('emits events in order: connect, chainChanged, accountsChanged', async () => {
+        const mockCore = createMockCore();
+        mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+        const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+        const events: string[] = [];
+
+        client.getProvider().on('connect', () => events.push('connect'));
+        client
+          .getProvider()
+          .on('chainChanged', () => events.push('chainChanged'));
+        client
+          .getProvider()
+          .on('accountsChanged', () => events.push('accountsChanged'));
+
+        const connectPromise = new Promise<void>((resolve) => {
+          client.getProvider().once('accountsChanged', () => resolve());
+        });
+
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+
+        await connectPromise;
+        expect(events).toEqual(['connect', 'chainChanged', 'accountsChanged']);
+      });
+
       it('connects using accounts from a eth_accounts response when the MultichainClient is connected', async () => {
         const mockCore = createMockCore();
         mockCore._status = 'connected';

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure EIP-1193 provider properties (`selectedChainId`, `accounts`) are updated before emitting the `connect` event ([#269](https://github.com/MetaMask/connect-monorepo/pull/269))
+
 ## [0.10.0]
 
 ### Changed
