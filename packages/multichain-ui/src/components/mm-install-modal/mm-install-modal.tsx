@@ -84,6 +84,7 @@ export class InstallModal {
         hideBackgroundDots: true,
         crossOrigin: undefined,
         imageSize: 0.3,
+        saveAsBlob: false,
       },
       dotsOptions: {
         color: '#222222',
