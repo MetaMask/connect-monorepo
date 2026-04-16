@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update `LegacyEVMSDKProvider` to unwrap `.signature` from the new `connectAndSign` return value, which now returns `{ accounts, chainId, signature }` instead of a bare string ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
+- Update wagmi `metamask-connector` to unwrap `.signature` / `.result` from the new `connectAndSign` / `connectWith` return values ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
+
 ## [0.6.3]
 
 ### Changed
