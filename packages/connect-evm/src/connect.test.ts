@@ -232,8 +232,12 @@ describe('MetamaskConnectEVM', () => {
         const events: string[] = [];
 
         client.getProvider().on('connect', () => events.push('connect'));
-        client.getProvider().on('chainChanged', () => events.push('chainChanged'));
-        client.getProvider().on('accountsChanged', () => events.push('accountsChanged'));
+        client
+          .getProvider()
+          .on('chainChanged', () => events.push('chainChanged'));
+        client
+          .getProvider()
+          .on('accountsChanged', () => events.push('accountsChanged'));
 
         const connectPromise = new Promise<void>((resolve) => {
           client.getProvider().once('accountsChanged', () => resolve());
