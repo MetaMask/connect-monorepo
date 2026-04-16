@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Set `saveAsBlob: false` in QR code image options to prevent `XMLHttpRequest` on the embedded `data:` URI, which violated `connect-src` CSP policies on host pages
+
 ## [0.4.0]
 
 ### Removed
