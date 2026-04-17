@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure `createEVMClient()` waits until the underlying instance is fully initialized before resolving ([#265](https://github.com/MetaMask/connect-monorepo/pull/265))
+
 ## [0.11.0]
 
 ### Changed
