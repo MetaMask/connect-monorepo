@@ -162,6 +162,39 @@ npm install @metamask/connect-solana
 npm install @metamask/connect-multichain
 ```
 
+## Content Security Policy
+
+Host pages integrating MetaMask Connect need to allow a few origins in their [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP). The library itself does not ship or inject its own CSP — these directives must be configured on the host page.
+
+### Required
+
+```
+connect-src wss://mm-sdk-relay.api.cx.metamask.io https://mm-sdk-analytics.api.cx.metamask.io;
+img-src data:;
+```
+
+- `wss://mm-sdk-relay.api.cx.metamask.io` — the WebSocket URL of the MetaMask relay used for remote connections (mobile, no-extension, etc.). Unavoidable — the relay cannot be proxied or deferred from within the library, and remote connections will fail without it.
+- `https://mm-sdk-analytics.api.cx.metamask.io` — the telemetry endpoint used by `@metamask/analytics`. Required for the connection lifecycle events the SDK emits by default. You can override the host via the `METAMASK_ANALYTICS_ENDPOINT` env var at build time, but some analytics endpoint must be reachable.
+- `img-src data:` — the install/QR-code modal in `@metamask/multichain-ui` embeds the MetaMask fox SVG as a `data:` URI inside the generated QR code. Without this, the QR code will fail to render the center logo.
+
+### Also consider
+
+- **`style-src 'unsafe-inline'`** — `@metamask/multichain-ui` is built with [Stencil](https://stenciljs.com/), which injects component styles at runtime inside Shadow DOM. Strict CSPs without `'unsafe-inline'` (or an equivalent nonce/hash strategy) may break modal styling.
+- **RPC endpoints you pass to `api.infuraProjectId` / `api.readonlyRPCMap` / `supportedNetworks`** — e.g. `https://*.infura.io`, your own node provider, or a public RPC. These are supplied by your dApp, so add whatever `connect-src` entries match the endpoints you configure.
+- **`https://metamask.app.link` and `metamask://`** — used for mobile deeplinks / universal links. These are top-level navigations and are not normally subject to `connect-src`, but strict CSPs that use `navigate-to` or `form-action` may need to allow them.
+
+### Minimal example
+
+For a dApp using the default analytics endpoint, Infura, and the install modal:
+
+```
+connect-src 'self' wss://mm-sdk-relay.api.cx.metamask.io https://mm-sdk-analytics.api.cx.metamask.io https://*.infura.io;
+img-src 'self' data:;
+style-src 'self' 'unsafe-inline';
+```
+
+See [`playground/browser-playground/public/index.html`](./playground/browser-playground/public/index.html) for a working reference CSP.
+
 ## Packages
 
 | Package                                                       | npm                                                               | Description                                                           |
