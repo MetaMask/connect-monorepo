@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `Content-Security-Policy` meta tag to simulate host-page CSP constraints during local testing ([#268](https://github.com/MetaMask/connect-monorepo/pull/268))
+
+## [0.6.5]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.1
+
+## [0.6.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.0
+
 ## [0.6.3]
 
 ### Changed
@@ -14,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump workspace dependencies:
   - @metamask/connect-evm@0.10.0
   - @metamask/connect-multichain@0.12.0
+
+### Fixed
+
+- Fix `@metamask/connect/evm` import path to use `@metamask/connect-evm` directly ([#263](https://github.com/MetaMask/connect-monorepo/pull/263))
 
 ## [0.6.2]
 
@@ -147,7 +169,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.3...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.5...HEAD
+[0.6.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.4...@metamask/browser-playground@0.6.5
+[0.6.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.3...@metamask/browser-playground@0.6.4
 [0.6.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.2...@metamask/browser-playground@0.6.3
 [0.6.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.1...@metamask/browser-playground@0.6.2
 [0.6.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.0...@metamask/browser-playground@0.6.1
