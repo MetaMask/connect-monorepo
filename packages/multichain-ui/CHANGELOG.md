@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Set `saveAsBlob: false` in QR code image options to prevent `XMLHttpRequest` on the embedded `data:` URI, which violated `connect-src` CSP policies on host pages
+- Set `saveAsBlob: false` in QR code image options to prevent `XMLHttpRequest` on the embedded `data:` URI, which violated `connect-src` CSP policies on host pages ([#268](https://github.com/MetaMask/connect-monorepo/pull/268))
 
 ## [0.4.0]
 
