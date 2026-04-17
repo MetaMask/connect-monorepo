@@ -3,7 +3,6 @@
 import { analytics } from '@metamask/analytics';
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
-  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -811,8 +810,8 @@ export class MetamaskConnectEVM {
     }
     logger('handler: chainChanged', { chainId });
     this.#provider.selectedChainId = chainId;
-    this.#eventHandlers?.chainChanged?.(chainId);
     this.#provider.emit('chainChanged', chainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
   }
 
   /**
@@ -853,37 +852,47 @@ export class MetamaskConnectEVM {
       accounts,
     };
 
-    if (this.#status !== 'connected') {
-      this.#status = 'connected';
-      this.#provider.emit('connect', data);
-      this.#eventHandlers?.connect?.(data);
-
-      this.#removeNotificationHandler?.();
-
-      const onAccountsChanged = (accs: string[]): void => {
-        logger('core-event: accountsChanged', accs);
-        this.#onAccountsChanged(accs as Address[]);
-      };
-
-      const onChainChanged = (chainChanged: { chainId: string }): void => {
-        logger('core-event: chainChanged', chainChanged.chainId);
-        this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
-          logger('Error caching chainId in notification handler', error);
-        });
-        this.#onChainChanged(chainChanged.chainId as Hex);
-      };
-
-      this.#core.on('metamask_accountsChanged', onAccountsChanged);
-      this.#core.on('metamask_chainChanged', onChainChanged);
-
-      this.#removeNotificationHandler = (): void => {
-        this.#core.off('metamask_accountsChanged', onAccountsChanged);
-        this.#core.off('metamask_chainChanged', onChainChanged);
-      };
+    if (this.#status === 'connected') {
+      this.#onChainChanged(chainId);
+      this.#onAccountsChanged(accounts);
+      return;
     }
 
-    this.#onChainChanged(chainId);
-    this.#onAccountsChanged(accounts);
+    this.#provider.selectedChainId = chainId;
+    this.#provider.accounts = accounts;
+
+    this.#status = 'connected';
+    this.#provider.emit('connect', data);
+    this.#eventHandlers?.connect?.(data);
+
+    this.#provider.emit('chainChanged', chainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
+
+    this.#provider.emit('accountsChanged', accounts);
+    this.#eventHandlers?.accountsChanged?.(accounts);
+
+    this.#removeNotificationHandler?.();
+
+    const onAccountsChanged = (accs: string[]): void => {
+      logger('core-event: accountsChanged', accs);
+      this.#onAccountsChanged(accs as Address[]);
+    };
+
+    const onChainChanged = (chainChanged: { chainId: string }): void => {
+      logger('core-event: chainChanged', chainChanged.chainId);
+      this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
+        logger('Error caching chainId in notification handler', error);
+      });
+      this.#onChainChanged(chainChanged.chainId as Hex);
+    };
+
+    this.#core.on('metamask_accountsChanged', onAccountsChanged);
+    this.#core.on('metamask_chainChanged', onChainChanged);
+
+    this.#removeNotificationHandler = (): void => {
+      this.#core.off('metamask_accountsChanged', onAccountsChanged);
+      this.#core.off('metamask_chainChanged', onChainChanged);
+    };
   }
 
   /**
@@ -979,8 +988,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The current connection status
    */
-  get status(): ConnectionStatus {
-    return this.#core.status;
+  get status(): ConnectEvmStatus {
+    return this.#status;
   }
 }
 

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.0
+
 ## [0.3.3]
 
 ### Changed
@@ -106,7 +113,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.3...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.4...HEAD
+[0.3.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.3...@metamask/react-native-playground@0.3.4
 [0.3.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.2...@metamask/react-native-playground@0.3.3
 [0.3.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.1...@metamask/react-native-playground@0.3.2
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.0...@metamask/react-native-playground@0.3.1

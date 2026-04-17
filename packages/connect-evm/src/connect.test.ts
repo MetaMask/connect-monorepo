@@ -195,6 +195,69 @@ describe('MetamaskConnectEVM', () => {
         );
       });
 
+      it('has provider accounts and chainId populated before the connect event fires', async () => {
+        const mockCore = createMockCore();
+        mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+        const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+        const connectPromise = new Promise<void>((resolve) => {
+          client.getProvider().once('connect', () => {
+            expect(client.accounts).toEqual([
+              '0x1234567890123456789012345678901234567890',
+            ]);
+            expect(client.selectedChainId).toBe('0x1');
+            resolve();
+          });
+        });
+
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+
+        await connectPromise;
+      });
+
+      it('emits events in order: connect, chainChanged, accountsChanged', async () => {
+        const mockCore = createMockCore();
+        mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+        const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+        const events: string[] = [];
+
+        client.getProvider().on('connect', () => events.push('connect'));
+        client
+          .getProvider()
+          .on('chainChanged', () => events.push('chainChanged'));
+        client
+          .getProvider()
+          .on('accountsChanged', () => events.push('accountsChanged'));
+
+        const connectPromise = new Promise<void>((resolve) => {
+          client.getProvider().once('accountsChanged', () => resolve());
+        });
+
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+
+        await connectPromise;
+        expect(events).toEqual(['connect', 'chainChanged', 'accountsChanged']);
+      });
+
       it('connects using accounts from a eth_accounts response when the MultichainClient is connected', async () => {
         const mockCore = createMockCore();
         mockCore._status = 'connected';
@@ -587,6 +650,182 @@ describe('MetamaskConnectEVM', () => {
         expect.arrayContaining(['eip155:1', 'eip155:137']),
       );
       expect(scopes).toHaveLength(2);
+    });
+  });
+
+  describe('status', () => {
+    it('returns disconnected before any session is established', async () => {
+      const mockCore = createMockCore();
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+      expect(client.status).toBe('disconnected');
+    });
+
+    it('returns connecting while a connect() call is in progress', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+
+      let resolveConnect: () => void = () => undefined;
+      mockCore.connect.mockImplementation(
+        async () =>
+          new Promise<void>((resolve) => {
+            resolveConnect = resolve;
+          }),
+      );
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+      const connectPromise = client.connect({ chainIds: ['0x1'] });
+
+      expect(client.status).toBe('connecting');
+
+      // Resolve with a session so the connect promise can settle
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.emit('wallet_sessionChanged', session);
+      resolveConnect();
+      await connectPromise;
+    });
+
+    it('returns connected after a session is established', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.emit('wallet_sessionChanged', session);
+      await new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+
+      expect(client.status).toBe('connected');
+    });
+
+    it('returns disconnected after disconnect is called', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.emit('wallet_sessionChanged', session);
+      await new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+
+      await client.disconnect();
+      expect(client.status).toBe('disconnected');
+    });
+
+    it('returns disconnected when the wallet revokes the session', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.emit('wallet_sessionChanged', session);
+      await new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+
+      expect(client.status).toBe('connected');
+
+      const disconnectPromise = new Promise<void>((resolve) => {
+        client.getProvider().once('disconnect', resolve);
+      });
+      mockCore.emit('wallet_sessionChanged', { sessionScopes: {} });
+      await disconnectPromise;
+
+      expect(client.status).toBe('disconnected');
+    });
+
+    it('returns disconnected when the wallet revokes all evm scopes', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const session: SessionData = {
+        sessionScopes: {
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': {
+            methods: [],
+            notifications: [],
+            accounts: [
+              'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:0x1234567890123456789012345678901234567890',
+            ],
+          },
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.emit('wallet_sessionChanged', session);
+      await new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+
+      expect(client.status).toBe('connected');
+
+      const disconnectPromise = new Promise<void>((resolve) => {
+        client.getProvider().once('disconnect', resolve);
+      });
+      mockCore.emit('wallet_sessionChanged', {
+        sessionScopes: {
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': {
+            methods: [],
+            notifications: [],
+            accounts: [
+              'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:0x1234567890123456789012345678901234567890',
+            ],
+          },
+        },
+      });
+      await disconnectPromise;
+
+      expect(client.status).toBe('disconnected');
+    });
+
+    it('resets to disconnected when connect() rejects', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockRejectedValue(new Error('user rejected'));
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(client.connect({ chainIds: ['0x1'] })).rejects.toThrow(
+        'user rejected',
+      );
+
+      expect(client.status).toBe('disconnected');
     });
   });
 
