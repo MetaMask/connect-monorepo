@@ -1,6 +1,6 @@
 {
   "name": "@metamask/react-native-playground",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "private": true,
   "description": "A React Native test dapp for multichain api",
   "keywords": [
