@@ -175,7 +175,7 @@ img-src data:;
 
 - `wss://mm-sdk-relay.api.cx.metamask.io` — the WebSocket URL of the MetaMask relay used for remote connections (mobile, no-extension, etc.). Unavoidable — the relay cannot be proxied or deferred from within the library, and remote connections will fail without it.
 - `https://mm-sdk-analytics.api.cx.metamask.io` — the telemetry endpoint used by `@metamask/analytics`. Required for the connection lifecycle events the SDK emits by default. You can override the host via the `METAMASK_ANALYTICS_ENDPOINT` env var at build time, but some analytics endpoint must be reachable.
-- `img-src data:` — the install/QR-code modal in `@metamask/multichain-ui` embeds the MetaMask fox SVG as a `data:` URI inside the generated QR code. Without this, the QR code will fail to render the center logo.
+- `img-src data:` — the install/QR-code modal in `@metamask/multichain-ui` embeds the MetaMask fox SVG as a `data:` URI inside the generated QR code. Without this, the QR code will fail to render entirely.
 
 ### Also consider
 
