@@ -231,6 +231,51 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should warn when existing singleton has a different version than the current module`,
+      async () => {
+        const warnSpy = t.vi.spyOn(console, 'warn').mockImplementation(() => {
+          // noop
+        });
+
+        sdk = await createSDK(testOptions);
+
+        // Simulate a version mismatch: override the singleton's version getter
+        // so it looks like it was created by a different bundle version.
+        t.vi
+          .spyOn(sdk, 'version', 'get')
+          .mockReturnValue('0.0.0-stale-singleton');
+
+        await createSDK(testOptions);
+
+        t.expect(warnSpy).toHaveBeenCalledWith(
+          t.expect.stringContaining('does not support using multiple versions'),
+        );
+
+        warnSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should not warn when existing singleton has the same version as the current module`,
+      async () => {
+        const warnSpy = t.vi.spyOn(console, 'warn').mockImplementation(() => {
+          // noop
+        });
+
+        sdk = await createSDK(testOptions);
+        warnSpy.mockClear();
+
+        await createSDK(testOptions);
+
+        t.expect(warnSpy).not.toHaveBeenCalledWith(
+          t.expect.stringContaining('does not support using multiple versions'),
+        );
+
+        warnSpy.mockRestore();
+      },
+    );
+
+    t.it(
       `${platform} should update integration_types analytics global when singleton sees a new integration`,
       async () => {
         const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');

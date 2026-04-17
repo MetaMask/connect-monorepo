@@ -56,12 +56,14 @@
   "dependencies": {
     "@metamask/analytics": "workspace:^",
     "@metamask/chain-agnostic-permission": "^1.2.2",
-    "@metamask/connect-multichain": "workspace:^",
-    "@metamask/utils": "^11.8.1"
+    "@metamask/utils": "^11.8.1",
+    "semver": "^7.7.4"
   },
   "devDependencies": {
     "@metamask/auto-changelog": "^3.4.4",
+    "@metamask/connect-multichain": "^0.12.0",
     "@types/jsdom": "^21.1.7",
+    "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^3.2.4",
     "jsdom": "^26.1.0",
     "prettier": "^3.3.3",
@@ -70,6 +72,9 @@
     "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "^5.9.3",
     "vitest": "^3.1.2"
+  },
+  "peerDependencies": {
+    "@metamask/connect-multichain": "^0.0.0"
   },
   "engines": {
     "node": ">=20.19.0"

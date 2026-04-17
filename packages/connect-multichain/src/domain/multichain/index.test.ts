@@ -15,6 +15,8 @@ import type { StoreClient } from '../store/client';
 class MockMultichainCore extends MultichainCore {
   storage = {} as StoreClient;
 
+  version = '1.0.0';
+
   _status: ConnectionStatus = 'loaded';
 
   get status(): ConnectionStatus {
