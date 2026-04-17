@@ -3,7 +3,6 @@
 import { analytics } from '@metamask/analytics';
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
-  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -980,8 +979,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The current connection status
    */
-  get status(): ConnectionStatus {
-    return this.#core.status;
+  get status(): ConnectEvmStatus {
+    return this.#status;
   }
 }
 
