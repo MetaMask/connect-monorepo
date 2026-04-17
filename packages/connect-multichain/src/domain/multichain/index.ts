@@ -7,13 +7,13 @@ import type {
 import type { CaipAccountId, Json } from '@metamask/utils';
 
 import { EventEmitter, type SDKEvents } from '../events';
-import type { StoreClient } from '../store/client';
 import type { InvokeMethodOptions, RPCAPI, Scope } from './api/types';
 import type {
   ExtendedTransport,
   MergeableMultichainOptions,
   MultichainOptions,
 } from './types';
+import type { StoreClient } from '../store/client';
 
 export type ConnectionStatus =
   | 'pending'
