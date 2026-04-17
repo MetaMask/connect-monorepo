@@ -164,7 +164,7 @@ npm install @metamask/connect-multichain
 
 ## Content Security Policy
 
-Host pages integrating MetaMask Connect need to allow a few origins in their [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP). The library itself does not ship or inject its own CSP — these directives must be configured on the host page.
+Host pages integrating MetaMask Connect need to allow a few origins in their [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP).
 
 ### Required
 
