@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `Content-Security-Policy` meta tag to simulate host-page CSP constraints during local testing ([#268](https://github.com/MetaMask/connect-monorepo/pull/268))
 
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.2
+  - @metamask/connect-multichain@0.12.1
+
 ## [0.6.5]
 
 ### Changed
