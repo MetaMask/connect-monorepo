@@ -519,9 +519,7 @@ export type components = {
        */
       platform: 'extension' | 'mobile';
     };
-    EventV2:
-      | components['schemas']['MMConnectPayload']
-      | components['schemas']['MobileSDKConnectV2Payload'];
+    EventV2: components['schemas']['MMConnectPayload'];
     MMConnectPayload: {
       /**
        * @description discriminator enum property added by openapi-typescript
@@ -538,21 +536,6 @@ export type components = {
         | 'mmconnect_wallet_action_failed'
         | 'mmconnect_wallet_action_rejected';
       properties: components['schemas']['MMConnectProperties'];
-    };
-    MobileSDKConnectV2Payload: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       */
-      namespace: 'mobile/sdk-connect-v2';
-      event_name:
-        | 'wallet_connection_request_received'
-        | 'wallet_connection_request_failed'
-        | 'wallet_connection_user_approved'
-        | 'wallet_connection_user_rejected'
-        | 'wallet_action_received'
-        | 'wallet_action_user_approved'
-        | 'wallet_action_user_rejected';
-      properties: components['schemas']['MobileSDKConnectV2Properties'];
     };
     MMConnectProperties: {
       /** @description Package versions keyed by connect package name */
@@ -576,11 +559,6 @@ export type components = {
       dapp_requested_chains?: string[];
       /** @description Array of CAIP-2 chain IDs that the user has permissioned */
       user_permissioned_chains?: string[];
-    };
-    MobileSDKConnectV2Properties: {
-      /** Format: uuid */
-      anon_id: string;
-      platform: 'mobile';
     };
   };
   responses: never;
