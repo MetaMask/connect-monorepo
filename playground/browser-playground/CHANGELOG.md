@@ -169,20 +169,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.5...HEAD
-[0.6.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.4...@metamask/browser-playground@0.6.5
-[0.6.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.3...@metamask/browser-playground@0.6.4
-[0.6.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.2...@metamask/browser-playground@0.6.3
-[0.6.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.1...@metamask/browser-playground@0.6.2
-[0.6.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.0...@metamask/browser-playground@0.6.1
-[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...@metamask/browser-playground@0.6.0
-[0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.0...@metamask/browser-playground@0.5.1
-[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.2...@metamask/browser-playground@0.5.0
-[0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2
-[0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.0...@metamask/browser-playground@0.4.1
-[0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.3.1...@metamask/browser-playground@0.4.0
-[0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.3.0...@metamask/browser-playground@0.3.1
-[0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.2.0...@metamask/browser-playground@0.3.0
-[0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.1.1...@metamask/browser-playground@0.2.0
-[0.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.1.0...@metamask/browser-playground@0.1.1
-[0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/browser-playground@0.1.0
+[Unreleased]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.6.5...HEAD
+[0.6.5]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.6.4...@metamask/browser-playground@0.6.5
+[0.6.4]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.6.3...@metamask/browser-playground@0.6.4
+[0.6.3]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.6.2...@metamask/browser-playground@0.6.3
+[0.6.2]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.6.1...@metamask/browser-playground@0.6.2
+[0.6.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.6.0...@metamask/browser-playground@0.6.1
+[0.6.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.5.1...@metamask/browser-playground@0.6.0
+[0.5.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.5.0...@metamask/browser-playground@0.5.1
+[0.5.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.4.2...@metamask/browser-playground@0.5.0
+[0.4.2]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2
+[0.4.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.4.0...@metamask/browser-playground@0.4.1
+[0.4.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.3.1...@metamask/browser-playground@0.4.0
+[0.3.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.3.0...@metamask/browser-playground@0.3.1
+[0.3.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.2.0...@metamask/browser-playground@0.3.0
+[0.2.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.1.1...@metamask/browser-playground@0.2.0
+[0.1.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/browser-playground@0.1.0...@metamask/browser-playground@0.1.1
+[0.1.0]: https://github.com/MetaMask/metamask-connect/releases/tag/@metamask/browser-playground@0.1.0

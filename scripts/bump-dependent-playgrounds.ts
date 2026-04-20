@@ -238,7 +238,10 @@ ${depsList}
 
   // Update the links at the bottom
   const unreleasedLinkPattern = new RegExp(
-    `\\[Unreleased\\]: (https://github\\.com/MetaMask/connect-monorepo/compare/${packageName.replace(/\//gu, '\\/')}@)[\\d.]+\\.\\.\\.HEAD`,
+    `\\[Unreleased\\]: (https://github\\.com/MetaMask/metamask-connect/compare/${packageName.replace(
+      /[.*+?^${}()|[\]\\]/gu,
+      '\\$&',
+    )}@)[\\d.]+\\.\\.\\.HEAD`,
     'u',
   );
 
@@ -259,7 +262,7 @@ ${depsList}
         const previousVersionMatch = firstLink.match(/\[(\d+\.\d+\.\d+)\]/u);
         if (previousVersionMatch) {
           const prevVersion = previousVersionMatch[1];
-          const newVersionLink = `[${newVersion}]: https://github.com/MetaMask/connect-monorepo/compare/${packageName}@${prevVersion}...${packageName}@${newVersion}\n`;
+          const newVersionLink = `[${newVersion}]: https://github.com/MetaMask/metamask-connect/compare/${packageName}@${prevVersion}...${packageName}@${newVersion}\n`;
           changelog = changelog.replace(
             firstLink,
             `${newVersionLink}${firstLink}`,

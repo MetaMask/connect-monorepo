@@ -73,13 +73,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.0...HEAD
-[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.7.1...@metamask/connect-solana@0.8.0
-[0.7.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.7.0...@metamask/connect-solana@0.7.1
-[0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.6.0...@metamask/connect-solana@0.7.0
-[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.5.0...@metamask/connect-solana@0.6.0
-[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.4.0...@metamask/connect-solana@0.5.0
-[0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.3.0...@metamask/connect-solana@0.4.0
-[0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.2.0...@metamask/connect-solana@0.3.0
-[0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.1.0...@metamask/connect-solana@0.2.0
-[0.1.0]: https://github.com/MetaMask/connect-monorepo/releases/tag/@metamask/connect-solana@0.1.0
+[Unreleased]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.8.0...HEAD
+[0.8.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.7.1...@metamask/connect-solana@0.8.0
+[0.7.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.7.0...@metamask/connect-solana@0.7.1
+[0.7.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.6.0...@metamask/connect-solana@0.7.0
+[0.6.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.5.0...@metamask/connect-solana@0.6.0
+[0.5.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.4.0...@metamask/connect-solana@0.5.0
+[0.4.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.3.0...@metamask/connect-solana@0.4.0
+[0.3.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.2.0...@metamask/connect-solana@0.3.0
+[0.2.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.1.0...@metamask/connect-solana@0.2.0
+[0.1.0]: https://github.com/MetaMask/metamask-connect/releases/tag/@metamask/connect-solana@0.1.0
