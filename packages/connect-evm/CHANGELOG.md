@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.2]
+
+### Changed
+
+- Bump `@metamask/connect-multichain` to `^0.12.1` ([#273](https://github.com/MetaMask/connect-monorepo/pull/273))
+
 ## [0.11.1]
 
 ### Fixed
@@ -192,7 +198,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.2...HEAD
+[0.11.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.1...@metamask/connect-evm@0.11.2
 [0.11.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.0...@metamask/connect-evm@0.11.1
 [0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.10.0...@metamask/connect-evm@0.11.0
 [0.10.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.9.1...@metamask/connect-evm@0.10.0
