@@ -132,13 +132,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           provider.emit('connectAndSign', {
             accounts,
             chainId: numberToHex(currentChainId),
-            signResponse,
+            signature: signResponse,
           });
         } else if (connectWithResponse) {
           provider.emit('connectWith', {
             accounts,
             chainId: numberToHex(currentChainId),
-            connectWithResponse,
+            result: connectWithResponse,
           });
         }
 
