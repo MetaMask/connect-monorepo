@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Prefer the injected Solana provider by no longer announcing the MMC Solana provider if the injected Solana provider is detected ([#275](https://github.com/MetaMask/connect-monorepo/pull/275))
+
 ## [0.8.1]
 
 ### Changed
