@@ -14,6 +14,7 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
+import { isMetamaskExtensionRegistered, logger, enableDebug } from './utils';
 
 // Value substitued by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
@@ -60,6 +61,10 @@ declare const __PACKAGE_VERSION__: string | undefined;
 export async function createSolanaClient(
   options: SolanaConnectOptions,
 ): Promise<SolanaClient> {
+  if (options.debug) {
+    enableDebug();
+  }
+
   const defaultNetworks: SolanaSupportedNetworks = {
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
@@ -91,20 +96,45 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
-  const walletName = 'MetaMask Connect';
+  const walletName = 'MetaMask';
 
-  if (!skipAutoRegister) {
-    await registerSolanaWalletStandard({ client, walletName });
+  let hasRegisteredMmc = false;
+  let handleInitRegistration!: () => void;
+  const initRegistrationHandledPromise = new Promise<void>((resolve) => {
+    handleInitRegistration = resolve;
+  });
+
+  if (skipAutoRegister) {
+    handleInitRegistration();
+  } else {
+    setTimeout(async () => {
+      if (isMetamaskExtensionRegistered()) {
+        logger('MetaMask extension is already registered. Skipping...');
+      } else {
+        await registerSolanaWalletStandard({ client, walletName });
+        hasRegisteredMmc = true;
+      }
+      handleInitRegistration();
+    }, 1000);
   }
 
   return {
     core,
     getWallet: () => getWalletStandard({ client, walletName }),
     registerWallet: async (): Promise<void> => {
-      if (!skipAutoRegister) {
+      await initRegistrationHandledPromise;
+      if(hasRegisteredMmc) {
+        logger('MetaMask Connect is already registered. Skipping...');
         return;
       }
+
+      if (isMetamaskExtensionRegistered()) {
+        logger('MetaMask extension is already registered. Skipping...');
+        return;
+      }
+
       await registerSolanaWalletStandard({ client, walletName });
+      hasRegisteredMmc = true;
     },
     disconnect: async () =>
       await core.disconnect(Object.values(SOLANA_CAIP_IDS) as Scope[]),

@@ -152,7 +152,7 @@ describe('createSolanaClient', () => {
 
         expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask Connect',
+          walletName: 'MetaMask',
         });
       });
 

@@ -77,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release
+- Initial Release
 
 [Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.1...HEAD
 [0.8.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.0...@metamask/connect-solana@0.8.1
