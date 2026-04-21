@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- feat(connect-evm): return accounts and chainId from connectAndSign and connectWith ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
+- Release/30.0.0 ([#273](https://github.com/MetaMask/connect-monorepo/pull/273))
+- Release/29.0.0 ([#272](https://github.com/MetaMask/connect-monorepo/pull/272))
+- Release/28.0.0 ([#271](https://github.com/MetaMask/connect-monorepo/pull/271))
+- Release/27.0.0 ([#264](https://github.com/MetaMask/connect-monorepo/pull/264))
+- Revert "Release/27.0.0 (#261)" ([#261](https://github.com/MetaMask/connect-monorepo/pull/261))
+- Release/27.0.0 ([#261](https://github.com/MetaMask/connect-monorepo/pull/261))
+- Release/25.0.0 ([#251](https://github.com/MetaMask/connect-monorepo/pull/251))
+- chore: align sub-package licenses with root ConsenSys 2022 license ([#241](https://github.com/MetaMask/connect-monorepo/pull/241))
+- fix(platform): resolve ReactNative platform type for Hermes-based RN apps ([#238](https://github.com/MetaMask/connect-monorepo/pull/238))
+- Release/23.0.0 ([#236](https://github.com/MetaMask/connect-monorepo/pull/236))
+- Release/22.0.0 ([#224](https://github.com/MetaMask/connect-monorepo/pull/224))
+- Release/20.0.0 ([#214](https://github.com/MetaMask/connect-monorepo/pull/214))
+- Release/19.0.0 ([#203](https://github.com/MetaMask/connect-monorepo/pull/203))
+- ci: add workflow to build and publish React Native Playground APK on release ([#192](https://github.com/MetaMask/connect-monorepo/pull/192))
+- chore: prevent react-native-playground from being published to npm ([#200](https://github.com/MetaMask/connect-monorepo/pull/200))
+
 ## [0.3.6]
 
 ### Changed
