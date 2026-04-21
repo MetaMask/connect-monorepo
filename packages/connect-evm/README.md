@@ -272,9 +272,10 @@ Connects and immediately invokes a method with specified parameters.
 
 **Returns**
 
-`Promise<{ accounts: Address[]; chainId: Hex; result: unknown }>` - The connected accounts, the active chain ID used for the method call, and the result of the method invocation.
+`Promise<{ accounts: Address[]; chainId: Hex; result: TResult }>` - The connected accounts, the active chain ID used for the method call, and the result of the method invocation. `TResult` is a generic type parameter that defaults to `unknown`; callers that know the RPC method's return shape statically can pass it as a type argument to avoid casting `result` at the call site. No runtime validation is performed.
 
 ```typescript
+// Defaults to `result: unknown`
 const { accounts, chainId, result } = await client.connectWith({
   method: 'eth_sendTransaction',
   params: (account) => [
@@ -284,6 +285,13 @@ const { accounts, chainId, result } = await client.connectWith({
       value: '0x1',
     },
   ],
+  chainIds: ['0x1'],
+});
+
+// Or narrow the result type at the call site
+const { result: txHash } = await client.connectWith<Hex>({
+  method: 'eth_sendTransaction',
+  params: (account) => [{ from: account, to: '0x...', value: '0x1' }],
   chainIds: ['0x1'],
 });
 ```
