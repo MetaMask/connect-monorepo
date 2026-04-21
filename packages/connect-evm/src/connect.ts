@@ -431,7 +431,7 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectAndSign?.({
       accounts,
       chainId,
-      signResponse: signature,
+      signature,
     });
 
     return { accounts, chainId, signature };
@@ -480,7 +480,7 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectWith?.({
       accounts: connectedAccounts,
       chainId: connectedChainId,
-      connectWithResponse: result,
+      result,
     });
 
     return { accounts: connectedAccounts, chainId: connectedChainId, result };

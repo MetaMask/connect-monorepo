@@ -546,12 +546,12 @@ type EventHandlers = {
   connectAndSign: (result: {
     accounts: Address[];
     chainId: Hex;
-    signResponse: string;
+    signature: string;
   }) => void;
   connectWith: (result: {
     accounts: Address[];
     chainId: Hex;
-    connectWithResponse: unknown;
+    result: unknown;
   }) => void;
 };
 ```
