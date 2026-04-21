@@ -12,10 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update wagmi `metamask-connector` to unwrap `.signature` / `.result` from the new `connectAndSign` / `connectWith` return values ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
-
-### Fixed
-
-- fix(platform): resolve ReactNative platform type for Hermes-based RN apps ([#238](https://github.com/MetaMask/connect-monorepo/pull/238))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.0.0
+  - @metamask/connect-solana@1.0.0
 
 ## [0.3.6]
 
