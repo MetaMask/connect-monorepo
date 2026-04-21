@@ -454,12 +454,8 @@ export class MetamaskConnectEVM {
    * @param [options.forceRequest] - Whether to force a request regardless of an existing session
    * @returns A promise that resolves with the connected accounts, chainId, and the result of the method invocation
    * @throws Error if the selected account is not available after timeout (for methods that require an account)
-   * @template TResult - The expected return type of the RPC method. Defaults to `unknown`.
-   *   Callers that know the method's return shape statically can pass it as a type
-   *   argument (e.g. `connectWith<Hex>({ method: 'eth_sendTransaction', ... })`)
-   *   to avoid casting `result` at the call site. No runtime validation is performed.
    */
-  async connectWith<TResult = unknown>({
+  async connectWith({
     method,
     params,
     chainIds,
@@ -471,7 +467,7 @@ export class MetamaskConnectEVM {
     chainIds?: Hex[];
     account?: string | undefined;
     forceRequest?: boolean;
-  }): Promise<{ accounts: Address[]; chainId: Hex; result: TResult }> {
+  }): Promise<{ accounts: Address[]; chainId: Hex; result: unknown }> {
     const { accounts: connectedAccounts, chainId: connectedChainId } =
       await this.connect({
         chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
@@ -482,10 +478,10 @@ export class MetamaskConnectEVM {
     const resolvedParams =
       typeof params === 'function' ? params(connectedAccounts[0]) : params;
 
-    const result = (await this.#provider.request({
+    const result = await this.#provider.request({
       method,
       params: resolvedParams,
-    })) as TResult;
+    });
 
     this.#eventHandlers?.connectWith?.({
       accounts: connectedAccounts,

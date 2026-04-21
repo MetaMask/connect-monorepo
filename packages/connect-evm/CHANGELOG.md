@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **BREAKING** `connectAndSign` now returns `{ accounts: Address[]; chainId: Hex; signature: string }` instead of a bare `string`. Code that previously destructured or assigned the return value as a string must be updated to read `.signature`. ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
-- **BREAKING** `connectWith` now returns `{ accounts: Address[]; chainId: Hex; result: TResult }` instead of `unknown`, where `TResult` is a generic type parameter that defaults to `unknown`. Code that previously used the return value as the raw RPC result must be updated to read `.result`; callers that know the method's return shape can now pass it as a type argument (e.g. `connectWith<Hex>({ ... })`) to avoid casting. ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
+- **BREAKING** `connectWith` now returns `{ accounts: Address[]; chainId: Hex; result: unknown }` instead of `unknown`. Code that previously used the return value as the raw RPC result must be updated to read `.result`. ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
 
 ## [0.11.2]
 
