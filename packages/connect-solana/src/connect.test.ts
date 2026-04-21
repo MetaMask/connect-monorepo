@@ -178,14 +178,15 @@ describe('createSolanaClient', () => {
         });
       });
 
-      it('should no-op when auto-registration was used', async () => {
+      it('should skip when auto-registration already registered successfully', async () => {
         const client = await createSolanaClient(mockOptions);
-
         await vi.advanceTimersByTimeAsync(1000);
-        vi.clearAllMocks();
+
+        expect(registerSolanaWalletStandard).toHaveBeenCalledTimes(1);
+
         await client.registerWallet();
 
-        expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+        expect(registerSolanaWalletStandard).toHaveBeenCalledTimes(1);
       });
 
       it('should skip registration when MetaMask extension is already registered', async () => {
