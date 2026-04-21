@@ -99,22 +99,36 @@ export async function createSolanaClient(
   const walletName = 'MetaMask';
 
   let hasRegisteredMmc = false;
-  let handleInitRegistration!: () => void;
+  let handledInitRegistration!: () => void;
   const initRegistrationHandledPromise = new Promise<void>((resolve) => {
-    handleInitRegistration = resolve;
+    handledInitRegistration = resolve;
   });
 
+  const registerWallet = async (): Promise<void> => {
+    if (hasRegisteredMmc) {
+      logger('MetaMask Connect is already registered. Skipping...');
+      return;
+    }
+
+    if (isMetamaskExtensionRegistered()) {
+      logger('MetaMask extension is already registered. Skipping...');
+      return;
+    }
+
+    hasRegisteredMmc = true;
+    await registerSolanaWalletStandard({ client, walletName });
+  };
+
   if (skipAutoRegister) {
-    handleInitRegistration();
+    handledInitRegistration();
   } else {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setTimeout(async () => {
-      if (isMetamaskExtensionRegistered()) {
-        logger('MetaMask extension is already registered. Skipping...');
-      } else {
-        await registerSolanaWalletStandard({ client, walletName });
-        hasRegisteredMmc = true;
+      try {
+        await registerWallet();
+      } finally {
+        handledInitRegistration();
       }
-      handleInitRegistration();
     }, 1000);
   }
 
@@ -123,18 +137,7 @@ export async function createSolanaClient(
     getWallet: () => getWalletStandard({ client, walletName }),
     registerWallet: async (): Promise<void> => {
       await initRegistrationHandledPromise;
-      if(hasRegisteredMmc) {
-        logger('MetaMask Connect is already registered. Skipping...');
-        return;
-      }
-
-      if (isMetamaskExtensionRegistered()) {
-        logger('MetaMask extension is already registered. Skipping...');
-        return;
-      }
-
-      await registerSolanaWalletStandard({ client, walletName });
-      hasRegisteredMmc = true;
+      await registerWallet();
     },
     disconnect: async () =>
       await core.disconnect(Object.values(SOLANA_CAIP_IDS) as Scope[]),

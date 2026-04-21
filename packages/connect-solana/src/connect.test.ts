@@ -10,6 +10,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createSolanaClient } from './connect';
 import type { SolanaConnectOptions } from './types';
 
+vi.mock('@wallet-standard/app', () => ({
+  getWallets: vi.fn(() => ({
+    get: (): [] => [],
+  })),
+}));
+
 describe('createSolanaClient', () => {
   const mockOptions: SolanaConnectOptions = {
     dapp: {
@@ -36,6 +42,7 @@ describe('createSolanaClient', () => {
   };
 
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
     (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
       mockCore,
@@ -47,6 +54,7 @@ describe('createSolanaClient', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -110,9 +118,11 @@ describe('createSolanaClient', () => {
     it('should auto-register the wallet by default', async () => {
       await createSolanaClient(mockOptions);
 
+      await vi.advanceTimersByTimeAsync(1000);
+
       expect(registerSolanaWalletStandard).toHaveBeenCalledWith({
         client: mockCore.provider,
-        walletName: 'MetaMask Connect',
+        walletName: 'MetaMask',
       });
     });
 
@@ -135,7 +145,7 @@ describe('createSolanaClient', () => {
 
         expect(getWalletStandard).toHaveBeenCalledWith({
           client: mockCore.provider,
-          walletName: 'MetaMask Connect',
+          walletName: 'MetaMask',
         });
         expect(wallet).toBe(mockWallet);
       });
@@ -159,6 +169,7 @@ describe('createSolanaClient', () => {
       it('should no-op when auto-registration was used', async () => {
         const client = await createSolanaClient(mockOptions);
 
+        await vi.advanceTimersByTimeAsync(1000);
         vi.clearAllMocks();
         await client.registerWallet();
 
