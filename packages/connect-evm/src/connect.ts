@@ -415,7 +415,7 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.message - The message to sign after connecting
    * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
-   * @returns A promise that resolves with the signature
+   * @returns A promise that resolves with the connected accounts, chainId, and signature
    * @throws Error if the selected account is not available after timeout
    */
   async connectAndSign({
@@ -424,12 +424,12 @@ export class MetamaskConnectEVM {
   }: {
     message: string;
     chainIds?: Hex[];
-  }): Promise<string> {
+  }): Promise<{ accounts: Address[]; chainId: Hex; signature: string }> {
     const { accounts, chainId } = await this.connect({
       chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
     });
 
-    const result = (await this.#provider.request({
+    const signature = (await this.#provider.request({
       method: 'personal_sign',
       params: [accounts[0], message],
     })) as string;
@@ -437,10 +437,10 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectAndSign?.({
       accounts,
       chainId,
-      signResponse: result,
+      signature,
     });
 
-    return result;
+    return { accounts, chainId, signature };
   }
 
   /**
@@ -452,7 +452,7 @@ export class MetamaskConnectEVM {
    * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @param [options.account] - Optional specific account to connect to
    * @param [options.forceRequest] - Whether to force a request regardless of an existing session
-   * @returns A promise that resolves with the result of the method invocation
+   * @returns A promise that resolves with the connected accounts, chainId, and the result of the method invocation
    * @throws Error if the selected account is not available after timeout (for methods that require an account)
    */
   async connectWith({
@@ -467,7 +467,7 @@ export class MetamaskConnectEVM {
     chainIds?: Hex[];
     account?: string | undefined;
     forceRequest?: boolean;
-  }): Promise<unknown> {
+  }): Promise<{ accounts: Address[]; chainId: Hex; result: unknown }> {
     const { accounts: connectedAccounts, chainId: connectedChainId } =
       await this.connect({
         chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
@@ -486,10 +486,10 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectWith?.({
       accounts: connectedAccounts,
       chainId: connectedChainId,
-      connectWithResponse: result,
+      result,
     });
 
-    return result;
+    return { accounts: connectedAccounts, chainId: connectedChainId, result };
   }
 
   /**
