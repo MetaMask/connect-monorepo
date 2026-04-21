@@ -247,10 +247,10 @@ Connects and immediately signs a message using `personal_sign`.
 
 **Returns**
 
-`Promise<string>` - The signature as a hex string.
+`Promise<{ accounts: Address[]; chainId: Hex; signature: string }>` - The connected accounts, the active chain ID used for signing, and the resulting signature as a hex string.
 
 ```typescript
-const signature = await client.connectAndSign({
+const { accounts, chainId, signature } = await client.connectAndSign({
   message: 'Sign this message',
   chainIds: ['0x1'],
 });
@@ -272,10 +272,10 @@ Connects and immediately invokes a method with specified parameters.
 
 **Returns**
 
-`Promise<unknown>` - The result of the method invocation.
+`Promise<{ accounts: Address[]; chainId: Hex; result: unknown }>` - The connected accounts, the active chain ID used for the method call, and the result of the method invocation.
 
 ```typescript
-const result = await client.connectWith({
+const { accounts, chainId, result } = await client.connectWith({
   method: 'eth_sendTransaction',
   params: (account) => [
     {
