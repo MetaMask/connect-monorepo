@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0]
+
 ### Changed
 
 - **BREAKING** `connectAndSign` now returns `{ accounts: Address[]; chainId: Hex; signature: string }` instead of a bare `string`. Code that previously destructured or assigned the return value as a string must be updated to read `.signature`. ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
@@ -203,7 +205,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.2...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.0.0...HEAD
+[1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.2...@metamask/connect-evm@1.0.0
 [0.11.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.1...@metamask/connect-evm@0.11.2
 [0.11.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.0...@metamask/connect-evm@0.11.1
 [0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.10.0...@metamask/connect-evm@0.11.0

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0]
+
 ### Changed
 
 - Update `LegacyEVMSDKProvider` to unwrap `.signature` from the new `connectAndSign` return value, which now returns `{ accounts, chainId, signature }` instead of a bare string ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
@@ -183,7 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.6...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.0...HEAD
+[0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.6...@metamask/browser-playground@0.7.0
 [0.6.6]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.5...@metamask/browser-playground@0.6.6
 [0.6.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.4...@metamask/browser-playground@0.6.5
 [0.6.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.3...@metamask/browser-playground@0.6.4
