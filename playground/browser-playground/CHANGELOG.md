@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `LegacyEVMSDKProvider` to unwrap `.signature` from the new `connectAndSign` return value, which now returns `{ accounts, chainId, signature }` instead of a bare string ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
 - Update wagmi `metamask-connector` to unwrap `.signature` / `.result` from the new `connectAndSign` / `connectWith` return values ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
 - Use any Solana provider that announces itself as `MetaMask` instead of preferring `MetaMask Connect` ([#275](https://github.com/MetaMask/connect-monorepo/pull/275))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.0.0
+  - @metamask/connect-solana@1.0.0
 
 ## [0.6.6]
 
