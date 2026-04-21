@@ -115,8 +115,8 @@ export async function createSolanaClient(
       return;
     }
 
-    hasRegisteredMmc = true;
     await registerSolanaWalletStandard({ client, walletName });
+    hasRegisteredMmc = true; // eslint-disable-line require-atomic-updates
   };
 
   if (skipAutoRegister) {
