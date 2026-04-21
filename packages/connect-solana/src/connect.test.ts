@@ -5,6 +5,7 @@ import {
   getWalletStandard,
   registerSolanaWalletStandard,
 } from '@metamask/solana-wallet-standard';
+import { getWallets } from '@wallet-standard/app';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { createSolanaClient } from './connect';
@@ -131,6 +132,17 @@ describe('createSolanaClient', () => {
 
       expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
     });
+
+    it('should skip auto-registration when MetaMask extension is already registered', async () => {
+      (getWallets as ReturnType<typeof vi.fn>).mockReturnValue({
+        get: () => [{ name: 'MetaMask' }],
+      });
+
+      await createSolanaClient(mockOptions);
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+    });
   });
 
   describe('SolanaClient', () => {
@@ -171,6 +183,21 @@ describe('createSolanaClient', () => {
 
         await vi.advanceTimersByTimeAsync(1000);
         vi.clearAllMocks();
+        await client.registerWallet();
+
+        expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+      });
+
+      it('should skip registration when MetaMask extension is already registered', async () => {
+        const client = await createSolanaClient({
+          ...mockOptions,
+          skipAutoRegister: true,
+        });
+
+        (getWallets as ReturnType<typeof vi.fn>).mockReturnValue({
+          get: () => [{ name: 'MetaMask' }],
+        });
+
         await client.registerWallet();
 
         expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
