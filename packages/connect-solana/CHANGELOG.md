@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0]
+
 ### Changed
 
 - **BREAKING** registerWallet() now registers the MetaMask Connect Solana Provider as `MetaMask` instead of `MetaMask Connect` ([#275](https://github.com/MetaMask/connect-monorepo/pull/275))
@@ -84,7 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.0.0...HEAD
+[1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.1...@metamask/connect-solana@1.0.0
 [0.8.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.0...@metamask/connect-solana@0.8.1
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.7.1...@metamask/connect-solana@0.8.0
 [0.7.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.7.0...@metamask/connect-solana@0.7.1
