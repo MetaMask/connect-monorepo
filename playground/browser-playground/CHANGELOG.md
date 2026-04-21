@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use any Solana provider that announces itself as `MetaMask` instead of preferring `MetaMask Connect` ([#275](https://github.com/MetaMask/connect-monorepo/pull/275))
+
+
 ## [0.6.6]
 
 ### Added
