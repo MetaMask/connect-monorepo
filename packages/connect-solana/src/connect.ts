@@ -14,7 +14,7 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
-import { isMetamaskExtensionRegistered, logger, enableDebug } from './utils';
+import { isMetamaskExtensionRegistered, logger } from './utils';
 
 // Value substitued by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
@@ -61,10 +61,6 @@ declare const __PACKAGE_VERSION__: string | undefined;
 export async function createSolanaClient(
   options: SolanaConnectOptions,
 ): Promise<SolanaClient> {
-  if (options.debug) {
-    enableDebug();
-  }
-
   const defaultNetworks: SolanaSupportedNetworks = {
     mainnet: 'https://api.mainnet-beta.solana.com',
   };
