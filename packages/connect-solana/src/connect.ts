@@ -14,6 +14,7 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
+import { isMetamaskExtensionRegistered, logger } from './utils';
 
 // Value substitued by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
@@ -91,20 +92,48 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
-  const walletName = 'MetaMask Connect';
+  const walletName = 'MetaMask';
 
-  if (!skipAutoRegister) {
+  let hasRegisteredMmc = false;
+  let handledInitRegistration!: () => void;
+  const initRegistrationHandledPromise = new Promise<void>((resolve) => {
+    handledInitRegistration = resolve;
+  });
+
+  const registerWallet = async (): Promise<void> => {
+    if (hasRegisteredMmc) {
+      logger('MetaMask Connect is already registered. Skipping...');
+      return;
+    }
+
+    if (isMetamaskExtensionRegistered()) {
+      logger('MetaMask extension is already registered. Skipping...');
+      return;
+    }
+
     await registerSolanaWalletStandard({ client, walletName });
+    hasRegisteredMmc = true; // eslint-disable-line require-atomic-updates
+  };
+
+  if (skipAutoRegister) {
+    handledInitRegistration();
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    setTimeout(async () => {
+      try {
+        await registerWallet();
+      } finally {
+        handledInitRegistration();
+      }
+    }, 1000);
   }
 
   return {
     core,
     getWallet: () => getWalletStandard({ client, walletName }),
     registerWallet: async (): Promise<void> => {
-      if (!skipAutoRegister) {
-        return;
-      }
-      await registerSolanaWalletStandard({ client, walletName });
+      await initRegistrationHandledPromise;
+      await registerWallet();
     },
     disconnect: async () =>
       await core.disconnect(Object.values(SOLANA_CAIP_IDS) as Scope[]),
