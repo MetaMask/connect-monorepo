@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING** `connectAndSign` now returns `{ accounts: Address[]; chainId: Hex; signature: string }` instead of a bare `string`. Code that previously destructured or assigned the return value as a string must be updated to read `.signature`. ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
 - **BREAKING** `connectWith` now returns `{ accounts: Address[]; chainId: Hex; result: unknown }` instead of `unknown`. Code that previously used the return value as the raw RPC result must be updated to read `.result`. ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
 
+### Fixed
+
+- Ensure EIP-1193 provider properties (`selectedChainId`, `accounts`) are updated before emitting the `connect` event ([#269](https://github.com/MetaMask/connect-monorepo/pull/269))
+
 ## [0.10.0]
 
 ### Changed
