@@ -120,18 +120,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.#dappClient;
   }
 
-  get storage(): StoreClient {
-    return this.options.storage;
+  get transportType(): TransportType {
+    return this.#transportType ?? TransportType.UNKNOWN;
   }
 
-  get transportType(): TransportType {
-    if (this.#transport instanceof DefaultTransport) {
-      return TransportType.Browser;
-    }
-    if (this.#transport) {
-      return TransportType.MWP;
-    }
-    return TransportType.UNKNOWN;
+  get storage(): StoreClient {
+    return this.options.storage;
   }
 
   readonly #sdkInfo = `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
@@ -781,7 +775,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   ): Promise<void> {
     if (
       this.status === 'connecting' &&
-      this.transportType === TransportType.MWP
+      this.#transportType === TransportType.MWP
     ) {
       await this.#openConnectDeeplinkIfNeeded();
       throw new Error(
@@ -969,7 +963,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
       // We want to leave the DefaultTransport instance connected so that we can
       // still listen for wallet_sessionChanged events.
-      if (this.transportType !== TransportType.Browser) {
+      if (this.#transportType !== TransportType.Browser) {
         await this.#listener?.();
         this.#beforeUnloadListener?.();
         this.#listener = undefined;
@@ -992,7 +986,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       transport,
       rpcClient,
       options,
-      this.transportType,
+      this.#transportType ?? TransportType.UNKNOWN,
     );
     // TODO: need read only method support for solana
     return requestRouter.invokeMethod(request);
