@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Lazy-load MWP transport dependencies: `@metamask/mobile-wallet-protocol-core`, `@metamask/mobile-wallet-protocol-dapp-client`, and `eciesjs` are now dynamically imported only when MWP transport is actually used, allowing bundlers to code-split the entire MWP + crypto dependency tree for consumers who only use the browser extension flow ([#244](https://github.com/MetaMask/connect-monorepo/pull/244))
+
 ## [0.12.1]
 
 ### Fixed
@@ -18,10 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Include `analytics.remote_session_id` in V2 connection metadata so the wallet can correlate dapp-side and wallet-side analytics events ([#256](https://github.com/MetaMask/connect-monorepo/pull/256))
-
-### Changed
-
-- Lazy-load MWP transport dependencies: `@metamask/mobile-wallet-protocol-core`, `@metamask/mobile-wallet-protocol-dapp-client`, and `eciesjs` are now dynamically imported only when MWP transport is actually used, allowing bundlers to code-split the entire MWP + crypto dependency tree for consumers who only use the browser extension flow ([#244](https://github.com/MetaMask/connect-monorepo/pull/244))
 
 ## [0.11.1]
 
