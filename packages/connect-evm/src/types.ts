@@ -19,13 +19,13 @@ export type EIP1193ProviderEvents = {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   display_uri: [string];
   connectAndSign: [
-    { accounts: readonly Address[]; chainId: Hex; signResponse: string },
+    { accounts: readonly Address[]; chainId: Hex; signature: string },
   ];
   connectWith: [
     {
       accounts: readonly Address[];
       chainId: Hex;
-      connectWithResponse: unknown;
+      result: unknown;
     },
   ];
 };
@@ -39,12 +39,12 @@ export type EventHandlers = {
   connectAndSign: (result: {
     accounts: readonly Address[];
     chainId: Hex;
-    signResponse: string;
+    signature: string;
   }) => void;
   connectWith: (result: {
     accounts: readonly Address[];
     chainId: Hex;
-    connectWithResponse: unknown;
+    result: unknown;
   }) => void;
 };
 

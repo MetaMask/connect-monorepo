@@ -3,7 +3,6 @@
 import { analytics } from '@metamask/analytics';
 import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
-  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -15,7 +14,8 @@ import {
   isRejectionError,
   TransportType,
 } from '@metamask/connect-multichain';
-import { hexToNumber } from '@metamask/utils';
+import { createDeferredPromise, hexToNumber } from '@metamask/utils';
+import type { DeferredPromise } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
 import { enableDebug, logger } from './logger';
@@ -119,6 +119,9 @@ export class MetamaskConnectEVM {
    */
   #pendingPreferredChainId: Hex | undefined;
 
+  /** Deferred that resolves once #onSessionChanged has completed for the first time. */
+  readonly #initPromise: DeferredPromise;
+
   /**
    * Creates a new MetamaskConnectEVM instance.
    * Use the static `create()` method instead to ensure proper async initialization.
@@ -154,6 +157,8 @@ export class MetamaskConnectEVM {
     this.#displayUriHandler = this.#onDisplayUri.bind(this);
     this.#core.on('display_uri', this.#displayUriHandler);
 
+    this.#initPromise = createDeferredPromise();
+
     logger('Connect/EVM constructor completed');
   }
 
@@ -173,6 +178,7 @@ export class MetamaskConnectEVM {
   ): Promise<MetamaskConnectEVM> {
     const instance = new MetamaskConnectEVM(options);
     await instance.#core.emitSessionChanged();
+    await instance.#initPromise.promise;
     return instance;
   }
 
@@ -409,7 +415,7 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.message - The message to sign after connecting
    * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
-   * @returns A promise that resolves with the signature
+   * @returns A promise that resolves with the connected accounts, chainId, and signature
    * @throws Error if the selected account is not available after timeout
    */
   async connectAndSign({
@@ -418,12 +424,12 @@ export class MetamaskConnectEVM {
   }: {
     message: string;
     chainIds?: Hex[];
-  }): Promise<string> {
+  }): Promise<{ accounts: Address[]; chainId: Hex; signature: string }> {
     const { accounts, chainId } = await this.connect({
       chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
     });
 
-    const result = (await this.#provider.request({
+    const signature = (await this.#provider.request({
       method: 'personal_sign',
       params: [accounts[0], message],
     })) as string;
@@ -431,10 +437,10 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectAndSign?.({
       accounts,
       chainId,
-      signResponse: result,
+      signature,
     });
 
-    return result;
+    return { accounts, chainId, signature };
   }
 
   /**
@@ -446,7 +452,7 @@ export class MetamaskConnectEVM {
    * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @param [options.account] - Optional specific account to connect to
    * @param [options.forceRequest] - Whether to force a request regardless of an existing session
-   * @returns A promise that resolves with the result of the method invocation
+   * @returns A promise that resolves with the connected accounts, chainId, and the result of the method invocation
    * @throws Error if the selected account is not available after timeout (for methods that require an account)
    */
   async connectWith({
@@ -461,7 +467,7 @@ export class MetamaskConnectEVM {
     chainIds?: Hex[];
     account?: string | undefined;
     forceRequest?: boolean;
-  }): Promise<unknown> {
+  }): Promise<{ accounts: Address[]; chainId: Hex; result: unknown }> {
     const { accounts: connectedAccounts, chainId: connectedChainId } =
       await this.connect({
         chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
@@ -480,10 +486,10 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectWith?.({
       accounts: connectedAccounts,
       chainId: connectedChainId,
-      connectWithResponse: result,
+      result,
     });
 
-    return result;
+    return { accounts: connectedAccounts, chainId: connectedChainId, result };
   }
 
   /**
@@ -789,6 +795,8 @@ export class MetamaskConnectEVM {
         accounts: initialAccounts,
       });
     }
+
+    this.#initPromise.resolve();
   }
 
   /**
@@ -802,8 +810,8 @@ export class MetamaskConnectEVM {
     }
     logger('handler: chainChanged', { chainId });
     this.#provider.selectedChainId = chainId;
-    this.#eventHandlers?.chainChanged?.(chainId);
     this.#provider.emit('chainChanged', chainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
   }
 
   /**
@@ -844,37 +852,47 @@ export class MetamaskConnectEVM {
       accounts,
     };
 
-    if (this.#status !== 'connected') {
-      this.#status = 'connected';
-      this.#provider.emit('connect', data);
-      this.#eventHandlers?.connect?.(data);
-
-      this.#removeNotificationHandler?.();
-
-      const onAccountsChanged = (accs: string[]): void => {
-        logger('core-event: accountsChanged', accs);
-        this.#onAccountsChanged(accs as Address[]);
-      };
-
-      const onChainChanged = (chainChanged: { chainId: string }): void => {
-        logger('core-event: chainChanged', chainChanged.chainId);
-        this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
-          logger('Error caching chainId in notification handler', error);
-        });
-        this.#onChainChanged(chainChanged.chainId as Hex);
-      };
-
-      this.#core.on('metamask_accountsChanged', onAccountsChanged);
-      this.#core.on('metamask_chainChanged', onChainChanged);
-
-      this.#removeNotificationHandler = (): void => {
-        this.#core.off('metamask_accountsChanged', onAccountsChanged);
-        this.#core.off('metamask_chainChanged', onChainChanged);
-      };
+    if (this.#status === 'connected') {
+      this.#onChainChanged(chainId);
+      this.#onAccountsChanged(accounts);
+      return;
     }
 
-    this.#onChainChanged(chainId);
-    this.#onAccountsChanged(accounts);
+    this.#provider.selectedChainId = chainId;
+    this.#provider.accounts = accounts;
+
+    this.#status = 'connected';
+    this.#provider.emit('connect', data);
+    this.#eventHandlers?.connect?.(data);
+
+    this.#provider.emit('chainChanged', chainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
+
+    this.#provider.emit('accountsChanged', accounts);
+    this.#eventHandlers?.accountsChanged?.(accounts);
+
+    this.#removeNotificationHandler?.();
+
+    const onAccountsChanged = (accs: string[]): void => {
+      logger('core-event: accountsChanged', accs);
+      this.#onAccountsChanged(accs as Address[]);
+    };
+
+    const onChainChanged = (chainChanged: { chainId: string }): void => {
+      logger('core-event: chainChanged', chainChanged.chainId);
+      this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
+        logger('Error caching chainId in notification handler', error);
+      });
+      this.#onChainChanged(chainChanged.chainId as Hex);
+    };
+
+    this.#core.on('metamask_accountsChanged', onAccountsChanged);
+    this.#core.on('metamask_chainChanged', onChainChanged);
+
+    this.#removeNotificationHandler = (): void => {
+      this.#core.off('metamask_accountsChanged', onAccountsChanged);
+      this.#core.off('metamask_chainChanged', onChainChanged);
+    };
   }
 
   /**
@@ -970,8 +988,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The current connection status
    */
-  get status(): ConnectionStatus {
-    return this.#core.status;
+  get status(): ConnectEvmStatus {
+    return this.#status;
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-solana",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "description": "Solana Layer for MetaMask Connect",
   "keywords": [
     "MetaMask",
@@ -60,6 +60,7 @@
   "dependencies": {
     "@metamask/connect-multichain": "workspace:^",
     "@metamask/solana-wallet-standard": "^0.6.0",
+    "@wallet-standard/app": "~1.1.0",
     "@wallet-standard/base": "^1.1.0"
   },
   "devDependencies": {
