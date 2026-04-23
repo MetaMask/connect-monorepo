@@ -125,7 +125,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   get transportType(): TransportType {
-    return this.#transportType ?? TransportType.Browser;
+    if (this.#transport instanceof DefaultTransport) {
+      return TransportType.Browser;
+    }
+    if (this.#transport) {
+      return TransportType.MWP;
+    }
+    return TransportType.UNKNOWN;
   }
 
   readonly #sdkInfo = `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
@@ -615,8 +621,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #setupDefaultTransport(
     options: { persist?: boolean } = { persist: true },
   ): Promise<DefaultTransport> {
-    if (this.#transport instanceof DefaultTransport) {
-      return this.#transport;
+    if (this.#transportType === TransportType.Browser) {
+      return this.#transport as DefaultTransport;
     }
 
     if (options?.persist) {
