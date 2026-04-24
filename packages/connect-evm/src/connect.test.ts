@@ -81,6 +81,7 @@ function createMockCore(): MockCore {
     emitSessionChanged: vi.fn().mockImplementation(async (): Promise<void> => {
       mockCore.emit('wallet_sessionChanged', { sessionScopes: {} });
     }),
+    getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
     disconnect: vi.fn().mockResolvedValue(undefined),
     connect: vi.fn().mockResolvedValue(undefined),
     invokeMethod: vi.fn().mockResolvedValue('0xsignature'),

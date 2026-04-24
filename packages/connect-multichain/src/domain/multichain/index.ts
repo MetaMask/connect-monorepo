@@ -2,6 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type {
   MultichainApiClient,
+  SessionData,
   SessionProperties,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
@@ -75,6 +76,8 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
   abstract openSimpleDeeplinkIfNeeded(): void;
 
   abstract emitSessionChanged(): Promise<void>;
+
+  abstract getSession(): Promise<SessionData>;
 
   constructor(protected options: MultichainOptions) {
     super();
