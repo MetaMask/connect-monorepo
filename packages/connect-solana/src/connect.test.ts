@@ -35,11 +35,19 @@ describe('createSolanaClient', () => {
   const mockCore = {
     provider: {},
     disconnect: vi.fn().mockResolvedValue(undefined),
+    getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
   };
+
+  const mockConnect = vi.fn().mockResolvedValue(undefined);
 
   const mockWallet = {
     name: 'MetaMask',
     version: '1.0.0',
+    features: {
+      'standard:connect': {
+        connect: mockConnect,
+      },
+    },
   };
 
   beforeEach(() => {
@@ -48,6 +56,7 @@ describe('createSolanaClient', () => {
     (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
       mockCore,
     );
+    mockCore.getSession.mockResolvedValue({ sessionScopes: {} });
     (getWalletStandard as ReturnType<typeof vi.fn>).mockReturnValue(mockWallet);
     (
       registerSolanaWalletStandard as ReturnType<typeof vi.fn>
@@ -142,6 +151,43 @@ describe('createSolanaClient', () => {
       await vi.advanceTimersByTimeAsync(1000);
 
       expect(registerSolanaWalletStandard).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('session-based auto-connect', () => {
+    it('should call provider connect when existing session has solana scopes', async () => {
+      mockCore.getSession.mockResolvedValueOnce({
+        sessionScopes: {
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': {
+            methods: [],
+            notifications: [],
+          },
+        },
+      });
+
+      await createSolanaClient(mockOptions);
+
+      expect(mockConnect).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call provider connect when session has no solana scopes', async () => {
+      mockCore.getSession.mockResolvedValueOnce({ sessionScopes: {} });
+
+      await createSolanaClient(mockOptions);
+
+      expect(mockConnect).not.toHaveBeenCalled();
+    });
+
+    it('should not call provider connect when session has only non-solana scopes', async () => {
+      mockCore.getSession.mockResolvedValueOnce({
+        sessionScopes: {
+          'eip155:1': { methods: [], notifications: [] },
+        },
+      });
+
+      await createSolanaClient(mockOptions);
+
+      expect(mockConnect).not.toHaveBeenCalled();
     });
   });
 
