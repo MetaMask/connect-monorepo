@@ -364,6 +364,164 @@ function testSuite<T extends MultichainOptions>({
       },
       { timeout: 15000 },
     );
+
+    t.describe(`${platform} getSession`, () => {
+      t.it(
+        `${platform} returns an empty session when the SDK has no active connection`,
+        async () => {
+          // Provide a default mock so any passive wallet_getSession invocation
+          // (e.g. web's DefaultTransport.init) resolves with no session.
+          mockedData.mockWalletGetSession.mockImplementation(
+            async () => undefined as any,
+          );
+
+          // Do not seed a stored transport so the SDK initializes in its
+          // pre-connected state (status: 'loaded' or 'pending').
+          sdk = await createSDK(testOptions);
+
+          t.expect(sdk.status).not.toBe('connected');
+
+          const session = await sdk.getSession();
+
+          t.expect(session).toStrictEqual({ sessionScopes: {} });
+
+          // Non-web platforms have no transport instance until connect() is
+          // called, so getSession must short-circuit without issuing a
+          // wallet_getSession request to MWP.
+          if (platform !== 'web') {
+            t.expect(
+              mockedData.mockDappClient.sendRequest,
+            ).not.toHaveBeenCalledWith(
+              t.expect.objectContaining({
+                name: MULTICHAIN_PROVIDER_STREAM_NAME,
+                data: t.expect.objectContaining({
+                  method: 'wallet_getSession',
+                }),
+              }),
+            );
+          }
+        },
+      );
+
+      t.it(
+        `${platform} returns the wallet session when the transport is connected`,
+        async () => {
+          mockedData.nativeStorageStub.setItem(
+            'multichain-transport',
+            transportString,
+          );
+
+          // For non-web platforms, MWPTransport.request short-circuits via a
+          // cached response in storage. Pre-seed it with the expected session
+          // so the connected code path is exercised deterministically across
+          // all platforms.
+          if (platform !== 'web') {
+            mockedData.nativeStorageStub.setItem(
+              'cache_wallet_getSession',
+              JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'wallet_sessionChanged',
+                result: mockSessionData,
+              }),
+            );
+          }
+
+          mockedData.mockWalletGetSession.mockImplementation(
+            async () => mockSessionData,
+          );
+
+          t.vi
+            .spyOn(SessionStore.prototype, 'list')
+            .mockImplementation(async () =>
+              Promise.resolve([
+                await (mockedData as any).mockWalletGetSession(),
+              ]),
+            );
+
+          sdk = await createSDK(testOptions);
+
+          t.expect(sdk.status).toBe('connected');
+
+          mockedData.mockDefaultTransport.request.mockClear();
+          mockedData.mockDappClient.sendRequest.mockClear();
+
+          const session = await sdk.getSession();
+
+          t.expect(session).toStrictEqual(mockSessionData);
+
+          if (platform === 'web') {
+            // Web has no caching layer, so getSession must dispatch a
+            // wallet_getSession request directly to the DefaultTransport.
+            t.expect(
+              mockedData.mockDefaultTransport.request,
+            ).toHaveBeenCalledWith(
+              t.expect.objectContaining({ method: 'wallet_getSession' }),
+              t.expect.anything(),
+            );
+          }
+        },
+      );
+
+      t.it(
+        `${platform} falls back to an empty session when the wallet returns no result`,
+        async () => {
+          mockedData.nativeStorageStub.setItem(
+            'multichain-transport',
+            transportString,
+          );
+
+          // Seed the SDK into a connected state with a valid session so init
+          // succeeds, then swap the wallet response below to verify that
+          // getSession's `?? emptySession` fallback applies.
+          if (platform !== 'web') {
+            mockedData.nativeStorageStub.setItem(
+              'cache_wallet_getSession',
+              JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'wallet_sessionChanged',
+                result: mockSessionData,
+              }),
+            );
+          }
+
+          mockedData.mockWalletGetSession.mockImplementation(
+            async () => mockSessionData,
+          );
+
+          t.vi
+            .spyOn(SessionStore.prototype, 'list')
+            .mockImplementation(async () =>
+              Promise.resolve([
+                await (mockedData as any).mockWalletGetSession(),
+              ]),
+            );
+
+          sdk = await createSDK(testOptions);
+
+          t.expect(sdk.status).toBe('connected');
+
+          // Now make the wallet return no result and (for non-web) clear the
+          // cached response so getSession actually re-queries the wallet.
+          mockedData.mockWalletGetSession.mockImplementation(
+            async () => undefined as any,
+          );
+          if (platform !== 'web') {
+            mockedData.nativeStorageStub.setItem(
+              'cache_wallet_getSession',
+              JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'wallet_sessionChanged',
+                // result intentionally omitted to model an empty wallet response
+              }),
+            );
+          }
+
+          const session = await sdk.getSession();
+
+          t.expect(session).toStrictEqual({ sessionScopes: {} });
+        },
+      );
+    });
   });
 }
 
