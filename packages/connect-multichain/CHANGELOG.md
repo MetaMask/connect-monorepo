@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `getSession()` method on `MultichainCore` / `MetaMaskConnectMultichain` that returns the current CAIP `SessionData`. Returns an empty session (`{ sessionScopes: {} }`) when no transport is connected, otherwise dispatches `wallet_getSession` through the active transport. This lets ecosystem clients (EVM, Solana, etc.) read the current session synchronously during initialization instead of waiting for a `wallet_sessionChanged` event. ([#279](https://github.com/MetaMask/connect-monorepo/pull/279))
+
 ## [0.12.1]
 
 ### Fixed
