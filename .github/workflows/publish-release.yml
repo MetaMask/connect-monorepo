@@ -107,20 +107,26 @@ jobs:
           PLAYGROUND_TAG="${PKG_NAME}@${PKG_VERSION}"
           echo "PLAYGROUND_TAG=$PLAYGROUND_TAG" >> "$GITHUB_OUTPUT"
 
-          # Check that the tag exists AND was created on this commit.
-          # A tag from a prior release would point to an older commit.
-          TAG_COMMIT=$(git rev-list -n 1 "refs/tags/$PLAYGROUND_TAG" 2>/dev/null || echo "")
+          # Detect a release by comparing the playground version against the
+          # parent commit. The RN playground is `"private": true` (so it is
+          # never npm-published), and our release tooling only tags
+          # non-private workspaces. We therefore can't rely on a per-package
+          # tag existing on the release commit the way we can for other
+          # workspaces — see build-rn-playground-apk.yml, which creates the
+          # tag itself when uploading the APK.
+          if git cat-file -e "${{ github.sha }}^:playground/react-native-playground/package.json" 2>/dev/null; then
+            git show "${{ github.sha }}^:playground/react-native-playground/package.json" > /tmp/prev-rn-pkg.json
+            PREV_VERSION=$(node -p "require('/tmp/prev-rn-pkg.json').version")
+          else
+            PREV_VERSION=""
+          fi
 
-          if [ "$TAG_COMMIT" = "${{ github.sha }}" ]; then
+          if [ -n "$PREV_VERSION" ] && [ "$PREV_VERSION" != "$PKG_VERSION" ]; then
             echo "RELEASED=true" >> "$GITHUB_OUTPUT"
-            echo "$PLAYGROUND_TAG points to ${{ github.sha }} — released in this run"
+            echo "$PKG_NAME bumped $PREV_VERSION -> $PKG_VERSION in ${{ github.sha }} — will build APK"
           else
             echo "RELEASED=false" >> "$GITHUB_OUTPUT"
-            if [ -z "$TAG_COMMIT" ]; then
-              echo "$PLAYGROUND_TAG does not exist — playground was not released"
-            else
-              echo "$PLAYGROUND_TAG points to $TAG_COMMIT, not ${{ github.sha }} — stale tag from a prior release"
-            fi
+            echo "$PKG_NAME version unchanged at $PKG_VERSION — skipping APK build"
           fi
 
   publish-wagmi-to-gh-pages:
