@@ -3,7 +3,12 @@ import type { MultichainApiClient } from '@metamask/multichain-api-client';
 import type { Json } from '@metamask/utils';
 import * as t from 'vitest';
 
-import { MultichainCore, TransportType, type ConnectionStatus, type SessionData } from '.';
+import {
+  MultichainCore,
+  TransportType,
+  type ConnectionStatus,
+  type SessionData,
+} from '.';
 import type { RPCAPI, RpcUrlsMap } from './api/types';
 import type {
   ExtendedTransport,

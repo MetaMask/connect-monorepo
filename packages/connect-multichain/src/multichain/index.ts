@@ -1046,9 +1046,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
 
     // Otherwise, we need to fetch the current CAIP session from the wallet
-    const response = await this.transport.request({
+    const response = (await this.transport.request({
       method: 'wallet_getSession',
-    }) as { result: SessionData };
+    })) as { result: SessionData };
 
     return response.result ?? emptySession;
   }
