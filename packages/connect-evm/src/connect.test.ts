@@ -32,6 +32,9 @@ type MockCore = MultichainCore & {
       request: { method: string; params: unknown[] };
     }) => Promise<unknown>
   >;
+  provider: MultichainCore['provider'] & {
+    getSession: Mock<() => Promise<SessionData>>;
+  };
 };
 
 /**
@@ -78,12 +81,12 @@ function createMockCore(): MockCore {
     emit(event: string, ...args: unknown[]): void {
       handlers[event]?.forEach((handler) => handler(...args));
     },
-    emitSessionChanged: vi.fn().mockImplementation(async (): Promise<void> => {
-      mockCore.emit('wallet_sessionChanged', { sessionScopes: {} });
-    }),
     disconnect: vi.fn().mockResolvedValue(undefined),
     connect: vi.fn().mockResolvedValue(undefined),
     invokeMethod: vi.fn().mockResolvedValue('0xsignature'),
+    provider: {
+      getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
+    },
     transport: {
       sendEip1193Message,
       onNotification,
@@ -101,6 +104,62 @@ function createMockCore(): MockCore {
 }
 
 describe('MetamaskConnectEVM', () => {
+  describe('create', () => {
+    it('fetches the current session via core.provider.getSession() during initialization', async () => {
+      const mockCore = createMockCore();
+      await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(mockCore.provider.getSession).toHaveBeenCalledTimes(1);
+    });
+
+    it('resolves with a connected client when an existing session has eip155 scopes', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.provider.getSession.mockResolvedValueOnce({
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(client.accounts).toEqual([
+        '0x1234567890123456789012345678901234567890',
+      ]);
+      expect(client.selectedChainId).toBe('0x1');
+    });
+
+    it('resolves with a disconnected client when the existing session has no eip155 scopes', async () => {
+      const mockCore = createMockCore();
+      mockCore.provider.getSession.mockResolvedValueOnce({
+        sessionScopes: {
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': {
+            methods: [],
+            notifications: [],
+            accounts: [],
+          },
+        },
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(client.accounts).toEqual([]);
+      expect(client.selectedChainId).toBeUndefined();
+    });
+
+    it('resolves with a disconnected client when there is no existing session', async () => {
+      const mockCore = createMockCore();
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(client.accounts).toEqual([]);
+      expect(client.selectedChainId).toBeUndefined();
+    });
+  });
+
   describe('#onSessionChanged', () => {
     describe('disconnects', () => {
       let mockCore: MockCore;
