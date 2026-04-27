@@ -102,6 +102,61 @@ function createMockCore(): MockCore {
 }
 
 describe('MetamaskConnectEVM', () => {
+  describe('create', () => {
+    it('fetches the initial session via core.getSession() during initialization', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.getSession = vi.fn().mockResolvedValue(session);
+
+      await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(mockCore.getSession).toHaveBeenCalledTimes(1);
+    });
+
+    it('ensures the client is connected when core.getSession() resolves with EVM session scopes', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.getSession = vi.fn().mockResolvedValue(session);
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(client.accounts).toEqual([
+        '0x1234567890123456789012345678901234567890',
+      ]);
+      expect(client.selectedChainId).toBe('0x1');
+    });
+
+    it('leaves the client disconnected when core.getSession() resolves with an empty session', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.getSession = vi
+        .fn()
+        .mockResolvedValue({ sessionScopes: {} } satisfies SessionData);
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(client.accounts).toEqual([]);
+    });
+  });
+
   describe('#onSessionChanged', () => {
     describe('disconnects', () => {
       let mockCore: MockCore;

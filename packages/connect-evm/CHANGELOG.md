@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `MetamaskConnectEVM.create()` now hydrates initial client state by reading the current session synchronously via `core.getSession()` and invoking `#onSessionChanged` directly, replacing the previous `emitSessionChanged()` approach. ([#279](https://github.com/MetaMask/connect-monorepo/pull/279))
+
 ## [1.0.0]
 
 ### Changed
