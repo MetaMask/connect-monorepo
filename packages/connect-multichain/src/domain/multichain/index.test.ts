@@ -3,7 +3,12 @@ import type { MultichainApiClient } from '@metamask/multichain-api-client';
 import type { Json } from '@metamask/utils';
 import * as t from 'vitest';
 
-import { MultichainCore, TransportType, type ConnectionStatus } from '.';
+import {
+  MultichainCore,
+  TransportType,
+  type ConnectionStatus,
+  type SessionData,
+} from '.';
 import type { RPCAPI, RpcUrlsMap } from './api/types';
 import type {
   ExtendedTransport,
@@ -44,6 +49,8 @@ class MockMultichainCore extends MultichainCore {
   openSimpleDeeplinkIfNeeded = (): void => undefined;
 
   emitSessionChanged = async (): Promise<void> => Promise.resolve();
+
+  getSession = async (): Promise<SessionData> => ({ sessionScopes: {} });
 
   /**
    * Exposes options for test assertions.
