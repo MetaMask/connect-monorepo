@@ -36,7 +36,10 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   isTransportConnected(): boolean {
-    return this.isTransportDefined() && this.metamaskConnectMultichain.transport!.isConnected();
+    return (
+      this.isTransportDefined() &&
+      this.metamaskConnectMultichain.transport.isConnected()
+    );
   }
 
   clearNotificationCallbacks(): void {
