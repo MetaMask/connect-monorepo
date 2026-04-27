@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Tighten `MultichainApiClientWrapperTransport` connected transport check on `wallet_getSession` and `wallet_invokeMethod`. Remove defined transport check on `wallet_revokeSession`. ([#280](https://github.com/MetaMask/connect-monorepo/pull/280))
+
 ## [0.12.1]
 
 ### Fixed
