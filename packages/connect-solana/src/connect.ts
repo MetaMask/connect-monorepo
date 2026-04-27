@@ -131,7 +131,6 @@ export async function createSolanaClient(
 
   const provider = getWalletStandard({ client, walletName });
   const { sessionScopes } = await core.getSession();
-  // TODO: clean this up
   const hasSolanaScope = Object.keys(sessionScopes).some((scope) => {
     const { namespace } = parseScopeString(scope);
     return namespace === 'solana';
