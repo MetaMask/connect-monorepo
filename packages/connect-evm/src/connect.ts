@@ -14,8 +14,7 @@ import {
   isRejectionError,
   TransportType,
 } from '@metamask/connect-multichain';
-import { createDeferredPromise, hexToNumber } from '@metamask/utils';
-import type { DeferredPromise } from '@metamask/utils';
+import { hexToNumber } from '@metamask/utils';
 
 import { IGNORED_METHODS } from './constants';
 import { enableDebug, logger } from './logger';
@@ -119,9 +118,6 @@ export class MetamaskConnectEVM {
    */
   #pendingPreferredChainId: Hex | undefined;
 
-  /** Deferred that resolves once #onSessionChanged has completed for the first time. */
-  readonly #initPromise: DeferredPromise;
-
   /**
    * Creates a new MetamaskConnectEVM instance.
    * Use the static `create()` method instead to ensure proper async initialization.
@@ -157,8 +153,6 @@ export class MetamaskConnectEVM {
     this.#displayUriHandler = this.#onDisplayUri.bind(this);
     this.#core.on('display_uri', this.#displayUriHandler);
 
-    this.#initPromise = createDeferredPromise();
-
     logger('Connect/EVM constructor completed');
   }
 
@@ -177,8 +171,8 @@ export class MetamaskConnectEVM {
     options: MetamaskConnectEVMOptions,
   ): Promise<MetamaskConnectEVM> {
     const instance = new MetamaskConnectEVM(options);
-    await instance.#core.emitSessionChanged();
-    await instance.#initPromise.promise;
+    const session = await instance.#core.provider.getSession();
+    await instance.#onSessionChanged(session);
     return instance;
   }
 
@@ -795,8 +789,6 @@ export class MetamaskConnectEVM {
         accounts: initialAccounts,
       });
     }
-
-    this.#initPromise.resolve();
   }
 
   /**
