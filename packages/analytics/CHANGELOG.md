@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Removed `MobileSDKConnectV2Payload` / `MobileSDKConnectV2Properties` from `schema.ts` and the `EventV2` oneOf; the `mobile/sdk-connect-v2` namespace has no emitters after [`metamask-mobile#27864`](https://github.com/MetaMask/metamask-mobile/pull/27864) and [`metamask-mobile#28322`](https://github.com/MetaMask/metamask-mobile/pull/28322), and the V2 endpoint is being updated to reject the namespace in [`metamask-sdk-analytics-api#29`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/29). Internal types only — no change to the public API.
+
 ## [0.4.0]
 
 ### Changed

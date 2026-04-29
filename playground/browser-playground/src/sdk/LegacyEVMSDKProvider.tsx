@@ -155,10 +155,12 @@ export const LegacyEVMSDKProvider = ({
       const sdkInstance = await sdkRef.current;
       const chainIdsToUse =
         chainIds && chainIds.length > 0 ? chainIds : ['0x1' as Hex];
-      return sdkInstance.connectAndSign({
-        message,
-        chainIds: chainIdsToUse,
-      });
+      return (
+        await sdkInstance.connectAndSign({
+          message,
+          chainIds: chainIdsToUse,
+        })
+      ).signature;
     },
     [],
   );
