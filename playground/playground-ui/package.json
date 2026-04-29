@@ -9,13 +9,13 @@
     "playground",
     "UI"
   ],
-  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/playground-ui#readme",
+  "homepage": "https://github.com/MetaMask/metamask-connect/tree/main/playground/playground-ui#readme",
   "bugs": {
     "url": ""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "https://github.com/MetaMask/metamask-connect.git"
   },
   "license": "UNLICENSED",
   "sideEffects": false,
