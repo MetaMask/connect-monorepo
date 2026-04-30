@@ -131,10 +131,12 @@ export async function createSolanaClient(
 
   const provider = getWalletStandard({ client, walletName });
   const session = await core.provider.getSession();
-  const hasSolanaScope = Object.keys(session?.sessionScopes ?? {}).some((scope) => {
-    const { namespace } = parseScopeString(scope);
-    return namespace === 'solana';
-  });
+  const hasSolanaScope = Object.keys(session?.sessionScopes ?? {}).some(
+    (scope) => {
+      const { namespace } = parseScopeString(scope);
+      return namespace === 'solana';
+    },
+  );
   if (hasSolanaScope) {
     // This will resolve without needing to prompt the user as we know solana scopes are already granted
     await provider.features['standard:connect'].connect();
