@@ -171,7 +171,12 @@ export class MetamaskConnectEVM {
     options: MetamaskConnectEVMOptions,
   ): Promise<MetamaskConnectEVM> {
     const instance = new MetamaskConnectEVM(options);
-    const session = await instance.#core.provider.getSession();
+    let session;
+    try {
+      session = await instance.#core.provider.getSession();
+    } catch {
+      session = { sessionScopes: {} };
+    }
     await instance.#onSessionChanged(session);
     return instance;
   }

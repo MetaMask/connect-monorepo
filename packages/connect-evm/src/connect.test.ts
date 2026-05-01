@@ -158,6 +158,19 @@ describe('MetamaskConnectEVM', () => {
       expect(client.accounts).toEqual([]);
       expect(client.selectedChainId).toBeUndefined();
     });
+
+    it('resolves with a disconnected client when core.provider.getSession() throws', async () => {
+      const mockCore = createMockCore();
+      mockCore.provider.getSession.mockRejectedValueOnce(
+        new Error('transport unavailable'),
+      );
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      expect(mockCore.provider.getSession).toHaveBeenCalledTimes(1);
+      expect(client.accounts).toEqual([]);
+      expect(client.selectedChainId).toBeUndefined();
+    });
   });
 
   describe('#onSessionChanged', () => {
