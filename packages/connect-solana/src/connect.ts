@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
-import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import {
   createMultichainClient,
   type Scope,
@@ -132,10 +131,7 @@ export async function createSolanaClient(
   const provider = getWalletStandard({ client, walletName });
   const session = await core.provider.getSession();
   const hasSolanaScope = Object.keys(session?.sessionScopes ?? {}).some(
-    (scope) => {
-      const { namespace } = parseScopeString(scope);
-      return namespace === 'solana';
-    },
+    (scope) => scope.startsWith('solana:'),
   );
   if (hasSolanaScope) {
     // This will resolve without needing to prompt the user as we know solana scopes are already granted
