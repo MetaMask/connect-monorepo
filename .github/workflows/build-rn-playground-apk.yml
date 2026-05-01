@@ -131,9 +131,19 @@ jobs:
           TAG="${{ inputs.release_tag }}"
           APK="${{ steps.apk.outputs.apk_name }}"
 
+          # The RN playground is `"private": true` so our release tooling
+          # doesn't tag it the way it tags other workspaces. Create the tag
+          # on the release commit ourselves so the GitHub Release below has
+          # something to attach to.
+          if ! git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Creating git tag $TAG at ${{ github.sha }}..."
+            git tag "$TAG" "${{ github.sha }}"
+            git push origin "refs/tags/$TAG"
+          fi
+
           # Ensure a GitHub Release exists for this tag (action-publish-release
-          # may only create one for the root monorepo tag). --notes-file /dev/null
-          # keeps it tidy; --verify-tag ensures the tag already exists in git.
+          # may only create one for the root monorepo tag). --verify-tag
+          # ensures the tag exists in git before we create the Release.
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             echo "Creating GitHub Release for $TAG..."
             gh release create "$TAG" \
