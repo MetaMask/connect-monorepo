@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1]
+
 ### Changed
 
 - Cleanup initialization promise logic ([#281](https://github.com/MetaMask/connect-monorepo/pull/281))
@@ -209,7 +211,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.0.1...HEAD
+[1.0.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.0.0...@metamask/connect-evm@1.0.1
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.2...@metamask/connect-evm@1.0.0
 [0.11.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.1...@metamask/connect-evm@0.11.2
 [0.11.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.0...@metamask/connect-evm@0.11.1
