@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Bump workspace dependencies:
-  - @metamask/connect-evm@1.0.1
+  - @metamask/connect-evm@1.1.0
   - @metamask/connect-multichain@0.13.0
 
 ## [0.7.0]
