@@ -481,7 +481,7 @@ t.describe('MultichainApiClientWrapperTransport', () => {
     );
 
     t.it(
-      'should pass through requests to multichain.invokeMethod when connected',
+      'should delegate to multichain.invokeMethod when connected',
       async () => {
         const multichain = buildMockMultichain();
         const invokeResult = '0x1';
