@@ -121,9 +121,21 @@ jobs:
             PREV_VERSION=""
           fi
 
+          # Also skip if a tag for this version already exists. `git revert` of
+          # a release commit produces a "Revert ..." message that the
+          # IS_RELEASE filter (main.yml) rejects, so reverts never reach this
+          # step directly. But a release that re-uses a previously-tagged
+          # version (e.g., a re-release after a revert, or a workflow re-run)
+          # would otherwise rebuild the APK and fail when uploading to an
+          # existing release asset.
           if [ -n "$PREV_VERSION" ] && [ "$PREV_VERSION" != "$PKG_VERSION" ]; then
-            echo "RELEASED=true" >> "$GITHUB_OUTPUT"
-            echo "$PKG_NAME bumped $PREV_VERSION -> $PKG_VERSION in ${{ github.sha }} — will build APK"
+            if git rev-parse "refs/tags/$PLAYGROUND_TAG" >/dev/null 2>&1; then
+              echo "RELEASED=false" >> "$GITHUB_OUTPUT"
+              echo "$PLAYGROUND_TAG already exists in git — skipping APK build"
+            else
+              echo "RELEASED=true" >> "$GITHUB_OUTPUT"
+              echo "$PKG_NAME bumped $PREV_VERSION -> $PKG_VERSION in ${{ github.sha }} — will build APK"
+            fi
           else
             echo "RELEASED=false" >> "$GITHUB_OUTPUT"
             echo "$PKG_NAME version unchanged at $PKG_VERSION — skipping APK build"
