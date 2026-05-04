@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0]
+
 ### Changed
 
 - `createSolanaClient()` now eagerly initializes the Solana wallet provider during creation. If the underlying multichain session already contains solana scopes, the provider's accounts are populated before the client is returned. ([#282](https://github.com/MetaMask/connect-monorepo/pull/282))
@@ -91,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.1.0...HEAD
+[1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.0.0...@metamask/connect-solana@1.1.0
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.1...@metamask/connect-solana@1.0.0
 [0.8.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.0...@metamask/connect-solana@0.8.1
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.7.1...@metamask/connect-solana@0.8.0

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0]
+
+### Uncategorized
+
+- feat: cleanup EvmClient initPromise ([#281](https://github.com/MetaMask/connect-monorepo/pull/281))
+
 ### Changed
 
 - Lazy-load MWP transport dependencies: `@metamask/mobile-wallet-protocol-core`, `@metamask/mobile-wallet-protocol-dapp-client`, and `eciesjs` are now dynamically imported only when MWP transport is actually used, allowing bundlers to code-split the entire MWP + crypto dependency tree for consumers who only use the browser extension flow ([#244](https://github.com/MetaMask/connect-monorepo/pull/244))
@@ -256,7 +262,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.13.0...HEAD
+[0.13.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.1...@metamask/connect-multichain@0.13.0
 [0.12.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.0...@metamask/connect-multichain@0.12.1
 [0.12.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.1...@metamask/connect-multichain@0.12.0
 [0.11.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...@metamask/connect-multichain@0.11.1
