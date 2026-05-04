@@ -1,11 +1,11 @@
 {
-  "name": "@metamask/connect-monorepo",
+  "name": "@metamask/metamask-connect",
   "version": "31.0.0",
   "private": true,
   "description": "MetaMask Connect Monorepo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "https://github.com/MetaMask/metamask-connect.git"
   },
   "files": [],
   "workspaces": [

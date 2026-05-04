@@ -136,4 +136,4 @@ See [@metamask/connect-multichain](../connect-multichain/README.md) for detailed
 
 ## Contributing
 
-This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/connect-monorepo#readme).
+This package is part of a monorepo. Instructions for contributing can be found in the [monorepo README](https://github.com/MetaMask/metamask-connect#readme).
