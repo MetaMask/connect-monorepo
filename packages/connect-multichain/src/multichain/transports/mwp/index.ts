@@ -16,7 +16,6 @@ import type {
   Session,
   SessionRequest,
 } from '@metamask/mobile-wallet-protocol-core';
-import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import type { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
   type SessionProperties,
@@ -813,6 +812,9 @@ export class MWPTransport implements ExtendedTransport {
 
   async getActiveSession(): Promise<Session | undefined> {
     const { kvstore } = this;
+    const { SessionStore } = await import(
+      '@metamask/mobile-wallet-protocol-core'
+    );
     const sessionStore = await SessionStore.create(kvstore);
 
     try {
