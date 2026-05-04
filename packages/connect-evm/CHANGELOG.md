@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Cleanup initialization promise logic ([#281](https://github.com/MetaMask/connect-monorepo/pull/281))
+
 ## [1.0.0]
 
 ### Changed
