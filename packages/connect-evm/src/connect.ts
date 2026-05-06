@@ -16,7 +16,7 @@ import {
 } from '@metamask/connect-multichain';
 import { hexToNumber } from '@metamask/utils';
 
-import { IGNORED_METHODS } from './constants';
+import { CONNECT_EVM_SESSION_PROPERTIES, IGNORED_METHODS } from './constants';
 import { enableDebug, logger } from './logger';
 import { EIP1193Provider } from './provider';
 import type {
@@ -392,7 +392,7 @@ export class MetamaskConnectEVM {
       await this.#core.connect(
         caipChainIds as Scope[],
         caipAccountIds as CaipAccountId[],
-        undefined,
+        CONNECT_EVM_SESSION_PROPERTIES,
         forceRequest,
       );
 

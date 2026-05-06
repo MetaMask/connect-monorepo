@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Send `sessionProperties: { 'eip1193-compatible': true }` on every `wallet_createSession` request issued by `connect-evm`. This lets wallets distinguish EIP-1193-style connections established through `@metamask/connect-evm` from pure Multichain API connections or other provider types (e.g. Solana Wallet Standard).
+
 ## [1.1.0]
 
 ### Changed
