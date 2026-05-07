@@ -84,6 +84,7 @@ function createMockCore(): MockCore {
     disconnect: vi.fn().mockResolvedValue(undefined),
     connect: vi.fn().mockResolvedValue(undefined),
     invokeMethod: vi.fn().mockResolvedValue('0xsignature'),
+    openSimpleDeeplinkIfNeeded: vi.fn(),
     provider: {
       getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
     },
@@ -750,6 +751,122 @@ describe('MetamaskConnectEVM', () => {
       ]);
       expect(connectWithResult.chainId).toBe('0x89');
       expect(connectWithResult.result).toBe('0xtxhash');
+    });
+  });
+
+  describe('switchChain', () => {
+    let mockCore: MockCore;
+    let client: Awaited<ReturnType<typeof MetamaskConnectEVM.create>>;
+
+    const polygonChainConfiguration = {
+      chainId: '0x89',
+      chainName: 'Polygon',
+      nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+      rpcUrls: ['https://polygon-rpc.com'],
+    };
+
+    beforeEach(async () => {
+      mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.emit('wallet_sessionChanged', session);
+      await new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+
+      // Ignore the eth_accounts call made during the connect flow above so
+      // each test can assert against a clean call log.
+      mockCore.transport.sendEip1193Message.mockClear();
+    });
+
+    it('falls back to wallet_addEthereumChain when wallet_switchEthereumChain fails with "Unrecognized chain ID" and chainConfiguration is provided', async () => {
+      mockCore.transport.sendEip1193Message.mockImplementation(
+        async (request: { method: string }) => {
+          if (request.method === 'wallet_switchEthereumChain') {
+            const error = new Error('Unrecognized chain ID 0x89') as Error & {
+              code: number;
+            };
+            error.code = 4902;
+            throw error;
+          }
+          return { result: null, id: 1, jsonrpc: '2.0' as const };
+        },
+      );
+
+      await client.switchChain({
+        chainId: '0x89',
+        chainConfiguration: polygonChainConfiguration,
+      });
+
+      const calls = mockCore.transport.sendEip1193Message.mock.calls.map(
+        ([req]) => (req as { method: string }).method,
+      );
+      expect(calls).toEqual([
+        'wallet_switchEthereumChain',
+        'wallet_addEthereumChain',
+      ]);
+    });
+
+    it('rethrows the original "Unrecognized chain ID" error (preserving code 4902) when no chainConfiguration is provided', async () => {
+      mockCore.transport.sendEip1193Message.mockImplementation(
+        async (request: { method: string }) => {
+          if (request.method === 'wallet_switchEthereumChain') {
+            const error = new Error('Unrecognized chain ID 0x89') as Error & {
+              code: number;
+            };
+            error.code = 4902;
+            throw error;
+          }
+          return { result: null, id: 1, jsonrpc: '2.0' as const };
+        },
+      );
+
+      await expect(
+        client.switchChain({ chainId: '0x89' }),
+      ).rejects.toMatchObject({
+        message: 'Unrecognized chain ID 0x89',
+        code: 4902,
+      });
+
+      const calls = mockCore.transport.sendEip1193Message.mock.calls.map(
+        ([req]) => (req as { method: string }).method,
+      );
+      expect(calls).toEqual(['wallet_switchEthereumChain']);
+      expect(calls).not.toContain('wallet_addEthereumChain');
+    });
+
+    it('rethrows non "Unrecognized chain ID" errors without falling back, even when chainConfiguration is provided', async () => {
+      mockCore.transport.sendEip1193Message.mockImplementation(
+        async (request: { method: string }) => {
+          if (request.method === 'wallet_switchEthereumChain') {
+            throw new Error('User rejected the request');
+          }
+          return { result: null, id: 1, jsonrpc: '2.0' as const };
+        },
+      );
+
+      await expect(
+        client.switchChain({
+          chainId: '0x89',
+          chainConfiguration: polygonChainConfiguration,
+        }),
+      ).rejects.toThrow('User rejected the request');
+
+      const calls = mockCore.transport.sendEip1193Message.mock.calls.map(
+        ([req]) => (req as { method: string }).method,
+      );
+      expect(calls).toEqual(['wallet_switchEthereumChain']);
+      expect(calls).not.toContain('wallet_addEthereumChain');
     });
   });
 
