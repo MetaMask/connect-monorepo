@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Cleanup initialization promise logic ([#281](https://github.com/MetaMask/connect-monorepo/pull/281))
 
+### Fixed
+
+- Fix `wallet_switchEthereumChain` (and `EvmClient.switchChain()` when called without a `chainConfiguration` fallback) to forward the original `Unrecognized chain ID` error to the dapp instead of replacing it with `No chain configuration found.` ([#287](https://github.com/MetaMask/connect-monorepo/pull/287))
+
 ## [1.0.0]
 
 ### Changed
