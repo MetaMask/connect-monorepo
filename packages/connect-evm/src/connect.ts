@@ -579,7 +579,9 @@ export class MetamaskConnectEVM {
       return Promise.resolve();
     } catch (error) {
       await this.#trackWalletActionFailed(method, scope, params, error);
-      const isChainMissingInWallet = (error as Error).message.includes('Unrecognized chain ID');
+      const isChainMissingInWallet = (error as Error).message.includes(
+        'Unrecognized chain ID',
+      );
       if (isChainMissingInWallet && chainConfiguration) {
         return this.#addEthereumChain(chainConfiguration);
       }
