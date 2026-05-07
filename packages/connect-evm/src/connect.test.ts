@@ -131,7 +131,7 @@ describe('MetamaskConnectEVM', () => {
       });
     });
 
-    it('passes { "eip1193-compatible": true } as sessionProperties on connect via wallet_requestPermissions', async () => {
+    it('passes { "eip1193-compatible": true } as sessionProperties when `wallet_requestPermissions` is called directly on provider', async () => {
       const mockCore = createMockCore();
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
       mockCore.connect.mockImplementation(async (): Promise<void> => {
