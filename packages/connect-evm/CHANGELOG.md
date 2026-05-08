@@ -7,19 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0]
+
 ### Added
 
 - Send `sessionProperties: { 'eip1193-compatible': true }` on every `wallet_createSession` request issued by `connect-evm`. This lets wallets distinguish EIP-1193-style connections established through `@metamask/connect-evm` from pure Multichain API connections or other provider types (e.g. Solana Wallet Standard) ([#285](https://github.com/MetaMask/connect-monorepo/pull/285))
+
+### Fixed
+
+- Fix `wallet_switchEthereumChain` (and `EvmClient.switchChain()` when called without a `chainConfiguration` fallback) to forward the original `Unrecognized chain ID` error to the dapp instead of replacing it with `No chain configuration found.` ([#287](https://github.com/MetaMask/connect-monorepo/pull/287))
 
 ## [1.1.0]
 
 ### Changed
 
 - Cleanup initialization promise logic ([#281](https://github.com/MetaMask/connect-monorepo/pull/281))
-
-### Fixed
-
-- Fix `wallet_switchEthereumChain` (and `EvmClient.switchChain()` when called without a `chainConfiguration` fallback) to forward the original `Unrecognized chain ID` error to the dapp instead of replacing it with `No chain configuration found.` ([#287](https://github.com/MetaMask/connect-monorepo/pull/287))
 
 ## [1.0.0]
 
@@ -219,7 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.2.0...HEAD
+[1.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.1.0...@metamask/connect-evm@1.2.0
 [1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.0.0...@metamask/connect-evm@1.1.0
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.2...@metamask/connect-evm@1.0.0
 [0.11.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.1...@metamask/connect-evm@0.11.2
