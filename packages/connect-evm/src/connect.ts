@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 /* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
 import { analytics } from '@metamask/analytics';
-import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
   MultichainCore,
   MultichainOptions,
@@ -29,7 +28,11 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
+import {
+  getEthAccounts,
+  getPermittedEthChainIds,
+  parseScopeString,
+} from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
