@@ -1,3 +1,16 @@
+// Inlined from `@metamask/chain-agnostic-permission@1.2.2` to avoid pulling
+// its transitive `controller-utils` / `lodash` / `bn.js` / `eth-ens-namehash`
+// chain into every consumer's `connect-evm` bundle (e.g. wagmi → LiFi).
+// Built on `@metamask/utils` primitives; semantics are identical to upstream.
+//
+// Upstream sources (pinned to commit `82aec7d`):
+// - `parseScopeString`: https://github.com/MetaMask/core/blob/82aec7d537f0cca3663c44c17e1560f6e00c9b8c/packages/chain-agnostic-permission/src/scope/types.ts#L93-L107
+// - `getEthAccounts`: https://github.com/MetaMask/core/blob/82aec7d537f0cca3663c44c17e1560f6e00c9b8c/packages/chain-agnostic-permission/src/operators/caip-permission-operator-accounts.ts#L77-L91
+// - `getPermittedEthChainIds`: https://github.com/MetaMask/core/blob/82aec7d537f0cca3663c44c17e1560f6e00c9b8c/packages/chain-agnostic-permission/src/operators/caip-permission-operator-permittedChains.ts#L43-L58
+//
+// If upstream changes semantics, mirror the change and bump the pinned commit.
+// Revisit if upstream ever splits `controller-utils` so the dep becomes cheap.
+
 import type { SessionData } from '@metamask/connect-multichain';
 import {
   isCaipChainId,
@@ -19,12 +32,7 @@ type ParsedScope = {
 
 /**
  * Parses a CAIP-217 scope string (`namespace` or `namespace:reference`) into
- * its components.
- *
- * Mirrors the behavior of `parseScopeString` from
- * `@metamask/chain-agnostic-permission` so we can drop that dependency (and
- * its transitive `@metamask/controller-utils` / `lodash` / `bn.js` /
- * `eth-ens-namehash` chain) from the `connect-evm` bundle.
+ * its components. See file header for upstream reference.
  *
  * @param scopeString - The scope string to parse.
  * @returns An object containing `namespace` and (optionally) `reference`.
