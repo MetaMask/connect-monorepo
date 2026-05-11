@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add optional `failure_reason` property to `MMConnectProperties` in `schema.ts`, mirroring [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). Producers attach this on `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` to distinguish transport timeouts, wallet-side JSON-RPC errors, RPC node failures, etc. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+- Add optional `failure_reason` property to `MMConnectProperties` in `schema.ts`, attached by producers on `mmconnect_wallet_action_failed` and `mmconnect_connection_failed`. Mirrors [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
 
 ### Removed
 
