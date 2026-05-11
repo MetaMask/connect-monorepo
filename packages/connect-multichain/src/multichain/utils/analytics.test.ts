@@ -161,10 +161,16 @@ t.describe('classifyFailureReason', () => {
     },
   );
 
-  t.it('classifies provider-defined custom error code', () => {
-    const error = new RPCInvokeMethodErr('inner', 4900, 'Disconnected');
-    t.expect(classifyFailureReason(error)).toBe('wallet_custom_error');
-  });
+  t.it(
+    'falls back to "unknown" for unrecognised provider-defined codes (no wallet_custom_error bucket)',
+    () => {
+      // 4900 "Disconnected" — real EIP-1193 code, but we don't surface it
+      // separately today. Lives in `unknown` until/unless usage justifies
+      // its own bucket (this is the policy described in the source comment).
+      const error = new RPCInvokeMethodErr('inner', 4900, 'Disconnected');
+      t.expect(classifyFailureReason(error)).toBe('unknown');
+    },
+  );
 
   t.it('classifies read-only RPC HTTP errors', () => {
     t.expect(

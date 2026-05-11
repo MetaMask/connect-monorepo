@@ -34,7 +34,6 @@ export type FailureReason =
   | 'wallet_invalid_params'
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
-  | 'wallet_custom_error'
   | 'session_expired'
   | 'no_active_session'
   | 'unrecognised_chain'
@@ -204,8 +203,8 @@ export function classifyFailureReason(error: unknown): FailureReason {
     if (code <= -32000 && code >= -32099) {
       return 'wallet_internal_error';
     }
-    // EIP-1193 named provider codes — handled individually before the
-    // catch-all `wallet_custom_error` range below so we don't lose signal.
+    // EIP-1193 named provider codes — handled individually. Codes in the
+    // 1000–4999 range that aren't matched here fall through to `unknown`.
     if (code === 4100) {
       // Unauthorized — most commonly fires when a method isn't in the
       // CAIP-25 scope's granted methods list (the multichain permission
@@ -223,10 +222,11 @@ export function classifyFailureReason(error: unknown): FailureReason {
       // above, but reaches us cleanly via code rather than substring.
       return 'unrecognised_chain';
     }
-    // Provider-defined error range (EIP-1193 + EIP-1474 custom codes).
-    if (code >= 1000 && code <= 4999) {
-      return 'wallet_custom_error';
-    }
+    // Anything else in the EIP-1193 / EIP-1474 provider-defined range
+    // (1000–4999) falls through to `unknown` — we can promote specific codes
+    // into their own buckets later as the distribution stabilises, without a
+    // schema migration. Two buckets for "we don't know what this is" adds
+    // noise without insight.
   }
 
   return 'unknown';

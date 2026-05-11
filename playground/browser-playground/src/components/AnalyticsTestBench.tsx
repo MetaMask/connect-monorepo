@@ -26,7 +26,6 @@ type ExpectedBucket =
   | 'wallet_invalid_params'
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
-  | 'wallet_custom_error'
   | 'no_active_session'
   | 'unrecognised_chain'
   | 'unknown';
