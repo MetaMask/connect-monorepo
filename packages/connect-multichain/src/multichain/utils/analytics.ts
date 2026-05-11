@@ -34,7 +34,6 @@ export type FailureReason =
   | 'wallet_invalid_params'
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
-  | 'session_expired'
   | 'unrecognised_chain'
   | 'rpc_node_http_error'
   | 'rpc_node_request_error'
@@ -147,40 +146,11 @@ export function classifyFailureReason(error: unknown): FailureReason {
   const errorMessageRaw = errorObj.message ?? '';
   const errorMessage = errorMessageRaw.toLowerCase();
 
-  // Transport-layer errors. Two shapes exist:
-  // - `TransportTimeoutError` from `@metamask/multichain-api-client` (used by
-  //   MWP and the warmup paths of the default extension transport). It's a
-  //   subclass of `TransportError` so we match on the name field rather than
-  //   importing the symbol (the type lives in a runtime dependency that the
-  //   analytics utils shouldn't pull in directly).
-  // - A plain `new Error('Request timeout')` thrown by `DefaultTransport`'s
-  //   own setTimeout. Indistinguishable from other errors without the message.
-  if (
-    errorName === 'TransportTimeoutError' ||
-    errorMessageRaw === 'Request timeout' ||
-    errorMessage.includes('timed out') ||
-    errorMessage.includes('timeout')
-  ) {
-    return 'transport_timeout';
-  }
-  if (
-    errorName === 'TransportError' ||
-    errorMessage.includes('not connected') ||
-    errorMessage.includes('disconnect')
-  ) {
-    return 'transport_disconnect';
-  }
-
-  if (errorMessage.includes('unrecognized chain')) {
-    return 'unrecognised_chain';
-  }
-
-  if (errorMessage.includes('session') && errorMessage.includes('expired')) {
-    return 'session_expired';
-  }
-
-  // Inspect the wallet-side JSON-RPC code if there is one. Unwraps
-  // `RPCInvokeMethodErr` so the wallet's actual error code is visible.
+  // Wallet-side JSON-RPC / EIP-1193 code is the strongest signal we have —
+  // check it before any message-substring heuristics so a wallet error like
+  // `{ code: 4900, message: 'Disconnected' }` doesn't get caught by the
+  // transport-disconnect text match below. Unwraps `RPCInvokeMethodErr` so
+  // the wallet's actual error code is visible.
   const { code } = getUnwrappedErrorDetails(error);
   if (typeof code === 'number') {
     // JSON-RPC 2.0 + EIP-1474 standard codes.
@@ -213,7 +183,7 @@ export function classifyFailureReason(error: unknown): FailureReason {
     if (code === 4902) {
       // Unrecognized chain ID — `wallet_switchEthereumChain` to a chain the
       // wallet hasn't been told about. Same signal as the message heuristic
-      // above, but reaches us cleanly via code rather than substring.
+      // below, but reaches us cleanly via code rather than substring.
       return 'unrecognised_chain';
     }
     // Anything else in the EIP-1193 / EIP-1474 provider-defined range
@@ -221,6 +191,40 @@ export function classifyFailureReason(error: unknown): FailureReason {
     // into their own buckets later as the distribution stabilises, without a
     // schema migration. Two buckets for "we don't know what this is" adds
     // noise without insight.
+  }
+
+  // Transport-layer errors. Two shapes exist:
+  // - `TransportTimeoutError` from `@metamask/multichain-api-client` (used by
+  //   MWP and the warmup paths of the default extension transport). It's a
+  //   subclass of `TransportError` so we match on the name field rather than
+  //   importing the symbol (the type lives in a runtime dependency that the
+  //   analytics utils shouldn't pull in directly).
+  // - A plain `new Error('Request timeout')` thrown by `DefaultTransport`'s
+  //   own setTimeout. Indistinguishable from other errors without the message.
+  if (
+    errorName === 'TransportTimeoutError' ||
+    errorMessageRaw === 'Request timeout' ||
+    errorMessage.includes('timed out') ||
+    errorMessage.includes('timeout')
+  ) {
+    return 'transport_timeout';
+  }
+  // Transport disconnect. Narrowed substring set so we don't snag wallet
+  // error messages that happen to contain "disconnect" (e.g. EIP-1193
+  // `4900 Disconnected`, which the wallet-code branch above already routed
+  // to `unknown` per policy).
+  if (
+    errorName === 'TransportError' ||
+    errorMessage.includes('not connected') ||
+    errorMessage.includes('transport disconnect') ||
+    errorMessage.includes('connection lost') ||
+    errorMessage.includes('socket closed')
+  ) {
+    return 'transport_disconnect';
+  }
+
+  if (errorMessage.includes('unrecognized chain')) {
+    return 'unrecognised_chain';
   }
 
   return 'unknown';

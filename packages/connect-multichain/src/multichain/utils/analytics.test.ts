@@ -105,6 +105,21 @@ t.describe('classifyFailureReason', () => {
     t.expect(classifyFailureReason(error)).toBe('transport_disconnect');
   });
 
+  t.it(
+    'classifies transport disconnect from narrow substring matches (not bare "disconnect")',
+    () => {
+      t.expect(
+        classifyFailureReason(new Error('Transport disconnect during call')),
+      ).toBe('transport_disconnect');
+      t.expect(classifyFailureReason(new Error('Connection lost'))).toBe(
+        'transport_disconnect',
+      );
+      t.expect(classifyFailureReason(new Error('Socket closed unexpectedly'))).toBe(
+        'transport_disconnect',
+      );
+    },
+  );
+
   t.it('classifies the "Unrecognized chain" message', () => {
     t.expect(
       classifyFailureReason(new Error('Unrecognized chain ID "0xfa"')),
@@ -161,8 +176,28 @@ t.describe('classifyFailureReason', () => {
       // 4900 "Disconnected" — real EIP-1193 code, but we don't surface it
       // separately today. Lives in `unknown` until/unless usage justifies
       // its own bucket (this is the policy described in the source comment).
+      // Regression test: this also exercises the ordering of the classifier —
+      // wallet codes are checked BEFORE the transport-disconnect substring
+      // heuristic, so the "Disconnected" message must not leak into
+      // `transport_disconnect`.
       const error = new RPCInvokeMethodErr('inner', 4900, 'Disconnected');
       t.expect(classifyFailureReason(error)).toBe('unknown');
+    },
+  );
+
+  t.it(
+    'classifies JSON-RPC server-error range (-32000..-32099) as wallet_internal_error',
+    () => {
+      t.expect(
+        classifyFailureReason(
+          new RPCInvokeMethodErr('inner', -32000, 'Server error'),
+        ),
+      ).toBe('wallet_internal_error');
+      t.expect(
+        classifyFailureReason(
+          new RPCInvokeMethodErr('inner', -32099, 'Reserved server error'),
+        ),
+      ).toBe('wallet_internal_error');
     },
   );
 
@@ -197,6 +232,58 @@ t.describe('classifyFailureReason', () => {
     ).toBe('unknown');
     t.expect(classifyFailureReason(null)).toBe('unknown');
     t.expect(classifyFailureReason('a string')).toBe('unknown');
+  });
+
+  // Documents how the classifier behaves on the *connection*-side error
+  // surface (the `.catch` of `transport.connect()` in `multichain/index.ts`).
+  // Most of these errors are plain `new Error(...)` strings rather than
+  // `RPCInvokeMethodErr`s — they have no wallet code to inspect, so they
+  // currently land in `unknown` unless the message happens to match a
+  // transport heuristic. This is a known gap (see PR description / audit);
+  // tests pin the current behaviour so future improvements have a baseline.
+  t.describe('connection-side error shapes', () => {
+    t.it(
+      'classifies "Transport not initialized" as unknown (no message heuristic match)',
+      () => {
+        t.expect(
+          classifyFailureReason(
+            new Error('Transport not initialized, establish connection first'),
+          ),
+        ).toBe('unknown');
+      },
+    );
+
+    t.it(
+      'classifies "Existing connection is pending" as unknown (concurrent connect race)',
+      () => {
+        t.expect(
+          classifyFailureReason(
+            new Error(
+              'Existing connection is pending. Please check your MetaMask Mobile app to continue.',
+            ),
+          ),
+        ).toBe('unknown');
+      },
+    );
+
+    t.it(
+      'classifies the deeplink sentinel "No active session found" as unknown',
+      () => {
+        // Note: this error is thrown inside a `setTimeout` callback for
+        // deeplink opening and is fire-and-forget — in practice the analytics
+        // try/catch never sees it. Kept here so the classifier's behaviour is
+        // documented if/when we instrument that path.
+        t.expect(
+          classifyFailureReason(new Error('No active session found')),
+        ).toBe('unknown');
+      },
+    );
+
+    t.it('classifies a TransportTimeoutError reaching the connect() catch', () => {
+      const error = new Error('connect timed out after 60000ms');
+      error.name = 'TransportTimeoutError';
+      t.expect(classifyFailureReason(error)).toBe('transport_timeout');
+    });
   });
 });
 
