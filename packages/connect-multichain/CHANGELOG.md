@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Attach a `failure_reason` property to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` analytics events. The new `classifyFailureReason` helper tags transport timeouts, transport disconnects, wallet JSON-RPC errors (method unsupported / invalid params / internal), provider custom errors, "no active session", "unrecognised chain", and read-only RPC node failures (HTTP / request / response), with an `unknown` fallback. The schema-side change lives in [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31).
+
+### Fixed
+
+- `isRejectionError` now unwraps `RPCInvokeMethodErr` so a wallet-side `code: 4001` survives the SDK's transport-boundary wrapping and is correctly classified as a user rejection. Previously the outer `code: 53` masked the inner code, and rejections were only caught via the fragile message-substring fallback.
+- Tightened the `isRejectionError` message heuristics so generic "user" mentions (e.g. "user operation reverted") are no longer treated as user rejections — only explicit phrases like "user rejected" / "user denied" / "user cancelled".
+
 ## [0.13.0]
 
 ### Uncategorized

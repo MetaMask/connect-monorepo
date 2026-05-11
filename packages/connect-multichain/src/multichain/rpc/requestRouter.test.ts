@@ -1,5 +1,7 @@
 /* eslint-disable id-length -- vitest alias */
 /* eslint-disable no-empty-function -- Empty mock functions */
+/* eslint-disable @typescript-eslint/unbound-method -- referencing the mocked `analytics.track` is intentional in spy assertions */
+/* eslint-disable @typescript-eslint/naming-convention -- analytics event properties are snake_case by schema convention */
 import { analytics } from '@metamask/analytics';
 import * as t from 'vitest';
 
@@ -223,6 +225,74 @@ t.describe('RequestRouter', () => {
           method: 'wallet_invokeMethod',
           params: options,
         });
+      },
+    );
+  });
+
+  t.describe('failure_reason classification on wallet actions', () => {
+    t.it(
+      'attaches `failure_reason: wallet_internal_error` when the wallet returns code -32603',
+      async () => {
+        mockTransport.request.mockResolvedValue({
+          error: { code: -32603, message: 'Internal error' },
+        });
+
+        await t
+          .expect(requestRouter.invokeMethod(baseOptions))
+          .rejects.toBeInstanceOf(RPCInvokeMethodErr);
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.objectContaining({
+            failure_reason: 'wallet_internal_error',
+            method: 'eth_sendTransaction',
+          }),
+        );
+      },
+    );
+
+    t.it(
+      'attaches `failure_reason: transport_timeout` when transport throws a timeout',
+      async () => {
+        const timeoutErr = new Error('Transport request timed out');
+        timeoutErr.name = 'TransportTimeoutError';
+        mockTransport.request.mockRejectedValue(timeoutErr);
+
+        await t
+          .expect(requestRouter.invokeMethod(baseOptions))
+          .rejects.toThrow();
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.objectContaining({
+            failure_reason: 'transport_timeout',
+          }),
+        );
+      },
+    );
+
+    t.it(
+      'classifies wallet-side rejection code 4001 as `_rejected` even when the message would not match the heuristics on its own',
+      async () => {
+        // Wallet sends code: 4001 with a custom message that does not contain
+        // "reject"/"denied"/"cancel"/"user rejected". Before the unwrap fix,
+        // this would land in `_failed`; after the fix it should be `_rejected`.
+        mockTransport.request.mockResolvedValue({
+          error: { code: 4001, message: 'Some non-standard message' },
+        });
+
+        await t
+          .expect(requestRouter.invokeMethod(baseOptions))
+          .rejects.toBeInstanceOf(RPCInvokeMethodErr);
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_rejected',
+          t.expect.anything(),
+        );
+        t.expect(analytics.track).not.toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.anything(),
+        );
       },
     );
   });
