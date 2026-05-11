@@ -270,30 +270,5 @@ t.describe('RequestRouter', () => {
         );
       },
     );
-
-    t.it(
-      'classifies wallet-side rejection code 4001 as `_rejected` even when the message would not match the heuristics on its own',
-      async () => {
-        // Wallet sends code: 4001 with a custom message that does not contain
-        // "reject"/"denied"/"cancel"/"user rejected". Before the unwrap fix,
-        // this would land in `_failed`; after the fix it should be `_rejected`.
-        mockTransport.request.mockResolvedValue({
-          error: { code: 4001, message: 'Some non-standard message' },
-        });
-
-        await t
-          .expect(requestRouter.invokeMethod(baseOptions))
-          .rejects.toBeInstanceOf(RPCInvokeMethodErr);
-
-        t.expect(analytics.track).toHaveBeenCalledWith(
-          'mmconnect_wallet_action_rejected',
-          t.expect.anything(),
-        );
-        t.expect(analytics.track).not.toHaveBeenCalledWith(
-          'mmconnect_wallet_action_failed',
-          t.expect.anything(),
-        );
-      },
-    );
   });
 });

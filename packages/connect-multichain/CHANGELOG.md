@@ -11,12 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Attach a `failure_reason` tag to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` events via a new `classifyFailureReason` helper, distinguishing transport timeouts, transport disconnects, EIP-1193 wallet errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognised_chain`), and JSON-RPC wallet errors (`-32601`, `-32602`, `-32603`, plus the `-32000…-32099` server-error range), with an `unknown` fallback. Schema-side: [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
 
-### Fixed
-
-- `isRejectionError` now unwraps `RPCInvokeMethodErr` so wallet-side codes (e.g. `4001`) survive the SDK's transport-boundary wrapping instead of being masked by the wrapper's static `code: 53` and falling through to a message-substring fallback. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
-- `isRejectionError` no longer treats `code: 4100 Unauthorized` as a user rejection. `4100` is returned by the CAIP-25 permission layer before any handler runs — a permission signal, not a user decision — and now correctly surfaces as `mmconnect_wallet_action_failed` with `failure_reason: wallet_unauthorized`. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
-- Tightened the `isRejectionError` message heuristic so phrases like "user operation reverted" no longer count as user rejections — only explicit "user rejected" / "user denied" / "user cancelled". ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
-
 ## [0.13.0]
 
 ### Uncategorized

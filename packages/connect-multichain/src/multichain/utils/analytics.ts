@@ -74,10 +74,6 @@ function getUnwrappedErrorDetails(error: unknown): {
 /**
  * Checks if an error represents a user rejection.
  *
- * Unwraps `RPCInvokeMethodErr` so the wallet's `code: 4001` survives the
- * SDK's transport-boundary wrapping (the outer error otherwise reports
- * `code: 53`, which would never match the heuristics here).
- *
  * @param error - The error object to check
  * @returns True if the error indicates a user rejection, false otherwise
  */
@@ -86,27 +82,17 @@ export function isRejectionError(error: unknown): boolean {
     return false;
   }
 
-  const { code, message } = getUnwrappedErrorDetails(error);
-  const errorMessage = message.toLowerCase();
+  const errorObj = error as { code?: number; message?: string };
+  const errorCode = errorObj.code;
+  const errorMessage = errorObj.message?.toLowerCase() ?? '';
 
-  // EIP-1193 `4001 User Rejected Request` is the canonical rejection code.
-  // Note: we deliberately do NOT match `4100 Unauthorized` here — that's
-  // returned for permission denials (e.g. CAIP-25 scope didn't include the
-  // requested method) and is not a user-driven rejection. Misclassifying it
-  // as a rejection hides genuine permission/method-support issues. See
-  // `classifyFailureReason`'s `wallet_unauthorized` bucket.
   return (
-    code === 4001 ||
+    errorCode === 4001 || // User rejected request (common EIP-1193 code)
+    errorCode === 4100 || // Unauthorized (common rejection code)
     errorMessage.includes('reject') ||
     errorMessage.includes('denied') ||
     errorMessage.includes('cancel') ||
-    // Bare "user" match is intentionally narrow to avoid false positives on
-    // messages like "user operation reverted" (Account Abstraction). Only
-    // treats it as a rejection if it sounds like the user actively declined.
-    errorMessage.includes('user rejected') ||
-    errorMessage.includes('user denied') ||
-    errorMessage.includes('user cancelled') ||
-    errorMessage.includes('user canceled')
+    errorMessage.includes('user')
   );
 }
 
