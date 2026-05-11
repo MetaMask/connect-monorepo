@@ -560,11 +560,12 @@ export type components = {
       /** @description Array of CAIP-2 chain IDs that the user has permissioned */
       user_permissioned_chains?: string[];
       /**
-       * @description Short tag describing why a failed event fired (e.g. `transport_timeout`,
-       * `wallet_internal_error`, `rpc_node_error`). Only set on
-       * `mmconnect_connection_failed` and `mmconnect_wallet_action_failed`. Open
-       * string for now — once we have enough data we may convert this to a closed
-       * enum. Mirrors the field in `api.spec.yml` of the analytics-api repo.
+       * @description Short tag describing why a failed event fired (e.g.
+       * `transport_timeout`, `wallet_internal_error`, `wallet_unauthorized`).
+       * Only set on `mmconnect_connection_failed` and
+       * `mmconnect_wallet_action_failed`. Open string for now — once we have
+       * enough data we may convert this to a closed enum. Mirrors the field
+       * in `api.spec.yml` of the analytics-api repo.
        */
       failure_reason?: string;
     };

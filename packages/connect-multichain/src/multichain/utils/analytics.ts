@@ -9,13 +9,7 @@ import type {
   StoreClient,
   TransportType,
 } from '../../domain';
-import {
-  getPlatformType,
-  RPCHttpErr,
-  RPCInvokeMethodErr,
-  RPCReadonlyRequestErr,
-  RPCReadonlyResponseErr,
-} from '../../domain';
+import { getPlatformType, RPCInvokeMethodErr } from '../../domain';
 
 /**
  * Tag describing the cause of a failed wallet action / connection. Surfaced
@@ -35,9 +29,6 @@ export type FailureReason =
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
   | 'unrecognised_chain'
-  | 'rpc_node_http_error'
-  | 'rpc_node_request_error'
-  | 'rpc_node_response_error'
   | 'unknown';
 
 /**
@@ -110,19 +101,6 @@ export function isRejectionError(error: unknown): boolean {
  * @returns A short, snake_case tag describing why the operation failed
  */
 export function classifyFailureReason(error: unknown): FailureReason {
-  // Read-only RPC client failures — these come from the configured RPC
-  // endpoint (e.g. Infura), not from the wallet, and are checked first so
-  // they aren't swallowed by the generic message heuristics below.
-  if (error instanceof RPCHttpErr) {
-    return 'rpc_node_http_error';
-  }
-  if (error instanceof RPCReadonlyRequestErr) {
-    return 'rpc_node_request_error';
-  }
-  if (error instanceof RPCReadonlyResponseErr) {
-    return 'rpc_node_response_error';
-  }
-
   if (typeof error !== 'object' || error === null) {
     return 'unknown';
   }

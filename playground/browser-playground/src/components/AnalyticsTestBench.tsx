@@ -403,18 +403,6 @@ export function AnalyticsTestBench({
             </button>
           </div>
 
-          <div className="text-xs text-gray-500 mb-2">
-            <strong>Not currently tracked</strong> (classifier supports the
-            buckets but no producer emits them):{' '}
-            <code className="bg-gray-100 px-1 rounded">rpc_node_http_error</code>
-            ,{' '}
-            <code className="bg-gray-100 px-1 rounded">rpc_node_request_error</code>
-            ,{' '}
-            <code className="bg-gray-100 px-1 rounded">rpc_node_response_error</code>
-            . These come from <code>handleWithRpcNode</code> which still throws
-            without calling <code>analytics.track</code>.
-          </div>
-
           {results.length > 0 && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">

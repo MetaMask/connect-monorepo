@@ -8,10 +8,7 @@ import {
 import {
   type InvokeMethodOptions,
   type MultichainOptions,
-  RPCHttpErr,
   RPCInvokeMethodErr,
-  RPCReadonlyRequestErr,
-  RPCReadonlyResponseErr,
   type Scope,
   type StoreClient,
   TransportType,
@@ -137,31 +134,6 @@ t.describe('classifyFailureReason', () => {
       ).toBe('wallet_internal_error');
     },
   );
-
-  t.it('classifies read-only RPC HTTP errors', () => {
-    t.expect(
-      classifyFailureReason(
-        new RPCHttpErr('https://example.com', 'eth_blockNumber', 503),
-      ),
-    ).toBe('rpc_node_http_error');
-  });
-
-  t.it(
-    'classifies read-only RPC request errors (fetch timeouts, aborts)',
-    () => {
-      t.expect(
-        classifyFailureReason(
-          new RPCReadonlyRequestErr('Request timeout after 30000ms'),
-        ),
-      ).toBe('rpc_node_request_error');
-    },
-  );
-
-  t.it('classifies read-only RPC response errors (malformed JSON)', () => {
-    t.expect(
-      classifyFailureReason(new RPCReadonlyResponseErr('Unexpected token <')),
-    ).toBe('rpc_node_response_error');
-  });
 
   t.it('falls back to "unknown" for unrecognised errors', () => {
     t.expect(
