@@ -26,7 +26,6 @@ type ExpectedBucket =
   | 'wallet_invalid_params'
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
-  | 'no_active_session'
   | 'unrecognised_chain'
   | 'unknown';
 
@@ -213,23 +212,6 @@ export function AnalyticsTestBench({
         }),
     );
 
-  const triggerNoActiveSession = () =>
-    runTrigger(
-      'no_active_session (SDK sentinel)',
-      'no_active_session',
-      () =>
-        // Only meaningful if you call it BEFORE connecting. The button is
-        // shown unconditionally — if you're connected it will throw a
-        // different error and land in `unknown`.
-        invokeMethod({
-          scope: defaultScope,
-          request: {
-            method: 'personal_sign',
-            params: ['0x68656c6c6f', '0x0000000000000000000000000000000000000000'],
-          },
-        }),
-    );
-
   const triggerUnknown = () =>
     runTrigger(
       'unknown (fallback) — empty method',
@@ -390,13 +372,6 @@ export function AnalyticsTestBench({
               onClick={triggerSignTypedDataMalformed}
             >
               wallet_invalid_params (signTypedData on bad address)
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={triggerNoActiveSession}
-            >
-              no_active_session (call before connect)
             </button>
             <button
               type="button"

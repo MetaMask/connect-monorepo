@@ -105,12 +105,6 @@ t.describe('classifyFailureReason', () => {
     t.expect(classifyFailureReason(error)).toBe('transport_disconnect');
   });
 
-  t.it('classifies the SDK "No active session found" sentinel', () => {
-    t.expect(classifyFailureReason(new Error('No active session found'))).toBe(
-      'no_active_session',
-    );
-  });
-
   t.it('classifies the "Unrecognized chain" message', () => {
     t.expect(
       classifyFailureReason(new Error('Unrecognized chain ID "0xfa"')),

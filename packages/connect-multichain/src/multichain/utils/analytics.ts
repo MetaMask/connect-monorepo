@@ -35,7 +35,6 @@ export type FailureReason =
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
   | 'session_expired'
-  | 'no_active_session'
   | 'unrecognised_chain'
   | 'rpc_node_http_error'
   | 'rpc_node_request_error'
@@ -170,11 +169,6 @@ export function classifyFailureReason(error: unknown): FailureReason {
     errorMessage.includes('disconnect')
   ) {
     return 'transport_disconnect';
-  }
-
-  // SDK-thrown sentinel.
-  if (errorMessageRaw === 'No active session found') {
-    return 'no_active_session';
   }
 
   if (errorMessage.includes('unrecognized chain')) {

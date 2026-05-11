@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Attach a `failure_reason` property to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` analytics events. The new `classifyFailureReason` helper tags transport timeouts, transport disconnects, the SDK's `no_active_session` sentinel, EIP-1193 wallet errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognised_chain`), JSON-RPC wallet errors (`-32601 wallet_method_unsupported`, `-32602 wallet_invalid_params`, `-32603 wallet_internal_error`, plus the `-32000…-32099` server-error range), and read-only RPC node failures (HTTP / request / response), with an `unknown` fallback for anything else. The schema-side change lives in [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31).
+- Attach a `failure_reason` property to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` analytics events. The new `classifyFailureReason` helper tags transport timeouts, transport disconnects, EIP-1193 wallet errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognised_chain`), JSON-RPC wallet errors (`-32601 wallet_method_unsupported`, `-32602 wallet_invalid_params`, `-32603 wallet_internal_error`, plus the `-32000…-32099` server-error range), and read-only RPC node failures (HTTP / request / response), with an `unknown` fallback for anything else. The schema-side change lives in [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31).
 
 ### Fixed
 
