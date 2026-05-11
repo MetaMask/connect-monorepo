@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove `@metamask/chain-agnostic-permission` dependency. The two helpers used from it (`getEthAccounts`, `getPermittedEthChainIds`) and the `parseScopeString` utility are now implemented locally on top of `@metamask/utils` primitives. This drops the transitive `@metamask/controller-utils` / `lodash` / `bn.js` / `eth-ens-namehash` / `fast-deep-equal` / `@metamask/ethjs-unit` chain from the `connect-evm` bundle.
+- Remove duplicate `mmconnect_wallet_action_*` tracking from `MetamaskConnectEVM.switchChain`, the `wallet_requestPermissions` / `eth_requestAccounts` interceptor branch, and `#addEthereumChain`. These methods are already tracked by the multichain `RequestRouter` when the request lands at the wallet, so the EVM shim was double-firing on Mixpanel. The `@metamask/analytics` package and the `getWalletActionAnalyticsProperties` / `isRejectionError` helpers are no longer imported here.
 
 ## [1.2.0]
 
