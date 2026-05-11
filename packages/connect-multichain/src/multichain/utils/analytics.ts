@@ -60,15 +60,20 @@ export function isRejectionError(error: unknown): boolean {
   const { code, message } = getUnwrappedErrorDetails(error);
   const errorMessage = message.toLowerCase();
 
+  // EIP-1193 4001 "User Rejected Request" is the canonical rejection code.
+  // Note: 4100 "Unauthorized" is deliberately NOT matched here. On multichain
+  // sessions it's what the CAIP-25 permission layer returns when a method
+  // isn't in the granted scope (the layer rejects it before the method
+  // handler runs). That's a permission/support signal, not a user-driven
+  // rejection — misclassifying it as `_rejected` hides genuine permission
+  // issues from `_failed`.
   return (
-    code === 4001 || // User rejected request (common EIP-1193 code)
-    code === 4100 || // Unauthorized (common rejection code)
+    code === 4001 ||
     errorMessage.includes('reject') ||
     errorMessage.includes('denied') ||
     errorMessage.includes('cancel') ||
-    // Bare "user" match is intentionally narrow to avoid false positives on
-    // messages like "user operation reverted" (Account Abstraction). Only
-    // treats it as a rejection if it sounds like the user actively declined.
+    // Narrow "user …" matches — bare "user" is too greedy (catches Account
+    // Abstraction errors like "user operation reverted").
     errorMessage.includes('user rejected') ||
     errorMessage.includes('user denied') ||
     errorMessage.includes('user cancelled') ||

@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `isRejectionError` now unwraps `RPCInvokeMethodErr` so a wallet-side `code: 4001` survives the SDK's transport-boundary wrapping and is correctly classified as a user rejection. Previously the outer `code: 53` masked the inner code, and rejections were only caught via a fragile message-substring fallback — any rejection whose message didn't contain "reject" / "denied" / "cancel" was misclassified as a failure and inflated the `mmconnect_wallet_action_failed` count.
-- Tightened the `isRejectionError` message heuristics so generic "user" mentions (e.g. Account Abstraction's `"user operation reverted"`) are no longer treated as user rejections — only explicit phrases like "user rejected" / "user denied" / "user cancelled" / "user canceled".
+- `isRejectionError` now unwraps `RPCInvokeMethodErr` so wallet-side codes (e.g. `4001`) survive the SDK's transport-boundary wrapping instead of being masked by the wrapper's static `code: 53` and falling through to a message-substring fallback. ([#292](https://github.com/MetaMask/connect-monorepo/pull/292))
+- `isRejectionError` no longer treats `code: 4100 Unauthorized` as a user rejection. `4100` is returned by the CAIP-25 permission layer when a method isn't in the granted scope (it fires before the method handler runs) — a permission/support signal, not a user decision. Pairs with the new `wallet_unauthorized` `failure_reason` bucket added in [#290](https://github.com/MetaMask/connect-monorepo/pull/290). ([#292](https://github.com/MetaMask/connect-monorepo/pull/292))
+- Tightened the `isRejectionError` "user" message heuristic so phrases like "user operation reverted" (Account Abstraction) no longer count as rejections — only explicit "user rejected" / "user denied" / "user cancelled" / "user canceled". ([#292](https://github.com/MetaMask/connect-monorepo/pull/292))
 
 ## [0.13.0]
 

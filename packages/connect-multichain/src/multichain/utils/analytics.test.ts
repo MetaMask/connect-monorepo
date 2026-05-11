@@ -16,11 +16,23 @@ t.describe('isRejectionError', () => {
     t.expect(isRejectionError({ code: 4001, message: 'anything' })).toBe(true);
   });
 
-  t.it('returns true for code 4100 (unauthorized)', () => {
-    t.expect(isRejectionError({ code: 4100, message: 'denied by user' })).toBe(
-      true,
-    );
-  });
+  t.it(
+    'returns false for code 4100 (unauthorized) — a permission/support signal, not a user rejection',
+    () => {
+      // 4100 is what the CAIP-25 permission layer returns when a method
+      // isn't in the granted scope. Classifying it as `_rejected` inflated
+      // the rejected bucket and hid permission issues from `_failed`. The
+      // canonical 4100 message even contains the substring "by the user",
+      // so we have to inspect the code explicitly to avoid mis-bucketing.
+      t.expect(
+        isRejectionError({
+          code: 4100,
+          message:
+            'The requested account and/or method has not been authorized by the user.',
+        }),
+      ).toBe(false);
+    },
+  );
 
   t.it('returns true for messages mentioning explicit user action', () => {
     t.expect(isRejectionError({ message: 'User rejected the request' })).toBe(
