@@ -33,6 +33,7 @@ export type FailureReason =
   | 'wallet_method_unsupported'
   | 'wallet_invalid_params'
   | 'wallet_internal_error'
+  | 'wallet_unauthorized'
   | 'wallet_custom_error'
   | 'session_expired'
   | 'no_active_session'
@@ -91,9 +92,14 @@ export function isRejectionError(error: unknown): boolean {
   const { code, message } = getUnwrappedErrorDetails(error);
   const errorMessage = message.toLowerCase();
 
+  // EIP-1193 `4001 User Rejected Request` is the canonical rejection code.
+  // Note: we deliberately do NOT match `4100 Unauthorized` here — that's
+  // returned for permission denials (e.g. CAIP-25 scope didn't include the
+  // requested method) and is not a user-driven rejection. Misclassifying it
+  // as a rejection hides genuine permission/method-support issues. See
+  // `classifyFailureReason`'s `wallet_unauthorized` bucket.
   return (
-    code === 4001 || // User rejected request (common EIP-1193 code)
-    code === 4100 || // Unauthorized (common rejection code)
+    code === 4001 ||
     errorMessage.includes('reject') ||
     errorMessage.includes('denied') ||
     errorMessage.includes('cancel') ||
@@ -184,6 +190,7 @@ export function classifyFailureReason(error: unknown): FailureReason {
   // `RPCInvokeMethodErr` so the wallet's actual error code is visible.
   const { code } = getUnwrappedErrorDetails(error);
   if (typeof code === 'number') {
+    // JSON-RPC 2.0 + EIP-1474 standard codes.
     if (code === -32601) {
       return 'wallet_method_unsupported';
     }
@@ -196,6 +203,25 @@ export function classifyFailureReason(error: unknown): FailureReason {
     // Standard JSON-RPC server error range.
     if (code <= -32000 && code >= -32099) {
       return 'wallet_internal_error';
+    }
+    // EIP-1193 named provider codes — handled individually before the
+    // catch-all `wallet_custom_error` range below so we don't lose signal.
+    if (code === 4100) {
+      // Unauthorized — most commonly fires when a method isn't in the
+      // CAIP-25 scope's granted methods list (the multichain permission
+      // layer rejects it before the method handler runs). Distinct from
+      // a user rejection (4001) and worth tracking separately.
+      return 'wallet_unauthorized';
+    }
+    if (code === 4200) {
+      // Unsupported method — wallet handler exists but explicitly refuses.
+      return 'wallet_method_unsupported';
+    }
+    if (code === 4902) {
+      // Unrecognized chain ID — `wallet_switchEthereumChain` to a chain the
+      // wallet hasn't been told about. Same signal as the message heuristic
+      // above, but reaches us cleanly via code rather than substring.
+      return 'unrecognised_chain';
     }
     // Provider-defined error range (EIP-1193 + EIP-1474 custom codes).
     if (code >= 1000 && code <= 4999) {

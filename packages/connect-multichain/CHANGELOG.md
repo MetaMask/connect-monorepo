@@ -9,12 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Attach a `failure_reason` property to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` analytics events. The new `classifyFailureReason` helper tags transport timeouts, transport disconnects, wallet JSON-RPC errors (method unsupported / invalid params / internal), provider custom errors, "no active session", "unrecognised chain", and read-only RPC node failures (HTTP / request / response), with an `unknown` fallback. The schema-side change lives in [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31).
+- Attach a `failure_reason` property to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` analytics events. The new `classifyFailureReason` helper tags transport timeouts, transport disconnects, wallet JSON-RPC errors (method unsupported / invalid params / internal), provider custom errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognised_chain`, generic `wallet_custom_error`), "no active session", "unrecognised chain", and read-only RPC node failures (HTTP / request / response), with an `unknown` fallback. The schema-side change lives in [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31).
 
 ### Fixed
 
 - `isRejectionError` now unwraps `RPCInvokeMethodErr` so a wallet-side `code: 4001` survives the SDK's transport-boundary wrapping and is correctly classified as a user rejection. Previously the outer `code: 53` masked the inner code, and rejections were only caught via the fragile message-substring fallback.
 - Tightened the `isRejectionError` message heuristics so generic "user" mentions (e.g. "user operation reverted") are no longer treated as user rejections — only explicit phrases like "user rejected" / "user denied" / "user cancelled".
+- `isRejectionError` no longer treats `code: 4100 Unauthorized` as a user rejection. `4100` is returned by the CAIP-25 permission layer when a method isn't in the granted scope (it fires before the method handler runs) — a permission/support signal, not a user decision. These cases now correctly surface as `mmconnect_wallet_action_failed` with `failure_reason: wallet_unauthorized`.
 
 ## [0.13.0]
 

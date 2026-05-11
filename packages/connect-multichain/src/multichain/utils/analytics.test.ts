@@ -30,11 +30,18 @@ t.describe('isRejectionError', () => {
     t.expect(isRejectionError({ code: 4001, message: 'anything' })).toBe(true);
   });
 
-  t.it('returns true for code 4100 (unauthorized)', () => {
-    t.expect(isRejectionError({ code: 4100, message: 'denied by user' })).toBe(
-      true,
-    );
-  });
+  t.it(
+    'does NOT treat 4100 (unauthorized) as a rejection — that signals a permission/method-support issue, not user intent',
+    () => {
+      t.expect(
+        isRejectionError({
+          code: 4100,
+          message:
+            'The requested account and/or method has not been authorized by the user.',
+        }),
+      ).toBe(false);
+    },
+  );
 
   t.it('returns true for messages mentioning explicit user action', () => {
     t.expect(isRejectionError({ message: 'User rejected the request' })).toBe(
@@ -124,6 +131,35 @@ t.describe('classifyFailureReason', () => {
     const error = new RPCInvokeMethodErr('inner', -32603, 'Internal error');
     t.expect(classifyFailureReason(error)).toBe('wallet_internal_error');
   });
+
+  t.it(
+    'classifies wallet 4100 unauthorized (e.g. CAIP-25 scope did not grant the method)',
+    () => {
+      const error = new RPCInvokeMethodErr(
+        'inner',
+        4100,
+        'The requested account and/or method has not been authorized by the user.',
+      );
+      t.expect(classifyFailureReason(error)).toBe('wallet_unauthorized');
+    },
+  );
+
+  t.it('classifies wallet 4200 unsupported method', () => {
+    const error = new RPCInvokeMethodErr('inner', 4200, 'Unsupported method');
+    t.expect(classifyFailureReason(error)).toBe('wallet_method_unsupported');
+  });
+
+  t.it(
+    'classifies wallet 4902 unrecognised chain (mobile switchEthereumChain)',
+    () => {
+      const error = new RPCInvokeMethodErr(
+        'inner',
+        4902,
+        'Unrecognized chain ID "0xfa". Try adding the chain using wallet_addEthereumChain first.',
+      );
+      t.expect(classifyFailureReason(error)).toBe('unrecognised_chain');
+    },
+  );
 
   t.it('classifies provider-defined custom error code', () => {
     const error = new RPCInvokeMethodErr('inner', 4900, 'Disconnected');

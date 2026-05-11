@@ -24,6 +24,7 @@
     "build/"
   ],
   "scripts": {
+    "analytics:echo": "node scripts/analytics-echo-server.mjs",
     "build": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco build",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/browser-playground",
