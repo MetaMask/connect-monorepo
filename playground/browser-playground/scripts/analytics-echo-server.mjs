@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Local analytics echo server for the browser playground.
  *
@@ -19,6 +18,7 @@
 
 import http from 'node:http';
 
+// eslint-disable-next-line n/no-process-env -- standalone CLI script: PORT env var is the documented way to override the default.
 const PORT = Number(process.env.PORT ?? 8787);
 
 const COLOR = {
@@ -34,13 +34,21 @@ const COLOR = {
 };
 
 const colorForEvent = (name) => {
-  if (!name) return COLOR.dim;
-  if (name.endsWith('_failed')) return COLOR.red;
-  if (name.endsWith('_rejected')) return COLOR.yellow;
+  if (!name) {
+    return COLOR.dim;
+  }
+  if (name.endsWith('_failed')) {
+    return COLOR.red;
+  }
+  if (name.endsWith('_rejected')) {
+    return COLOR.yellow;
+  }
   if (name.endsWith('_succeeded') || name === 'mmconnect_connected') {
     return COLOR.green;
   }
-  if (name.endsWith('_requested')) return COLOR.cyan;
+  if (name.endsWith('_requested')) {
+    return COLOR.cyan;
+  }
   return COLOR.magenta;
 };
 
@@ -51,7 +59,7 @@ const printEvent = (event) => {
   const name = event?.event_name ?? '<no event_name>';
   const props = event?.properties ?? {};
   const failureReason = props.failure_reason;
-  const method = props.method;
+  const { method } = props;
   const transport = props.transport_type;
 
   const head =
@@ -64,10 +72,14 @@ const printEvent = (event) => {
       `${COLOR.bold}${COLOR.red}failure_reason=${failureReason}${COLOR.reset}`,
     );
   }
-  if (method) tags.push(`${COLOR.cyan}method=${method}${COLOR.reset}`);
-  if (transport) tags.push(`${COLOR.blue}transport=${transport}${COLOR.reset}`);
+  if (method) {
+    tags.push(`${COLOR.cyan}method=${method}${COLOR.reset}`);
+  }
+  if (transport) {
+    tags.push(`${COLOR.blue}transport=${transport}${COLOR.reset}`);
+  }
 
-  console.log(`\n${head}${tags.length ? '  ' + tags.join('  ') : ''}`);
+  console.log(`\n${head}${tags.length ? `  ${tags.join('  ')}` : ''}`);
   console.log(`${COLOR.dim}${JSON.stringify(props, null, 2)}${COLOR.reset}`);
 };
 
@@ -95,8 +107,11 @@ const server = http.createServer((req, res) => {
     let parsed;
     try {
       parsed = JSON.parse(raw);
-    } catch (err) {
-      console.error(`\n${COLOR.red}Failed to parse body${COLOR.reset}`, err);
+    } catch (parseError) {
+      console.error(
+        `\n${COLOR.red}Failed to parse body${COLOR.reset}`,
+        parseError,
+      );
       console.error(raw);
       res.writeHead(200, { 'Access-Control-Allow-Origin': '*' });
       res.end('{}');
@@ -107,7 +122,9 @@ const server = http.createServer((req, res) => {
     console.log(
       `\n${COLOR.dim}━━━ ${new Date().toISOString()}  POST ${req.url}  (${events.length} event${events.length === 1 ? '' : 's'}) ━━━${COLOR.reset}`,
     );
-    for (const ev of events) printEvent(ev);
+    for (const ev of events) {
+      printEvent(ev);
+    }
 
     res.writeHead(200, {
       'Content-Type': 'application/json',

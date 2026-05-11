@@ -114,9 +114,9 @@ t.describe('classifyFailureReason', () => {
       t.expect(classifyFailureReason(new Error('Connection lost'))).toBe(
         'transport_disconnect',
       );
-      t.expect(classifyFailureReason(new Error('Socket closed unexpectedly'))).toBe(
-        'transport_disconnect',
-      );
+      t.expect(
+        classifyFailureReason(new Error('Socket closed unexpectedly')),
+      ).toBe('transport_disconnect');
     },
   );
 
@@ -279,11 +279,14 @@ t.describe('classifyFailureReason', () => {
       },
     );
 
-    t.it('classifies a TransportTimeoutError reaching the connect() catch', () => {
-      const error = new Error('connect timed out after 60000ms');
-      error.name = 'TransportTimeoutError';
-      t.expect(classifyFailureReason(error)).toBe('transport_timeout');
-    });
+    t.it(
+      'classifies a TransportTimeoutError reaching the connect() catch',
+      () => {
+        const error = new Error('connect timed out after 60000ms');
+        error.name = 'TransportTimeoutError';
+        t.expect(classifyFailureReason(error)).toBe('transport_timeout');
+      },
+    );
   });
 });
 

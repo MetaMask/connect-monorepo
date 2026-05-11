@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a permanent collapsible **Analytics test bench** panel at the top of the playground, with one button per `failure_reason` classifier branch (transport timeout, transport disconnect, wallet errors, user rejection sanity-check, etc.) for manually exercising `mmconnect_wallet_action_failed` and `mmconnect_wallet_action_rejected` events end-to-end. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+- Added `yarn analytics:echo`, a local HTTP echo server (`scripts/analytics-echo-server.mjs`) that stands in for the analytics endpoint and pretty-prints incoming events. Paired with the new `METAMASK_ANALYTICS_ENDPOINT` workflow documented in the playground README. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+
 ## [0.7.2]
 
 ### Changed
