@@ -581,13 +581,22 @@ export class MetamaskConnectEVM {
       }
       return Promise.resolve();
     } catch (error) {
-      await this.#trackWalletActionFailed(method, scope, params, error);
+      // "Unrecognized chain ID" + a chainConfiguration is the recovery path:
+      // the wallet doesn't know this chain, so we silently fall through to
+      // `wallet_addEthereumChain`. From the dapp/user's perspective this is
+      // still one logical chain change with one outcome, so we let the add's
+      // own `_succeeded` / `_failed` event represent the whole flow rather
+      // than emitting a `_failed` here for an implementation detail the
+      // user never sees. Without this suppression a successful recovery
+      // produces four events in Mixpanel (switch _requested, switch _failed,
+      // add _requested, add _succeeded) instead of the three it should.
       const isChainMissingInWallet = (error as Error).message.includes(
         'Unrecognized chain ID',
       );
       if (isChainMissingInWallet && chainConfiguration) {
         return this.#addEthereumChain(chainConfiguration);
       }
+      await this.#trackWalletActionFailed(method, scope, params, error);
       throw error;
     }
   }
