@@ -245,11 +245,34 @@ t.describe('RequestRouter', () => {
           'mmconnect_wallet_action_failed',
           t.expect.objectContaining({
             failure_reason: 'wallet_internal_error',
+            error_code: -32603,
+            error_message_sample: 'Internal error',
             method: 'eth_sendTransaction',
           }),
         );
       },
     );
+
+    t.it('sanitises addresses out of error_message_sample', async () => {
+      mockTransport.request.mockResolvedValue({
+        error: {
+          code: -32603,
+          message:
+            'Internal error fetching balance for 0x1234567890abcdef1234567890abcdef12345678',
+        },
+      });
+
+      await t
+        .expect(requestRouter.invokeMethod(baseOptions))
+        .rejects.toBeInstanceOf(RPCInvokeMethodErr);
+
+      t.expect(analytics.track).toHaveBeenCalledWith(
+        'mmconnect_wallet_action_failed',
+        t.expect.objectContaining({
+          error_message_sample: 'Internal error fetching balance for <addr>',
+        }),
+      );
+    });
 
     t.it(
       'attaches `failure_reason: transport_timeout` when transport throws a timeout',

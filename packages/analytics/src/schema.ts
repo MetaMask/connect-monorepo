@@ -568,6 +568,26 @@ export type components = {
        * in `api.spec.yml` of the analytics-api repo.
        */
       failure_reason?: string;
+      /**
+       * @description The raw error code emitted by the underlying source
+       * (typically a wallet-side JSON-RPC / EIP-1193 code such as `4001`, `4100`,
+       * `4902`, `-32603`). Companion to `failure_reason`: the latter buckets
+       * errors into a triageable taxonomy, the former preserves the exact
+       * upstream code so we can drill into the `unknown` bucket without a
+       * schema change every time we discover a new code. Only set on
+       * `mmconnect_connection_failed` and `mmconnect_wallet_action_failed`, and
+       * only when the underlying error carries a numeric code.
+       */
+      error_code?: number;
+      /**
+       * @description A truncated, sanitised sample of the raw error message.
+       * Goal is to surface enough context to triage the `unknown`
+       * `failure_reason` bucket without leaking PII or addresses. Producers
+       * strip hex addresses, long hex strings, and URLs, and clip to 200 chars.
+       * Only set on `mmconnect_connection_failed` and
+       * `mmconnect_wallet_action_failed`.
+       */
+      error_message_sample?: string;
     };
   };
   responses: never;
