@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `isRejectionError` now unwraps `RPCInvokeMethodErr` so a wallet-side `code: 4001` survives the SDK's transport-boundary wrapping and is correctly classified as a user rejection. Previously the outer `code: 53` masked the inner code, and rejections were only caught via a fragile message-substring fallback — any rejection whose message didn't contain "reject" / "denied" / "cancel" was misclassified as a failure and inflated the `mmconnect_wallet_action_failed` count.
+- Tightened the `isRejectionError` message heuristics so generic "user" mentions (e.g. Account Abstraction's `"user operation reverted"`) are no longer treated as user rejections — only explicit phrases like "user rejected" / "user denied" / "user cancelled" / "user canceled".
+
 ## [0.13.0]
 
 ### Uncategorized
