@@ -122,6 +122,7 @@ export class MWPTransport implements ExtendedTransport {
     // is initializing itself for the first time on page load and correctly set
     // the appropriate timeout duration for that connection attempt.
     this.dappClient.on('session_request', (sessionRequest: SessionRequest) => {
+      console.log('🔗 session_request', sessionRequest);
       this.currentSessionRequest = sessionRequest;
       this.kvstore
         .set(PENDING_SESSION_REQUEST_KEY, JSON.stringify(sessionRequest))
@@ -527,6 +528,8 @@ export class MWPTransport implements ExtendedTransport {
             this.dappClient.on('message', initialConnectionMessageHandler);
 
             const isDesktopWeb = getPlatformType() === PlatformType.DesktopWeb;
+            // REMOVE THIS BEFORE MERGING
+            console.log('🔗 isDesktopWeb', isDesktopWeb);
             let initialPayload;
             if (!isDesktopWeb) {
               initialPayload = {
@@ -534,6 +537,8 @@ export class MWPTransport implements ExtendedTransport {
                 data: request,
               };
             }
+            // REMOVE THIS BEFORE MERGING
+            console.log('🔗 initialPayload', initialPayload);
 
             dappClient
               .connect({
@@ -542,6 +547,7 @@ export class MWPTransport implements ExtendedTransport {
               })
               .then(() => {
                 if (isDesktopWeb) {
+                  console.log('🔗 sending permission request to wallet', request);
                   dappClient.sendRequest({
                     name: MULTICHAIN_PROVIDER_STREAM_NAME,
                     data: request,

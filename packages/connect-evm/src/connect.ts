@@ -925,6 +925,9 @@ export class MetamaskConnectEVM {
       return;
     }
 
+    // REMOVE THIS BEFORE MERGING
+    console.log('🔗 display_uri', uri);
+
     logger('handler: display_uri', uri);
     this.#provider.emit('display_uri', uri);
     this.#eventHandlers?.displayUri?.(uri);
