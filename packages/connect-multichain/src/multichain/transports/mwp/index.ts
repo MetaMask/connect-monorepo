@@ -29,6 +29,8 @@ import type { CaipAccountId } from '@metamask/utils';
 
 import {
   createLogger,
+  getPlatformType,
+  PlatformType,
   type ExtendedTransport,
   type RPCAPI,
   type Scope,
@@ -524,13 +526,27 @@ export class MWPTransport implements ExtendedTransport {
 
             this.dappClient.on('message', initialConnectionMessageHandler);
 
+            const isDesktopWeb = getPlatformType() === PlatformType.DesktopWeb;
+            let initialPayload;
+            if (!isDesktopWeb) {
+              initialPayload = {
+                name: MULTICHAIN_PROVIDER_STREAM_NAME,
+                data: request,
+              };
+            }
+
             dappClient
               .connect({
                 mode: 'trusted',
-                initialPayload: {
-                  name: MULTICHAIN_PROVIDER_STREAM_NAME,
-                  data: request,
-                },
+                initialPayload,
+              })
+              .then(() => {
+                if (isDesktopWeb) {
+                  dappClient.sendRequest({
+                    name: MULTICHAIN_PROVIDER_STREAM_NAME,
+                    data: request,
+                  });
+                }
               })
               .catch((error) => {
                 if (initialConnectionMessageHandler) {
