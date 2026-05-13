@@ -8,6 +8,15 @@
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
     <title>Multichain Test Dapp</title>
+    <!--
+      connect-src entries:
+        - wss://mm-sdk-relay…       MWP relay websocket (mobile flow)
+        - https://mm-sdk-analytics… analytics ingestion endpoint
+        - https://*.infura.io       read-only RPC node fallback
+        - http://localhost:*        local analytics echo server (yarn analytics:echo,
+          default :3001) used by the Analytics test bench
+        - http://127.0.0.1:*        same, via loopback IP
+    -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
