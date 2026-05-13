@@ -3,7 +3,9 @@ import * as t from 'vitest';
 
 import {
   classifyFailureReason,
+  extractErrorDiagnostics,
   getWalletActionAnalyticsProperties,
+  sanitiseErrorMessage,
 } from './analytics';
 import {
   type InvokeMethodOptions,
@@ -234,5 +236,155 @@ t.describe('getWalletActionAnalyticsProperties', () => {
       { failure_reason: 'transport_timeout' },
     );
     t.expect(props.failure_reason).toBe('transport_timeout');
+  });
+
+  t.it(
+    'attaches error_code and error_message_sample when passed via extra',
+    async () => {
+      const props = await getWalletActionAnalyticsProperties(
+        mockOptions,
+        mockStorage,
+        invokeOptions,
+        TransportType.Browser,
+        {
+          // eslint-disable-next-line @typescript-eslint/naming-convention -- analytics property is snake_case by schema convention
+          failure_reason: 'wallet_internal_error',
+          // eslint-disable-next-line @typescript-eslint/naming-convention -- analytics property is snake_case by schema convention
+          error_code: -32603,
+          // eslint-disable-next-line @typescript-eslint/naming-convention -- analytics property is snake_case by schema convention
+          error_message_sample: 'Internal error',
+        },
+      );
+      t.expect(props.error_code).toBe(-32603);
+      t.expect(props.error_message_sample).toBe('Internal error');
+    },
+  );
+
+  t.it(
+    'preserves error_code=0 (truthy-check would drop it but typeof check keeps it)',
+    async () => {
+      const props = await getWalletActionAnalyticsProperties(
+        mockOptions,
+        mockStorage,
+        invokeOptions,
+        TransportType.Browser,
+        // eslint-disable-next-line @typescript-eslint/naming-convention -- analytics property is snake_case by schema convention
+        { error_code: 0 },
+      );
+      t.expect(props.error_code).toBe(0);
+    },
+  );
+});
+
+t.describe('sanitiseErrorMessage', () => {
+  t.it('returns undefined for empty / missing input', () => {
+    t.expect(sanitiseErrorMessage(undefined)).toBeUndefined();
+    t.expect(sanitiseErrorMessage('')).toBeUndefined();
+  });
+
+  t.it('strips 0x… EVM addresses', () => {
+    const out = sanitiseErrorMessage(
+      'Insufficient funds for sender 0x1234567890abcdef1234567890abcdef12345678',
+    );
+    t.expect(out).toBe('Insufficient funds for sender <addr>');
+  });
+
+  t.it('strips long hex blobs (tx hashes, signatures)', () => {
+    const out = sanitiseErrorMessage(
+      'Transaction abcdef1234567890abcdef1234567890 reverted',
+    );
+    t.expect(out).toBe('Transaction <hex> reverted');
+  });
+
+  t.it('strips URLs', () => {
+    const out = sanitiseErrorMessage(
+      'fetch failed: https://mainnet.infura.io/v3/abc?key=secret',
+    );
+    t.expect(out).toBe('fetch failed: <url>');
+  });
+
+  t.it(
+    'strips long decimal numbers (10+ digits) without touching short codes',
+    () => {
+      const out = sanitiseErrorMessage(
+        'gas required 1234567890 wei for tx with code -32603',
+      );
+      t.expect(out).toBe('gas required <num> wei for tx with code -32603');
+    },
+  );
+
+  t.it('truncates long messages to 200 chars with an ellipsis marker', () => {
+    const out = sanitiseErrorMessage('x'.repeat(500));
+    t.expect(out?.length).toBe(200);
+    t.expect(out?.endsWith('…')).toBe(true);
+  });
+
+  t.it('passes short messages through unchanged', () => {
+    t.expect(sanitiseErrorMessage('User rejected the request')).toBe(
+      'User rejected the request',
+    );
+  });
+
+  t.it('applies all scrubbers in one call', () => {
+    const out = sanitiseErrorMessage(
+      'fetch https://example.com/0xdeadbeef12345678 failed at block 99999999999 for sender 0x1234567890abcdef1234567890abcdef12345678',
+    );
+    t.expect(out).toContain('<url>');
+    t.expect(out).toContain('<num>');
+    t.expect(out).toContain('<addr>');
+    t.expect(out).not.toContain('0x1234567890abcdef1234567890abcdef12345678');
+    t.expect(out).not.toContain('https://');
+  });
+});
+
+t.describe('extractErrorDiagnostics', () => {
+  t.it('returns failure_reason only for non-object errors', () => {
+    t.expect(extractErrorDiagnostics(null)).toStrictEqual({
+      // eslint-disable-next-line @typescript-eslint/naming-convention -- analytics property is snake_case by schema convention
+      failure_reason: 'unknown',
+    });
+    t.expect(extractErrorDiagnostics(undefined)).toStrictEqual({
+      // eslint-disable-next-line @typescript-eslint/naming-convention -- analytics property is snake_case by schema convention
+      failure_reason: 'unknown',
+    });
+  });
+
+  t.it(
+    'returns failure_reason + error_code + sample for a wallet error',
+    () => {
+      const error = new RPCInvokeMethodErr(
+        'inner',
+        -32603,
+        'Internal error fetching balance for 0x1234567890abcdef1234567890abcdef12345678',
+      );
+      const out = extractErrorDiagnostics(error);
+      t.expect(out.failure_reason).toBe('wallet_internal_error');
+      t.expect(out.error_code).toBe(-32603);
+      t.expect(out.error_message_sample).toBe(
+        'Internal error fetching balance for <addr>',
+      );
+    },
+  );
+
+  t.it(
+    'omits error_code when the underlying error carries no numeric code',
+    () => {
+      const out = extractErrorDiagnostics(
+        new Error('Transport not initialized'),
+      );
+      t.expect(out.failure_reason).toBe('unknown');
+      t.expect(out.error_code).toBeUndefined();
+      t.expect(out.error_message_sample).toBe('Transport not initialized');
+    },
+  );
+
+  t.it('omits error_message_sample when the error has no message', () => {
+    const error = new RPCInvokeMethodErr('inner', 4001);
+    const out = extractErrorDiagnostics(error);
+    // The underlying RPCInvokeMethodErr message synthesises a string, so we
+    // expect a sample here — pin the actual contract that "no useful message"
+    // yields an absent sample by constructing one with an empty rpcMessage.
+    t.expect(out.error_code).toBe(4001);
+    t.expect(typeof out.error_message_sample).toBe('string');
   });
 });

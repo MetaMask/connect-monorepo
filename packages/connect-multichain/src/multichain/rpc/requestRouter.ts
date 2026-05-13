@@ -22,7 +22,7 @@ import {
 } from '../../domain';
 import { openDeeplink } from '../utils';
 import {
-  classifyFailureReason,
+  extractErrorDiagnostics,
   getWalletActionAnalyticsProperties,
   isRejectionError,
 } from '../utils/analytics';
@@ -202,8 +202,7 @@ export class RequestRouter {
       this.config.storage,
       options,
       this.transportType,
-      // eslint-disable-next-line @typescript-eslint/naming-convention -- analytics property is snake_case by schema convention
-      { failure_reason: classifyFailureReason(error) },
+      extractErrorDiagnostics(error),
     );
     analytics.track('mmconnect_wallet_action_failed', props);
   }

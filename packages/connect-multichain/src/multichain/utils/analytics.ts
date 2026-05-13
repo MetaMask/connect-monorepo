@@ -32,6 +32,63 @@ export type FailureReason =
   | 'unknown';
 
 /**
+ * Maximum length of `error_message_sample` after sanitisation. Mirrors the
+ * `maxLength: 200` constraint declared in the analytics-api `api.spec.yml`.
+ */
+const ERROR_MESSAGE_SAMPLE_MAX_LENGTH = 200;
+
+/**
+ * Patterns scrubbed from `error_message_sample` before it leaves the SDK.
+ * The goal is to surface enough error context for triage in Mixpanel
+ * without leaking PII / addresses / RPC endpoints / large amounts.
+ *
+ * Order matters: addresses are stripped before bare hex (so the longer
+ * pattern wins), and URLs are stripped before the long-decimal pass (so
+ * port numbers inside URLs don't get separately mangled).
+ */
+const SANITISE_PATTERNS: { pattern: RegExp; replacement: string }[] = [
+  // EVM-style 20-byte addresses.
+  { pattern: /0x[a-fA-F0-9]{40}/gu, replacement: '<addr>' },
+  // Other long hex blobs (tx hashes, signatures, large amounts in hex). 16+
+  // hex chars catches 32-byte hashes/signatures without snagging method
+  // selectors (8 chars) or short hex codes.
+  { pattern: /(?:0x)?[a-fA-F0-9]{16,}/gu, replacement: '<hex>' },
+  // URLs (any scheme up to the first whitespace / quote / closing paren).
+  { pattern: /https?:\/\/[^\s"')]+/gu, replacement: '<url>' },
+  // Long decimal numbers — Wei amounts, gas limits, timestamps, etc.
+  // 10+ digits catches typical chain quantities without affecting RPC
+  // codes (-32601, 4001, etc.).
+  { pattern: /\d{10,}/gu, replacement: '<num>' },
+];
+
+/**
+ * Sanitises an error message for inclusion in analytics. Strips addresses,
+ * long hex strings, URLs, and large numbers, then truncates to
+ * {@link ERROR_MESSAGE_SAMPLE_MAX_LENGTH} characters. Returns `undefined`
+ * if there's no message to sample.
+ *
+ * @param message - Raw error message
+ * @returns A safe-to-emit short string, or `undefined`
+ */
+export function sanitiseErrorMessage(
+  message: string | undefined,
+): string | undefined {
+  if (!message) {
+    return undefined;
+  }
+  let sanitised = message;
+  for (const { pattern, replacement } of SANITISE_PATTERNS) {
+    sanitised = sanitised.replace(pattern, replacement);
+  }
+  if (sanitised.length > ERROR_MESSAGE_SAMPLE_MAX_LENGTH) {
+    // Trim and mark as truncated so consumers can tell vs. naturally short
+    // messages. The trailing ellipsis fits inside the maxLength budget.
+    sanitised = `${sanitised.slice(0, ERROR_MESSAGE_SAMPLE_MAX_LENGTH - 1)}…`;
+  }
+  return sanitised;
+}
+
+/**
  * Pulls the most informative `code` / `message` pair out of an error,
  * unwrapping `RPCInvokeMethodErr` so the wallet-side code (e.g. 4001) is
  * visible to classifiers instead of being hidden behind the SDK's static
@@ -195,6 +252,43 @@ export function classifyFailureReason(error: unknown): FailureReason {
 }
 
 /**
+ * Bundle of diagnostic properties attached to `mmconnect_*_failed` events:
+ * the bucketed {@link FailureReason}, the raw wallet-side error code if
+ * present, and a sanitised sample of the original message. All three are
+ * derived from a single error so producers only need to call this once.
+ *
+ * `error_code` and `error_message_sample` are intentionally optional —
+ * many SDK-internal errors (e.g. `'Transport not initialized'`) have
+ * neither a numeric code nor a useful message; in that case the caller
+ * should attach only `failure_reason`.
+ */
+export type ErrorDiagnostics = {
+  failure_reason: FailureReason;
+  error_code?: number;
+  error_message_sample?: string;
+};
+
+/**
+ * Computes the full set of diagnostic properties to attach to a
+ * `mmconnect_*_failed` event from a single error. Combines
+ * {@link classifyFailureReason}, the unwrapped wallet code, and a
+ * sanitised message sample so producer call sites stay a single line.
+ *
+ * @param error - The error to inspect
+ * @returns Diagnostics ready to spread into the event properties
+ */
+export function extractErrorDiagnostics(error: unknown): ErrorDiagnostics {
+  const failureReason = classifyFailureReason(error);
+  const { code, message } = getUnwrappedErrorDetails(error);
+  const messageSample = sanitiseErrorMessage(message);
+  return {
+    failure_reason: failureReason,
+    ...(typeof code === 'number' ? { error_code: code } : {}),
+    ...(messageSample ? { error_message_sample: messageSample } : {}),
+  };
+}
+
+/**
  * Gets base analytics properties that are common across all events.
  *
  * @param options - Multichain options containing dapp and analytics config
@@ -229,10 +323,14 @@ export async function getBaseAnalyticsProperties(
  * @param storage - Storage client for getting anonymous ID
  * @param invokeOptions - The invoke method options containing method and scope
  * @param transportType - The transport type to use for the analytics event
- * @param extra - Optional event-specific properties. Today only used to
- * attach a `failure_reason` tag to `mmconnect_wallet_action_failed` events.
+ * @param extra - Optional event-specific diagnostic properties. Used by
+ * `mmconnect_wallet_action_failed` to attach the {@link ErrorDiagnostics}
+ * bundle (`failure_reason`, `error_code`, `error_message_sample`).
  * @param extra.failure_reason - A short tag describing why the operation
  * failed; see `classifyFailureReason` and the `FailureReason` union.
+ * @param extra.error_code - The raw wallet-side error code, if present.
+ * @param extra.error_message_sample - A sanitised, truncated sample of the
+ * original error message.
  * @returns Wallet action analytics properties
  */
 export async function getWalletActionAnalyticsProperties(
@@ -240,7 +338,11 @@ export async function getWalletActionAnalyticsProperties(
   storage: StoreClient,
   invokeOptions: InvokeMethodOptions,
   transportType: TransportType,
-  extra?: { failure_reason?: FailureReason },
+  extra?: {
+    failure_reason?: FailureReason;
+    error_code?: number;
+    error_message_sample?: string;
+  },
 ): Promise<{
   mmconnect_versions: Record<string, string>;
   dapp_id: string;
@@ -249,6 +351,8 @@ export async function getWalletActionAnalyticsProperties(
   anon_id: string;
   transport_type: TransportType;
   failure_reason?: FailureReason;
+  error_code?: number;
+  error_message_sample?: string;
 }> {
   const dappId = getDappId(options.dapp);
   const anonId = await storage.getAnonId();
@@ -261,5 +365,11 @@ export async function getWalletActionAnalyticsProperties(
     anon_id: anonId,
     transport_type: transportType,
     ...(extra?.failure_reason ? { failure_reason: extra.failure_reason } : {}),
+    ...(typeof extra?.error_code === 'number'
+      ? { error_code: extra.error_code }
+      : {}),
+    ...(extra?.error_message_sample
+      ? { error_message_sample: extra.error_message_sample }
+      : {}),
   };
 }
