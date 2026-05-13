@@ -527,25 +527,19 @@ export class MWPTransport implements ExtendedTransport {
             this.dappClient.on('message', initialConnectionMessageHandler);
 
             const isDesktopWeb = getPlatformType() === PlatformType.DesktopWeb;
-            let initialPayload;
-            if (!isDesktopWeb) {
-              initialPayload = {
-                name: MULTICHAIN_PROVIDER_STREAM_NAME,
-                data: request,
-              };
+            const initialPayload = {
+              name: MULTICHAIN_PROVIDER_STREAM_NAME,
+              data: request,
             }
 
             dappClient
               .connect({
                 mode: 'trusted',
-                initialPayload,
+                initialPayload: isDesktopWeb ? undefined : initialPayload,
               })
               .then(() => {
                 if (isDesktopWeb) {
-                  dappClient.sendRequest({
-                    name: MULTICHAIN_PROVIDER_STREAM_NAME,
-                    data: request,
-                  });
+                  return dappClient.sendRequest(initialPayload);
                 }
                 return undefined;
               })
