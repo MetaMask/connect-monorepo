@@ -515,7 +515,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
             }
           },
           (uri: string) => {
-            console.log('🔗 display_uri emitted from install modal flow', uri, uri.length);
             this.emit('display_uri', uri);
           },
         )
@@ -582,7 +581,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           // Generate and emit the QR code link
           const deeplink =
             this.options.ui.factory.createConnectionDeeplink(connectionRequest);
-          console.log('🔗 display_uri emitted from headless connect', deeplink, deeplink.length);
           this.emit('display_uri', deeplink);
         },
       );
@@ -689,7 +687,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
               );
 
             // Emit display_uri event for deeplink connections
-            console.log('🔗 display_uri emitted from deeplink connect', deeplink, deeplink.length);
             this.emit('display_uri', deeplink);
 
             if (this.options.mobile?.preferredOpenLink) {
