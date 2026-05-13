@@ -553,6 +553,7 @@ export class MWPTransport implements ExtendedTransport {
                     data: request,
                   });
                 }
+                return undefined;
               })
               .catch((error) => {
                 if (initialConnectionMessageHandler) {
