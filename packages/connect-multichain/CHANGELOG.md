@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Tightened `isRejectionError` so `mmconnect_wallet_action_rejected` more accurately reflects user-driven cancellations: it now unwraps `RPCInvokeMethodErr` (so wallet-side codes survive the router's transport-boundary wrapping rather than being masked by the wrapper's `code: 53`), no longer classifies EIP-1193 `4100 Unauthorized` as a rejection (it's a CAIP-25 permission denial, not a user decision), and narrows the bare `"user"` substring match to four explicit phrases — `"user rejected"` / `"user denied"` / `"user cancelled"` / `"user canceled"` — so unrelated messages like Account Abstraction's `"user operation reverted"` no longer count. Net effect: `_rejected` becomes more precise; `_failed` picks up everything `4100` was previously hiding. ([#292](https://github.com/MetaMask/connect-monorepo/pull/292))
+
 ## [0.13.0]
 
 ### Uncategorized

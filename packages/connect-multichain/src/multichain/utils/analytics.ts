@@ -9,10 +9,45 @@ import type {
   StoreClient,
   TransportType,
 } from '../../domain';
-import { getPlatformType } from '../../domain';
+import { getPlatformType, RPCInvokeMethodErr } from '../../domain';
+
+/**
+ * Pulls the most informative `code` / `message` pair out of an error,
+ * unwrapping `RPCInvokeMethodErr` so the wallet-side code (e.g. 4001) is
+ * visible to classifiers instead of being hidden behind the SDK's static
+ * `code: 53`. Falls back to the outer error if there is no inner wallet code.
+ *
+ * @param error - The error object to inspect
+ * @returns The most relevant `{ code, message }` pair we can extract
+ */
+function getUnwrappedErrorDetails(error: unknown): {
+  code: number | undefined;
+  message: string;
+} {
+  if (typeof error !== 'object' || error === null) {
+    return { code: undefined, message: '' };
+  }
+
+  if (error instanceof RPCInvokeMethodErr) {
+    return {
+      code: error.rpcCode ?? error.code,
+      message: error.rpcMessage ?? error.message ?? '',
+    };
+  }
+
+  const errorObj = error as { code?: number; message?: string };
+  return {
+    code: errorObj.code,
+    message: errorObj.message ?? '',
+  };
+}
 
 /**
  * Checks if an error represents a user rejection.
+ *
+ * Unwraps `RPCInvokeMethodErr` so the wallet's `code: 4001` survives the
+ * SDK's transport-boundary wrapping (the outer error otherwise reports
+ * `code: 53`, which would never match the heuristics here).
  *
  * @param error - The error object to check
  * @returns True if the error indicates a user rejection, false otherwise
@@ -22,17 +57,27 @@ export function isRejectionError(error: unknown): boolean {
     return false;
   }
 
-  const errorObj = error as { code?: number; message?: string };
-  const errorCode = errorObj.code;
-  const errorMessage = errorObj.message?.toLowerCase() ?? '';
+  const { code, message } = getUnwrappedErrorDetails(error);
+  const errorMessage = message.toLowerCase();
 
+  // EIP-1193 4001 "User Rejected Request" is the canonical rejection code.
+  // Note: 4100 "Unauthorized" is deliberately NOT matched here. On multichain
+  // sessions it's what the CAIP-25 permission layer returns when a method
+  // isn't in the granted scope (the layer rejects it before the method
+  // handler runs). That's a permission/support signal, not a user-driven
+  // rejection — misclassifying it as `_rejected` hides genuine permission
+  // issues from `_failed`.
   return (
-    errorCode === 4001 || // User rejected request (common EIP-1193 code)
-    errorCode === 4100 || // Unauthorized (common rejection code)
+    code === 4001 ||
     errorMessage.includes('reject') ||
     errorMessage.includes('denied') ||
     errorMessage.includes('cancel') ||
-    errorMessage.includes('user')
+    // Narrow "user …" matches — bare "user" is too greedy (catches Account
+    // Abstraction errors like "user operation reverted").
+    errorMessage.includes('user rejected') ||
+    errorMessage.includes('user denied') ||
+    errorMessage.includes('user cancelled') ||
+    errorMessage.includes('user canceled')
   );
 }
 
