@@ -40,30 +40,58 @@ const ERROR_MESSAGE_SAMPLE_MAX_LENGTH = 200;
 /**
  * Patterns scrubbed from `error_message_sample` before it leaves the SDK.
  * The goal is to surface enough error context for triage in Mixpanel
- * without leaking PII / addresses / RPC endpoints / large amounts.
+ * without leaking PII / wallet addresses / RPC endpoints / large numeric
+ * quantities, across any chain the SDK might route to.
  *
- * Order matters: addresses are stripped before bare hex (so the longer
- * pattern wins), and URLs are stripped before the long-decimal pass (so
- * port numbers inside URLs don't get separately mangled).
+ * Order matters. URLs are stripped early so address-shaped path segments
+ * inside URLs aren't re-mangled by later passes. Specific patterns run
+ * before broad ones (e.g. EVM `0x{40}` before the generic long-hex pass)
+ * so the longer / more specific match wins. Bech32 runs before generic
+ * Base58 because the two alphabets partially overlap — Bech32 includes
+ * `0` (which Base58 excludes) and Base58 includes `o`/`i`/`b`/`l` (which
+ * Bech32 excludes) — so running Base58 first can chop off the tail of an
+ * HRP-prefixed Bech32 address at the first `l`/`i`/`o`/`b` and leave the
+ * suffix unscrubbed. Decimal-number scrubbing runs last so it doesn't
+ * fragment hex / Base58 tokens that contain digit runs.
  */
 const SANITISE_PATTERNS: { pattern: RegExp; replacement: string }[] = [
-  // EVM-style 20-byte addresses.
+  // EVM-style 20-byte hex addresses (e.g. `0x` + 40 hex chars).
   { pattern: /0x[a-fA-F0-9]{40}/gu, replacement: '<addr>' },
-  // Other long hex blobs (tx hashes, signatures, large amounts in hex). 16+
-  // hex chars catches 32-byte hashes/signatures without snagging method
-  // selectors (8 chars) or short hex codes.
+  // Other long hex blobs: tx hashes, signatures, raw byte strings, large
+  // hex amounts. 16+ hex chars catches 32-byte hashes/signatures without
+  // snagging EVM method selectors (8 chars) or short hex codes.
   { pattern: /(?:0x)?[a-fA-F0-9]{16,}/gu, replacement: '<hex>' },
-  // URLs (any scheme up to the first whitespace / quote / closing paren).
+  // URLs of any scheme up to the first whitespace / quote / closing paren.
+  // Catches RPC endpoints, dapp deeplinks, query strings with secrets.
   { pattern: /https?:\/\/[^\s"')]+/gu, replacement: '<url>' },
-  // Long decimal numbers — Wei amounts, gas limits, timestamps, etc.
-  // 10+ digits catches typical chain quantities without affecting RPC
-  // codes (-32601, 4001, etc.).
+  // Bech32 addresses: short HRP (1-10 lowercase chars) + `1` separator +
+  // ≥38 chars of Bech32 data alphabet `[ac-hj-np-z02-9]` (excludes the
+  // look-alike chars `b`, `i`, `o`, `1`). Covers Bitcoin SegWit
+  // (`bc1…`/`tb1…`) and Cosmos-SDK chains (`cosmos1…`, `osmo1…`,
+  // `juno1…`, `inj1…`, etc.) without enumerating every HRP. Runs before
+  // the Base58 pattern below — see header comment for why.
+  {
+    pattern: /\b[a-z]{1,10}1[ac-hj-np-z02-9]{38,}\b/gu,
+    replacement: '<addr>',
+  },
+  // Base58 tokens (32+ chars, Base58 alphabet `[1-9A-HJ-NP-Za-km-z]`).
+  // Covers Solana pubkeys (32-44 chars), Solana tx signatures (~88 chars),
+  // and Bitcoin Base58 addresses ≥32 chars. The 32-char floor and `\b`
+  // word boundary keep English words and shorter alphanumerics safe.
+  {
+    pattern: /\b[1-9A-HJ-NP-Za-km-z]{32,}\b/gu,
+    replacement: '<addr>',
+  },
+  // Long decimal numbers — token amounts, gas units, timestamps, lamports.
+  // 10+ digits catches typical chain quantities without affecting JSON-RPC
+  // codes (-32601, 4001, etc.) or short numeric IDs.
   { pattern: /\d{10,}/gu, replacement: '<num>' },
 ];
 
 /**
- * Sanitises an error message for inclusion in analytics. Strips addresses,
- * long hex strings, URLs, and large numbers, then truncates to
+ * Sanitises an error message for inclusion in analytics. Strips wallet
+ * addresses (EVM hex, Solana / Bitcoin Base58, Bech32), long hex blobs,
+ * URLs, and large decimal numbers, then truncates to
  * {@link ERROR_MESSAGE_SAMPLE_MAX_LENGTH} characters. Returns `undefined`
  * if there's no message to sample.
  *

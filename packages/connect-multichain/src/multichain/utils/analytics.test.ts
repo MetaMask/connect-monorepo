@@ -283,19 +283,22 @@ t.describe('sanitiseErrorMessage', () => {
     t.expect(sanitiseErrorMessage('')).toBeUndefined();
   });
 
-  t.it('strips 0x… EVM addresses', () => {
+  t.it('strips 0x… EVM hex addresses', () => {
     const out = sanitiseErrorMessage(
       'Insufficient funds for sender 0x1234567890abcdef1234567890abcdef12345678',
     );
     t.expect(out).toBe('Insufficient funds for sender <addr>');
   });
 
-  t.it('strips long hex blobs (tx hashes, signatures)', () => {
-    const out = sanitiseErrorMessage(
-      'Transaction abcdef1234567890abcdef1234567890 reverted',
-    );
-    t.expect(out).toBe('Transaction <hex> reverted');
-  });
+  t.it(
+    'strips long hex blobs (tx hashes, signatures, raw byte strings)',
+    () => {
+      const out = sanitiseErrorMessage(
+        'Transaction abcdef1234567890abcdef1234567890 reverted',
+      );
+      t.expect(out).toBe('Transaction <hex> reverted');
+    },
+  );
 
   t.it('strips URLs', () => {
     const out = sanitiseErrorMessage(
@@ -303,6 +306,51 @@ t.describe('sanitiseErrorMessage', () => {
     );
     t.expect(out).toBe('fetch failed: <url>');
   });
+
+  t.it('strips Solana Base58 pubkeys', () => {
+    const out = sanitiseErrorMessage(
+      'Account 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM not found',
+    );
+    t.expect(out).toBe('Account <addr> not found');
+  });
+
+  t.it('strips Solana Base58 transaction signatures (~88 chars)', () => {
+    // 88-char Base58 signature (alphabet excludes 0OIl).
+    const signature =
+      '5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW';
+    const out = sanitiseErrorMessage(
+      `Failed to confirm signature ${signature}`,
+    );
+    t.expect(out).toBe('Failed to confirm signature <addr>');
+  });
+
+  t.it('strips Bitcoin SegWit Bech32 addresses', () => {
+    const out = sanitiseErrorMessage(
+      'Invalid output address bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4',
+    );
+    t.expect(out).toBe('Invalid output address <addr>');
+  });
+
+  t.it('strips Cosmos-SDK Bech32 addresses', () => {
+    const out = sanitiseErrorMessage(
+      'Insufficient balance for cosmos1qypqxpq9qcrsszgszyajpxgfqxsmcrcxs5lr8jh',
+    );
+    t.expect(out).toBe('Insufficient balance for <addr>');
+  });
+
+  t.it(
+    'does not false-positive on short alphanumeric tokens or English words',
+    () => {
+      // 8-char EVM method selector should survive.
+      t.expect(sanitiseErrorMessage('method selector 0xa9059cbb invalid')).toBe(
+        'method selector 0xa9059cbb invalid',
+      );
+      // Plain English plus short hex / short Base58-shaped tokens survive.
+      t.expect(
+        sanitiseErrorMessage('the user rejected request abc123 (code 4001)'),
+      ).toBe('the user rejected request abc123 (code 4001)');
+    },
+  );
 
   t.it(
     'strips long decimal numbers (10+ digits) without touching short codes',
@@ -315,7 +363,9 @@ t.describe('sanitiseErrorMessage', () => {
   );
 
   t.it('truncates long messages to 200 chars with an ellipsis marker', () => {
-    const out = sanitiseErrorMessage('x'.repeat(500));
+    // Use prose with spaces and `0` (excluded from Base58) so the input
+    // can't be eaten whole by an address pattern before truncation runs.
+    const out = sanitiseErrorMessage('error 0 '.repeat(100));
     t.expect(out?.length).toBe(200);
     t.expect(out?.endsWith('…')).toBe(true);
   });

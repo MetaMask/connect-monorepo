@@ -582,9 +582,10 @@ export type components = {
       /**
        * @description A truncated, sanitised sample of the raw error message.
        * Goal is to surface enough context to triage the `unknown`
-       * `failure_reason` bucket without leaking PII or addresses. Producers
-       * strip hex addresses, long hex strings, and URLs, and clip to 200 chars.
-       * Only set on `mmconnect_connection_failed` and
+       * `failure_reason` bucket without leaking PII or wallet addresses.
+       * Producers strip wallet addresses (EVM hex, Solana / Bitcoin Base58,
+       * Bech32), long hex blobs, URLs, and large decimal numbers, then
+       * clip to 200 chars. Only set on `mmconnect_connection_failed` and
        * `mmconnect_wallet_action_failed`.
        */
       error_message_sample?: string;
