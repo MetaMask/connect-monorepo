@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Attach a `failure_reason` tag to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` events via a new `classifyFailureReason` helper, distinguishing transport timeouts, transport disconnects, EIP-1193 wallet errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognized_chain`), and JSON-RPC wallet errors (`-32601`, `-32602`, `-32603`, plus the `-32000…-32099` server-error range), with an `unknown` fallback. Schema-side: [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+- Attach `error_code` and `error_message_sample` companion properties to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed`. `error_code` preserves the raw wallet-side JSON-RPC / EIP-1193 code (e.g. `4001`, `-32603`). `error_message_sample` is a sanitised, 200-char-max preview of the original error message, with wallet addresses, long hex blobs, URLs, and large decimal numbers scrubbed. Both fields are optional and only set on the two `*_failed` events. Schema-side: [`metamask-sdk-analytics-api#32`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/32). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+
 ### Fixed
 
 - Tightened `isRejectionError` so `mmconnect_wallet_action_rejected` more accurately reflects user-driven cancellations: it now unwraps `RPCInvokeMethodErr` (so wallet-side codes survive the router's transport-boundary wrapping rather than being masked by the wrapper's `code: 53`), no longer classifies EIP-1193 `4100 Unauthorized` as a rejection (it's a CAIP-25 permission denial, not a user decision), and narrows the bare `"user"` substring match to four explicit phrases — `"user rejected"` / `"user denied"` / `"user cancelled"` / `"user canceled"` — so unrelated messages like Account Abstraction's `"user operation reverted"` no longer count. Net effect: `_rejected` becomes more precise; `_failed` picks up everything `4100` was previously hiding. ([#292](https://github.com/MetaMask/connect-monorepo/pull/292))

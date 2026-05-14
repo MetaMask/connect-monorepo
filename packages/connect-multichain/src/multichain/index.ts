@@ -29,6 +29,7 @@ import {
   TransportType,
 } from '../domain';
 import {
+  extractErrorDiagnostics,
   getBaseAnalyticsProperties,
   isRejectionError,
 } from './utils/analytics';
@@ -757,6 +758,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
             analytics.track('mmconnect_connection_failed', {
               ...baseProps,
               transport_type: transportType,
+              ...extractErrorDiagnostics(error),
             });
           }
         } catch {

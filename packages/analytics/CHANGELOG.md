@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add optional `failure_reason` property to `MMConnectProperties` in `schema.ts`, attached by producers on `mmconnect_wallet_action_failed` and `mmconnect_connection_failed`. Mirrors [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+- Add optional `error_code` (integer) and `error_message_sample` (string, max 200 chars) properties to `MMConnectProperties` in `schema.ts`. Producers attach them on the two `*_failed` events as raw-code / sanitised-message companions to `failure_reason`. Mirrors [`metamask-sdk-analytics-api#32`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/32). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+
 ### Removed
 
 - Removed `MobileSDKConnectV2Payload` / `MobileSDKConnectV2Properties` from `schema.ts` and the `EventV2` oneOf; the `mobile/sdk-connect-v2` namespace has no emitters after [`metamask-mobile#27864`](https://github.com/MetaMask/metamask-mobile/pull/27864) and [`metamask-mobile#28322`](https://github.com/MetaMask/metamask-mobile/pull/28322), and the V2 endpoint is being updated to reject the namespace in [`metamask-sdk-analytics-api#29`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/29). Internal types only — no change to the public API.

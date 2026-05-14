@@ -53,6 +53,9 @@ module.exports = {
           'process.env.INFURA_API_KEY': JSON.stringify(
             process.env.INFURA_API_KEY,
           ),
+          'process.env.METAMASK_ANALYTICS_ENDPOINT': JSON.stringify(
+            process.env.METAMASK_ANALYTICS_ENDPOINT,
+          ),
         }),
       );
 

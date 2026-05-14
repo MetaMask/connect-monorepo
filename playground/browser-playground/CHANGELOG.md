@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added an **Analytics test bench** collapsible panel with one button per `failure_reason` classifier branch, plus a local `yarn analytics:echo` server that stands in for the analytics endpoint. See the playground README for the manual-testing walkthrough. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+
 ## [0.7.2]
 
 ### Changed
