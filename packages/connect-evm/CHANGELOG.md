@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove `@metamask/chain-agnostic-permission` dependency. The two helpers used from it (`getEthAccounts`, `getPermittedEthChainIds`) and the `parseScopeString` utility are now implemented locally on top of `@metamask/utils` primitives. This drops the transitive `@metamask/controller-utils` / `lodash` / `bn.js` / `eth-ens-namehash` / `fast-deep-equal` / `@metamask/ethjs-unit` chain from the `connect-evm` bundle.
 
+### Fixed
+
+- Stopped emitting `mmconnect_wallet_action_failed` for the `wallet_switchEthereumChain` attempt on the `"Unrecognized chain ID" → wallet_addEthereumChain` recovery path. The shim now only emits the failed event when there's no recovery to attempt (no `chainConfiguration` provided) or when the error is unrelated to a missing chain. A successful recovery used to produce four Mixpanel events for what is logically one chain change (`switch _requested`, `switch _failed`, `add _requested`, `add _succeeded`); it now produces three (`switch _requested`, `add _requested`, `add _succeeded`). If the recovery's own `wallet_addEthereumChain` call also fails, that failure is still tracked by `#addEthereumChain`'s own `_failed` event, so the overall flow still surfaces exactly one `_failed` per logical chain change. ([#294](https://github.com/MetaMask/connect-monorepo/pull/294))
+
 ## [1.2.0]
 
 ### Added

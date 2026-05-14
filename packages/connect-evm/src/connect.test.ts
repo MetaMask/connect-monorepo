@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
+
+/* eslint-disable @typescript-eslint/naming-convention -- analytics event names are snake_case by schema convention */
+import { analytics } from '@metamask/analytics';
 import type { SessionData, MultichainCore } from '@metamask/connect-multichain';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
@@ -59,7 +62,6 @@ function createMockCore(): MockCore {
   const storageSet = vi.fn().mockResolvedValue(undefined);
 
   const mockCore = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- mock mirrors real class _status
     _status: _status as ConnectEvmStatus,
     get status(): ConnectEvmStatus {
       return this._status;
@@ -97,7 +99,13 @@ function createMockCore(): MockCore {
         get: storageGet,
         set: storageSet,
       },
+      getAnonId: vi.fn().mockResolvedValue('test-anon-id'),
     },
+    options: {
+      dapp: { url: 'https://example.com' },
+      versions: { 'connect-evm': '0.0.0-test' },
+    },
+    transportType: 'mwp',
   };
 
   mockCore._status = _status;
@@ -154,7 +162,7 @@ describe('MetamaskConnectEVM', () => {
 
       await client.getProvider().request({
         method: 'wallet_requestPermissions',
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         params: [{ eth_accounts: {} }],
       });
 
@@ -757,6 +765,7 @@ describe('MetamaskConnectEVM', () => {
   describe('switchChain', () => {
     let mockCore: MockCore;
     let client: Awaited<ReturnType<typeof MetamaskConnectEVM.create>>;
+    let trackSpy: ReturnType<typeof vi.spyOn>;
 
     const polygonChainConfiguration = {
       chainId: '0x89',
@@ -764,6 +773,11 @@ describe('MetamaskConnectEVM', () => {
       nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
       rpcUrls: ['https://polygon-rpc.com'],
     };
+
+    const trackedEventNames = (): string[] =>
+      (trackSpy.mock.calls as [string, unknown][]).map(
+        ([eventName]) => eventName,
+      );
 
     beforeEach(async () => {
       mockCore = createMockCore();
@@ -787,6 +801,12 @@ describe('MetamaskConnectEVM', () => {
       // Ignore the eth_accounts call made during the connect flow above so
       // each test can assert against a clean call log.
       mockCore.transport.sendEip1193Message.mockClear();
+
+      // Spy on analytics.track after the connect-time events have already
+      // fired so test assertions only see calls made during the test body.
+      trackSpy = vi.spyOn(analytics, 'track').mockImplementation(() => {
+        // intentionally noop — we only want the spy's call record
+      });
     });
 
     it('falls back to wallet_addEthereumChain when wallet_switchEthereumChain fails with "Unrecognized chain ID" and chainConfiguration is provided', async () => {
@@ -815,9 +835,21 @@ describe('MetamaskConnectEVM', () => {
         'wallet_switchEthereumChain',
         'wallet_addEthereumChain',
       ]);
+
+      // The recovery succeeded — Mixpanel should not see a `_failed` event
+      // for the swallowed switch attempt. From the user's perspective this
+      // is one successful chain change.
+      expect(trackedEventNames()).toEqual([
+        'mmconnect_wallet_action_requested', // switch
+        'mmconnect_wallet_action_requested', // add
+        'mmconnect_wallet_action_succeeded', // add
+      ]);
+      expect(trackedEventNames()).not.toContain(
+        'mmconnect_wallet_action_failed',
+      );
     });
 
-    it('rethrows the original "Unrecognized chain ID" error (preserving code 4902) when no chainConfiguration is provided', async () => {
+    it('still emits `_failed` for the switch when recovery is impossible (no chainConfiguration provided)', async () => {
       mockCore.transport.sendEip1193Message.mockImplementation(
         async (request: { method: string }) => {
           if (request.method === 'wallet_switchEthereumChain') {
@@ -843,6 +875,13 @@ describe('MetamaskConnectEVM', () => {
       );
       expect(calls).toEqual(['wallet_switchEthereumChain']);
       expect(calls).not.toContain('wallet_addEthereumChain');
+
+      // No recovery is going to happen, so the switch failure must surface
+      // to Mixpanel — otherwise the failure is invisible.
+      expect(trackedEventNames()).toEqual([
+        'mmconnect_wallet_action_requested',
+        'mmconnect_wallet_action_failed',
+      ]);
     });
 
     it('rethrows non "Unrecognized chain ID" errors without falling back, even when chainConfiguration is provided', async () => {
@@ -867,6 +906,60 @@ describe('MetamaskConnectEVM', () => {
       );
       expect(calls).toEqual(['wallet_switchEthereumChain']);
       expect(calls).not.toContain('wallet_addEthereumChain');
+
+      // The catch's recovery branch only fires for "Unrecognized chain ID"
+      // errors; everything else must still emit `_failed` (or `_rejected`
+      // post the rejection classifier — irrelevant here, both are tracked
+      // events that must fire).
+      const eventNames = trackedEventNames();
+      expect(eventNames).toContain('mmconnect_wallet_action_requested');
+      expect(
+        eventNames.some(
+          (name) =>
+            name === 'mmconnect_wallet_action_failed' ||
+            name === 'mmconnect_wallet_action_rejected',
+        ),
+      ).toBe(true);
+    });
+
+    it('emits `_failed` for the add when recovery itself fails (suppression only applies on successful recovery)', async () => {
+      mockCore.transport.sendEip1193Message.mockImplementation(
+        async (request: { method: string }) => {
+          if (request.method === 'wallet_switchEthereumChain') {
+            const error = new Error('Unrecognized chain ID 0x89') as Error & {
+              code: number;
+            };
+            error.code = 4902;
+            throw error;
+          }
+          if (request.method === 'wallet_addEthereumChain') {
+            throw new Error('Wallet refused to add the chain');
+          }
+          return { result: null, id: 1, jsonrpc: '2.0' as const };
+        },
+      );
+
+      await expect(
+        client.switchChain({
+          chainId: '0x89',
+          chainConfiguration: polygonChainConfiguration,
+        }),
+      ).rejects.toThrow('Wallet refused to add the chain');
+
+      // The switch attempt's `_failed` is still suppressed (the user's
+      // intent was a chain change, not specifically a switch). The
+      // overall failure surfaces through the add's own `_failed` event.
+      // Net effect: one `_failed` per logical chain change, regardless of
+      // which RPC method the wallet rejected.
+      const eventNames = trackedEventNames();
+      expect(eventNames).toEqual([
+        'mmconnect_wallet_action_requested', // switch
+        'mmconnect_wallet_action_requested', // add
+        'mmconnect_wallet_action_failed', // add
+      ]);
+      expect(
+        eventNames.filter((name) => name === 'mmconnect_wallet_action_failed'),
+      ).toHaveLength(1);
     });
   });
 
@@ -897,7 +990,7 @@ describe('MetamaskConnectEVM', () => {
       // Call wallet_requestPermissions — should force a new request
       await client.getProvider().request({
         method: 'wallet_requestPermissions',
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         params: [{ eth_accounts: {} }],
       });
 
@@ -937,7 +1030,7 @@ describe('MetamaskConnectEVM', () => {
 
       await client.getProvider().request({
         method: 'wallet_requestPermissions',
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         params: [{ eth_accounts: {} }],
       });
 
