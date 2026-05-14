@@ -7,13 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- Return method-specific values from intercepted EIP-1193 account requests: `eth_requestAccounts` now resolves to an accounts array, and `eth_coinbase` now resolves to the selected account instead of the full accounts array.
-
 ### Removed
 
 - Remove `@metamask/chain-agnostic-permission` dependency. The two helpers used from it (`getEthAccounts`, `getPermittedEthChainIds`) and the `parseScopeString` utility are now implemented locally on top of `@metamask/utils` primitives. This drops the transitive `@metamask/controller-utils` / `lodash` / `bn.js` / `eth-ens-namehash` / `fast-deep-equal` / `@metamask/ethjs-unit` chain from the `connect-evm` bundle.
+
+### Fixed
+
+- Return method-specific values from intercepted EIP-1193 account requests: `eth_requestAccounts` now resolves to an accounts array, and `eth_coinbase` now resolves to the selected account instead of the full accounts array. [297](https://github.com/MetaMask/connect-monorepo/pull/297)
 
 ## [1.2.0]
 
