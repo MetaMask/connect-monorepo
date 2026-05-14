@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Attach a `failure_reason` tag to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` events via a new `classifyFailureReason` helper, distinguishing transport timeouts, transport disconnects, EIP-1193 wallet errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognized_chain`), and JSON-RPC wallet errors (`-32601`, `-32602`, `-32603`, plus the `-32000…-32099` server-error range), with an `unknown` fallback. Schema-side: [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+- Attach `error_code` and `error_message_sample` companion properties to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed`. `error_code` preserves the raw wallet-side JSON-RPC / EIP-1193 code (e.g. `4001`, `-32603`). `error_message_sample` is a sanitised, 200-char-max preview of the original error message, with wallet addresses, long hex blobs, URLs, and large decimal numbers scrubbed. Both fields are optional and only set on the two `*_failed` events. Schema-side: [`metamask-sdk-analytics-api#32`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/32). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+
 ### Changed
 
 - Improves QR code scanning reliability. The QR code MWP flow (desktop web and Node.js) now omits the initial `wallet_createSession` request from the deeplink URI, instead sending it as a separate request after the wallet completes the MWP handshake. This results in a shorter deeplink URI and a less dense QR code. The native deeplink (non-QR MWP) flow used on mobile web and React Native is unchanged. ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))

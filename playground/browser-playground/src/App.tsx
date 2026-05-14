@@ -15,6 +15,7 @@ import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
+import { AnalyticsTestBench } from './components/AnalyticsTestBench';
 import { useSolanaSDK } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
 
@@ -402,6 +403,12 @@ function App() {
             </p>
           </section>
         )}
+
+        <AnalyticsTestBench
+          connectedScopes={
+            Object.keys(session?.sessionScopes ?? {}) as Scope[]
+          }
+        />
 
         <section
           data-testid={TEST_IDS.app.sectionConnected}

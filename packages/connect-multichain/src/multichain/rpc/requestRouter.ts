@@ -22,6 +22,7 @@ import {
 } from '../../domain';
 import { openDeeplink } from '../utils';
 import {
+  extractErrorDiagnostics,
   getWalletActionAnalyticsProperties,
   isRejectionError,
 } from '../utils/analytics';
@@ -138,7 +139,7 @@ export class RequestRouter {
       if (isRejection) {
         await this.#trackWalletActionRejected(options);
       } else {
-        await this.#trackWalletActionFailed(options);
+        await this.#trackWalletActionFailed(options, error);
       }
       if (error instanceof RPCInvokeMethodErr) {
         throw error;
@@ -188,14 +189,20 @@ export class RequestRouter {
   /**
    * Tracks wallet action failed event.
    *
-   * @param options
+   * @param options - The invoke method options.
+   * @param error - The error that caused the failure (used to classify the
+   * `failure_reason` property on the event).
    */
-  async #trackWalletActionFailed(options: InvokeMethodOptions): Promise<void> {
+  async #trackWalletActionFailed(
+    options: InvokeMethodOptions,
+    error: unknown,
+  ): Promise<void> {
     const props = await getWalletActionAnalyticsProperties(
       this.config,
       this.config.storage,
       options,
       this.transportType,
+      extractErrorDiagnostics(error),
     );
     analytics.track('mmconnect_wallet_action_failed', props);
   }
