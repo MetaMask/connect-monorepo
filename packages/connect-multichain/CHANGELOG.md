@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improves QR code scanning reliability. Desktop QR code MWP flow now omits the iniital request from the deeplink URI, instead sending it as a separate request after the wallet completes the MWP handshake. This results in a shorter deeplink URI and less dense QR code. Native deeplink (non-QR MWP) flow is unchanged. ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
+- Improves QR code scanning reliability. Desktop QR code MWP flow now omits the initial request from the deeplink URI, instead sending it as a separate request after the wallet completes the MWP handshake. This results in a shorter deeplink URI and less dense QR code. Native deeplink (non-QR MWP) flow is unchanged. ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
 
 ### Fixed
 
