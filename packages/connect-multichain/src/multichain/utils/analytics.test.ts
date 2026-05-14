@@ -57,12 +57,6 @@ t.describe('classifyFailureReason', () => {
     },
   );
 
-  t.it('classifies the "Unrecognized chain" message', () => {
-    t.expect(
-      classifyFailureReason(new Error('Unrecognized chain ID "0xfa"')),
-    ).toBe('unrecognised_chain');
-  });
-
   t.it('classifies wallet JSON-RPC method-not-found', () => {
     const error = new RPCInvokeMethodErr('inner', -32601, 'Method not found');
     t.expect(classifyFailureReason(error)).toBe('wallet_method_unsupported');
@@ -96,14 +90,14 @@ t.describe('classifyFailureReason', () => {
   });
 
   t.it(
-    'classifies wallet 4902 unrecognised chain (mobile switchEthereumChain)',
+    'classifies wallet 4902 unrecognized chain (mobile switchEthereumChain)',
     () => {
       const error = new RPCInvokeMethodErr(
         'inner',
         4902,
         'Unrecognized chain ID "0xfa". Try adding the chain using wallet_addEthereumChain first.',
       );
-      t.expect(classifyFailureReason(error)).toBe('unrecognised_chain');
+      t.expect(classifyFailureReason(error)).toBe('unrecognized_chain');
     },
   );
 

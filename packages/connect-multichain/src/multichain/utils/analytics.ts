@@ -28,7 +28,7 @@ export type FailureReason =
   | 'wallet_invalid_params'
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
-  | 'unrecognised_chain'
+  | 'unrecognized_chain'
   | 'unknown';
 
 /**
@@ -245,9 +245,10 @@ export function classifyFailureReason(error: unknown): FailureReason {
     }
     if (code === 4902) {
       // Unrecognized chain ID — `wallet_switchEthereumChain` to a chain the
-      // wallet hasn't been told about. Same signal as the message heuristic
-      // below, but reaches us cleanly via code rather than substring.
-      return 'unrecognised_chain';
+      // wallet hasn't been told about. MetaMask (extension + mobile) always
+      // sets code 4902 on this error, so we don't need a message-substring
+      // fallback below.
+      return 'unrecognized_chain';
     }
     // Anything else in the EIP-1193 / EIP-1474 provider-defined range
     // (1000–4999) falls through to `unknown` — we can promote specific codes
@@ -284,10 +285,6 @@ export function classifyFailureReason(error: unknown): FailureReason {
     errorMessage.includes('socket closed')
   ) {
     return 'transport_disconnect';
-  }
-
-  if (errorMessage.includes('unrecognized chain')) {
-    return 'unrecognised_chain';
   }
 
   return 'unknown';

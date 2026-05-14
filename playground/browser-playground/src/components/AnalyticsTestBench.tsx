@@ -26,7 +26,7 @@ type ExpectedBucket =
   | 'wallet_invalid_params'
   | 'wallet_internal_error'
   | 'wallet_unauthorized'
-  | 'unrecognised_chain'
+  | 'unrecognized_chain'
   | 'unknown';
 
 type ResultEntry = {
@@ -55,7 +55,7 @@ export function AnalyticsTestBench({
 
   // Pick the first connected EVM scope; fall back to mainnet so the buttons
   // still render. Each button can override this if it needs a specific scope
-  // (e.g. unrecognised_chain wants a chain ID the wallet won't know).
+  // (e.g. unrecognized_chain wants a chain ID the wallet won't know).
   const defaultScope: Scope =
     (connectedScopes.find((s) => s.startsWith('eip155:')) as Scope) ??
     ('eip155:1' as Scope);
@@ -165,7 +165,7 @@ export function AnalyticsTestBench({
       () =>
         // CAIP-25 scopes don't typically include wallet_switchEthereumChain
         // in the granted methods, so this hits the same 4100 path as the
-        // bogus method above. To actually reach `4902 unrecognised_chain`
+        // bogus method above. To actually reach `4902 unrecognized_chain`
         // (or `-32603 wallet_internal_error`), the wallet would need to grant
         // the method and then run its handler — not generally reachable from
         // the playground.
@@ -184,7 +184,7 @@ export function AnalyticsTestBench({
       'wallet_unauthorized',
       () =>
         // Same caveat as above — on a typical multichain session this lands
-        // in 4100 unauthorized, not 4902 unrecognised_chain. Kept as a button
+        // in 4100 unauthorized, not 4902 unrecognized_chain. Kept as a button
         // so we can see if any wallet build behaves differently.
         invokeMethod({
           scope: defaultScope,
@@ -332,7 +332,7 @@ export function AnalyticsTestBench({
             <code className="bg-gray-100 px-1 rounded">
               wallet_method_unsupported
             </code>{' '}
-            (real <code>-32601</code>) or <code>unrecognised_chain</code> (real{' '}
+            (real <code>-32601</code>) or <code>unrecognized_chain</code> (real{' '}
             <code>4902</code>), the method has to be in scope first — that's a
             separate experiment.
           </p>
