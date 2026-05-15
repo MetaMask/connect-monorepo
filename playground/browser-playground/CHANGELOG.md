@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an **Analytics test bench** collapsible panel with one button per `failure_reason` classifier branch, plus a local `yarn analytics:echo` server that stands in for the analytics endpoint. See the playground README for the manual-testing walkthrough. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
 - Add network checkboxes for HyperEVM Mainnet (`eip155:999`), MegaETH Mainnet (`eip155:4326`), Monad Mainnet (`eip155:143`), Sei Mainnet (`eip155:1329`), and Tempo Mainnet (`eip155:4217`) to the multichain connect form ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
 
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.0
+  - @metamask/connect-multichain@0.14.0
+
 ## [0.7.2]
 
 ### Changed
