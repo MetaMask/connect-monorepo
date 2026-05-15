@@ -871,6 +871,119 @@ describe('MetamaskConnectEVM', () => {
   });
 
   describe('#requestInterceptor', () => {
+    it('returns an accounts array for eth_requestAccounts', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'eth_requestAccounts',
+          params: [],
+        }),
+      ).resolves.toEqual(['0x1234567890123456789012345678901234567890']);
+    });
+
+    it('keeps wallet_requestPermissions returning the connect result', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_requestPermissions',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          params: [{ eth_accounts: {} }],
+        }),
+      ).resolves.toEqual({
+        accounts: ['0x1234567890123456789012345678901234567890'],
+        chainId: '0x1',
+      });
+    });
+
+    it('returns all accounts for eth_accounts', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const connectPromise = new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+      mockCore.emit('wallet_sessionChanged', {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: [
+              'eip155:1:0x1111111111111111111111111111111111111111',
+              'eip155:1:0x2222222222222222222222222222222222222222',
+            ],
+          },
+        },
+      });
+      await connectPromise;
+
+      await expect(
+        client.getProvider().request({ method: 'eth_accounts', params: [] }),
+      ).resolves.toEqual([
+        '0x1111111111111111111111111111111111111111',
+        '0x2222222222222222222222222222222222222222',
+      ]);
+    });
+
+    it('returns the selected account for eth_coinbase', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      const connectPromise = new Promise<void>((resolve) => {
+        client.getProvider().once('connect', () => resolve());
+      });
+      mockCore.emit('wallet_sessionChanged', {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: [
+              'eip155:1:0x1111111111111111111111111111111111111111',
+              'eip155:1:0x2222222222222222222222222222222222222222',
+            ],
+          },
+        },
+      });
+      await connectPromise;
+
+      await expect(
+        client.getProvider().request({ method: 'eth_coinbase', params: [] }),
+      ).resolves.toBe('0x1111111111111111111111111111111111111111');
+    });
+
     it('wallet_requestPermissions passes forceRequest: true to core.connect', async () => {
       const mockCore = createMockCore();
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
