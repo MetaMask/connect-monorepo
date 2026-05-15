@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- feat: Reduce QR code density. Send QR Flow initialMessage as separate request ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
+
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- chore(analytics): drop MobileSDKConnectV2 types from generated schema ([#274](https://github.com/MetaMask/connect-monorepo/pull/274))
+- chore: align sub-package licenses with root ConsenSys 2022 license ([#241](https://github.com/MetaMask/connect-monorepo/pull/241))
+- chore: turborepo ([#239](https://github.com/MetaMask/connect-monorepo/pull/239))
+
 ### Added
 
 - Add optional `failure_reason` property to `MMConnectProperties` in `schema.ts`, attached by producers on `mmconnect_wallet_action_failed` and `mmconnect_connection_failed`. Mirrors [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
