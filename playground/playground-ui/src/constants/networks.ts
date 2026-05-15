@@ -14,6 +14,11 @@ export const FEATURED_NETWORKS = {
   'Polygon Mainnet': 'eip155:137',
   'zkSync Era Mainnet': 'eip155:324',
   'Base Mainnet': 'eip155:8453',
+  'HyperEVM Mainnet': 'eip155:999',
+  'MegaETH Mainnet': 'eip155:4326',
+  'Monad Mainnet': 'eip155:143',
+  'Sei Mainnet': 'eip155:1329',
+  'Tempo Mainnet': 'eip155:4217',
   'Solana Mainnet': 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
   'Localhost 8545': 'eip155:1337',
 } as const;
