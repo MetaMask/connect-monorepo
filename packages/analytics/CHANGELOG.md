@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0]
+
 ### Uncategorized
 
 - chore(analytics): drop MobileSDKConnectV2 types from generated schema ([#274](https://github.com/MetaMask/connect-monorepo/pull/274))
@@ -60,7 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.5.0...HEAD
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.4.0...@metamask/analytics@0.5.0
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.3.0...@metamask/analytics@0.4.0
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.2.0...@metamask/analytics@0.3.0
 [0.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.1.1...@metamask/analytics@0.2.0
