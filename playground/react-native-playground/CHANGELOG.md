@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3]
+
 ### Added
 
 - Add network checkboxes for HyperEVM Mainnet (`eip155:999`), MegaETH Mainnet (`eip155:4326`), Monad Mainnet (`eip155:143`), Sei Mainnet (`eip155:1329`), and Tempo Mainnet (`eip155:4217`) to the multichain connect form ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.0
+  - @metamask/connect-multichain@0.14.0
 
 ## [0.4.2]
 
@@ -157,7 +165,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.2...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.3...HEAD
+[0.4.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.2...@metamask/react-native-playground@0.4.3
 [0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.1...@metamask/react-native-playground@0.4.2
 [0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.0...@metamask/react-native-playground@0.4.1
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.6...@metamask/react-native-playground@0.4.0

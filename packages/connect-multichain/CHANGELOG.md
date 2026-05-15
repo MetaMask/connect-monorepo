@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0]
+
 ### Added
 
 - Attach a `failure_reason` tag to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` events via a new `classifyFailureReason` helper, distinguishing transport timeouts, transport disconnects, EIP-1193 wallet errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognized_chain`), and JSON-RPC wallet errors (`-32601`, `-32602`, `-32603`, plus the `-32000…-32099` server-error range), with an `unknown` fallback. Schema-side: [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
@@ -275,7 +277,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.13.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.14.0...HEAD
+[0.14.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.13.0...@metamask/connect-multichain@0.14.0
 [0.13.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.1...@metamask/connect-multichain@0.13.0
 [0.12.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.0...@metamask/connect-multichain@0.12.1
 [0.12.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.1...@metamask/connect-multichain@0.12.0

@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0]
+
 ### Removed
 
-- Remove `@metamask/chain-agnostic-permission` dependency. The two helpers used from it (`getEthAccounts`, `getPermittedEthChainIds`) and the `parseScopeString` utility are now implemented locally on top of `@metamask/utils` primitives. This drops the transitive `@metamask/controller-utils` / `lodash` / `bn.js` / `eth-ens-namehash` / `fast-deep-equal` / `@metamask/ethjs-unit` chain from the `connect-evm` bundle.
+- Remove `@metamask/chain-agnostic-permission` dependency. The two helpers used from it (`getEthAccounts`, `getPermittedEthChainIds`) and the `parseScopeString` utility are now implemented locally on top of `@metamask/utils` primitives. This drops the transitive `@metamask/controller-utils` / `lodash` / `bn.js` / `eth-ens-namehash` / `fast-deep-equal` / `@metamask/ethjs-unit` chain from the `connect-evm` bundle. ([#289](https://github.com/MetaMask/connect-monorepo/pull/289))
 
 ## [1.2.0]
 
@@ -225,7 +227,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.3.0...HEAD
+[1.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.2.0...@metamask/connect-evm@1.3.0
 [1.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.1.0...@metamask/connect-evm@1.2.0
 [1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.0.0...@metamask/connect-evm@1.1.0
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@0.11.2...@metamask/connect-evm@1.0.0
