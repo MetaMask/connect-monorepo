@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.4.0]
+## [1.3.1]
 
 ### Fixed
 
@@ -233,8 +233,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.4.0...HEAD
-[1.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.3.0...@metamask/connect-evm@1.4.0
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.3.1...HEAD
+[1.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.3.0...@metamask/connect-evm@1.3.1
 [1.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.2.0...@metamask/connect-evm@1.3.0
 [1.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.1.0...@metamask/connect-evm@1.2.0
 [1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.0.0...@metamask/connect-evm@1.1.0
