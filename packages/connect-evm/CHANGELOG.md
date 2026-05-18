@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Return method-specific values from intercepted EIP-1193 account requests: `eth_requestAccounts` now resolves to an accounts array, and `eth_coinbase` now resolves to the selected account instead of the full accounts array. [297](https://github.com/MetaMask/connect-monorepo/pull/297)
+- Return method-specific values from intercepted EIP-1193 account requests: `eth_requestAccounts` now resolves to an accounts array, and `eth_coinbase` now resolves to the selected account instead of the full accounts array. ([#297](https://github.com/MetaMask/connect-monorepo/pull/297))
 
 ## [1.2.0]
 
