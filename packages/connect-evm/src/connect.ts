@@ -651,6 +651,9 @@ export class MetamaskConnectEVM {
           forceRequest: shouldForceConnectionRequest,
         });
         await this.#trackWalletActionSucceeded(method, scope, params);
+        if (request.method === 'eth_requestAccounts') {
+          return result.accounts;
+        }
         return result;
       } catch (error) {
         await this.#trackWalletActionFailed(method, scope, params, error);
@@ -669,6 +672,9 @@ export class MetamaskConnectEVM {
     }
 
     if (isAccountsRequest(request)) {
+      if (request.method === 'eth_coinbase') {
+        return this.#provider.selectedAccount ?? null;
+      }
       return this.#provider.accounts;
     }
 
