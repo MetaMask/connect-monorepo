@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.4.0
+
+
 ## [0.7.3]
 
 ### Added
@@ -217,7 +225,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.3...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.4...HEAD
+[0.7.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.3...@metamask/browser-playground@0.7.4
 [0.7.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.2...@metamask/browser-playground@0.7.3
 [0.7.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.1...@metamask/browser-playground@0.7.2
 [0.7.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.0...@metamask/browser-playground@0.7.1
