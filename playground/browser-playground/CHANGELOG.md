@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump workspace dependencies:
   - @metamask/connect-evm@1.4.0
 
-
 ## [0.7.3]
 
 ### Added
