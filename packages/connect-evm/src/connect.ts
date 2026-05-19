@@ -809,34 +809,34 @@ export class MetamaskConnectEVM {
     const hexPermittedChainIds = getPermittedEthChainIds(this.#sessionScopes);
     if (hexPermittedChainIds.length === 0) {
       await this.#onDisconnect();
-    } else {
-      let initialAccounts: Address[];
-      if (this.#status === 'connected') {
-        // Already connected; in-memory accounts are kept current by metamask_accountsChanged
-        initialAccounts = this.#provider.accounts;
-      } else {
-        // Not yet connected; try the persisted accounts cache, fall back to CAIP session scopes
-        try {
-          const cachedAccounts = await this.#core.storage.adapter.get(
-            ACCOUNTS_STORE_KEY,
-          );
-          const parsed = cachedAccounts ? JSON.parse(cachedAccounts) : null;
-          initialAccounts = Array.isArray(parsed)
-            ? (parsed as Address[])
-            : getEthAccounts(this.#sessionScopes);
-        } catch (error) {
-          logger('Error retrieving cached accounts', error);
-          initialAccounts = getEthAccounts(this.#sessionScopes);
-        }
-      }
-
-      const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
-
-      await this.#onConnect({
-        chainId,
-        accounts: initialAccounts,
-      });
+      return;
     }
+
+    if (this.#status === 'connected') {
+      return;
+    }
+
+    const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
+
+    // Not yet connected; try the persisted accounts cache, fall back to CAIP session scopes
+    let initialAccounts: Address[];
+    try {
+      const cachedAccounts = await this.#core.storage.adapter.get(
+        ACCOUNTS_STORE_KEY,
+      );
+      const parsed = cachedAccounts ? JSON.parse(cachedAccounts) : null;
+      initialAccounts = Array.isArray(parsed)
+        ? (parsed as Address[])
+        : getEthAccounts(this.#sessionScopes);
+    } catch (error) {
+      console.log('Error retrieving cached accounts', error);
+      initialAccounts = getEthAccounts(this.#sessionScopes);
+    }
+
+    await this.#onConnect({
+      chainId,
+      accounts: initialAccounts,
+    });
   }
 
   /**
