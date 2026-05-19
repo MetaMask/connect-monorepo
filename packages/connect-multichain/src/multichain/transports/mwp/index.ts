@@ -375,8 +375,8 @@ export class MWPTransport implements ExtendedTransport {
       this.pendingRequests.set(request.id, {
         request,
         method: request.method,
-        resolve: async (response: TransportResponse) => {
-          return resolve(response as TResponse);
+        resolve: (response) => {
+          resolve(response as TResponse);
         },
         reject,
         timeout,
