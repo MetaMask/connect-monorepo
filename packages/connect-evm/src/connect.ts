@@ -817,20 +817,19 @@ export class MetamaskConnectEVM {
     }
 
     const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
+    const permittedEthAccounts = getEthAccounts(this.#sessionScopes);
 
     // Not yet connected; try the persisted accounts cache, fall back to CAIP session scopes
-    let initialAccounts: Address[];
+    let initialAccounts: Address[] = permittedEthAccounts;
     try {
       const cachedAccounts = await this.#core.storage.adapter.get(
         ACCOUNTS_STORE_KEY,
       );
-      const parsed = cachedAccounts ? JSON.parse(cachedAccounts) : null;
-      initialAccounts = Array.isArray(parsed)
-        ? (parsed as Address[])
-        : getEthAccounts(this.#sessionScopes);
+      if (cachedAccounts) {
+        initialAccounts = JSON.parse(cachedAccounts) as Address[];
+      }
     } catch (error) {
       console.log('Error retrieving cached accounts', error);
-      initialAccounts = getEthAccounts(this.#sessionScopes);
     }
 
     await this.#onConnect({
@@ -895,8 +894,14 @@ export class MetamaskConnectEVM {
     };
 
     if (this.#status === 'connected') {
+<<<<<<< HEAD
       await this.#onChainChanged(chainId);
       await this.#onAccountsChanged(accounts);
+||||||| 0aa0395
+      this.#onChainChanged(chainId);
+      this.#onAccountsChanged(accounts);
+=======
+>>>>>>> jl/WAPI-1142/wallet_sessionChanged-precache
       return;
     }
 
