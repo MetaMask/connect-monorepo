@@ -52,8 +52,6 @@ const DEFAULT_CONNECTION_TIMEOUT =
   DEFAULT_REQUEST_TIMEOUT + CONNECTION_GRACE_PERIOD;
 const DEFAULT_RESUME_TIMEOUT = 10 * 1000;
 const SESSION_STORE_KEY = 'cache_wallet_getSession';
-const ACCOUNTS_STORE_KEY = 'cache_eth_accounts';
-const CHAIN_STORE_KEY = 'cache_eth_chainId';
 const PENDING_SESSION_REQUEST_KEY = 'pending_session_request';
 
 const CACHED_METHOD_LIST = [
@@ -61,10 +59,7 @@ const CACHED_METHOD_LIST = [
   'wallet_createSession',
   'wallet_sessionChanged',
 ];
-const CACHED_RESET_METHOD_LIST = [
-  'wallet_revokeSession',
-  'wallet_revokePermissions',
-];
+const CACHED_RESET_METHOD_LIST = ['wallet_revokeSession'];
 
 type PendingRequests = {
   request: { jsonrpc: string; id: string } & TransportRequest;
@@ -256,31 +251,6 @@ export class MWPTransport implements ExtendedTransport {
             this.pendingRequests.delete(messagePayload.id);
           }
         } else {
-          if (
-            (message.data as { method: string }).method ===
-            'metamask_chainChanged'
-          ) {
-            this.kvstore.set(
-              CHAIN_STORE_KEY,
-              JSON.stringify(
-                (message.data as { params: { chainId: number } }).params
-                  .chainId,
-              ),
-            );
-          }
-
-          if (
-            (message.data as { method: string }).method ===
-            'metamask_accountsChanged'
-          ) {
-            this.kvstore.set(
-              ACCOUNTS_STORE_KEY,
-              JSON.stringify(
-                (message.data as { params: { accounts: string[] } }).params,
-              ),
-            );
-          }
-
           // Ensure session changes are always persisted to the store
           if (
             (message.data as { method: string }).method ===
@@ -397,12 +367,6 @@ export class MWPTransport implements ExtendedTransport {
       ...payload,
     };
 
-    const cachedWalletSession = await this.getCachedResponse(request);
-    if (cachedWalletSession) {
-      this.notifyCallbacks(cachedWalletSession);
-      return cachedWalletSession as TResponse;
-    }
-
     return new Promise<TResponse>((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.rejectRequest(request.id, new TransportTimeoutError());
@@ -412,7 +376,6 @@ export class MWPTransport implements ExtendedTransport {
         request,
         method: request.method,
         resolve: async (response: TransportResponse) => {
-          await this.storeWalletSession(request, response);
           return resolve(response as TResponse);
         },
         reject,
@@ -629,15 +592,6 @@ export class MWPTransport implements ExtendedTransport {
       },
     );
 
-    // Clear the cached values for eth_accounts and eth_chainId if all eip155 scopes were removed.
-    const remainingScopesIncludeEip155 = remainingScopes.some((scope) =>
-      scope.includes('eip155'),
-    );
-    if (!remainingScopesIncludeEip155) {
-      this.kvstore.delete(ACCOUNTS_STORE_KEY);
-      this.kvstore.delete(CHAIN_STORE_KEY);
-    }
-
     if (remainingScopes.length > 0) {
       this.kvstore.set(
         SESSION_STORE_KEY,
@@ -724,27 +678,7 @@ export class MWPTransport implements ExtendedTransport {
         return {
           id: request.id,
           jsonrpc: '2.0',
-          result: walletSession.params ?? walletSession.result, // "what?... why walletSession.params?.."
-          method: request.method,
-        } as unknown as TransportResponse;
-      }
-    } else if (request.method === 'eth_accounts') {
-      const ethAccounts = await this.kvstore.get(ACCOUNTS_STORE_KEY);
-      if (ethAccounts) {
-        return {
-          id: request.id,
-          jsonrpc: '2.0',
-          result: JSON.parse(ethAccounts),
-          method: request.method,
-        } as unknown as TransportResponse;
-      }
-    } else if (request.method === 'eth_chainId') {
-      const ethChainId = await this.kvstore.get(CHAIN_STORE_KEY);
-      if (ethChainId) {
-        return {
-          id: request.id,
-          jsonrpc: '2.0',
-          result: JSON.parse(ethChainId),
+          result: walletSession.params ?? walletSession.result,
           method: request.method,
         } as unknown as TransportResponse;
       }
@@ -760,17 +694,8 @@ export class MWPTransport implements ExtendedTransport {
     }
     if (CACHED_METHOD_LIST.includes(request.method)) {
       await this.kvstore.set(SESSION_STORE_KEY, JSON.stringify(response));
-    } else if (request.method === 'eth_accounts') {
-      await this.kvstore.set(
-        ACCOUNTS_STORE_KEY,
-        JSON.stringify(response.result),
-      );
-    } else if (request.method === 'eth_chainId') {
-      await this.kvstore.set(CHAIN_STORE_KEY, JSON.stringify(response.result));
     } else if (CACHED_RESET_METHOD_LIST.includes(request.method)) {
       await this.kvstore.delete(SESSION_STORE_KEY);
-      await this.kvstore.delete(ACCOUNTS_STORE_KEY);
-      await this.kvstore.delete(CHAIN_STORE_KEY);
     }
   }
 
