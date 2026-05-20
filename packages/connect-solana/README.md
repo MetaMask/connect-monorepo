@@ -123,9 +123,6 @@ const client = await createSolanaClient({
     name: 'My Solana DApp',
     url: 'https://mydapp.com',
   },
-  analytics: {
-    enabled: false,
-  },
 });
 ```
 

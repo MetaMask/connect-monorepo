@@ -172,9 +172,6 @@ const client = await createMultichainClient({
       'eip155:137': 'https://polygon-mainnet.infura.io/v3/KEY',
     },
   },
-  analytics: {
-    enabled: false,
-  },
 });
 ```
 

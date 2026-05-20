@@ -200,9 +200,6 @@ const client = await createEVMClient({
     accountsChanged: (accounts) => console.log('Accounts:', accounts),
     chainChanged: (chainId) => console.log('Chain:', chainId),
   },
-  analytics: {
-    enabled: false,
-  },
   debug: true,
 });
 ```
