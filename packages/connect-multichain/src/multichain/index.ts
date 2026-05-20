@@ -241,10 +241,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
    * Sets up analytics globals for the current SDK options.
    */
   public async setupAnalytics(): Promise<void> {
-    await this.#setupAnalytics();
-  }
-
-  async #setupAnalytics(): Promise<void> {
     if (!isAnalyticsEnabled(this.options)) {
       this.#anonId = undefined;
       analytics.disable();
@@ -386,7 +382,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   async #init(): Promise<void> {
     try {
-      await this.#setupAnalytics();
+      await this.setupAnalytics();
       await this.#setupTransport();
     } catch (error) {
       await this.storage.removeTransport();

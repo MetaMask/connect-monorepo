@@ -91,6 +91,14 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
    */
   mergeOptions(partial: MergeableMultichainOptions): void {
     const opts = this.options;
+    const analytics = {
+      ...opts.analytics,
+      ...(partial.analytics ?? {}),
+    };
+    if (opts.analytics?.enabled === false) {
+      analytics.enabled = false;
+    }
+
     this.options = {
       ...opts,
       api: {
@@ -105,8 +113,7 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
         ...(partial.versions ?? {}),
       },
       analytics: {
-        ...opts.analytics,
-        ...(partial.analytics ?? {}),
+        ...analytics,
       },
       ui: {
         ...opts.ui,

@@ -312,28 +312,28 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
-      `${platform} should re-enable analytics when singleton merge explicitly enables it`,
+      `${platform} should keep analytics disabled when singleton merge explicitly enables it`,
       async () => {
         const enableSpy = t.vi.spyOn(analytics, 'enable');
+        const disableSpy = t.vi.spyOn(analytics, 'disable');
 
         await createSDK({
           ...testOptions,
           analytics: { ...testOptions.analytics, enabled: false },
         });
         enableSpy.mockClear();
+        disableSpy.mockClear();
 
         await createSDK({
           ...testOptions,
           analytics: { ...testOptions.analytics, enabled: true },
         } as any);
 
-        if (platform === 'web' || platform === 'web-mobile') {
-          t.expect(enableSpy).toHaveBeenCalled();
-        } else {
-          t.expect(enableSpy).not.toHaveBeenCalled();
-        }
+        t.expect(enableSpy).not.toHaveBeenCalled();
+        t.expect(disableSpy).toHaveBeenCalled();
 
         enableSpy.mockRestore();
+        disableSpy.mockRestore();
       },
     );
 
