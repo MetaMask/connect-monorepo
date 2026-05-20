@@ -207,7 +207,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (existing) {
       const instance = await existing;
       instance.mergeOptions(options);
-      await instance.#setupAnalytics();
+      await instance.setupAnalytics();
       if (options.debug) {
         enableDebug('metamask-sdk:*');
       }
@@ -235,6 +235,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
 
     return instancePromise;
+  }
+
+  /**
+   * Sets up analytics globals for the current SDK options.
+   */
+  public async setupAnalytics(): Promise<void> {
+    await this.#setupAnalytics();
   }
 
   async #setupAnalytics(): Promise<void> {
