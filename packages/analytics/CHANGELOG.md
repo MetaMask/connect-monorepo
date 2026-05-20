@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `analytics.disable()` to stop event collection and clear queued analytics events. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
 ## [0.5.0]
 
 ### Added
