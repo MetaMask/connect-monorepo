@@ -12,6 +12,7 @@ type MockCore = MultichainCore & {
     adapter: {
       get: Mock<(key: string) => Promise<string | null>>;
       set: Mock<(key: string, value: string) => Promise<void>>;
+      delete: Mock<(key: string) => Promise<void>>;
     };
   };
   transport: MultichainCore['transport'] & {
@@ -57,6 +58,7 @@ function createMockCore(): MockCore {
 
   const storageGet = vi.fn().mockResolvedValue(null);
   const storageSet = vi.fn().mockResolvedValue(undefined);
+  const storageDelete = vi.fn().mockResolvedValue(undefined);
 
   const mockCore = {
     // eslint-disable-next-line @typescript-eslint/naming-convention -- mock mirrors real class _status
@@ -96,6 +98,7 @@ function createMockCore(): MockCore {
       adapter: {
         get: storageGet,
         set: storageSet,
+        delete: storageDelete,
       },
     },
   };
@@ -396,15 +399,18 @@ describe('MetamaskConnectEVM', () => {
         expect(events).toEqual(['connect', 'chainChanged', 'accountsChanged']);
       });
 
-      it('connects using accounts from a eth_accounts response when the MultichainClient is connected', async () => {
+      it('connects using cached accounts when the accounts cache is populated', async () => {
         const mockCore = createMockCore();
-        mockCore._status = 'connected';
-        mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
-        mockCore.transport.sendEip1193Message.mockResolvedValue({
-          result: ['0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
-          id: 1,
-          jsonrpc: '2.0',
-        });
+        mockCore.storage.adapter.get.mockImplementation(
+          async (key: string) => {
+            if (key === 'cache_eth_chainId') return JSON.stringify('0x1');
+            if (key === 'cache_eth_accounts')
+              return JSON.stringify([
+                '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+              ]);
+            return null;
+          },
+        );
 
         const client = await MetamaskConnectEVM.create({ core: mockCore });
 
@@ -431,7 +437,7 @@ describe('MetamaskConnectEVM', () => {
         expect(connectData.accounts).toContain(
           '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
         );
-        expect(mockCore.transport.sendEip1193Message).toHaveBeenCalledWith({
+        expect(mockCore.transport.sendEip1193Message).not.toHaveBeenCalledWith({
           method: 'eth_accounts',
           params: [],
         });
@@ -784,8 +790,7 @@ describe('MetamaskConnectEVM', () => {
         client.getProvider().once('connect', () => resolve());
       });
 
-      // Ignore the eth_accounts call made during the connect flow above so
-      // each test can assert against a clean call log.
+      // Reset call log so each test can assert against a clean slate.
       mockCore.transport.sendEip1193Message.mockClear();
     });
 
