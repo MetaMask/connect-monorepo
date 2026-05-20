@@ -41,6 +41,18 @@ t.describe('Sender', () => {
   });
 
   t.it(
+    'should clear queued events and cancel the scheduled flush',
+    async () => {
+      sender.enqueue('event1');
+      sender.clear();
+
+      await t.vi.advanceTimersByTimeAsync(50);
+
+      t.expect(sendFn).not.toHaveBeenCalled();
+    },
+  );
+
+  t.it(
     'should handle failure (with exponential backoff) and reset base timeout after successful send',
     async () => {
       let shouldSendFail = true;

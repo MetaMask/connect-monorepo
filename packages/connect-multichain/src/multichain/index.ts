@@ -72,6 +72,33 @@ const logger = createLogger('metamask-sdk:core');
 
 const SINGLETON_KEY = '__METAMASK_CONNECT_MULTICHAIN_SINGLETON__';
 
+/**
+ * Applies analytics defaults while preserving explicitly disabled analytics.
+ *
+ * @param analyticsOptions - Partial analytics options supplied by the consumer.
+ * @returns Analytics options with defaults applied.
+ */
+function normalizeAnalyticsOptions(
+  analyticsOptions: MultichainOptions['analytics'],
+): Required<NonNullable<MultichainOptions['analytics']>> {
+  return {
+    ...(analyticsOptions ?? {}),
+    enabled: analyticsOptions?.enabled ?? true,
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    integrationType: analyticsOptions?.integrationType || 'direct',
+  };
+}
+
+/**
+ * Checks whether dapp-side analytics are enabled for the SDK instance.
+ *
+ * @param options - Current SDK options.
+ * @returns Whether analytics events should be collected and sent.
+ */
+function isAnalyticsEnabled(options: MultichainOptions): boolean {
+  return options.analytics?.enabled !== false;
+}
+
 export class MetaMaskConnectMultichain extends MultichainCore {
   readonly #provider: MultichainApiClient<RPCAPI>;
 
@@ -133,8 +160,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   constructor(options: MultichainOptions) {
     const withDappMetadata = setupDappMetadata(options);
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const integrationType = options.analytics?.integrationType || 'direct';
     const allOptions = {
       ...withDappMetadata,
       ui: {
@@ -143,10 +168,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         showInstallModal: withDappMetadata.ui.showInstallModal ?? false,
         headless: withDappMetadata.ui.headless ?? false,
       },
-      analytics: {
-        ...(options.analytics ?? {}),
-        integrationType,
-      },
+      analytics: normalizeAnalyticsOptions(options.analytics),
       versions: {
         // typeof guard needed: Metro (React Native) bundles TS source directly,
         // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
@@ -171,9 +193,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   // Creates a singleton instance of MetaMaskConnectMultichain.
   // If the singleton already exists, it merges the incoming options with the
   // existing singleton options for the following keys: `api.supportedNetworks`,
-  // `versions`, `ui.*`, `mobile.*`, `transport.extensionId`, `debug`. Take note
-  // that the value for `dapp` is not merged as it does not make sense for
-  // subsequent calls to `createMultichainClient` to have a different `dapp` value.
+  // `analytics`, `versions`, `ui.*`, `mobile.*`, `transport.extensionId`,
+  // `debug`. Take note that the value for `dapp` is not merged as it does not
+  // make sense for subsequent calls to `createMultichainClient` to have a
+  // different `dapp` value.
   static async create(
     options: MultichainOptions,
   ): Promise<MetaMaskConnectMultichain> {
@@ -184,15 +207,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     if (existing) {
       const instance = await existing;
       instance.mergeOptions(options);
-      analytics.setGlobalProperty(
-        'mmconnect_versions',
-        instance.options.versions ?? {},
-      );
-      if (options.analytics?.integrationType) {
-        analytics.setGlobalProperty('integration_types', [
-          options.analytics.integrationType,
-        ]);
-      }
+      await instance.#setupAnalytics();
       if (options.debug) {
         enableDebug('metamask-sdk:*');
       }
@@ -223,6 +238,12 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async #setupAnalytics(): Promise<void> {
+    if (!isAnalyticsEnabled(this.options)) {
+      this.#anonId = undefined;
+      analytics.disable();
+      return;
+    }
+
     const platform = getPlatformType();
     const isBrowser =
       platform === PlatformType.MetaMaskMobileWebview ||
@@ -350,7 +371,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       dapp: this.options.dapp,
       sdk: { version: getVersion(), platform: getPlatformType() },
     };
-    if (this.#anonId) {
+    if (isAnalyticsEnabled(this.options) && this.#anonId) {
       metadata.analytics = { remote_session_id: this.#anonId };
     }
     return metadata;
@@ -724,45 +745,49 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return promise
       .then(async () => {
         this.status = 'connected';
-        try {
-          const baseProps = await getBaseAnalyticsProperties(
-            this.options,
-            this.storage,
-          );
+        if (isAnalyticsEnabled(this.options)) {
+          try {
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
 
-          analytics.track('mmconnect_connection_established', {
-            ...baseProps,
-            transport_type: transportType,
-            user_permissioned_chains: scopes,
-          });
-        } catch (error) {
-          logger('Error tracking connection_established event', error);
+            analytics.track('mmconnect_connection_established', {
+              ...baseProps,
+              transport_type: transportType,
+              user_permissioned_chains: scopes,
+            });
+          } catch (error) {
+            logger('Error tracking connection_established event', error);
+          }
         }
         return undefined; // explicitly return `undefined` to avoid eslintpromise/always-return
       })
       .catch(async (error) => {
         this.status = 'disconnected';
-        try {
-          const baseProps = await getBaseAnalyticsProperties(
-            this.options,
-            this.storage,
-          );
-          const isRejection = isRejectionError(error);
+        if (isAnalyticsEnabled(this.options)) {
+          try {
+            const baseProps = await getBaseAnalyticsProperties(
+              this.options,
+              this.storage,
+            );
+            const isRejection = isRejectionError(error);
 
-          if (isRejection) {
-            analytics.track('mmconnect_connection_rejected', {
-              ...baseProps,
-              transport_type: transportType,
-            });
-          } else {
-            analytics.track('mmconnect_connection_failed', {
-              ...baseProps,
-              transport_type: transportType,
-              ...extractErrorDiagnostics(error),
-            });
+            if (isRejection) {
+              analytics.track('mmconnect_connection_rejected', {
+                ...baseProps,
+                transport_type: transportType,
+              });
+            } else {
+              analytics.track('mmconnect_connection_failed', {
+                ...baseProps,
+                transport_type: transportType,
+                ...extractErrorDiagnostics(error),
+              });
+            }
+          } catch {
+            logger('Error tracking connection failed/rejected event', error);
           }
-        } catch {
-          logger('Error tracking connection failed/rejected event', error);
         }
         throw error;
       });
@@ -803,23 +828,25 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       transportType = TransportType.MWP;
     }
 
-    try {
-      const baseProps = await getBaseAnalyticsProperties(
-        this.options,
-        this.storage,
-      );
-      const dappConfiguredChains = Object.keys(
-        this.options.api.supportedNetworks,
-      );
+    if (isAnalyticsEnabled(this.options)) {
+      try {
+        const baseProps = await getBaseAnalyticsProperties(
+          this.options,
+          this.storage,
+        );
+        const dappConfiguredChains = Object.keys(
+          this.options.api.supportedNetworks,
+        );
 
-      analytics.track('mmconnect_connection_initiated', {
-        ...baseProps,
-        transport_type: transportType,
-        dapp_configured_chains: dappConfiguredChains,
-        dapp_requested_chains: scopes,
-      });
-    } catch (error) {
-      logger('Error tracking connection_initiated event', error);
+        analytics.track('mmconnect_connection_initiated', {
+          ...baseProps,
+          transport_type: transportType,
+          dapp_configured_chains: dappConfiguredChains,
+          dapp_requested_chains: scopes,
+        });
+      } catch (error) {
+        logger('Error tracking connection_initiated event', error);
+      }
     }
 
     const sessionData = await this.#getCaipSession();

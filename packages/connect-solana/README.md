@@ -102,18 +102,32 @@ Creates a new Solana client instance. By default, the wallet is automatically re
 
 #### Parameters
 
-| Option                  | Type                      | Required | Description                                                               |
-| ----------------------- | ------------------------- | -------- | ------------------------------------------------------------------------- |
-| `dapp.name`             | `string`                  | Yes      | Name of your dApp                                                         |
-| `dapp.url`              | `string`                  | No       | URL of your dApp                                                          |
-| `dapp.iconUrl`          | `string`                  | No       | Icon URL for your dApp                                                    |
-| `api.supportedNetworks` | `SolanaSupportedNetworks` | No       | Map of network names (`mainnet`, `devnet`, `testnet`) to RPC URLs         |
-| `debug`                 | `boolean`                 | No       | Reserved for future use; not currently forwarded to the underlying client |
-| `skipAutoRegister`      | `boolean`                 | No       | Skip auto-registering the wallet during creation (defaults to `false`)    |
+| Option                      | Type                      | Required | Description                                                                                                                  |
+| --------------------------- | ------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `dapp.name`                 | `string`                  | Yes      | Name of your dApp                                                                                                            |
+| `dapp.url`                  | `string`                  | No       | URL of your dApp                                                                                                             |
+| `dapp.iconUrl`              | `string`                  | No       | Icon URL for your dApp                                                                                                       |
+| `api.supportedNetworks`     | `SolanaSupportedNetworks` | No       | Map of network names (`mainnet`, `devnet`, `testnet`) to RPC URLs                                                            |
+| `analytics.enabled`         | `boolean`                 | No       | Enables dapp-side analytics. Defaults to `true`; set to `false` to disable analytics events and wallet correlation metadata. |
+| `analytics.integrationType` | `string`                  | No       | Integration type for analytics                                                                                               |
+| `debug`                     | `boolean`                 | No       | Reserved for future use; not currently forwarded to the underlying client                                                    |
+| `skipAutoRegister`          | `boolean`                 | No       | Skip auto-registering the wallet during creation (defaults to `false`)                                                       |
 
 #### Returns
 
 `Promise<SolanaClient>`
+
+```typescript
+const client = await createSolanaClient({
+  dapp: {
+    name: 'My Solana DApp',
+    url: 'https://mydapp.com',
+  },
+  analytics: {
+    enabled: false,
+  },
+});
+```
 
 ---
 

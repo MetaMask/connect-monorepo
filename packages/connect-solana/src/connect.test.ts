@@ -119,6 +119,19 @@ describe('createSolanaClient', () => {
     });
   });
 
+  it('should forward analytics.enabled to createMultichainClient', async () => {
+    await createSolanaClient({
+      ...mockOptions,
+      analytics: { enabled: false, integrationType: 'wallet-standard' },
+    });
+
+    expect(createMultichainClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        analytics: { enabled: false, integrationType: 'wallet-standard' },
+      }),
+    );
+  });
+
   it('should return core instance from createMultichainClient', async () => {
     const client = await createSolanaClient(mockOptions);
 
