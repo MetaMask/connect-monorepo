@@ -374,6 +374,171 @@ export class MWPTransport implements ExtendedTransport {
     });
   }
 
+  async #resumeSession(
+    session: Session,
+    options?: {
+      scopes: Scope[];
+      caipAccountIds: CaipAccountId[];
+      forceRequest?: boolean;
+    },
+  ): Promise<void> {
+    const resumeDeferred = createDeferredPromise<void>();
+    const runOnResumeSuccess = (): void => {
+      void this.onResumeSuccess(options).then(
+        resumeDeferred.resolve,
+        resumeDeferred.reject,
+      );
+    };
+
+    if (this.dappClient.state === 'CONNECTED') {
+      runOnResumeSuccess();
+    } else {
+      this.dappClient.once('connected', runOnResumeSuccess);
+      this.dappClient.resume(session.id ?? '');
+    }
+
+    const timeoutDeferred = createDeferredPromise<never>();
+    const timeout = setTimeout(
+      () => timeoutDeferred.reject(new TransportTimeoutError()),
+      this.options.resumeTimeout,
+    );
+
+    return Promise.race([resumeDeferred.promise, timeoutDeferred.promise])
+      .finally(() => clearTimeout(timeout));
+  }
+
+  /**
+   * Starts a brand-new MWP session via `wallet_createSession`. Registers a
+   * one-shot message handler that resolves on the wallet's response, races
+   * the result against an internal timeout, and always tears down the
+   * message listener when settled.
+   *
+   * If a prior connection attempt is still pending in storage (e.g. across a
+   * page reload) the shorter `resumeTimeout` is used, since we're continuing
+   * that in-flight attempt rather than starting from scratch.
+   *
+   * @param options - The session options.
+   * @returns A promise that resolves when the wallet acknowledges the session,
+   * or rejects on error / timeout.
+   */
+  async #startSession(options?: {
+    scopes: Scope[];
+    caipAccountIds: CaipAccountId[];
+    sessionProperties?: SessionProperties;
+    forceRequest?: boolean;
+  }): Promise<void> {
+    const { dappClient } = this;
+
+    // Captured before any work begins so that the session_request event fired
+    // by `dappClient.connect()` (which overwrites the stored value) doesn't
+    // skew the timeout decision.
+    const isContinuingPriorAttempt =
+      (await this.getStoredPendingSessionRequest()) !== null;
+
+    const connDeferred = createDeferredPromise<void>();
+
+    const optionalScopes = addValidAccounts(
+      getOptionalScopes(options?.scopes ?? []),
+      getValidAccounts(options?.caipAccountIds ?? []),
+    );
+    const sessionRequest: CreateSessionParams<RPCAPI> = {
+      optionalScopes,
+      sessionProperties: options?.sessionProperties,
+    };
+    const request = {
+      jsonrpc: '2.0',
+      id: String(getUniqueRequestId()),
+      method: 'wallet_createSession',
+      params: sessionRequest,
+    };
+
+    let handler: ((message: unknown) => Promise<void>) | undefined;
+    const removeHandler = (): void => {
+      if (handler) {
+        this.dappClient.off('message', handler);
+        handler = undefined;
+      }
+    };
+
+    // Handler for initial connection messages — checks for error responses
+    // and properly rejects the connection promise with EIP-1193 error codes
+    handler = async (message: unknown): Promise<void> => {
+      if (typeof message !== 'object' || message === null) {
+        return;
+      }
+      if (!('data' in message)) {
+        return;
+      }
+
+      const messagePayload = message.data as Record<string, unknown>;
+
+      // Match by ID (preferred) or by method (backward compatibility for notifications without ID)
+      const isMatchingId = messagePayload.id === request.id;
+      const isMatchingMethod =
+        messagePayload.method === 'wallet_createSession' ||
+        messagePayload.method === 'wallet_sessionChanged';
+
+      if (!isMatchingId && !isMatchingMethod) {
+        return;
+      }
+
+      // Handle error response (e.g., user rejected the connection)
+      if (messagePayload.error) {
+        connDeferred.reject(this.parseWalletError(messagePayload.error));
+        return;
+      }
+
+      // Success case — store session, notify, and resolve
+      await this.storeWalletSession(
+        request,
+        messagePayload as TransportResponse,
+      );
+      await this.removeStoredPendingSessionRequest();
+      this.notifyCallbacks(messagePayload);
+      connDeferred.resolve();
+    };
+
+    this.dappClient.on('message', handler);
+
+    const platformType = getPlatformType();
+    const isQRCodeFlow = [
+      PlatformType.DesktopWeb,
+      PlatformType.NonBrowser,
+    ].includes(platformType);
+
+    const initialPayload = {
+      name: MULTICHAIN_PROVIDER_STREAM_NAME,
+      data: request,
+    };
+
+    dappClient
+      .connect({
+        mode: 'trusted',
+        initialPayload: isQRCodeFlow ? undefined : initialPayload,
+      })
+      .then(async () => {
+        if (isQRCodeFlow) {
+          return dappClient.sendRequest(initialPayload);
+        }
+        return undefined;
+      })
+      .catch((error) => connDeferred.reject(error));
+
+    const timeoutDeferred = createDeferredPromise<never>();
+    const timeout = setTimeout(
+      () => timeoutDeferred.reject(new TransportTimeoutError()),
+      isContinuingPriorAttempt
+        ? this.options.resumeTimeout
+        : this.options.connectionTimeout,
+    );
+
+    return Promise.race([connDeferred.promise, timeoutDeferred.promise])
+      .finally(() => {
+        clearTimeout(timeout);
+        removeHandler();
+      });
+  }
+
   async init(): Promise<void> {
     // no-op for MWP — passive init is only relevant for DefaultTransport
   }
@@ -426,8 +591,6 @@ export class MWPTransport implements ExtendedTransport {
     sessionProperties?: SessionProperties;
     forceRequest?: boolean;
   }): Promise<void> {
-    const { dappClient } = this;
-
     const session = await this.getActiveSession();
     if (session) {
       logger('active session found', {
@@ -437,131 +600,11 @@ export class MWPTransport implements ExtendedTransport {
       });
     }
 
-    const storedSessionRequestBeforeConnectionAttempt =
-      await this.getStoredPendingSessionRequest();
+    const connection = session
+      ? this.#resumeSession(session, options)
+      : this.#startSession(options);
 
-    let initialConnectionMessageHandler:
-      | ((message: unknown) => Promise<void>)
-      | undefined;
-
-    let connection: Promise<void>;
-    if (session) {
-      if (this.dappClient.state === 'CONNECTED') {
-        connection = this.onResumeSuccess(options);
-      } else {
-        const resumeDeferred = createDeferredPromise<void>();
-        this.dappClient.once('connected', () => {
-          void this.onResumeSuccess(options).then(
-            resumeDeferred.resolve,
-            resumeDeferred.reject,
-          );
-        });
-        dappClient.resume(session.id ?? '');
-        connection = resumeDeferred.promise;
-      }
-    } else {
-      const connDeferred = createDeferredPromise<void>();
-
-      const optionalScopes = addValidAccounts(
-        getOptionalScopes(options?.scopes ?? []),
-        getValidAccounts(options?.caipAccountIds ?? []),
-      );
-      const sessionRequest: CreateSessionParams<RPCAPI> = {
-        optionalScopes,
-        sessionProperties: options?.sessionProperties,
-      };
-      const request = {
-        jsonrpc: '2.0',
-        id: String(getUniqueRequestId()),
-        method: 'wallet_createSession',
-        params: sessionRequest,
-      };
-
-      // Handler for initial connection messages — checks for error responses
-      // and properly rejects the connection promise with EIP-1193 error codes
-      initialConnectionMessageHandler = async (
-        message: unknown,
-      ): Promise<void> => {
-        if (typeof message !== 'object' || message === null) {
-          return;
-        }
-        if (!('data' in message)) {
-          return;
-        }
-
-        const messagePayload = message.data as Record<string, unknown>;
-
-        // Match by ID (preferred) or by method (backward compatibility for notifications without ID)
-        const isMatchingId = messagePayload.id === request.id;
-        const isMatchingMethod =
-          messagePayload.method === 'wallet_createSession' ||
-          messagePayload.method === 'wallet_sessionChanged';
-
-        if (!isMatchingId && !isMatchingMethod) {
-          return;
-        }
-
-        // Handle error response (e.g., user rejected the connection)
-        if (messagePayload.error) {
-          connDeferred.reject(this.parseWalletError(messagePayload.error));
-          return;
-        }
-
-        // Success case — store session, notify, and resolve
-        await this.storeWalletSession(
-          request,
-          messagePayload as TransportResponse,
-        );
-        await this.removeStoredPendingSessionRequest();
-        this.notifyCallbacks(messagePayload);
-        connDeferred.resolve();
-      };
-
-      this.dappClient.on('message', initialConnectionMessageHandler);
-
-      const platformType = getPlatformType();
-      const isQRCodeFlow = [
-        PlatformType.DesktopWeb,
-        PlatformType.NonBrowser,
-      ].includes(platformType);
-
-      const initialPayload = {
-        name: MULTICHAIN_PROVIDER_STREAM_NAME,
-        data: request,
-      };
-
-      dappClient
-        .connect({
-          mode: 'trusted',
-          initialPayload: isQRCodeFlow ? undefined : initialPayload,
-        })
-        .then(async () => {
-          if (isQRCodeFlow) {
-            return dappClient.sendRequest(initialPayload);
-          }
-          return undefined;
-        })
-        .catch((error) => {
-          if (initialConnectionMessageHandler) {
-            this.dappClient.off('message', initialConnectionMessageHandler);
-          }
-          connDeferred.reject(error);
-        });
-
-      connection = connDeferred.promise;
-    }
-
-    // Race the connection against a timeout so the caller gets a clear error
-    // if the wallet never responds, rather than hanging forever.
-    const timeoutDeferred = createDeferredPromise<never>();
-    const timeout = setTimeout(
-      () => timeoutDeferred.reject(new TransportTimeoutError()),
-      storedSessionRequestBeforeConnectionAttempt
-        ? this.options.resumeTimeout
-        : this.options.connectionTimeout,
-    );
-
-    return Promise.race([connection, timeoutDeferred.promise])
+    return connection
       .catch(async (error) => {
         // Clean up the MWP session from the KVStore so stale sessions
         // don't cause subsequent connect attempts to enter the resume path
@@ -569,11 +612,6 @@ export class MWPTransport implements ExtendedTransport {
         throw error;
       })
       .finally(() => {
-        clearTimeout(timeout);
-        if (initialConnectionMessageHandler) {
-          this.dappClient.off('message', initialConnectionMessageHandler);
-          initialConnectionMessageHandler = undefined;
-        }
         this.removeStoredPendingSessionRequest();
       });
   }
