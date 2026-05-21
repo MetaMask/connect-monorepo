@@ -334,12 +334,12 @@ export class MWPTransport implements ExtendedTransport {
           getOptionalScopes(options?.scopes ?? []),
           getValidAccounts(options?.caipAccountIds ?? []),
         );
-        const createSessionRequest: CreateSessionParams<RPCAPI> = {
+        const sessionRequest: CreateSessionParams<RPCAPI> = {
           optionalScopes,
         };
         const response = await this.request({
           method: 'wallet_createSession',
-          params: createSessionRequest,
+          params: sessionRequest,
         });
         if (response.error) {
           throw new Error(response.error.message);
@@ -355,12 +355,12 @@ export class MWPTransport implements ExtendedTransport {
         getOptionalScopes(options?.scopes ?? []),
         getValidAccounts(options?.caipAccountIds ?? []),
       );
-      const createSessionRequest: CreateSessionParams<RPCAPI> = {
+      const sessionRequest: CreateSessionParams<RPCAPI> = {
         optionalScopes,
       };
       const response = await this.request({
         method: 'wallet_createSession',
-        params: createSessionRequest,
+        params: sessionRequest,
       });
       if (response.error) {
         throw new Error(response.error.message);
