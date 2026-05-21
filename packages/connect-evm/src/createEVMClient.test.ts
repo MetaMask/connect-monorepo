@@ -22,15 +22,39 @@ import {
   EIP6963_DETECTION_TIMEOUT_MS,
 } from './eip6963';
 
-vi.mock('@metamask/connect-multichain', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@metamask/connect-multichain',
-  );
-  return {
-    ...actual,
-    createMultichainClient: vi.fn(),
-  };
-});
+vi.mock(
+  '@metamask/connect-multichain',
+  async (): Promise<Record<string, unknown>> => {
+    const { EventEmitter } = await import('events');
+
+    class MockRPCInvokeMethodErr extends Error {
+      rpcCode?: number;
+
+      rpcMessage?: string;
+
+      reason: string;
+
+      constructor(reason = '') {
+        super(reason);
+        this.reason = reason;
+      }
+    }
+
+    return {
+      createLogger: (): Mock => vi.fn(),
+      createMultichainClient: vi.fn(),
+      EventEmitter,
+      getWalletActionAnalyticsProperties: vi.fn(),
+      isRejectionError: vi.fn(() => false),
+      RPCInvokeMethodErr: MockRPCInvokeMethodErr,
+      TransportType: {
+        Browser: 'browser',
+        MWP: 'mwp',
+        UNKNOWN: 'unknown',
+      },
+    };
+  },
+);
 
 type MockCore = MultichainCore & {
   emit: (event: string, ...args: unknown[]) => void;

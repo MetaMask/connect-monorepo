@@ -165,15 +165,14 @@ const createUuid = (): string => {
 /**
  * Creates a DOM custom event with an EIP-6963 announcement payload.
  *
- * @param browserWindow - The window used to create the event.
  * @param detail - The provider announcement detail.
  * @returns A custom event containing the announcement detail.
  */
 const createAnnouncementEvent = (
-  browserWindow: Window,
   detail: Readonly<EIP6963ProviderDetail>,
 ): CustomEvent<Readonly<EIP6963ProviderDetail>> => {
-  return new browserWindow.CustomEvent(EIP6963_ANNOUNCE_PROVIDER_EVENT, {
+  const { CustomEvent: CustomEventConstructor } = globalThis;
+  return new CustomEventConstructor(EIP6963_ANNOUNCE_PROVIDER_EVENT, {
     detail,
   });
 };
@@ -181,11 +180,11 @@ const createAnnouncementEvent = (
 /**
  * Creates a DOM event requesting EIP-6963 providers to re-announce.
  *
- * @param browserWindow - The window used to create the event.
  * @returns A request-provider event.
  */
-const createRequestProviderEvent = (browserWindow: Window): Event => {
-  return new browserWindow.Event(EIP6963_REQUEST_PROVIDER_EVENT);
+const createRequestProviderEvent = (): Event => {
+  const { Event: EventConstructor } = globalThis;
+  return new EventConstructor(EIP6963_REQUEST_PROVIDER_EVENT);
 };
 
 /**
@@ -225,7 +224,7 @@ const hasNativeMetaMaskProvider = async (): Promise<boolean> => {
 
   browserWindow.addEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
   try {
-    browserWindow.dispatchEvent(createRequestProviderEvent(browserWindow));
+    browserWindow.dispatchEvent(createRequestProviderEvent());
     await delay(EIP6963_DETECTION_TIMEOUT_MS);
   } finally {
     browserWindow.removeEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
@@ -356,8 +355,6 @@ export class EIP6963ProviderAnnouncer {
       return;
     }
 
-    browserWindow.dispatchEvent(
-      createAnnouncementEvent(browserWindow, this.#detail),
-    );
+    browserWindow.dispatchEvent(createAnnouncementEvent(this.#detail));
   }
 }
