@@ -94,8 +94,6 @@ const getAnnouncementRdns = (event: Event): string | undefined => {
   return typeof rdns === 'string' ? rdns : undefined;
 };
 
-let fallbackUuidCounter = 0;
-
 const UUID_BYTE_TO_HEX = Array.from({ length: 256 }, (_, byte) =>
   byte.toString(16).padStart(2, '0'),
 );
@@ -137,9 +135,9 @@ const formatUuidV4 = (bytes: Uint8Array): string => {
 /**
  * Creates a UUID for the EIP-6963 provider identity.
  *
- * Uses the browser crypto implementation when available. The deterministic
- * fallback only exists for old browsers and test environments without Web
- * Crypto; it is unique within the current JavaScript realm.
+ * Requires Web Crypto. EIP-6963 discovery is browser-only, and unsupported
+ * browsers should fail this best-effort announcement path rather than receive a
+ * weak UUID.
  *
  * @returns A UUID string.
  */
@@ -156,10 +154,7 @@ const createUuid = (): string => {
     return formatUuidV4(bytes);
   }
 
-  fallbackUuidCounter += 1;
-  return `00000000-0000-4000-8000-${fallbackUuidCounter
-    .toString(16)
-    .padStart(12, '0')}`;
+  throw new Error('Web Crypto API is required for EIP-6963 announcement');
 };
 
 /**
