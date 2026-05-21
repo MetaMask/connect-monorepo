@@ -13,14 +13,13 @@ import {
   type SessionData,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
+import { createDeferredPromise } from '@metamask/utils';
 
 import {
   METAMASK_CONNECT_BASE_URL,
   METAMASK_DEEPLINK_BASE,
   MWP_RELAY_URL,
 } from '../config';
-import { createDeferredPromise } from '@metamask/utils';
-
 import {
   getVersion,
   type InvokeMethodOptions,
@@ -448,7 +447,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     caipAccountIds: CaipAccountId[],
     sessionProperties?: SessionProperties,
   ): Promise<void> {
-    const completion = createDeferredPromise<void>();
+    const completion = createDeferredPromise();
 
     const createConnectionRequest = async (): Promise<ConnectionRequest> => {
       if (
@@ -461,12 +460,15 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       // The session_request event carries the pending request needed to build
       // the deeplink / QR code. We resolve this deferred when it fires.
       const sessionRequestDeferred = createDeferredPromise<ConnectionRequest>();
-      this.dappClient.on('session_request', (sessionRequest: SessionRequest) => {
-        sessionRequestDeferred.resolve({
-          sessionRequest,
-          metadata: this.#buildConnectionMetadata(),
-        });
-      });
+      this.dappClient.on(
+        'session_request',
+        (sessionRequest: SessionRequest) => {
+          sessionRequestDeferred.resolve({
+            sessionRequest,
+            metadata: this.#buildConnectionMetadata(),
+          });
+        },
+      );
 
       // Start the connection flow in the background — it will eventually emit
       // session_request (resolving sessionRequestDeferred) and then either
@@ -521,7 +523,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         },
       )
       .catch((error) => {
-        completion.reject(error instanceof Error ? error : new Error(String(error)));
+        completion.reject(
+          error instanceof Error ? error : new Error(String(error)),
+        );
       });
 
     return completion.promise;
@@ -581,7 +585,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
 
     try {
-      await this.transport.connect({ scopes, caipAccountIds, sessionProperties });
+      await this.transport.connect({
+        scopes,
+        caipAccountIds,
+        sessionProperties,
+      });
       this.status = 'connected';
       await this.storage.setTransport(TransportType.MWP);
     } catch (error) {

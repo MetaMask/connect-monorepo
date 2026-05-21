@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /* eslint-disable consistent-return */
-/* eslint-disable promise/param-names */
+
 /* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-shadow */
+
 /* eslint-disable id-denylist */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-restricted-globals */
@@ -25,7 +24,6 @@ import {
 } from '@metamask/multichain-api-client';
 import { JsonRpcError, providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
-
 import { createDeferredPromise } from '@metamask/utils';
 
 import {
@@ -382,18 +380,19 @@ export class MWPTransport implements ExtendedTransport {
       forceRequest?: boolean;
     },
   ): Promise<void> {
-    const resumeDeferred = createDeferredPromise<void>();
-    const onResumeHandler = (): void => {
-      void this.onResumeHandler(options).then(
-        resumeDeferred.resolve,
-        resumeDeferred.reject,
-      );
+    const resumeDeferred = createDeferredPromise();
+    const runOnResumeHandler = async (): Promise<void> => {
+      try {
+        resumeDeferred.resolve(await this.onResumeHandler(options));
+      } catch (err) {
+        resumeDeferred.reject(err);
+      }
     };
 
     if (this.dappClient.state === 'CONNECTED') {
-      onResumeHandler();
+      runOnResumeHandler();
     } else {
-      this.dappClient.once('connected', onResumeHandler);
+      this.dappClient.once('connected', runOnResumeHandler);
       this.dappClient.resume(session.id ?? '');
     }
 
@@ -403,8 +402,10 @@ export class MWPTransport implements ExtendedTransport {
       this.options.resumeTimeout,
     );
 
-    return Promise.race([resumeDeferred.promise, timeoutDeferred.promise])
-      .finally(() => clearTimeout(timeout));
+    return Promise.race([
+      resumeDeferred.promise,
+      timeoutDeferred.promise,
+    ]).finally(() => clearTimeout(timeout));
   }
 
   /**
@@ -418,6 +419,9 @@ export class MWPTransport implements ExtendedTransport {
    * that in-flight attempt rather than starting from scratch.
    *
    * @param options - The session options.
+   * @param options.scopes - The CAIP-2 scopes requested for the new session.
+   * @param options.caipAccountIds - The CAIP-10 account IDs to associate with the session.
+   * @param options.sessionProperties - Optional MWP session properties forwarded to the wallet.
    * @returns A promise that resolves when the wallet acknowledges the session,
    * or rejects on error / timeout.
    */
@@ -425,7 +429,6 @@ export class MWPTransport implements ExtendedTransport {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     sessionProperties?: SessionProperties;
-    forceRequest?: boolean;
   }): Promise<void> {
     const { dappClient } = this;
 
@@ -435,7 +438,7 @@ export class MWPTransport implements ExtendedTransport {
     const isContinuingPriorAttempt =
       (await this.getStoredPendingSessionRequest()) !== null;
 
-    const connDeferred = createDeferredPromise<void>();
+    const connDeferred = createDeferredPromise();
 
     const optionalScopes = addValidAccounts(
       getOptionalScopes(options?.scopes ?? []),
@@ -532,11 +535,13 @@ export class MWPTransport implements ExtendedTransport {
         : this.options.connectionTimeout,
     );
 
-    return Promise.race([connDeferred.promise, timeoutDeferred.promise])
-      .finally(() => {
-        clearTimeout(timeout);
-        removeHandler();
-      });
+    return Promise.race([
+      connDeferred.promise,
+      timeoutDeferred.promise,
+    ]).finally(() => {
+      clearTimeout(timeout);
+      removeHandler();
+    });
   }
 
   async init(): Promise<void> {
