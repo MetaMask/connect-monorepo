@@ -16,6 +16,7 @@ import {
 import { hexToNumber } from '@metamask/utils';
 
 import { CONNECT_EVM_SESSION_PROPERTIES, IGNORED_METHODS } from './constants';
+import { EIP6963ProviderAnnouncer } from './eip6963';
 import { enableDebug, logger } from './logger';
 import { EIP1193Provider } from './provider';
 import type {
@@ -95,6 +96,9 @@ export class MetamaskConnectEVM {
   /** An instance of the EIP-1193 provider interface */
   readonly #provider: EIP1193Provider;
 
+  /** Handles EIP-6963 discovery announcements for the provider */
+  readonly #eip6963Announcer: EIP6963ProviderAnnouncer;
+
   /** The session scopes currently permitted */
   #sessionScopes: SessionData['sessionScopes'] = {};
 
@@ -136,6 +140,7 @@ export class MetamaskConnectEVM {
       core,
       this.#requestInterceptor.bind(this),
     );
+    this.#eip6963Announcer = new EIP6963ProviderAnnouncer(this.#provider);
 
     this.#eventHandlers = eventHandlers;
 
@@ -946,6 +951,17 @@ export class MetamaskConnectEVM {
   }
 
   /**
+   * Announces the EIP-1193 provider through EIP-6963 wallet discovery.
+   *
+   * This is a no-op when a native MetaMask EIP-6963 provider has already
+   * announced, or when running outside a browser environment. The first call
+   * may take up to 300 ms while native providers are requested.
+   */
+  async announceProvider(): Promise<void> {
+    await this.#eip6963Announcer.announce();
+  }
+
+  /**
    * Gets the currently selected chain ID on the wallet
    *
    * @returns The currently selected chain ID or undefined if no chain is selected
@@ -1021,6 +1037,7 @@ export class MetamaskConnectEVM {
  * @param [options.transport.onNotification] - Callback for receiving transport notifications
  * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
  * @param [options.debug] - Enable debug logging
+ * @param [options.skipAutoAnnounce] - Skip automatic EIP-6963 provider announcement
  * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
@@ -1032,6 +1049,7 @@ export async function createEVMClient(
   } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
+    skipAutoAnnounce?: boolean;
     api: {
       supportedNetworks: Record<Hex, string>;
     };
@@ -1084,11 +1102,17 @@ export async function createEVMClient(
       },
     });
 
-    return MetamaskConnectEVM.create({
+    const client = await MetamaskConnectEVM.create({
       core,
       eventHandlers: options.eventHandlers,
       supportedNetworks: options.api.supportedNetworks,
     });
+
+    if (!options.skipAutoAnnounce) {
+      void client.announceProvider();
+    }
+
+    return client;
   } catch (error) {
     console.error('Error creating Metamask Connect/EVM', error);
     throw error;

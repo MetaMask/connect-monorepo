@@ -13,7 +13,7 @@ This design is separate from wagmi PR #5109. That PR avoids loading the SDK chun
 - The SDK-managed EIP-6963 provider is announced as `name: "MetaMask"` and `rdns: "io.metamask.mmc"`.
 - The SDK suppresses its own announcement only when it observes a native MetaMask EIP-6963 provider with exact `rdns` of `io.metamask` or `io.metamask.mobile`.
 - `io.metamask.flask` does not suppress the SDK announcement in this implementation.
-- The icon is a self-contained `data:image/svg+xml` URI derived from the existing local MetaMask fox SVG at `packages/multichain-ui/src/assets/fox.svg`. `@metamask/connect-evm` owns the exported data URI constant so its browser bundle does not depend on `@metamask/multichain-ui`.
+- The icon is a package-local MetaMask fox SVG asset bundled as a self-contained `data:image/svg+xml` URI. `@metamask/connect-evm` owns that asset so its browser bundle does not depend on `@metamask/multichain-ui` or a remote image URL.
 - Auto-announcement happens during `createEVMClient()` after the EVM client and provider have been created, unless the consumer passes `skipAutoAnnounce: true`.
 - Consumers also get an explicit `announceProvider()` method on the returned `MetamaskConnectEVM` instance for manual announcement control, matching the shape of Solana's `skipAutoRegister` plus `registerWallet()` pattern.
 
