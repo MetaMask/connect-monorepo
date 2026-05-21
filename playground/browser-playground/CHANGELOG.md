@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added an **MWP deeplink failure repros** collapsible panel (`MwpDeeplinkReproCard`) that surfaces one `metamask://connect/mwp?…` deeplink per failure branch in the mobile app's `ConnectionRegistry.handleConnectDeeplink`. Lets QA reproducibly trigger each branch (parse failures, internal-origin block, decompression mismatch, payload-too-large, etc.) without needing a misconfigured dapp, and acts as the verification surface for the Sentry coverage added in MetaMask/metamask-mobile#30343.
+
 ## [0.7.4]
 
 ### Changed

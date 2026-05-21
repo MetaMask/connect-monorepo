@@ -15,6 +15,7 @@ import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
+import { MwpDeeplinkReproCard } from './components/MwpDeeplinkReproCard';
 import { AnalyticsTestBench } from './components/AnalyticsTestBench';
 import { useSolanaSDK } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
@@ -471,6 +472,9 @@ function App() {
             </div>
           </section>
         )}
+        <div className="mt-8">
+          <MwpDeeplinkReproCard />
+        </div>
       </div>
     </div>
   );
