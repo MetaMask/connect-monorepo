@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
-import type { MultichainCore, SessionData } from '@metamask/connect-multichain';
 import {
   createMultichainClient,
+  type MultichainCore,
   type MultichainOptions,
+  type SessionData,
 } from '@metamask/connect-multichain';
 import {
   afterEach,
@@ -21,9 +22,10 @@ import {
   EIP6963_DETECTION_TIMEOUT_MS,
 } from './eip6963';
 
-vi.mock('@metamask/connect-multichain', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('@metamask/connect-multichain')>();
+vi.mock('@metamask/connect-multichain', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>(
+    '@metamask/connect-multichain',
+  );
   return {
     ...actual,
     createMultichainClient: vi.fn(),
@@ -59,6 +61,11 @@ const evmOptions = {
   },
 } as const;
 
+/**
+ * Creates a minimal Multichain core mock for createEVMClient tests.
+ *
+ * @returns A mocked Multichain core.
+ */
 function createMockCore(): MockCore {
   const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
 
@@ -105,24 +112,34 @@ function createMockCore(): MockCore {
   } as unknown as MockCore;
 }
 
+/**
+ * Collects SDK EIP-6963 announcements emitted during a test.
+ *
+ * @returns Captured announcement details and a cleanup function.
+ */
 function collectSdkAnnouncements(): {
   details: EIP6963ProviderDetail[];
   stop: () => void;
 } {
   const details: EIP6963ProviderDetail[] = [];
   const handler = (event: Event): void => {
-    const detail = (event as CustomEvent<EIP6963ProviderDetail>).detail;
+    const { detail } = event as Event & {
+      detail?: EIP6963ProviderDetail;
+    };
     if (detail?.info?.rdns === CONNECT_EVM_EIP6963_RDNS) {
       details.push(detail);
     }
   };
 
-  window.addEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
+  globalThis.window.addEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
 
   return {
     details,
     stop: () =>
-      window.removeEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler),
+      globalThis.window.removeEventListener(
+        EIP6963_ANNOUNCE_PROVIDER_EVENT,
+        handler,
+      ),
   };
 }
 

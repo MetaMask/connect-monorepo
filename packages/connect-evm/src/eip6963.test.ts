@@ -35,6 +35,11 @@ type EIP6963ProviderDetail = {
   provider: unknown;
 };
 
+/**
+ * Creates a minimal Multichain core mock for EIP-6963 tests.
+ *
+ * @returns A mocked Multichain core.
+ */
 function createMockCore(): MockCore {
   const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
 
@@ -81,13 +86,21 @@ function createMockCore(): MockCore {
   } as unknown as MockCore;
 }
 
+/**
+ * Collects SDK EIP-6963 announcements for a specific provider.
+ *
+ * @param provider - Provider object expected in SDK announcements.
+ * @returns Captured announcement details and a cleanup function.
+ */
 function collectSdkAnnouncements(provider: unknown): {
   details: EIP6963ProviderDetail[];
   stop: () => void;
 } {
   const details: EIP6963ProviderDetail[] = [];
   const handler = (event: Event): void => {
-    const detail = (event as CustomEvent<EIP6963ProviderDetail>).detail;
+    const { detail } = event as Event & {
+      detail?: EIP6963ProviderDetail;
+    };
     if (
       detail?.info?.rdns === CONNECT_EVM_EIP6963_RDNS &&
       detail.provider === provider
@@ -96,31 +109,48 @@ function collectSdkAnnouncements(provider: unknown): {
     }
   };
 
-  window.addEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
+  globalThis.window.addEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
 
   return {
     details,
     stop: () =>
-      window.removeEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler),
+      globalThis.window.removeEventListener(
+        EIP6963_ANNOUNCE_PROVIDER_EVENT,
+        handler,
+      ),
   };
 }
 
+/**
+ * Dispatches a native MetaMask-looking EIP-6963 announcement.
+ *
+ * @param rdns - Native wallet reverse-DNS identifier to announce.
+ */
 function announceNativeMetaMaskProvider(rdns: string): void {
-  window.dispatchEvent(
-    new CustomEvent<EIP6963ProviderDetail>(EIP6963_ANNOUNCE_PROVIDER_EVENT, {
-      detail: {
-        info: {
-          uuid: `native-${rdns}`,
-          name: 'MetaMask',
-          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" />',
-          rdns,
+  globalThis.window.dispatchEvent(
+    new globalThis.window.CustomEvent<EIP6963ProviderDetail>(
+      EIP6963_ANNOUNCE_PROVIDER_EVENT,
+      {
+        detail: {
+          info: {
+            uuid: `native-${rdns}`,
+            name: 'MetaMask',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" />',
+            rdns,
+          },
+          provider: { rdns },
         },
-        provider: { rdns },
       },
-    }),
+    ),
   );
 }
 
+/**
+ * Runs a manual SDK provider announcement and returns captured details.
+ *
+ * @param client - EVM client used to announce the provider.
+ * @returns Captured SDK announcement details.
+ */
 async function runAnnouncement(
   client: MetamaskConnectEVM,
 ): Promise<EIP6963ProviderDetail[]> {
@@ -163,11 +193,17 @@ describe('EIP-6963 announcement', () => {
     const client = await MetamaskConnectEVM.create({ core: createMockCore() });
     const nativeHandler = (): void =>
       announceNativeMetaMaskProvider('io.metamask');
-    window.addEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.addEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
 
     const details = await runAnnouncement(client);
 
-    window.removeEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.removeEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
     expect(details).toHaveLength(0);
   });
 
@@ -176,7 +212,10 @@ describe('EIP-6963 announcement', () => {
     const nativeHandler = vi.fn(() =>
       announceNativeMetaMaskProvider('io.metamask'),
     );
-    window.addEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.addEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
 
     const firstAnnouncement = client.announceProvider();
     await vi.advanceTimersByTimeAsync(EIP6963_DETECTION_TIMEOUT_MS);
@@ -186,7 +225,10 @@ describe('EIP-6963 announcement', () => {
     await vi.advanceTimersByTimeAsync(EIP6963_DETECTION_TIMEOUT_MS);
     await secondAnnouncement;
 
-    window.removeEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.removeEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
     expect(nativeHandler).toHaveBeenCalledTimes(1);
   });
 
@@ -195,12 +237,18 @@ describe('EIP-6963 announcement', () => {
     const nativeHandler = vi.fn(() =>
       announceNativeMetaMaskProvider('io.metamask'),
     );
-    window.addEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.addEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
     announceNativeMetaMaskProvider('io.metamask');
 
     const details = await runAnnouncement(client);
 
-    window.removeEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.removeEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
     expect(details).toHaveLength(0);
     expect(nativeHandler).toHaveBeenCalledTimes(1);
   });
@@ -209,11 +257,17 @@ describe('EIP-6963 announcement', () => {
     const client = await MetamaskConnectEVM.create({ core: createMockCore() });
     const nativeHandler = (): void =>
       announceNativeMetaMaskProvider('io.metamask.mobile');
-    window.addEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.addEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
 
     const details = await runAnnouncement(client);
 
-    window.removeEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.removeEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
     expect(details).toHaveLength(0);
   });
 
@@ -221,11 +275,17 @@ describe('EIP-6963 announcement', () => {
     const client = await MetamaskConnectEVM.create({ core: createMockCore() });
     const nativeHandler = (): void =>
       announceNativeMetaMaskProvider('io.metamask.flask');
-    window.addEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.addEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
 
     const details = await runAnnouncement(client);
 
-    window.removeEventListener(EIP6963_REQUEST_PROVIDER_EVENT, nativeHandler);
+    globalThis.window.removeEventListener(
+      EIP6963_REQUEST_PROVIDER_EVENT,
+      nativeHandler,
+    );
     expect(details).toHaveLength(1);
     expect(details[0].info.rdns).toBe(CONNECT_EVM_EIP6963_RDNS);
   });
@@ -242,7 +302,9 @@ describe('EIP-6963 announcement', () => {
     await secondAnnouncement;
     const countBeforeRequest = collector.details.length;
 
-    window.dispatchEvent(new Event(EIP6963_REQUEST_PROVIDER_EVENT));
+    globalThis.window.dispatchEvent(
+      new globalThis.window.Event(EIP6963_REQUEST_PROVIDER_EVENT),
+    );
 
     const requestAnnouncements = collector.details.slice(countBeforeRequest);
     collector.stop();

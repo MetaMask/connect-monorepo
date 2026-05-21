@@ -66,14 +66,20 @@ export type EIP6963ProviderDetail = {
 };
 
 /**
- * Checks whether EIP-6963 events can be used in the current browsing context.
+ * Gets the current browser window when EIP-6963 events can be used.
  *
  * This intentionally uses the current `window`; it does not attempt to bridge
  * to `window.top`. EIP-6963 discovery is scoped to the frame where the SDK is
  * running.
+ *
+ * @returns The current browser window, or undefined outside a browser context.
  */
-const isBrowser = (): boolean =>
-  typeof window !== 'undefined' && typeof window.dispatchEvent === 'function';
+const getBrowserWindow = (): Window | undefined => {
+  const { window: browserWindow } = globalThis;
+  return typeof browserWindow?.dispatchEvent === 'function'
+    ? browserWindow
+    : undefined;
+};
 
 const delay = async (ms: number): Promise<void> =>
   await new Promise((resolve) => setTimeout(resolve, ms));
@@ -82,31 +88,104 @@ const isNativeMetaMaskRdns = (rdns: string): boolean =>
   METAMASK_EIP6963_RDNS.some((nativeRdns) => nativeRdns === rdns);
 
 const getAnnouncementRdns = (event: Event): string | undefined => {
-  const detail = (event as CustomEvent<Partial<EIP6963ProviderDetail>>).detail;
+  const { detail } = event as CustomEvent<Partial<EIP6963ProviderDetail>>;
   const rdns = detail?.info?.rdns;
 
   return typeof rdns === 'string' ? rdns : undefined;
 };
 
+let fallbackUuidCounter = 0;
+
+const UUID_BYTE_TO_HEX = Array.from({ length: 256 }, (_, byte) =>
+  byte.toString(16).padStart(2, '0'),
+);
+
+/**
+ * Formats random bytes as an RFC 4122 version 4 UUID.
+ *
+ * @param bytes - Random bytes from a cryptographically secure source.
+ * @returns A UUID string.
+ */
+const formatUuidV4 = (bytes: Uint8Array): string => {
+  bytes[6] = (bytes[6] % 16) + 64;
+  bytes[8] = (bytes[8] % 64) + 128;
+
+  return [
+    UUID_BYTE_TO_HEX[bytes[0]],
+    UUID_BYTE_TO_HEX[bytes[1]],
+    UUID_BYTE_TO_HEX[bytes[2]],
+    UUID_BYTE_TO_HEX[bytes[3]],
+    '-',
+    UUID_BYTE_TO_HEX[bytes[4]],
+    UUID_BYTE_TO_HEX[bytes[5]],
+    '-',
+    UUID_BYTE_TO_HEX[bytes[6]],
+    UUID_BYTE_TO_HEX[bytes[7]],
+    '-',
+    UUID_BYTE_TO_HEX[bytes[8]],
+    UUID_BYTE_TO_HEX[bytes[9]],
+    '-',
+    UUID_BYTE_TO_HEX[bytes[10]],
+    UUID_BYTE_TO_HEX[bytes[11]],
+    UUID_BYTE_TO_HEX[bytes[12]],
+    UUID_BYTE_TO_HEX[bytes[13]],
+    UUID_BYTE_TO_HEX[bytes[14]],
+    UUID_BYTE_TO_HEX[bytes[15]],
+  ].join('');
+};
+
 /**
  * Creates a UUID for the EIP-6963 provider identity.
  *
- * Uses the browser crypto implementation when available and falls back to a
- * local UUIDv4-compatible generator for test and older browser environments.
+ * Uses the browser crypto implementation when available. The deterministic
+ * fallback only exists for old browsers and test environments without Web
+ * Crypto; it is unique within the current JavaScript realm.
  *
  * @returns A UUID string.
  */
 const createUuid = (): string => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
+  const { crypto: cryptoProvider } = globalThis;
+
+  if (cryptoProvider?.randomUUID) {
+    return cryptoProvider.randomUUID();
   }
 
-  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/gu, (char) =>
-    (
-      Number(char) ^
-      (Math.floor(Math.random() * 16) >> (Number(char) / 4))
-    ).toString(16),
-  );
+  if (cryptoProvider?.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    cryptoProvider.getRandomValues(bytes);
+    return formatUuidV4(bytes);
+  }
+
+  fallbackUuidCounter += 1;
+  return `00000000-0000-4000-8000-${fallbackUuidCounter
+    .toString(16)
+    .padStart(12, '0')}`;
+};
+
+/**
+ * Creates a DOM custom event with an EIP-6963 announcement payload.
+ *
+ * @param browserWindow - The window used to create the event.
+ * @param detail - The provider announcement detail.
+ * @returns A custom event containing the announcement detail.
+ */
+const createAnnouncementEvent = (
+  browserWindow: Window,
+  detail: Readonly<EIP6963ProviderDetail>,
+): CustomEvent<Readonly<EIP6963ProviderDetail>> => {
+  return new browserWindow.CustomEvent(EIP6963_ANNOUNCE_PROVIDER_EVENT, {
+    detail,
+  });
+};
+
+/**
+ * Creates a DOM event requesting EIP-6963 providers to re-announce.
+ *
+ * @param browserWindow - The window used to create the event.
+ * @returns A request-provider event.
+ */
+const createRequestProviderEvent = (browserWindow: Window): Event => {
+  return new browserWindow.Event(EIP6963_REQUEST_PROVIDER_EVENT);
 };
 
 /**
@@ -131,7 +210,8 @@ const createProviderInfo = (): Readonly<EIP6963ProviderInfo> =>
  * @returns True when a native MetaMask provider rdns was observed.
  */
 const hasNativeMetaMaskProvider = async (): Promise<boolean> => {
-  if (!isBrowser()) {
+  const browserWindow = getBrowserWindow();
+  if (!browserWindow) {
     return false;
   }
 
@@ -143,12 +223,12 @@ const hasNativeMetaMaskProvider = async (): Promise<boolean> => {
     }
   };
 
-  window.addEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
+  browserWindow.addEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
   try {
-    window.dispatchEvent(new Event(EIP6963_REQUEST_PROVIDER_EVENT));
+    browserWindow.dispatchEvent(createRequestProviderEvent(browserWindow));
     await delay(EIP6963_DETECTION_TIMEOUT_MS);
   } finally {
-    window.removeEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
+    browserWindow.removeEventListener(EIP6963_ANNOUNCE_PROVIDER_EVENT, handler);
   }
 
   return [...announcedRdns].some(isNativeMetaMaskRdns);
@@ -193,16 +273,18 @@ export class EIP6963ProviderAnnouncer {
    * provider detail and does not install duplicate request listeners. The first
    * call may take up to `EIP6963_DETECTION_TIMEOUT_MS` while native providers
    * are requested.
+   *
+   * @returns A promise that resolves once detection and any announcement finish.
    */
-  announce(): Promise<void> {
+  async announce(): Promise<void> {
     try {
       if (this.#suppressed) {
-        return Promise.resolve();
+        return;
       }
 
       if (this.#detail) {
         this.#dispatchAnnouncement();
-        return Promise.resolve();
+        return;
       }
 
       if (!this.#announcementPromise) {
@@ -215,10 +297,9 @@ export class EIP6963ProviderAnnouncer {
           });
       }
 
-      return this.#announcementPromise;
+      await this.#announcementPromise;
     } catch (error) {
       logger('EIP-6963 provider announcement failed', error);
-      return Promise.resolve();
     }
   }
 
@@ -226,7 +307,7 @@ export class EIP6963ProviderAnnouncer {
    * Performs the first announcement flow after native provider detection.
    */
   async #announceOnce(): Promise<void> {
-    if (!isBrowser()) {
+    if (!getBrowserWindow()) {
       return;
     }
 
@@ -248,7 +329,8 @@ export class EIP6963ProviderAnnouncer {
    * Installs a single persistent EIP-6963 request listener for re-announcement.
    */
   #installRequestProviderListener(): void {
-    if (!isBrowser() || this.#requestHandler) {
+    const browserWindow = getBrowserWindow();
+    if (!browserWindow || this.#requestHandler) {
       return;
     }
 
@@ -259,7 +341,7 @@ export class EIP6963ProviderAnnouncer {
         logger('EIP-6963 provider announcement failed', error);
       }
     };
-    window.addEventListener(
+    browserWindow.addEventListener(
       EIP6963_REQUEST_PROVIDER_EVENT,
       this.#requestHandler,
     );
@@ -269,14 +351,13 @@ export class EIP6963ProviderAnnouncer {
    * Dispatches the current provider detail through EIP-6963.
    */
   #dispatchAnnouncement(): void {
-    if (!isBrowser() || !this.#detail) {
+    const browserWindow = getBrowserWindow();
+    if (!browserWindow || !this.#detail) {
       return;
     }
 
-    window.dispatchEvent(
-      new CustomEvent(EIP6963_ANNOUNCE_PROVIDER_EVENT, {
-        detail: this.#detail,
-      }),
+    browserWindow.dispatchEvent(
+      createAnnouncementEvent(browserWindow, this.#detail),
     );
   }
 }

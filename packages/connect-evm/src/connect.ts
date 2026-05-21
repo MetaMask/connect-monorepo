@@ -1109,7 +1109,9 @@ export async function createEVMClient(
     });
 
     if (!options.skipAutoAnnounce) {
-      void client.announceProvider();
+      client.announceProvider().catch((error) => {
+        logger('EIP-6963 provider announcement failed', error);
+      });
     }
 
     return client;
