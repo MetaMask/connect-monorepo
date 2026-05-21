@@ -305,7 +305,7 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-  private async onResumeSuccess(options?: {
+  private async onResumeHandler(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     forceRequest?: boolean;
@@ -383,17 +383,17 @@ export class MWPTransport implements ExtendedTransport {
     },
   ): Promise<void> {
     const resumeDeferred = createDeferredPromise<void>();
-    const runOnResumeSuccess = (): void => {
-      void this.onResumeSuccess(options).then(
+    const onResumeHandler = (): void => {
+      void this.onResumeHandler(options).then(
         resumeDeferred.resolve,
         resumeDeferred.reject,
       );
     };
 
     if (this.dappClient.state === 'CONNECTED') {
-      runOnResumeSuccess();
+      onResumeHandler();
     } else {
-      this.dappClient.once('connected', runOnResumeSuccess);
+      this.dappClient.once('connected', onResumeHandler);
       this.dappClient.resume(session.id ?? '');
     }
 
