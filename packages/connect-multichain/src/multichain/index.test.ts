@@ -28,4 +28,21 @@ describe('MetaMaskConnectMultichain', () => {
     });
     expect(existingInstance.setupAnalytics).toHaveBeenCalledTimes(1);
   });
+
+  it('does not require reused singleton instances from older package copies to have setupAnalytics', async () => {
+    const existingInstance = {
+      mergeOptions: vi.fn(),
+    };
+    (globalThis as Record<string, unknown>)[singletonKey] =
+      Promise.resolve(existingInstance);
+
+    const result = await MetaMaskConnectMultichain.create({
+      analytics: { integrationType: 'direct' },
+    } as Parameters<typeof MetaMaskConnectMultichain.create>[0]);
+
+    expect(result).toBe(existingInstance);
+    expect(existingInstance.mergeOptions).toHaveBeenCalledWith({
+      analytics: { integrationType: 'direct' },
+    });
+  });
 });
