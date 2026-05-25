@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add an `analytics.enabled` option to `createEVMClient()`. Set it to `false` to disable dapp-side analytics events and wallet correlation metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+- Add an `analytics.enabled` option to `createEVMClient()`. Consumers can set it to `false` to disable dapp-side analytics events and wallet correlation metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
 
 ## [1.3.1]
 
