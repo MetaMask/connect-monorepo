@@ -48,6 +48,12 @@ declare const __PACKAGE_VERSION__: string | undefined;
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
 
+/**
+ * Checks whether dapp-side analytics are enabled for the multichain core.
+ *
+ * @param options - Current multichain options.
+ * @returns Whether analytics events should be collected and sent.
+ */
 function isAnalyticsEnabled(options: MultichainOptions | undefined): boolean {
   return options?.analytics?.enabled !== false;
 }

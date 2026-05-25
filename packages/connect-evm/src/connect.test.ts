@@ -872,14 +872,15 @@ describe('MetamaskConnectEVM', () => {
     });
 
     it('does not build wallet action analytics properties when analytics are disabled', async () => {
-      (mockCore as unknown as { options: MultichainCore['options'] }).options = {
-        dapp: {
-          name: 'Test DApp',
-          url: 'https://test.example',
-        },
-        analytics: { enabled: false, integrationType: 'direct' },
-        versions: {},
-      } as MultichainCore['options'];
+      (mockCore as unknown as { options: MultichainCore['options'] }).options =
+        {
+          dapp: {
+            name: 'Test DApp',
+            url: 'https://test.example',
+          },
+          analytics: { enabled: false, integrationType: 'direct' },
+          versions: {},
+        } as MultichainCore['options'];
       mockCore.transport.sendEip1193Message.mockResolvedValue({
         result: null,
         id: 1,

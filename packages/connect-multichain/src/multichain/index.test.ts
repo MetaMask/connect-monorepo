@@ -10,10 +10,13 @@ describe('MetaMaskConnectMultichain', () => {
     delete (globalThis as Record<string, unknown>)[singletonKey];
   });
 
-  it('uses the existing singleton analytics setup hook when reusing a compatible instance from another package copy', async () => {
+  it('uses public singleton fields instead of setupAnalytics when reusing another package copy', async () => {
+    const storage = { getAnonId: vi.fn().mockResolvedValue('anon-id') };
     const existingInstance = {
       mergeOptions: vi.fn(),
       setupAnalytics: vi.fn().mockResolvedValue(undefined),
+      options: { analytics: { integrationType: 'direct' } },
+      storage,
     };
     (globalThis as Record<string, unknown>)[singletonKey] =
       Promise.resolve(existingInstance);
@@ -26,12 +29,15 @@ describe('MetaMaskConnectMultichain', () => {
     expect(existingInstance.mergeOptions).toHaveBeenCalledWith({
       analytics: { integrationType: 'direct' },
     });
-    expect(existingInstance.setupAnalytics).toHaveBeenCalledTimes(1);
+    expect(existingInstance.setupAnalytics).not.toHaveBeenCalled();
   });
 
   it('does not require reused singleton instances from older package copies to have setupAnalytics', async () => {
+    const storage = { getAnonId: vi.fn().mockResolvedValue('anon-id') };
     const existingInstance = {
       mergeOptions: vi.fn(),
+      options: { analytics: { integrationType: 'direct' } },
+      storage,
     };
     (globalThis as Record<string, unknown>)[singletonKey] =
       Promise.resolve(existingInstance);

@@ -72,6 +72,12 @@ const logger = createLogger('metamask-sdk:core');
 
 const SINGLETON_KEY = '__METAMASK_CONNECT_MULTICHAIN_SINGLETON__';
 
+type ReusableMultichainSingleton = {
+  mergeOptions: (options: MultichainOptions) => void;
+  options: MultichainOptions;
+  storage: StoreClient;
+};
+
 /**
  * Applies analytics defaults while preserving explicitly disabled analytics.
  *
@@ -97,6 +103,54 @@ function normalizeAnalyticsOptions(
  */
 function isAnalyticsEnabled(options: MultichainOptions): boolean {
   return options.analytics?.enabled !== false;
+}
+
+/**
+ * Sets up analytics globals using only APIs available on existing singleton
+ * instances, including instances created by older bundled package copies.
+ *
+ * @param options - Current SDK options.
+ * @param storage - Storage client for retrieving the anonymous ID.
+ * @param setAnonId - Optional callback for updating the current instance anon ID.
+ */
+async function setupAnalyticsGlobals(
+  options: MultichainOptions,
+  storage: StoreClient,
+  setAnonId?: (anonId: string | undefined) => void,
+): Promise<void> {
+  if (!isAnalyticsEnabled(options)) {
+    setAnonId?.(undefined);
+    analytics.disable();
+    return;
+  }
+
+  const platform = getPlatformType();
+  const isBrowser =
+    platform === PlatformType.MetaMaskMobileWebview ||
+    platform === PlatformType.DesktopWeb ||
+    platform === PlatformType.MobileWeb;
+
+  const isReactNative = platform === PlatformType.ReactNative;
+
+  if (!isBrowser && !isReactNative) {
+    return;
+  }
+
+  const dappId = getDappId(options.dapp);
+  const anonId = await storage.getAnonId();
+  setAnonId?.(anonId);
+
+  const { integrationType } = options.analytics ?? {
+    integrationType: '',
+  };
+  analytics.setGlobalProperty('mmconnect_versions', options.versions ?? {});
+  analytics.setGlobalProperty('dapp_id', dappId);
+  analytics.setGlobalProperty('anon_id', anonId);
+  analytics.setGlobalProperty('platform', platform);
+  if (integrationType) {
+    analytics.setGlobalProperty('integration_types', [integrationType]);
+  }
+  analytics.enable();
 }
 
 export class MetaMaskConnectMultichain extends MultichainCore {
@@ -202,18 +256,20 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   ): Promise<MetaMaskConnectMultichain> {
     const globalObject = getGlobalObject();
     const existing = globalObject[SINGLETON_KEY] as
-      | Promise<MetaMaskConnectMultichain>
+      | Promise<MetaMaskConnectMultichain | ReusableMultichainSingleton>
       | undefined;
     if (existing) {
       const instance = await existing;
       instance.mergeOptions(options);
-      if (typeof instance.setupAnalytics === 'function') {
-        await instance.setupAnalytics();
+      if (instance instanceof MetaMaskConnectMultichain) {
+        await instance.#setupAnalytics();
+      } else {
+        await setupAnalyticsGlobals(instance.options, instance.storage);
       }
       if (options.debug) {
         enableDebug('metamask-sdk:*');
       }
-      return instance;
+      return instance as MetaMaskConnectMultichain;
     }
 
     const instancePromise = (async (): Promise<MetaMaskConnectMultichain> => {
@@ -242,43 +298,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   /**
    * Sets up analytics globals for the current SDK options.
    */
-  private async setupAnalytics(): Promise<void> {
-    if (!isAnalyticsEnabled(this.options)) {
-      this.#anonId = undefined;
-      analytics.disable();
-      return;
-    }
-
-    const platform = getPlatformType();
-    const isBrowser =
-      platform === PlatformType.MetaMaskMobileWebview ||
-      platform === PlatformType.DesktopWeb ||
-      platform === PlatformType.MobileWeb;
-
-    const isReactNative = platform === PlatformType.ReactNative;
-
-    if (!isBrowser && !isReactNative) {
-      return;
-    }
-
-    const dappId = getDappId(this.options.dapp);
-    const anonId = await this.storage.getAnonId();
-    this.#anonId = anonId;
-
-    const { integrationType } = this.options.analytics ?? {
-      integrationType: '',
-    };
-    analytics.setGlobalProperty(
-      'mmconnect_versions',
-      this.options.versions ?? {},
-    );
-    analytics.setGlobalProperty('dapp_id', dappId);
-    analytics.setGlobalProperty('anon_id', anonId);
-    analytics.setGlobalProperty('platform', platform);
-    if (integrationType) {
-      analytics.setGlobalProperty('integration_types', [integrationType]);
-    }
-    analytics.enable();
+  async #setupAnalytics(): Promise<void> {
+    await setupAnalyticsGlobals(this.options, this.storage, (anonId) => {
+      this.#anonId = anonId;
+    });
   }
 
   async #onTransportNotification(payload: any): Promise<void> {
@@ -384,7 +407,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   async #init(): Promise<void> {
     try {
-      await this.setupAnalytics();
+      await this.#setupAnalytics();
       await this.#setupTransport();
     } catch (error) {
       await this.storage.removeTransport();
