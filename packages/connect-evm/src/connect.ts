@@ -48,6 +48,10 @@ declare const __PACKAGE_VERSION__: string | undefined;
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
 
+function isAnalyticsEnabled(options: MultichainOptions | undefined): boolean {
+  return options?.analytics?.enabled !== false;
+}
+
 /** The options for the connect method */
 type ConnectOptions = {
   /** The account to connect to */
@@ -228,6 +232,10 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -255,6 +263,10 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -284,6 +296,10 @@ export class MetamaskConnectEVM {
     error: unknown,
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
