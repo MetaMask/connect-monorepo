@@ -380,7 +380,7 @@ function testSuite<T extends MultichainOptions>({
 
         if (platform === 'node') {
           // Node: set multichain-transport in storage first, then throw when reading it
-          // getTransport() calls adapter.get('multichain-transport') which calls getItem
+          // getTransportType() calls adapter.get('multichain-transport') which calls getItem
           mockedData.nativeStorageStub.data.set(
             'multichain-transport',
             'browser',

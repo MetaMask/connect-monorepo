@@ -11,11 +11,11 @@ export abstract class StoreClient {
 
   abstract setExtensionId(extensionId: string): Promise<void>;
 
-  abstract getTransport(): Promise<TransportType | null>;
+  abstract getTransportType(): Promise<TransportType | null>;
 
-  abstract setTransport(transport: TransportType): Promise<void>;
+  abstract setTransportType(transportType: TransportType): Promise<void>;
 
-  abstract removeTransport(): Promise<void>;
+  abstract removeTransportType(): Promise<void>;
 
   abstract setAnonId(anonId: string): Promise<void>;
 
