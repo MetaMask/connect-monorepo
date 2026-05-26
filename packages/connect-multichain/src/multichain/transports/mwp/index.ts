@@ -677,8 +677,7 @@ export class MWPTransport implements ExtendedTransport {
    * @returns True if transport is connected, false otherwise
    */
   isConnected(): boolean {
-    // biome-ignore lint/suspicious/noExplicitAny:  required if state is not made public in dappClient
-    return (this.dappClient as any).state === 'CONNECTED';
+    return this.dappClient.state === 'CONNECTED';
   }
 
   /**
