@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5]
+
+### Added
+
+- Added an **MWP deeplink failure repros** collapsible panel (`MwpDeeplinkReproCard`) that surfaces one `metamask://connect/mwp?…` deeplink per failure branch in the mobile app's `ConnectionRegistry.handleConnectDeeplink`. Lets QA reproducibly trigger each branch (parse failures, internal-origin block, decompression mismatch, payload-too-large, etc.) without needing a misconfigured dapp, and acts as the verification surface for the Sentry coverage added in MetaMask/metamask-mobile#30343.
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.4.0
+  - @metamask/connect-multichain@0.15.0
+
 ## [0.7.4]
 
 ### Changed
@@ -224,7 +236,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.4...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.5...HEAD
+[0.7.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.4...@metamask/browser-playground@0.7.5
 [0.7.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.3...@metamask/browser-playground@0.7.4
 [0.7.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.2...@metamask/browser-playground@0.7.3
 [0.7.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.1...@metamask/browser-playground@0.7.2

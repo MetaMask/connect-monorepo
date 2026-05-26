@@ -31,6 +31,7 @@ declare const __PACKAGE_VERSION__: string | undefined;
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param [options.analytics] - Analytics configuration
+ * @param [options.analytics.enabled] - Whether to enable dapp-side analytics (defaults to true)
  * @param [options.analytics.integrationType] - Integration type for analytics (defaults to 'direct')
  * @param options.debug - Enable debug logging
  * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
@@ -77,6 +78,7 @@ export async function createSolanaClient(
       supportedNetworks,
     },
     analytics: {
+      ...(options.analytics ?? {}),
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       integrationType: options.analytics?.integrationType || 'direct',
     },

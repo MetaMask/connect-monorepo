@@ -103,6 +103,56 @@ t.describe('Analytics Integration', () => {
     scope.done();
   });
 
+  t.it('should stop tracking after disable is called', async () => {
+    let captured: EventV2[] = [];
+    scope = nock('http://127.0.0.4')
+      .post('/v2/events', (body) => {
+        captured = body;
+        return true;
+      })
+      .optionally()
+      .reply(
+        200,
+        { status: 'success' },
+        { 'Content-Type': 'application/json' },
+      );
+
+    analytics = new Analytics('http://127.0.0.4');
+    analytics.enable();
+    analytics.disable();
+    analytics.track('mmconnect_initialized', eventProperties);
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    t.expect(captured).toEqual([]);
+    scope.done();
+  });
+
+  t.it('should clear queued events when disable is called', async () => {
+    let captured: EventV2[] = [];
+    scope = nock('http://127.0.0.5')
+      .post('/v2/events', (body) => {
+        captured = body;
+        return true;
+      })
+      .optionally()
+      .reply(
+        200,
+        { status: 'success' },
+        { 'Content-Type': 'application/json' },
+      );
+
+    analytics = new Analytics('http://127.0.0.5');
+    analytics.enable();
+    analytics.track('mmconnect_initialized', eventProperties);
+    analytics.disable();
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    t.expect(captured).toEqual([]);
+    scope.done();
+  });
+
   t.it('should merge multiple integration_types global updates', async () => {
     let captured: EventV2[] = [];
     scope = nock('http://127.0.0.3')

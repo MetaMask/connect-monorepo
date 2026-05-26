@@ -9,6 +9,7 @@ type MockCore = MultichainCore & {
   emit: (event: string, ...args: unknown[]) => void;
   _status: ConnectEvmStatus;
   storage: MultichainCore['storage'] & {
+    getAnonId: Mock<() => Promise<string>>;
     adapter: {
       get: Mock<(key: string) => Promise<string | null>>;
       set: Mock<(key: string, value: string) => Promise<void>>;
@@ -93,6 +94,7 @@ function createMockCore(): MockCore {
       onNotification,
     },
     storage: {
+      getAnonId: vi.fn().mockResolvedValue('anon-id'),
       adapter: {
         get: storageGet,
         set: storageSet,
@@ -867,6 +869,31 @@ describe('MetamaskConnectEVM', () => {
       );
       expect(calls).toEqual(['wallet_switchEthereumChain']);
       expect(calls).not.toContain('wallet_addEthereumChain');
+    });
+
+    it('does not build wallet action analytics properties when analytics are disabled', async () => {
+      (mockCore as unknown as { options: MultichainCore['options'] }).options =
+        {
+          dapp: {
+            name: 'Test DApp',
+            url: 'https://test.example',
+          },
+          analytics: { enabled: false, integrationType: 'direct' },
+          versions: {},
+        } as MultichainCore['options'];
+      mockCore.transport.sendEip1193Message.mockResolvedValue({
+        result: null,
+        id: 1,
+        jsonrpc: '2.0' as const,
+      });
+
+      await client.switchChain({ chainId: '0x89' });
+
+      expect(mockCore.storage.getAnonId).not.toHaveBeenCalled();
+      expect(mockCore.transport.sendEip1193Message).toHaveBeenCalledWith({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x89' }],
+      });
     });
   });
 

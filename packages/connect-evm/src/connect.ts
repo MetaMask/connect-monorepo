@@ -48,6 +48,16 @@ declare const __PACKAGE_VERSION__: string | undefined;
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
 
+/**
+ * Checks whether dapp-side analytics are enabled for the multichain core.
+ *
+ * @param options - Current multichain options.
+ * @returns Whether analytics events should be collected and sent.
+ */
+function isAnalyticsEnabled(options: MultichainOptions | undefined): boolean {
+  return options?.analytics?.enabled !== false;
+}
+
 /** The options for the connect method */
 type ConnectOptions = {
   /** The account to connect to */
@@ -228,6 +238,10 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -255,6 +269,10 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -284,6 +302,10 @@ export class MetamaskConnectEVM {
     error: unknown,
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -1008,6 +1030,7 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of hex chain IDs to RPC URLs for read-only requests
+ * @param [options.analytics.enabled] - Whether to enable dapp-side analytics (defaults to true)
  * @param [options.analytics.integrationType] - Integration type for analytics
  * @param [options.ui] - UI configuration options
  * @param [options.ui.headless] - Whether to run without UI
@@ -1071,6 +1094,7 @@ export async function createEVMClient(
         supportedNetworks: supportedNetworksCaipChainId,
       },
       analytics: {
+        ...(options.analytics ?? {}),
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         integrationType: options.analytics?.integrationType || 'direct',
       },
