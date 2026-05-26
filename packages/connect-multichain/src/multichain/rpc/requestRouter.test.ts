@@ -111,6 +111,19 @@ t.describe('RequestRouter', () => {
         });
 
         t.it(
+          'should skip wallet action analytics when analytics is disabled',
+          async () => {
+            mockConfig.analytics = { ...mockConfig.analytics, enabled: false };
+            mockTransport.request.mockResolvedValue({ result: '0xsignature' });
+
+            await requestRouter.invokeMethod(baseOptions);
+
+            t.expect(analytics.track).not.toHaveBeenCalled();
+            t.expect(mockStorage.getAnonId).not.toHaveBeenCalled();
+          },
+        );
+
+        t.it(
           'should throw RPCInvokeMethodErr when transport request fails',
           async () => {
             mockTransport.request.mockRejectedValue(

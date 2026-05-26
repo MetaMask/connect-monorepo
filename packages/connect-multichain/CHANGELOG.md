@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add an `analytics.enabled` option to `createMultichainClient()`. Set it to `false` to disable dapp-side analytics events and omit `analytics.remote_session_id` connection metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
 ## [0.14.0]
 
 ### Added
