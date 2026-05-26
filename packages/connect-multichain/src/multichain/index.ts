@@ -210,14 +210,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
       await instance.#init();
       return instance;
-    })();
-
-    globalObject[SINGLETON_KEY] = instancePromise;
-
-    instancePromise.catch((error) => {
+    })().catch((error) => {
       globalObject[SINGLETON_KEY] = undefined;
       console.error('Error initializing MetaMaskConnectMultichain', error);
+      throw error;
     });
+
+    globalObject[SINGLETON_KEY] = instancePromise;
 
     return instancePromise;
   }
