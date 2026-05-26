@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Refactor `MWPTransport.connect()` and other internals to replace deeply nested `new Promise()` and event-callback patterns with deferred promises, reducing nesting and breaking `connect()` into smaller helpers. No behavior change. ([#305](https://github.com/MetaMask/connect-monorepo/pull/305))
+
 ## [0.15.0]
 
 ### Added
