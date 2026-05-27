@@ -1,7 +1,5 @@
 /* eslint-disable consistent-return */
-
 /* eslint-disable @typescript-eslint/no-misused-promises */
-
 /* eslint-disable id-denylist */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-restricted-globals */
