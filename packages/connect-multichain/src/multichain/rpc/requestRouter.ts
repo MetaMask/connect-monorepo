@@ -32,6 +32,23 @@ import { MissingRpcEndpointErr } from './handlers/rpcClient';
 let rpcId = 1;
 
 /**
+ * Normalizes unknown invocation errors to the router error type.
+ *
+ * @param error - Unknown error thrown during method execution.
+ * @returns Error instance surfaced by invokeMethod.
+ */
+function toRPCInvokeMethodErr(error: unknown): RPCInvokeMethodErr {
+  if (error instanceof RPCInvokeMethodErr) {
+    return error;
+  }
+  const castError = error as { message?: string; code?: number };
+  return new RPCInvokeMethodErr(
+    castError.message ?? 'Unknown error',
+    castError.code,
+  );
+}
+
+/**
  * Gets the next RPC ID for request tracking.
  *
  * @returns The next unique RPC ID.
@@ -125,6 +142,14 @@ export class RequestRouter {
     options: InvokeMethodOptions,
     execute: () => Promise<Json>,
   ): Promise<Json> {
+    if (this.config.analytics?.enabled === false) {
+      try {
+        return await execute();
+      } catch (error) {
+        throw toRPCInvokeMethodErr(error);
+      }
+    }
+
     await this.#trackWalletActionRequested(options);
 
     try {
@@ -141,14 +166,7 @@ export class RequestRouter {
       } else {
         await this.#trackWalletActionFailed(options, error);
       }
-      if (error instanceof RPCInvokeMethodErr) {
-        throw error;
-      }
-      const castError = error as { message?: string; code?: number };
-      throw new RPCInvokeMethodErr(
-        castError.message ?? 'Unknown error',
-        castError.code,
-      );
+      throw toRPCInvokeMethodErr(error);
     }
   }
 
