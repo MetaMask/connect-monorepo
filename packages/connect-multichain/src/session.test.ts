@@ -97,6 +97,51 @@ function testSuite<T extends MultichainOptions>({
       await afterEach(mockedData);
     });
 
+    t.it(
+      `${platform} should omit analytics metadata when analytics is disabled`,
+      async () => {
+        if (platform === 'web') {
+          return;
+        }
+
+        const scopes = ['eip155:1'] as Scope[];
+        const caipAccountIds = [
+          'eip155:1:0x1234567890abcdef1234567890abcdef12345678',
+        ] as any;
+
+        mockedData.mockSessionRequest.mockImplementation(
+          async () => mockSessionRequestData,
+        );
+        mockedData.mockWalletGetSession.mockImplementation(
+          async () => undefined as any,
+        );
+        mockedData.mockWalletCreateSession.mockImplementation(
+          async () => mockSessionData,
+        );
+
+        sdk = await createSDK({
+          ...testOptions,
+          analytics: {
+            ...testOptions.analytics,
+            enabled: false,
+          },
+        });
+
+        const createDeeplinkSpy = t.vi.spyOn(
+          (sdk as any).options.ui.factory,
+          'createConnectionDeeplink',
+        );
+
+        await sdk.connect(scopes, caipAccountIds);
+
+        t.expect(createDeeplinkSpy).toHaveBeenCalled();
+        const connectionRequest = createDeeplinkSpy.mock.calls[0]?.[0] as any;
+        t.expect(connectionRequest.metadata).not.toHaveProperty('analytics');
+
+        createDeeplinkSpy.mockRestore();
+      },
+    );
+
     t.it(`${platform} should handle session upgrades`, async () => {
       const scopes = ['eip155:1', 'eip155:137'] as Scope[];
       const caipAccountIds = [
@@ -153,7 +198,9 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.transport).toBeDefined();
       t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.storage).toBeDefined();
-      await t.expect(sdk.storage.getTransport()).resolves.toBe(transportString);
+      await t
+        .expect(sdk.storage.getTransportType())
+        .resolves.toBe(transportString);
 
       mockedData.mockDefaultTransport.request.mockClear();
       mockedData.mockDappClient.sendRequest.mockClear();

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0]
+
+### Added
+
+- Add `analytics.disable()` to stop event collection and clear queued analytics events. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
 ## [0.5.0]
 
 ### Added
@@ -57,7 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.5.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.6.0...HEAD
+[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.5.0...@metamask/analytics@0.6.0
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.4.0...@metamask/analytics@0.5.0
 [0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.3.0...@metamask/analytics@0.4.0
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/analytics@0.2.0...@metamask/analytics@0.3.0

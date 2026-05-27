@@ -168,22 +168,24 @@ Factory function to create a new MetaMask Connect EVM instance.
 
 #### Parameters
 
-| Option                     | Type                                          | Required | Description                                          |
-| -------------------------- | --------------------------------------------- | -------- | ---------------------------------------------------- |
-| `dapp.name`                | `string`                                      | Yes      | Name of your dApp                                    |
-| `api.supportedNetworks`    | `Record<Hex, string>`                         | Yes      | Map of hex chain IDs to RPC URLs                     |
-| `dapp.url`                 | `string`                                      | No       | URL of your dApp                                     |
-| `dapp.iconUrl`             | `string`                                      | No       | Icon URL for your dApp                               |
-| `ui.headless`              | `boolean`                                     | No       | Run without UI (for custom QR implementations)       |
-| `ui.preferExtension`       | `boolean`                                     | No       | Prefer browser extension over mobile (default: true) |
-| `ui.showInstallModal`      | `boolean`                                     | No       | Show installation modal for desktop                  |
-| `mobile.preferredOpenLink` | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                              |
-| `mobile.useDeeplink`       | `boolean`                                     | No       | Use `metamask://` instead of universal links         |
-| `transport.extensionId`    | `string`                                      | No       | Custom extension ID                                  |
-| `transport.onNotification` | `(notification: unknown) => void`             | No       | Notification handler                                 |
-| `eventHandlers`            | `Partial<EventHandlers>`                      | No       | Event handlers for provider events                   |
-| `skipAutoAnnounce`         | `boolean`                                     | No       | Skip automatic EIP-6963 provider announcement        |
-| `debug`                    | `boolean`                                     | No       | Enable debug logging                                 |
+| Option                      | Type                                          | Required | Description                                                                                                                  |
+| --------------------------- | --------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                                                                                                            |
+| `api.supportedNetworks`     | `Record<Hex, string>`                         | Yes      | Map of hex chain IDs to RPC URLs                                                                                             |
+| `dapp.url`                  | `string`                                      | No       | URL of your dApp                                                                                                             |
+| `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                                                                                                       |
+| `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations)                                                                               |
+| `ui.preferExtension`        | `boolean`                                     | No       | Prefer browser extension over mobile (default: true)                                                                         |
+| `ui.showInstallModal`       | `boolean`                                     | No       | Show installation modal for desktop                                                                                          |
+| `mobile.preferredOpenLink`  | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                                                                                                      |
+| `mobile.useDeeplink`        | `boolean`                                     | No       | Use `metamask://` instead of universal links                                                                                 |
+| `analytics.enabled`         | `boolean`                                     | No       | Enables dapp-side analytics. Defaults to `true`; set to `false` to disable analytics events and wallet correlation metadata. |
+| `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                                                               |
+| `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                                                                          |
+| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                                                                         |
+| `eventHandlers`             | `Partial<EventHandlers>`                      | No       | Event handlers for provider events                                                                                           |
+| `skipAutoAnnounce`          | `boolean`                                     | No       | Skip automatic EIP-6963 provider announcement                                                                                |
+| `debug`                     | `boolean`                                     | No       | Enable debug logging                                                                                                         |
 
 #### Returns
 

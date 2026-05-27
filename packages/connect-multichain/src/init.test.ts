@@ -110,6 +110,35 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should disable analytics when analytics.enabled is false`,
+      async () => {
+        const enableSpy = t.vi.spyOn(analytics, 'enable');
+        const disableSpy = t.vi.spyOn(analytics, 'disable');
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        sdk = await createSDK({
+          ...testOptions,
+          analytics: {
+            ...testOptions.analytics,
+            enabled: false,
+          },
+        });
+
+        t.expect(sdk).toBeDefined();
+        t.expect(enableSpy).not.toHaveBeenCalled();
+        t.expect(disableSpy).toHaveBeenCalled();
+        t.expect(setGlobalSpy).not.toHaveBeenCalledWith(
+          'anon_id',
+          t.expect.any(String),
+        );
+
+        enableSpy.mockRestore();
+        disableSpy.mockRestore();
+        setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
       `${platform} should call init and setupAnalytics with logger configuration`,
       async () => {
         const mockLogger = (loggerModule as any).__mockLogger;
@@ -257,6 +286,58 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should keep analytics disabled when singleton merge omits analytics.enabled`,
+      async () => {
+        const enableSpy = t.vi.spyOn(analytics, 'enable');
+        const disableSpy = t.vi.spyOn(analytics, 'disable');
+
+        await createSDK({
+          ...testOptions,
+          analytics: { ...testOptions.analytics, enabled: false },
+        });
+        enableSpy.mockClear();
+        disableSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          analytics: { integrationType: 'wagmi' },
+        } as any);
+
+        t.expect(enableSpy).not.toHaveBeenCalled();
+        t.expect(disableSpy).toHaveBeenCalled();
+
+        enableSpy.mockRestore();
+        disableSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should keep analytics disabled when singleton merge explicitly enables it`,
+      async () => {
+        const enableSpy = t.vi.spyOn(analytics, 'enable');
+        const disableSpy = t.vi.spyOn(analytics, 'disable');
+
+        await createSDK({
+          ...testOptions,
+          analytics: { ...testOptions.analytics, enabled: false },
+        });
+        enableSpy.mockClear();
+        disableSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          analytics: { ...testOptions.analytics, enabled: true },
+        } as any);
+
+        t.expect(enableSpy).not.toHaveBeenCalled();
+        t.expect(disableSpy).toHaveBeenCalled();
+
+        enableSpy.mockRestore();
+        disableSpy.mockRestore();
+      },
+    );
+
+    t.it(
       `${platform} should normalize empty integrationType to direct for analytics globals`,
       async () => {
         const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
@@ -299,7 +380,7 @@ function testSuite<T extends MultichainOptions>({
 
         if (platform === 'node') {
           // Node: set multichain-transport in storage first, then throw when reading it
-          // getTransport() calls adapter.get('multichain-transport') which calls getItem
+          // getTransportType() calls adapter.get('multichain-transport') which calls getItem
           mockedData.nativeStorageStub.data.set(
             'multichain-transport',
             'browser',

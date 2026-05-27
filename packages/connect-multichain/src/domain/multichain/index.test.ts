@@ -300,6 +300,48 @@ t.describe('MultichainCore', () => {
       t.expect(opts.versions).toEqual({ 'connect-evm': '0.6.0' });
     });
 
+    t.it(
+      'merges analytics over existing values without re-enabling disabled analytics',
+      () => {
+        const base = createBaseOptions();
+        base.analytics = { enabled: false, integrationType: 'direct' };
+        const core = new MockMultichainCore(base);
+
+        core.mergeOptions({
+          analytics: { integrationType: 'wagmi' },
+        });
+
+        t.expect(core.getOptions().analytics).toEqual({
+          enabled: false,
+          integrationType: 'wagmi',
+        });
+
+        core.mergeOptions({
+          analytics: { enabled: true },
+        });
+
+        t.expect(core.getOptions().analytics).toEqual({
+          enabled: false,
+          integrationType: 'wagmi',
+        });
+      },
+    );
+
+    t.it('allows analytics to be disabled by merge options', () => {
+      const base = createBaseOptions();
+      base.analytics = { enabled: true, integrationType: 'direct' };
+      const core = new MockMultichainCore(base);
+
+      core.mergeOptions({
+        analytics: { enabled: false },
+      });
+
+      t.expect(core.getOptions().analytics).toEqual({
+        enabled: false,
+        integrationType: 'direct',
+      });
+    });
+
     t.it('does not mutate dapp, storage, or analytics', () => {
       const base = createBaseOptions();
       base.analytics = { integrationType: 'direct' };

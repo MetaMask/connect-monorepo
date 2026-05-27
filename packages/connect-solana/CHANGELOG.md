@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0]
+
+### Added
+
+- Add an `analytics.enabled` option to `createSolanaClient()`. Set it to `false` to disable dapp-side analytics events and wallet correlation metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
 ## [1.1.0]
 
 ### Changed
@@ -93,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.2.0...HEAD
+[1.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.1.0...@metamask/connect-solana@1.2.0
 [1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.0.0...@metamask/connect-solana@1.1.0
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.1...@metamask/connect-solana@1.0.0
 [0.8.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.0...@metamask/connect-solana@0.8.1

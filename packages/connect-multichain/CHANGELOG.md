@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Rename the storage API methods for the persisted transport type from `getTransport`, `setTransport`, and `removeTransport` to `getTransportType`, `setTransportType`, and `removeTransportType`. The existing `multichain-transport` storage key is unchanged, so no persisted data migration is required. ([#307](https://github.com/MetaMask/connect-monorepo/pull/307))
+
+## [0.15.0]
+
+### Added
+
+- Add an `analytics.enabled` option to `createMultichainClient()`. Set it to `false` to disable dapp-side analytics events and omit `analytics.remote_session_id` connection metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
 ## [0.14.0]
 
 ### Added
@@ -277,7 +287,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.14.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.15.0...HEAD
+[0.15.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.14.0...@metamask/connect-multichain@0.15.0
 [0.14.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.13.0...@metamask/connect-multichain@0.14.0
 [0.13.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.1...@metamask/connect-multichain@0.13.0
 [0.12.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.0...@metamask/connect-multichain@0.12.1
