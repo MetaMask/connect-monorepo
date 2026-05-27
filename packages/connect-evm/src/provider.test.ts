@@ -21,23 +21,23 @@ function createMockCore(
 
 describe('EIP1193Provider', () => {
   describe('#request', () => {
-    it('re-throws RPCInvokeMethodErr as an EIP-1193 error with the correct code', async () => {
+    it('maps normalized RPCInvokeMethodErr to an EIP-1193 error with the wallet code', async () => {
       const mockCore = createMockCore();
       const provider = new EIP1193Provider(mockCore as any, vi.fn());
       provider.selectedChainId = '0x1';
 
       mockCore.invokeMethod.mockRejectedValue(
         new RPCInvokeMethodErr(
-          'RPC Request failed with code 4001: User denied transaction signature.',
+          'User rejected the request',
           4001,
-          'User denied transaction signature.',
+          'User rejected the request',
         ),
       );
 
       await expect(
         provider.request({ method: 'eth_sendTransaction', params: [] }),
       ).rejects.toMatchObject({
-        message: 'User denied transaction signature.',
+        message: 'User rejected the request',
         code: 4001,
       });
     });
