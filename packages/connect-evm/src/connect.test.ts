@@ -924,7 +924,7 @@ describe('MetamaskConnectEVM', () => {
       ).resolves.toEqual(['0x1234567890123456789012345678901234567890']);
     });
 
-    it('keeps wallet_requestPermissions returning the connect result', async () => {
+    it('returns requested permissions for wallet_requestPermissions', async () => {
       const mockCore = createMockCore();
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
       mockCore.connect.mockImplementation(async (): Promise<void> => {
@@ -948,10 +948,7 @@ describe('MetamaskConnectEVM', () => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           params: [{ eth_accounts: {} }],
         }),
-      ).resolves.toEqual({
-        accounts: ['0x1234567890123456789012345678901234567890'],
-        chainId: '0x1',
-      });
+      ).resolves.toEqual([{ parentCapability: 'eth_accounts' }]);
     });
 
     it('returns all accounts for eth_accounts', async () => {

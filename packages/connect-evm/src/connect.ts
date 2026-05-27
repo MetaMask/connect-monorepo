@@ -68,6 +68,27 @@ type ConnectOptions = {
   chainIds?: Hex[];
 };
 
+type RequestedPermission = {
+  parentCapability: string;
+};
+
+const getRequestedPermissions = (
+  params: ProviderRequest['params'],
+): RequestedPermission[] => {
+  const permissionRequest = Array.isArray(params) ? params[0] : undefined;
+  if (
+    !permissionRequest ||
+    typeof permissionRequest !== 'object' ||
+    Array.isArray(permissionRequest)
+  ) {
+    return [];
+  }
+
+  return Object.keys(permissionRequest).map((parentCapability) => ({
+    parentCapability,
+  }));
+};
+
 export type ConnectEvmStatus = 'disconnected' | 'connected' | 'connecting';
 
 /**
@@ -675,6 +696,9 @@ export class MetamaskConnectEVM {
         await this.#trackWalletActionSucceeded(method, scope, params);
         if (request.method === 'eth_requestAccounts') {
           return result.accounts;
+        }
+        if (request.method === 'wallet_requestPermissions') {
+          return getRequestedPermissions(params);
         }
         return result;
       } catch (error) {
