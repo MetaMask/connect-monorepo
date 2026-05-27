@@ -70,6 +70,31 @@ t.describe('RequestRouter', () => {
     t.vi.resetAllMocks();
   });
 
+  const expectRpcInvokeMethodErr = async ({
+    actual,
+    reason,
+    rpcCode,
+    rpcMessage,
+  }: {
+    actual: Promise<unknown>;
+    reason: string;
+    rpcCode?: number;
+    rpcMessage?: string;
+  }): Promise<void> => {
+    await t.expect(actual).rejects.toSatisfy((error: unknown) => {
+      t.expect(error).toBeInstanceOf(RPCInvokeMethodErr);
+      const rpcError = error as RPCInvokeMethodErr;
+      t.expect(rpcError.code).toBe(RPCInvokeMethodErr.code);
+      t.expect(rpcError.message).toBe(
+        `RPCErr53: RPC Client invoke method reason (${reason})`,
+      );
+      t.expect(rpcError.reason).toBe(reason);
+      t.expect(rpcError.rpcCode).toBe(rpcCode);
+      t.expect(rpcError.rpcMessage).toBe(rpcMessage);
+      return true;
+    });
+  };
+
   t.describe('invokeMethod', () => {
     t.describe(
       'when the requested method is neither in the `RPC_HANDLED_METHODS` nor the `SDK_HANDLED_METHODS`',
@@ -130,70 +155,136 @@ t.describe('RequestRouter', () => {
               new Error('Transport error'),
             );
 
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toBeInstanceOf(RPCInvokeMethodErr);
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toThrow('Transport error');
-          },
-        );
-
-        t.it(
-          'should throw RPCInvokeMethodErr when response contains an error',
-          async () => {
-            mockTransport.request.mockResolvedValue({
-              error: { code: -32603, message: 'Internal error' },
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'Transport error',
             });
-
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toBeInstanceOf(RPCInvokeMethodErr);
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toThrow(
-                'RPC Request failed with code -32603: Internal error',
-              );
           },
         );
 
         t.it(
-          'should preserve the original RPC error code on RPCInvokeMethodErr when response contains an error',
+          'uses a coded cause message when normalizing a transport wrapper error',
           async () => {
-            mockTransport.request.mockResolvedValue({
-              error: {
-                code: 4001,
-                message:
-                  'MetaMask Tx Signature: User denied transaction signature.',
-              },
+            const transportError = new Error('Transport failed') as Error & {
+              cause: { code: number; message: string };
+            };
+            transportError.cause = {
+              code: 4001,
+              message: 'User rejected the request',
+            };
+            mockTransport.request.mockRejectedValue(transportError);
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'User rejected the request',
+              rpcCode: 4001,
+              rpcMessage: 'User rejected the request',
             });
-
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toSatisfy((error: RPCInvokeMethodErr) => {
-                return (
-                  error instanceof RPCInvokeMethodErr && error.rpcCode === 4001
-                );
-              });
           },
         );
 
         t.it(
-          'should preserve the original RPC error code when transport rejects with a coded error',
+          'falls back to the wrapper message when a coded cause has no message',
           async () => {
-            const codedError = new Error(
-              'MetaMask Tx Signature: User denied transaction signature.',
-            ) as Error & { code: number };
+            const transportError = new Error('Transport failed') as Error & {
+              cause: { code: number };
+            };
+            transportError.cause = { code: 4001 };
+            mockTransport.request.mockRejectedValue(transportError);
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'Transport failed',
+              rpcCode: 4001,
+              rpcMessage: 'Transport failed',
+            });
+          },
+        );
+
+        t.it(
+          'uses a cause message when a top-level coded error has no message',
+          async () => {
+            const codedError = new Error() as Error & {
+              code: number;
+              cause: { message: string };
+            };
             codedError.code = 4001;
+            codedError.cause = { message: 'User rejected the request' };
             mockTransport.request.mockRejectedValue(codedError);
 
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toSatisfy((error: RPCInvokeMethodErr) => {
-                return (
-                  error instanceof RPCInvokeMethodErr && error.rpcCode === 4001
-                );
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'User rejected the request',
+              rpcCode: 4001,
+              rpcMessage: 'User rejected the request',
+            });
+          },
+        );
+
+        t.it(
+          'preserves a primitive string rejection as the reason',
+          async () => {
+            mockTransport.request.mockRejectedValue('Transport string error');
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'Transport string error',
+            });
+          },
+        );
+
+        t.it(
+          'passes through an existing RPCInvokeMethodErr unchanged',
+          async () => {
+            const rpcError = new RPCInvokeMethodErr(
+              'User rejected the request',
+              4001,
+              'User rejected the request',
+            );
+            mockTransport.request.mockRejectedValue(rpcError);
+
+            await t.expect(requestRouter.invokeMethod(baseOptions)).rejects.toBe(
+              rpcError,
+            );
+          },
+        );
+
+        t.describe.each([
+          ['user rejection', 4001, 'User rejected the request'],
+          ['wallet internal error', -32603, 'Internal error'],
+        ] as const)(
+          'normalizes %s from transport-specific error shapes',
+          (_label, code, message) => {
+            t.it(
+              'normalizes a resolved JSON-RPC error response',
+              async () => {
+                mockTransport.request.mockResolvedValue({
+                  error: { code, message },
+                });
+
+                await expectRpcInvokeMethodErr({
+                  actual: requestRouter.invokeMethod(baseOptions),
+                  reason: message,
+                  rpcCode: code,
+                  rpcMessage: message,
+                });
+              },
+            );
+
+            t.it('normalizes a rejected coded transport error', async () => {
+              const codedError = new Error(message) as Error & {
+                code: number;
+              };
+              codedError.code = code;
+              mockTransport.request.mockRejectedValue(codedError);
+
+              await expectRpcInvokeMethodErr({
+                actual: requestRouter.invokeMethod(baseOptions),
+                reason: message,
+                rpcCode: code,
+                rpcMessage: message,
               });
+            });
           },
         );
       },
@@ -243,6 +334,66 @@ t.describe('RequestRouter', () => {
   });
 
   t.describe('failure_reason classification on wallet actions', () => {
+    t.it(
+      'tracks a wrapper error with a user-rejection cause as rejected',
+      async () => {
+        const transportError = new Error('Transport failed') as Error & {
+          cause: { code: number; message: string };
+        };
+        transportError.cause = {
+          code: 4001,
+          message: 'User rejected the request',
+        };
+        mockTransport.request.mockRejectedValue(transportError);
+
+        await expectRpcInvokeMethodErr({
+          actual: requestRouter.invokeMethod(baseOptions),
+          reason: 'User rejected the request',
+          rpcCode: 4001,
+          rpcMessage: 'User rejected the request',
+        });
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_rejected',
+          t.expect.any(Object),
+        );
+        t.expect(analytics.track).not.toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.any(Object),
+        );
+      },
+    );
+
+    t.it(
+      'tracks a wrapper error with an internal-error cause using wallet diagnostics',
+      async () => {
+        const transportError = new Error('Transport failed') as Error & {
+          cause: { code: number; message: string };
+        };
+        transportError.cause = {
+          code: -32603,
+          message: 'Internal error',
+        };
+        mockTransport.request.mockRejectedValue(transportError);
+
+        await expectRpcInvokeMethodErr({
+          actual: requestRouter.invokeMethod(baseOptions),
+          reason: 'Internal error',
+          rpcCode: -32603,
+          rpcMessage: 'Internal error',
+        });
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.objectContaining({
+            failure_reason: 'wallet_internal_error',
+            error_code: -32603,
+            error_message_sample: 'Internal error',
+          }),
+        );
+      },
+    );
+
     t.it(
       'attaches `failure_reason: wallet_internal_error` when the wallet returns code -32603',
       async () => {

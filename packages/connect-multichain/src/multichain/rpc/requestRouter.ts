@@ -31,21 +31,101 @@ import { MissingRpcEndpointErr } from './handlers/rpcClient';
 
 let rpcId = 1;
 
+type InvocationErrorDetails = {
+  reason: string;
+  rpcCode?: number;
+  rpcMessage?: string;
+};
+
+type CodedErrorDetails = {
+  code: number;
+  message?: string;
+};
+
+function getErrorObject(value: unknown): Record<string, unknown> | undefined {
+  if (typeof value === 'object' && value !== null) {
+    return value as Record<string, unknown>;
+  }
+  return undefined;
+}
+
+function getNumericCode(value: unknown): number | undefined {
+  return typeof value === 'number' ? value : undefined;
+}
+
+function getNonEmptyMessage(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function getCodedErrorDetails(
+  value: Record<string, unknown> | undefined,
+): CodedErrorDetails | undefined {
+  const code = getNumericCode(value?.code);
+  if (code === undefined) {
+    return undefined;
+  }
+
+  const message = getNonEmptyMessage(value?.message);
+  return {
+    code,
+    ...(message === undefined ? {} : { message }),
+  };
+}
+
+/**
+ * Extracts the public invocation error fields from either a JSON-RPC error
+ * payload or a rejected Error-like value.
+ *
+ * @param error - Unknown error thrown or returned during method execution.
+ * @returns Canonical fields for RPCInvokeMethodErr.
+ */
+function getInvocationErrorDetails(error: unknown): InvocationErrorDetails {
+  const errorObject = getErrorObject(error);
+  const causeObject = getErrorObject(errorObject?.cause);
+  const errorMessage =
+    getNonEmptyMessage(error) ?? getNonEmptyMessage(errorObject?.message);
+  const causeMessage = getNonEmptyMessage(causeObject?.message);
+  const topLevelDetails = getCodedErrorDetails(errorObject);
+  if (topLevelDetails) {
+    const reason =
+      topLevelDetails.message ?? causeMessage ?? errorMessage ?? 'Unknown error';
+    return {
+      reason,
+      rpcCode: topLevelDetails.code,
+      rpcMessage: reason,
+    };
+  }
+
+  const causeDetails = getCodedErrorDetails(causeObject);
+  if (causeDetails) {
+    const reason = causeDetails.message ?? errorMessage ?? 'Unknown error';
+    return {
+      reason,
+      rpcCode: causeDetails.code,
+      rpcMessage: reason,
+    };
+  }
+
+  const reason = errorMessage ?? causeMessage ?? 'Unknown error';
+
+  return {
+    reason,
+  };
+}
+
 /**
  * Normalizes unknown invocation errors to the router error type.
  *
- * @param error - Unknown error thrown during method execution.
+ * @param error - Unknown error thrown or returned during method execution.
  * @returns Error instance surfaced by invokeMethod.
  */
 function toRPCInvokeMethodErr(error: unknown): RPCInvokeMethodErr {
   if (error instanceof RPCInvokeMethodErr) {
     return error;
   }
-  const castError = error as { message?: string; code?: number };
-  return new RPCInvokeMethodErr(
-    castError.message ?? 'Unknown error',
-    castError.code,
-  );
+
+  const { reason, rpcCode, rpcMessage } = getInvocationErrorDetails(error);
+  return new RPCInvokeMethodErr(reason, rpcCode, rpcMessage);
 }
 
 /**
@@ -119,12 +199,7 @@ export class RequestRouter {
 
       const response = await request;
       if (response.error) {
-        const { error } = response;
-        throw new RPCInvokeMethodErr(
-          `RPC Request failed with code ${error.code}: ${error.message}`,
-          error.code,
-          error.message,
-        );
+        throw toRPCInvokeMethodErr(response.error);
       }
 
       return response.result as Json;
@@ -146,7 +221,8 @@ export class RequestRouter {
       try {
         return await execute();
       } catch (error) {
-        throw toRPCInvokeMethodErr(error);
+        const normalizedError = toRPCInvokeMethodErr(error);
+        throw normalizedError;
       }
     }
 
@@ -159,14 +235,17 @@ export class RequestRouter {
 
       return result;
     } catch (error) {
-      const isRejection = isRejectionError(error);
+      const normalizedError = toRPCInvokeMethodErr(error);
+      const analyticsError =
+        normalizedError.rpcCode === undefined ? error : normalizedError;
+      const isRejection = isRejectionError(analyticsError);
 
       if (isRejection) {
         await this.#trackWalletActionRejected(options);
       } else {
-        await this.#trackWalletActionFailed(options, error);
+        await this.#trackWalletActionFailed(options, analyticsError);
       }
-      throw toRPCInvokeMethodErr(error);
+      throw normalizedError;
     }
   }
 
