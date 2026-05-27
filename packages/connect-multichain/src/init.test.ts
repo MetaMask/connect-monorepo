@@ -20,6 +20,8 @@ import { analytics } from '@metamask/analytics';
 import * as loggerModule from './domain/logger';
 import { mockSessionData, mockSessionRequestData } from '../tests/data';
 import type { TestSuiteOptions, MockedData } from '../tests/types';
+import { MetaMaskConnectMultichain } from './multichain';
+import { getGlobalObject } from './multichain/utils';
 
 /**
  *
@@ -360,6 +362,82 @@ function testSuite<T extends MultichainOptions>({
         }
 
         setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should rethrow singleton initialization errors after cleanup and allow retry`,
+      async () => {
+        const testError = new Error('Debug storage unavailable');
+        t.vi.mocked(loggerModule.isEnabled).mockRejectedValueOnce(testError);
+        const consoleErrorSpy = t.vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => undefined);
+        const getDebug = t.vi.fn(async () => null);
+        const storage = {
+          adapter: {
+            platform,
+          },
+          getAnonId: t.vi.fn(async () => 'anon-id'),
+          getExtensionId: t.vi.fn(async () => null),
+          setExtensionId: t.vi.fn(async () => undefined),
+          getTransportType: t.vi.fn(async () => null),
+          setTransportType: t.vi.fn(async () => undefined),
+          removeTransportType: t.vi.fn(async () => undefined),
+          setAnonId: t.vi.fn(async () => undefined),
+          removeExtensionId: t.vi.fn(async () => undefined),
+          removeAnonId: t.vi.fn(async () => undefined),
+          getDebug,
+        };
+        const createOptions = {
+          ...testOptions,
+          storage,
+          ui: {
+            factory: {
+              createConnectionDeeplink: t.vi.fn(),
+              createConnectionUniversalLink: t.vi.fn(),
+            },
+            headless: true,
+            preferExtension: false,
+            showInstallModal: false,
+          },
+        } as any;
+        const callOriginalCatch = async (
+          promise: Promise<unknown>,
+          onRejected?: Parameters<Promise<unknown>['catch']>[0],
+        ): Promise<unknown> => promise.then(undefined, onRejected);
+        let cleanupPromise: Promise<unknown> | undefined;
+        const catchSpy = t.vi
+          .spyOn(Promise.prototype, 'catch')
+          .mockImplementation(async function catchImplementation(
+            this: Promise<unknown>,
+            onRejected?: Parameters<Promise<unknown>['catch']>[0],
+          ) {
+            cleanupPromise = callOriginalCatch(this, onRejected);
+            return cleanupPromise;
+          });
+
+        try {
+          const createPromise = MetaMaskConnectMultichain.create(createOptions);
+          catchSpy.mockRestore();
+
+          await t.expect(createPromise).rejects.toBe(testError);
+          await t.expect(cleanupPromise).rejects.toBe(testError);
+          t.expect(consoleErrorSpy).toHaveBeenCalledWith(
+            'Error initializing MetaMaskConnectMultichain',
+            testError,
+          );
+          t.expect(
+            getGlobalObject().__METAMASK_CONNECT_MULTICHAIN_SINGLETON__,
+          ).toBeUndefined();
+
+          await t
+            .expect(MetaMaskConnectMultichain.create(createOptions))
+            .resolves.toBeDefined();
+        } finally {
+          catchSpy.mockRestore();
+          consoleErrorSpy.mockRestore();
+        }
       },
     );
 
