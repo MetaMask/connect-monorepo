@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `MWPTransport.request()` and `sendEip1193Message()` now reject wallet response errors returned as `result.error`, matching `DefaultTransport` error handling and preserving wallet error codes. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))
+
 ## [0.15.0]
 
 ### Added
