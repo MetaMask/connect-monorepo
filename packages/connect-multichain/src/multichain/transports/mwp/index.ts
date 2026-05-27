@@ -303,7 +303,7 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
-  private async onResumeHandler(options?: {
+  async #onResumeHandler(options?: {
     scopes: Scope[];
     caipAccountIds: CaipAccountId[];
     forceRequest?: boolean;
