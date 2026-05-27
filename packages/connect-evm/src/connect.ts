@@ -715,7 +715,8 @@ export class MetamaskConnectEVM {
     }
 
     if (isAddChainRequest(request)) {
-      return this.#addEthereumChain(request.params[0]);
+      await this.#addEthereumChain(request.params[0]);
+      return null;
     }
 
     if (isAccountsRequest(request)) {

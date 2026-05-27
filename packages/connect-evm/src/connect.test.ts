@@ -1098,6 +1098,35 @@ describe('MetamaskConnectEVM', () => {
       expect(scopes[0]).toBe('eip155:137');
       expect(scopes).toContain('eip155:1');
     });
+
+    it('returns null for wallet_addEthereumChain provider requests', async () => {
+      const mockCore = createMockCore();
+      mockCore.transport.sendEip1193Message.mockResolvedValue({
+        result: null,
+        id: 1,
+        jsonrpc: '2.0' as const,
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: '0x89',
+              chainName: 'Polygon',
+              nativeCurrency: {
+                name: 'MATIC',
+                symbol: 'MATIC',
+                decimals: 18,
+              },
+              rpcUrls: ['https://polygon-rpc.com'],
+            },
+          ],
+        }),
+      ).resolves.toBeNull();
+    });
   });
 
   describe('disconnect', () => {
