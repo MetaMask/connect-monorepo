@@ -400,10 +400,12 @@ export class MWPTransport implements ExtendedTransport {
       this.options.resumeTimeout,
     );
 
+   const cleanup = () => this.dappClient.off('connected', runOnResumeHandler);
+
     return Promise.race([
       resumeDeferred.promise,
       timeoutDeferred.promise,
-    ]).finally(() => clearTimeout(timeout));
+    ]).finally(() => { clearTimeout(timeout); cleanup(); } );
   }
 
   /**
