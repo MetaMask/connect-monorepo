@@ -105,6 +105,7 @@ const detectionPromise: Promise<boolean> = (async () => {
 
   return new Promise((resolve) => {
     const providers: any[] = [];
+    const detectionWindow = window;
 
     const handler = (event: any) => {
       if (event?.detail?.info?.rdns) {
@@ -112,11 +113,11 @@ const detectionPromise: Promise<boolean> = (async () => {
       }
     };
 
-    window.addEventListener('eip6963:announceProvider', handler);
-    window.dispatchEvent(new Event('eip6963:requestProvider'));
+    detectionWindow.addEventListener('eip6963:announceProvider', handler);
+    detectionWindow.dispatchEvent(new Event('eip6963:requestProvider'));
 
     setTimeout(() => {
-      window.removeEventListener('eip6963:announceProvider', handler);
+      detectionWindow.removeEventListener('eip6963:announceProvider', handler);
 
       const hasMetaMask = providers.some((provider) =>
         provider?.info?.rdns?.startsWith('io.metamask'),

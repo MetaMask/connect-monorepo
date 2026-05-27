@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Prevent EIP-6963 extension detection from reading the global `window` after the detection timer starts, avoiding unhandled errors when jsdom tears down before the timeout fires. ([#310](https://github.com/MetaMask/connect-monorepo/pull/310))
+
 ## [0.15.0]
 
 ### Added
