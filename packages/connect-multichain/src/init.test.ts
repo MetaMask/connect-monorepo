@@ -381,9 +381,9 @@ function testSuite<T extends MultichainOptions>({
           getAnonId: t.vi.fn(async () => 'anon-id'),
           getExtensionId: t.vi.fn(async () => null),
           setExtensionId: t.vi.fn(async () => undefined),
-          getTransport: t.vi.fn(async () => null),
-          setTransport: t.vi.fn(async () => undefined),
-          removeTransport: t.vi.fn(async () => undefined),
+          getTransportType: t.vi.fn(async () => null),
+          setTransportType: t.vi.fn(async () => undefined),
+          removeTransportType: t.vi.fn(async () => undefined),
           setAnonId: t.vi.fn(async () => undefined),
           removeExtensionId: t.vi.fn(async () => undefined),
           removeAnonId: t.vi.fn(async () => undefined),
@@ -458,7 +458,7 @@ function testSuite<T extends MultichainOptions>({
 
         if (platform === 'node') {
           // Node: set multichain-transport in storage first, then throw when reading it
-          // getTransport() calls adapter.get('multichain-transport') which calls getItem
+          // getTransportType() calls adapter.get('multichain-transport') which calls getItem
           mockedData.nativeStorageStub.data.set(
             'multichain-transport',
             'browser',
