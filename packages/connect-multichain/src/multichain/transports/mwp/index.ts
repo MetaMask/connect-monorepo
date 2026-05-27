@@ -381,7 +381,7 @@ export class MWPTransport implements ExtendedTransport {
     const resumeDeferred = createDeferredPromise();
     const runOnResumeHandler = async (): Promise<void> => {
       try {
-        resumeDeferred.resolve(await this.onResumeHandler(options));
+        resumeDeferred.resolve(await this.#onResumeHandler(options));
       } catch (err) {
         resumeDeferred.reject(err);
       }
