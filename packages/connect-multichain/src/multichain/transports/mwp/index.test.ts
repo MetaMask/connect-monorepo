@@ -46,6 +46,12 @@ t.describe('MWPTransport', () => {
     t.vi.clearAllMocks();
   });
 
+  const getMessageHandler = ():
+    | ((message: unknown) => Promise<void> | void)
+    | undefined =>
+    mockDappClient.on.mock.calls.find((call: any[]) => call[0] === 'message')
+      ?.[1];
+
   t.describe('handleMessage error handling', () => {
     t.it(
       'should reject promise when WebSocket message contains error',
@@ -364,6 +370,82 @@ t.describe('MWPTransport', () => {
         resolve();
       });
     });
+
+    t.it('request rejects when the wallet resolves a response-shaped error', async () => {
+      mockDappClient.state = 'CONNECTED';
+
+      const requestPromise = transport.request({
+        method: 'wallet_invokeMethod',
+        params: {
+          scope: 'eip155:1',
+          request: { method: 'personal_sign', params: [] },
+        },
+      } as never);
+
+      await t.vi.waitFor(() => {
+        t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+      });
+
+      const sendRequestPayload = mockDappClient.sendRequest.mock.calls[0][0];
+      const requestId = sendRequestPayload.data.id;
+      const messageHandler = getMessageHandler();
+
+      messageHandler?.({
+        data: {
+          id: requestId,
+          jsonrpc: '2.0',
+          result: {
+            error: {
+              code: 4001,
+              message: 'User rejected the request',
+            },
+          },
+        },
+      });
+
+      await t.expect(requestPromise).rejects.toMatchObject({
+        code: 4001,
+        message: 'User rejected the request',
+      });
+      t.expect(transport.pendingRequests.has(requestId)).toBe(false);
+    });
+
+    t.it(
+      'sendEip1193Message rejects when the wallet resolves a response-shaped error',
+      async () => {
+        const requestPromise = transport.sendEip1193Message({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x89' }],
+        } as never);
+
+        await t.vi.waitFor(() => {
+          t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+        });
+
+        const sendRequestPayload = mockDappClient.sendRequest.mock.calls[0][0];
+        const requestId = sendRequestPayload.data.id;
+        const messageHandler = getMessageHandler();
+
+        messageHandler?.({
+          data: {
+            id: requestId,
+            jsonrpc: '2.0',
+            result: {
+              error: {
+                code: 4902,
+                message: 'Unrecognized chain ID 0x89',
+              },
+            },
+          },
+        });
+
+        await t.expect(requestPromise).rejects.toMatchObject({
+          code: 4902,
+          message: 'Unrecognized chain ID 0x89',
+        });
+        t.expect(transport.pendingRequests.has(requestId)).toBe(false);
+      },
+    );
   });
 
   t.describe('connect() initialPayload platform branching', () => {

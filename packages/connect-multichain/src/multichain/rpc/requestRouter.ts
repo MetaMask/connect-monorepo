@@ -118,15 +118,6 @@ export class RequestRouter {
       }
 
       const response = await request;
-      if (response.error) {
-        const { error } = response;
-        throw new RPCInvokeMethodErr(
-          `RPC Request failed with code ${error.code}: ${error.message}`,
-          error.code,
-          error.message,
-        );
-      }
-
       return response.result as Json;
     });
   }
