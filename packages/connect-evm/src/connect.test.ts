@@ -895,6 +895,21 @@ describe('MetamaskConnectEVM', () => {
         params: [{ chainId: '0x89' }],
       });
     });
+
+    it('returns null for wallet_switchEthereumChain provider requests', async () => {
+      mockCore.transport.sendEip1193Message.mockResolvedValue({
+        result: null,
+        id: 1,
+        jsonrpc: '2.0' as const,
+      });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x89' }],
+        }),
+      ).resolves.toBeNull();
+    });
   });
 
   describe('#requestInterceptor', () => {

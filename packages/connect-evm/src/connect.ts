@@ -708,9 +708,10 @@ export class MetamaskConnectEVM {
     }
 
     if (isSwitchChainRequest(request)) {
-      return this.switchChain({
+      await this.switchChain({
         chainId: request.params[0].chainId as Hex,
       });
+      return null;
     }
 
     if (isAddChainRequest(request)) {
