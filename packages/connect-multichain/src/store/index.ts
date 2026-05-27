@@ -8,7 +8,7 @@ import {
   StorageGetErr,
   StorageSetErr,
 } from '../domain/errors/storage';
-import { getTransportType } from '../domain/multichain';
+import { getTransportType as parseTransportType } from '../domain/multichain';
 import { StoreClient } from '../domain/store/client';
 
 export class Store extends StoreClient {
@@ -16,13 +16,13 @@ export class Store extends StoreClient {
     super();
   }
 
-  async getTransport(): Promise<TransportType | null> {
+  async getTransportType(): Promise<TransportType | null> {
     try {
-      const transport = await this.adapter.get('multichain-transport');
-      if (!transport) {
+      const transportType = await this.adapter.get('multichain-transport');
+      if (!transportType) {
         return null;
       }
-      return getTransportType(transport);
+      return parseTransportType(transportType);
     } catch (err) {
       throw new StorageGetErr(
         this.adapter.platform,
@@ -32,9 +32,9 @@ export class Store extends StoreClient {
     }
   }
 
-  async setTransport(transport: TransportType): Promise<void> {
+  async setTransportType(transportType: TransportType): Promise<void> {
     try {
-      await this.adapter.set('multichain-transport', transport);
+      await this.adapter.set('multichain-transport', transportType);
     } catch (err) {
       throw new StorageSetErr(
         this.adapter.platform,
@@ -44,7 +44,7 @@ export class Store extends StoreClient {
     }
   }
 
-  async removeTransport(): Promise<void> {
+  async removeTransportType(): Promise<void> {
     try {
       await this.adapter.delete('multichain-transport');
     } catch (err) {

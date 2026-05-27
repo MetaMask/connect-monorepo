@@ -327,7 +327,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async #getStoredTransport(): Promise<ExtendedTransport | undefined> {
-    const transportType = await this.storage.getTransport();
+    const transportType = await this.storage.getTransportType();
     const hasExtensionInstalled = await hasExtension();
     if (transportType) {
       if (transportType === TransportType.Browser) {
@@ -356,7 +356,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         return apiTransport;
       }
 
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
     }
 
     return undefined;
@@ -371,9 +371,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
       this.status = 'connected';
       if (this.#transportType === TransportType.MWP) {
-        await this.storage.setTransport(TransportType.MWP);
+        await this.storage.setTransportType(TransportType.MWP);
       } else {
-        await this.storage.setTransport(TransportType.Browser);
+        await this.storage.setTransportType(TransportType.Browser);
       }
     } else {
       this.status = 'loaded';
@@ -410,7 +410,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       await this.#setupAnalytics();
       await this.#setupTransport();
     } catch (error) {
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
       this.status = 'pending';
       logger('MetaMaskSDK error during initialization', error);
     }
@@ -460,13 +460,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#listener = this.transport.onNotification(
       this.#onTransportNotification.bind(this),
     );
-    await this.storage.setTransport(TransportType.MWP);
+    await this.storage.setTransportType(TransportType.MWP);
   }
 
   async #onBeforeUnload(): Promise<void> {
     // Fixes glitch with "connecting" state when modal is still visible and we close screen or refresh
     if (this.options.ui.factory.modal?.isMounted) {
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
     }
   }
 
@@ -528,7 +528,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
                   await this.options.ui.factory.unload();
                   this.options.ui.factory.modal?.unmount();
                   this.status = 'connected';
-                  await this.storage.setTransport(TransportType.MWP);
+                  await this.storage.setTransportType(TransportType.MWP);
                 } catch (error) {
                   const { ProtocolError, ErrorCode } = await import(
                     '@metamask/mobile-wallet-protocol-core'
@@ -557,10 +557,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           },
           async (error?: Error) => {
             if (error) {
-              await this.storage.removeTransport();
+              await this.storage.removeTransportType();
               reject(error);
             } else {
-              await this.storage.setTransport(TransportType.MWP);
+              await this.storage.setTransportType(TransportType.MWP);
               resolve();
             }
           },
@@ -640,7 +640,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         .connect({ scopes, caipAccountIds, sessionProperties })
         .then(async () => {
           this.status = 'connected';
-          await this.storage.setTransport(TransportType.MWP);
+          await this.storage.setTransportType(TransportType.MWP);
           resolve();
         })
         .catch(async (error) => {
@@ -651,11 +651,11 @@ export class MetaMaskConnectMultichain extends MultichainCore {
             // In headless mode, we don't auto-regenerate QR codes
             // since there's no modal to display them
             this.status = 'disconnected';
-            await this.storage.removeTransport();
+            await this.storage.removeTransportType();
             reject(error);
           } else {
             this.status = 'disconnected';
-            await this.storage.removeTransport();
+            await this.storage.removeTransportType();
             reject(error instanceof Error ? error : new Error(String(error)));
           }
         });
@@ -670,7 +670,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
 
     if (options?.persist) {
-      await this.storage.setTransport(TransportType.Browser);
+      await this.storage.setTransportType(TransportType.Browser);
     }
     const transport = new DefaultTransport();
     this.#listener = transport.onNotification(
@@ -752,7 +752,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         .connect({ scopes, caipAccountIds, sessionProperties })
         .then(resolve)
         .catch(async (error) => {
-          await this.storage.removeTransport();
+          await this.storage.removeTransportType();
           this.dappClient.off('message', dappClientMessageHandler);
           reject(error instanceof Error ? error : new Error(String(error)));
         })
@@ -904,9 +904,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           })
           .then(async () => {
             if (this.#transportType === TransportType.MWP) {
-              return this.storage.setTransport(TransportType.MWP);
+              return this.storage.setTransportType(TransportType.MWP);
             }
-            return this.storage.setTransport(TransportType.Browser);
+            return this.storage.setTransportType(TransportType.Browser);
           }),
         scopes,
         transportType,
@@ -1016,7 +1016,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#transport?.disconnect(scopes);
 
     if (remainingScopes.length === 0) {
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
 
       // We want to leave the DefaultTransport instance connected so that we can
       // still listen for wallet_sessionChanged events.
