@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@metamask/auto-changelog": "^3.4.4",
-    "@metamask/connect-multichain": "^0.12.0",
+    "@metamask/connect-multichain": "workspace:^",
     "@types/jsdom": "^21.1.7",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^3.2.4",
