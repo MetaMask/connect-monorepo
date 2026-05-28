@@ -214,6 +214,38 @@ export const TEST_IDS = {
   },
 
   // ============================================
+  // EIP-6963 TEST BENCH
+  // ============================================
+  eip6963: {
+    section: 'eip6963-section',
+    title: 'eip6963-title',
+    btnRequestProviders: 'eip6963-btn-request-providers',
+    btnAnnounceSdkProvider: 'eip6963-btn-announce-sdk-provider',
+    btnClear: 'eip6963-btn-clear',
+    emptyState: 'eip6963-empty-state',
+    announcementRow: (index: number) =>
+      createTestId('eip6963', 'announcement-row', String(index)),
+    announcementName: (index: number) =>
+      createTestId('eip6963', 'announcement-name', String(index)),
+    announcementRdns: (index: number) =>
+      createTestId('eip6963', 'announcement-rdns', String(index)),
+    announcementUuid: (index: number) =>
+      createTestId('eip6963', 'announcement-uuid', String(index)),
+    announcementHasProviderRequest: (index: number) =>
+      createTestId(
+        'eip6963',
+        'announcement-has-provider-request',
+        String(index),
+      ),
+    announcementIsLegacyProvider: (index: number) =>
+      createTestId(
+        'eip6963',
+        'announcement-is-legacy-provider',
+        String(index),
+      ),
+  },
+
+  // ============================================
   // SOLANA CARD
   // ============================================
   solana: {
