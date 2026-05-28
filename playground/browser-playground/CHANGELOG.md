@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add an EIP-6963 validation panel for observing provider announcements, dispatching `eip6963:requestProvider`, manually re-announcing the legacy EVM SDK provider, and distinguishing the MMConnect-managed provider from native/provider-discovery entries. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+
+### Changed
+
+- Opt the browser playground wagmi connector out of automatic EIP-6963 provider announcement to avoid duplicate MMConnect-managed announcements while validating the direct legacy EVM SDK path. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+
 ## [0.7.5]
 
 ### Added
