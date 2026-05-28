@@ -406,10 +406,12 @@ function App() {
           </section>
         )}
 
-        <Eip6963TestBench
-          legacyProvider={legacyProvider}
-          legacySDK={legacySDK}
-        />
+        <div className="mb-6">
+          <Eip6963TestBench
+            legacyProvider={legacyProvider}
+            legacySDK={legacySDK}
+          />
+        </div>
 
         <AnalyticsTestBench
           connectedScopes={

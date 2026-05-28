@@ -63,10 +63,6 @@ jest.mock('./components/SolanaWalletCard', () => ({
 }));
 
 jest.mock('wagmi', () => ({
-  useBalance: () => ({ data: undefined }),
-  useBlockNumber: () => ({ data: undefined }),
-  useChainId: () => 1,
-  useChains: () => [],
   useConnect: () => ({
     connectors: [],
     connectAsync: jest.fn(),
@@ -76,28 +72,13 @@ jest.mock('wagmi', () => ({
     address: undefined,
     isConnected: false,
   }),
-  useConnectorClient: () => ({ data: undefined }),
-  useDisconnect: () => ({ disconnect: jest.fn() }),
-  useSendTransaction: () => ({
-    data: undefined,
-    error: null,
-    isPending: false,
-    sendTransaction: jest.fn(),
-  }),
-  useSignMessage: () => ({
-    data: undefined,
-    signMessage: jest.fn(),
-  }),
-  useSwitchChain: () => ({ switchChain: jest.fn() }),
-  useWaitForTransactionReceipt: () => ({
-    isLoading: false,
-    isSuccess: false,
-  }),
 }));
 
 test('renders the playground title and EIP-6963 test bench', () => {
   render(<App />);
 
   expect(screen.getByText(/MetaMask MultiChain/iu)).toBeInTheDocument();
-  expect(screen.getByTestId(TEST_IDS.eip6963.section)).toBeInTheDocument();
+  const eip6963Section = screen.getByTestId(TEST_IDS.eip6963.section);
+  expect(eip6963Section).toBeInTheDocument();
+  expect(eip6963Section.parentElement).toHaveClass('mb-6');
 });
