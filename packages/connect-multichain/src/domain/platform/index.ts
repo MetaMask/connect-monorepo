@@ -18,6 +18,11 @@ export enum PlatformType {
   ReactNative = 'react-native',
 }
 
+const NATIVE_METAMASK_EIP6963_RDNS = new Set([
+  'io.metamask',
+  'io.metamask.mobile',
+]);
+
 function isNotBrowser(): boolean {
   if (typeof window === 'undefined') {
     return true;
@@ -118,8 +123,10 @@ const detectionPromise: Promise<boolean> = (async () => {
     setTimeout(() => {
       window.removeEventListener('eip6963:announceProvider', handler);
 
-      const hasMetaMask = providers.some((provider) =>
-        provider?.info?.rdns?.startsWith('io.metamask'),
+      const hasMetaMask = providers.some(
+        (provider) =>
+          typeof provider?.info?.rdns === 'string' &&
+          NATIVE_METAMASK_EIP6963_RDNS.has(provider.info.rdns),
       );
 
       resolve(hasMetaMask);
