@@ -618,21 +618,22 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         });
       }
 
-      // Listen for session_request to generate and emit the QR code link
-      this.dappClient.on(
-        'session_request',
-        (sessionRequest: SessionRequest) => {
-          const connectionRequest: ConnectionRequest = {
-            sessionRequest,
-            metadata: this.#buildConnectionMetadata(),
-          };
+      // Listen for session_request to generate and emit the QR code link.
+      // Captured as a named ref so the listener can be removed when the
+      // connection settles — otherwise each #headlessConnect() call would leak
+      // a listener that re-emits `display_uri` for every future session_request.
+      const onSessionRequest = (sessionRequest: SessionRequest): void => {
+        const connectionRequest: ConnectionRequest = {
+          sessionRequest,
+          metadata: this.#buildConnectionMetadata(),
+        };
 
-          // Generate and emit the QR code link
-          const deeplink =
-            this.options.ui.factory.createConnectionDeeplink(connectionRequest);
-          this.emit('display_uri', deeplink);
-        },
-      );
+        // Generate and emit the QR code link
+        const deeplink =
+          this.options.ui.factory.createConnectionDeeplink(connectionRequest);
+        this.emit('display_uri', deeplink);
+      };
+      this.dappClient.on('session_request', onSessionRequest);
 
       // Start the connection
       this.transport
@@ -657,6 +658,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
             await this.storage.removeTransportType();
             reject(error instanceof Error ? error : new Error(String(error)));
           }
+        })
+        .finally(() => {
+          this.dappClient.off('session_request', onSessionRequest);
         });
     });
   }
