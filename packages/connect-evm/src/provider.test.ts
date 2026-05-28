@@ -74,12 +74,14 @@ describe('EIP1193Provider', () => {
           message: 'execution reverted: insufficient funds',
         },
       };
-      const rpcError = new RPCInvokeMethodErr(
-        'execution reverted',
-        -32000,
-        'execution reverted',
-      ) as RPCInvokeMethodErr & { rpcData: typeof rpcData };
-      rpcError.rpcData = rpcData;
+      const rpcError = Object.assign(
+        new RPCInvokeMethodErr(
+          'execution reverted',
+          -32000,
+          'execution reverted',
+        ),
+        { rpcData },
+      );
       mockCore.invokeMethod.mockRejectedValue(rpcError);
 
       await expect(
