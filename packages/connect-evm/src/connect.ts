@@ -69,24 +69,87 @@ type ConnectOptions = {
 };
 
 type RequestedPermission = {
-  parentCapability: string;
+  id: string;
+  parentCapability: 'eth_accounts' | 'endowment:permitted-chains';
+  invoker: string;
+  caveats: {
+    type: 'restrictReturnedAccounts' | 'restrictNetworkSwitching';
+    value: Address[] | Hex[];
+  }[];
+  date: number;
 };
 
-const getRequestedPermissions = (
-  params: ProviderRequest['params'],
-): RequestedPermission[] => {
+const createPermissionId = (): string => {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+};
+
+const getDappInvoker = (options: MultichainOptions): string => {
+  const dappUrl = options?.dapp?.url;
+  if (!dappUrl) {
+    return '';
+  }
+
+  try {
+    return new URL(dappUrl).origin;
+  } catch {
+    return dappUrl;
+  }
+};
+
+const getRequestedPermissions = ({
+  params,
+  accounts,
+  chainIds,
+  invoker,
+}: {
+  params: ProviderRequest['params'];
+  accounts: Address[];
+  chainIds: Hex[];
+  invoker: string;
+}): RequestedPermission[] => {
   const permissionRequest = Array.isArray(params) ? params[0] : undefined;
   if (
     !permissionRequest ||
     typeof permissionRequest !== 'object' ||
-    Array.isArray(permissionRequest)
+    Array.isArray(permissionRequest) ||
+    !('eth_accounts' in permissionRequest)
   ) {
     return [];
   }
 
-  return Object.keys(permissionRequest).map((parentCapability) => ({
-    parentCapability,
-  }));
+  const id = createPermissionId();
+  const date = Date.now();
+
+  return [
+    {
+      id,
+      parentCapability: 'eth_accounts',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictReturnedAccounts',
+          value: accounts,
+        },
+      ],
+      date,
+    },
+    {
+      id,
+      parentCapability: 'endowment:permitted-chains',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictNetworkSwitching',
+          value: chainIds,
+        },
+      ],
+      date,
+    },
+  ];
 };
 
 export type ConnectEvmStatus = 'disconnected' | 'connected' | 'connecting';
@@ -698,7 +761,12 @@ export class MetamaskConnectEVM {
           return result.accounts;
         }
         if (request.method === 'wallet_requestPermissions') {
-          return getRequestedPermissions(params);
+          return getRequestedPermissions({
+            params,
+            accounts: result.accounts,
+            chainIds: getPermittedEthChainIds(this.#sessionScopes),
+            invoker: getDappInvoker(this.#getCoreOptions()),
+          });
         }
         return result;
       } catch (error) {

@@ -36,6 +36,10 @@ type MockCore = MultichainCore & {
   provider: MultichainCore['provider'] & {
     getSession: Mock<() => Promise<SessionData>>;
   };
+  options: {
+    analytics: { enabled: boolean };
+    dapp: { name: string; url: string };
+  };
 };
 
 /**
@@ -88,6 +92,10 @@ function createMockCore(): MockCore {
     openSimpleDeeplinkIfNeeded: vi.fn(),
     provider: {
       getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
+    },
+    options: {
+      analytics: { enabled: false },
+      dapp: { name: 'Test Dapp', url: 'https://metamask.github.io' },
     },
     transport: {
       sendEip1193Message,
@@ -939,7 +947,7 @@ describe('MetamaskConnectEVM', () => {
       ).resolves.toEqual(['0x1234567890123456789012345678901234567890']);
     });
 
-    it('returns requested permissions for wallet_requestPermissions', async () => {
+    it('returns faked account and chain permissions for wallet_requestPermissions', async () => {
       const mockCore = createMockCore();
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
       mockCore.connect.mockImplementation(async (): Promise<void> => {
@@ -949,6 +957,13 @@ describe('MetamaskConnectEVM', () => {
               methods: [],
               notifications: [],
               accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+            'eip155:137': {
+              methods: [],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
             },
           },
         };
@@ -963,7 +978,32 @@ describe('MetamaskConnectEVM', () => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           params: [{ eth_accounts: {} }],
         }),
-      ).resolves.toEqual([{ parentCapability: 'eth_accounts' }]);
+      ).resolves.toEqual([
+        {
+          id: expect.any(String),
+          parentCapability: 'eth_accounts',
+          invoker: 'https://metamask.github.io',
+          caveats: [
+            {
+              type: 'restrictReturnedAccounts',
+              value: ['0x1234567890123456789012345678901234567890'],
+            },
+          ],
+          date: expect.any(Number),
+        },
+        {
+          id: expect.any(String),
+          parentCapability: 'endowment:permitted-chains',
+          invoker: 'https://metamask.github.io',
+          caveats: [
+            {
+              type: 'restrictNetworkSwitching',
+              value: ['0x1', '0x89'],
+            },
+          ],
+          date: expect.any(Number),
+        },
+      ]);
     });
 
     it('returns all accounts for eth_accounts', async () => {
