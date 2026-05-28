@@ -32,6 +32,7 @@
 ## Task 1: Add Shared EIP-6963 Test IDs
 
 **Files:**
+
 - Modify: `playground/playground-ui/src/testIds/index.ts`
 - Create: `playground/playground-ui/src/testIds/index.test.ts`
 
@@ -152,6 +153,7 @@ git commit -m "test(playground-ui): add eip6963 test ids"
 ## Task 2: Add Browser Playground Unit Test Script
 
 **Files:**
+
 - Modify: `playground/browser-playground/package.json`
 
 - [ ] **Step 1: Add the browser test script**
@@ -186,6 +188,7 @@ git commit -m "test(browser-playground): add unit test script"
 ## Task 3: Build the EIP-6963 Test Bench Component
 
 **Files:**
+
 - Create: `playground/browser-playground/src/components/Eip6963TestBench.tsx`
 - Create: `playground/browser-playground/src/components/Eip6963TestBench.test.tsx`
 
@@ -194,9 +197,18 @@ git commit -m "test(browser-playground): add unit test script"
 Create `playground/browser-playground/src/components/Eip6963TestBench.test.tsx`:
 
 ```tsx
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { TEST_IDS } from '@metamask/playground-ui';
-import type { EIP1193Provider, MetamaskConnectEVM } from '@metamask/connect-evm';
+import type {
+  EIP1193Provider,
+  MetamaskConnectEVM,
+} from '@metamask/connect-evm';
 
 import { Eip6963TestBench } from './Eip6963TestBench';
 
@@ -210,9 +222,7 @@ const createSdk = (): MetamaskConnectEVM =>
     announceProvider: jest.fn().mockResolvedValue(undefined),
   }) as unknown as MetamaskConnectEVM;
 
-const dispatchAnnouncement = (
-  detail: Record<string, unknown>,
-): void => {
+const dispatchAnnouncement = (detail: Record<string, unknown>): void => {
   act(() => {
     window.dispatchEvent(
       new CustomEvent('eip6963:announceProvider', {
@@ -259,16 +269,18 @@ describe('Eip6963TestBench', () => {
       provider: legacyProvider,
     });
 
-    expect(screen.getByTestId(TEST_IDS.eip6963.announcementRow(0))).toBeInTheDocument();
-    expect(screen.getByTestId(TEST_IDS.eip6963.announcementName(0))).toHaveTextContent(
-      'MetaMask',
-    );
-    expect(screen.getByTestId(TEST_IDS.eip6963.announcementRdns(0))).toHaveTextContent(
-      'io.metamask.mmc',
-    );
-    expect(screen.getByTestId(TEST_IDS.eip6963.announcementUuid(0))).toHaveTextContent(
-      '11111111-2222-4333-8444-555555555555',
-    );
+    expect(
+      screen.getByTestId(TEST_IDS.eip6963.announcementRow(0)),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId(TEST_IDS.eip6963.announcementName(0)),
+    ).toHaveTextContent('MetaMask');
+    expect(
+      screen.getByTestId(TEST_IDS.eip6963.announcementRdns(0)),
+    ).toHaveTextContent('io.metamask.mmc');
+    expect(
+      screen.getByTestId(TEST_IDS.eip6963.announcementUuid(0)),
+    ).toHaveTextContent('11111111-2222-4333-8444-555555555555');
     expect(
       screen.getByTestId(TEST_IDS.eip6963.announcementHasProviderRequest(0)),
     ).toHaveTextContent('Yes');
@@ -326,11 +338,15 @@ describe('Eip6963TestBench', () => {
       provider: legacyProvider,
     });
 
-    expect(screen.getByTestId(TEST_IDS.eip6963.announcementRow(0))).toBeInTheDocument();
+    expect(
+      screen.getByTestId(TEST_IDS.eip6963.announcementRow(0)),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId(TEST_IDS.eip6963.btnClear));
 
-    expect(screen.queryByTestId(TEST_IDS.eip6963.announcementRow(0))).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(TEST_IDS.eip6963.announcementRow(0)),
+    ).not.toBeInTheDocument();
     expect(screen.getByTestId(TEST_IDS.eip6963.emptyState)).toHaveTextContent(
       'No announcements observed',
     );
@@ -354,7 +370,10 @@ Create `playground/browser-playground/src/components/Eip6963TestBench.tsx`:
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { EIP1193Provider, MetamaskConnectEVM } from '@metamask/connect-evm';
+import type {
+  EIP1193Provider,
+  MetamaskConnectEVM,
+} from '@metamask/connect-evm';
 import { TEST_IDS } from '@metamask/playground-ui';
 
 const EIP6963_ANNOUNCE_PROVIDER_EVENT = 'eip6963:announceProvider';
@@ -398,13 +417,9 @@ export function Eip6963TestBench({
   legacyProvider,
   legacySDK,
 }: Eip6963TestBenchProps) {
-  const [announcements, setAnnouncements] = useState<Eip6963Announcement[]>(
-    [],
-  );
+  const [announcements, setAnnouncements] = useState<Eip6963Announcement[]>([]);
   const nextId = useRef(0);
-  const legacyProviderRef = useRef<EIP1193Provider | undefined>(
-    legacyProvider,
-  );
+  const legacyProviderRef = useRef<EIP1193Provider | undefined>(legacyProvider);
 
   useEffect(() => {
     legacyProviderRef.current = legacyProvider;
@@ -600,6 +615,7 @@ git commit -m "feat(browser-playground): add eip6963 test bench"
 ## Task 4: Mount the Test Bench in the Playground
 
 **Files:**
+
 - Modify: `playground/browser-playground/src/App.tsx`
 - Modify: `playground/browser-playground/src/App.test.tsx`
 
@@ -720,10 +736,7 @@ import { Eip6963TestBench } from './components/Eip6963TestBench';
 In `playground/browser-playground/src/App.tsx`, insert this JSX immediately before the existing `<AnalyticsTestBench ... />` block:
 
 ```tsx
-        <Eip6963TestBench
-          legacyProvider={legacyProvider}
-          legacySDK={legacySDK}
-        />
+<Eip6963TestBench legacyProvider={legacyProvider} legacySDK={legacySDK} />
 ```
 
 - [ ] **Step 5: Run App and component tests**
@@ -748,13 +761,14 @@ git commit -m "feat(browser-playground): render eip6963 validation panel"
 ## Task 5: Document Manual Browser Validation
 
 **Files:**
+
 - Modify: `playground/browser-playground/README.md`
 
 - [ ] **Step 1: Add the README section**
 
 In `playground/browser-playground/README.md`, add this section after the `### Wagmi Connector` feature section and before `## Manually testing analytics events`:
 
-```md
+````md
 ## Manually validating EIP-6963 announcements
 
 The browser playground includes an **EIP-6963 test bench** for checking provider discovery behavior from `@metamask/connect-evm`.
@@ -774,7 +788,7 @@ The browser playground includes an **EIP-6963 test bench** for checking provider
 8. Click **Clear** to reset the observed announcement log.
 
 This panel observes real browser `eip6963:announceProvider` events. It does not simulate native wallet announcements.
-```
+````
 
 - [ ] **Step 2: Run README formatting check**
 
@@ -798,6 +812,7 @@ git commit -m "docs(browser-playground): add eip6963 validation steps"
 ## Task 6: Final Verification
 
 **Files:**
+
 - Verify all modified files from Tasks 1-5.
 
 - [ ] **Step 1: Run playground-ui unit tests**
