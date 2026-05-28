@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed Connected Network cards not appearing automatically after refresh ([#313](https://github.com/MetaMask/connect-monorepo/pull/313))
+
 ## [0.7.5]
 
 ### Added
