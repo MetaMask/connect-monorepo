@@ -808,23 +808,16 @@ export class MetamaskConnectEVM {
     if (hexPermittedChainIds.length === 0) {
       this.#onDisconnect();
     } else {
-      let initialAccounts: Address[] = [];
-      if (this.#core.status === 'connected') {
-        const ethAccountsResponse =
-          await this.#core.transport.sendEip1193Message({
-            method: 'eth_accounts',
-            params: [],
-          });
-        initialAccounts = ethAccountsResponse.result as Address[];
-      } else {
-        initialAccounts = getEthAccounts(this.#sessionScopes);
+      if (this.#status === 'connected') {
+        return;
       }
 
+      const accounts: Address[] = getEthAccounts(this.#sessionScopes);
       const chainId = await this.#getSelectedChainId(hexPermittedChainIds);
 
       this.#onConnect({
         chainId,
-        accounts: initialAccounts,
+        accounts,
       });
     }
   }
@@ -883,8 +876,6 @@ export class MetamaskConnectEVM {
     };
 
     if (this.#status === 'connected') {
-      this.#onChainChanged(chainId);
-      this.#onAccountsChanged(accounts);
       return;
     }
 
