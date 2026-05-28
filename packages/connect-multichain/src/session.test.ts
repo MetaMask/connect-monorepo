@@ -198,7 +198,9 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.transport).toBeDefined();
       t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.storage).toBeDefined();
-      await t.expect(sdk.storage.getTransport()).resolves.toBe(transportString);
+      await t
+        .expect(sdk.storage.getTransportType())
+        .resolves.toBe(transportString);
 
       mockedData.mockDefaultTransport.request.mockClear();
       mockedData.mockDappClient.sendRequest.mockClear();

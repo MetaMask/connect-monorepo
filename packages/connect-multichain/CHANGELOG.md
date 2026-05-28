@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Rename the storage API methods for the persisted transport type from `getTransport`, `setTransport`, and `removeTransport` to `getTransportType`, `setTransportType`, and `removeTransportType`. The existing `multichain-transport` storage key is unchanged, so no persisted data migration is required. ([#307](https://github.com/MetaMask/connect-monorepo/pull/307))
+
 ### Fixed
 
+- Failed `createMultichainClient()` singleton initialization now rethrows after clearing the stored singleton promise, preventing the cleanup path from resolving to `undefined` and preserving retry behavior. ([#306](https://github.com/MetaMask/connect-monorepo/pull/306))
 - Normalize `invokeMethod()` wallet errors across transports. Wallet-side JSON-RPC / EIP-1193 `code`, `message`, and `data` fields are now preserved in `RPCInvokeMethodErr` as `rpcCode`, `rpcMessage`, and `rpcData` whether the wallet error arrives as a resolved JSON-RPC error response or as a rejected transport error. Wrapped transport errors now walk a capped `cause` chain so wallet error details are not hidden by transport/API wrapper errors. ([#312](https://github.com/MetaMask/connect-monorepo/pull/312))
 
 ## [0.15.0]
