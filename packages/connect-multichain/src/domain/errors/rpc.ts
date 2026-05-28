@@ -45,7 +45,7 @@ export class RPCInvokeMethodErr extends BaseErr<'RPC', RPCErrorCodes> {
   static readonly code = 53;
 
   /**
-   * @param reason - SDK-facing invokeMethod reason.
+   * @param reason - MetaMask Connect invokeMethod reason.
    * @param rpcCode - Original wallet JSON-RPC / EIP-1193 error code.
    * @param rpcMessage - Original provider-facing wallet message. Router
    * normalization keeps this aligned with `reason` for coded wallet errors.
