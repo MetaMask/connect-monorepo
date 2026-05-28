@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Rename the storage API methods for the persisted transport type from `getTransport`, `setTransport`, and `removeTransport` to `getTransportType`, `setTransportType`, and `removeTransportType`. The existing `multichain-transport` storage key is unchanged, so no persisted data migration is required. ([#307](https://github.com/MetaMask/connect-monorepo/pull/307))
+
 ### Fixed
 
+- Failed `createMultichainClient()` singleton initialization now rethrows after clearing the stored singleton promise, preventing the cleanup path from resolving to `undefined` and preserving retry behavior. ([#306](https://github.com/MetaMask/connect-monorepo/pull/306))
 - `MWPTransport.request()` and `sendEip1193Message()` now reject wallet response errors returned as `result.error`, matching `DefaultTransport` error handling and preserving wallet error codes. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))
 
 ## [0.15.0]
