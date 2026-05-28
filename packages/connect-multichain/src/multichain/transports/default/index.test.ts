@@ -1,4 +1,5 @@
 /* eslint-disable id-length -- vitest alias */
+import type * as multichainApiClient from '@metamask/multichain-api-client';
 import * as t from 'vitest';
 
 const mocks = t.vi.hoisted(() => ({
@@ -12,8 +13,7 @@ const mocks = t.vi.hoisted(() => ({
 }));
 
 t.vi.mock('@metamask/multichain-api-client', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('@metamask/multichain-api-client')>();
+  const actual = await importOriginal<typeof multichainApiClient>();
 
   return {
     ...actual,

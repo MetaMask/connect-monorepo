@@ -543,9 +543,7 @@ export class MWPTransport implements ExtendedTransport {
 
               // Handle error response (e.g., user rejected the connection)
               if (responseError) {
-                return rejectConnection(
-                  this.parseWalletError(responseError),
-                );
+                return rejectConnection(this.parseWalletError(responseError));
               }
 
               // Success case - store session, notify, and resolve

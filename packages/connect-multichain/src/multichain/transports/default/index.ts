@@ -314,7 +314,7 @@ export class DefaultTransport implements ExtendedTransport {
       throw this.#parseWalletError(response.error);
     }
 
-    return response;
+    return response as TResponse;
   }
 
   onNotification(callback: (data: unknown) => void): () => void {
