@@ -73,6 +73,7 @@ type ReusableMultichainSingleton = {
   mergeOptions: (options: MultichainOptions) => void;
   options: MultichainOptions;
   storage: StoreClient;
+  version?: string;
 };
 
 /**
