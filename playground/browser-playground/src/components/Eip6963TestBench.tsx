@@ -34,8 +34,6 @@ type Eip6963TestBenchProps = {
   legacySDK: MetamaskConnectEVM | undefined;
 };
 
-let nextAnnouncementId = 0;
-
 const displayString = (value: unknown): string =>
   typeof value === 'string' && value.length > 0 ? value : NOT_AVAILABLE;
 
@@ -55,6 +53,7 @@ export function Eip6963TestBench({
     [],
   );
   const legacyProviderRef = useRef(legacyProvider);
+  const nextAnnouncementIdRef = useRef(0);
 
   useEffect(() => {
     legacyProviderRef.current = legacyProvider;
@@ -66,9 +65,9 @@ export function Eip6963TestBench({
         .detail;
       const provider = detail?.provider;
 
-      nextAnnouncementId += 1;
+      nextAnnouncementIdRef.current += 1;
       const announcement: Eip6963AnnouncementRow = {
-        id: nextAnnouncementId,
+        id: nextAnnouncementIdRef.current,
         observedAt: new Date().toLocaleTimeString(),
         name: displayString(detail?.info?.name),
         rdns: displayString(detail?.info?.rdns),

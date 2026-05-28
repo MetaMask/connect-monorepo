@@ -90,14 +90,17 @@ describe('Eip6963TestBench', () => {
     const requestListener = jest.fn();
     window.addEventListener('eip6963:requestProvider', requestListener);
 
-    render(
-      <Eip6963TestBench legacyProvider={undefined} legacySDK={undefined} />,
-    );
+    try {
+      render(
+        <Eip6963TestBench legacyProvider={undefined} legacySDK={undefined} />,
+      );
 
-    fireEvent.click(screen.getByTestId(TEST_IDS.eip6963.btnRequestProviders));
+      fireEvent.click(screen.getByTestId(TEST_IDS.eip6963.btnRequestProviders));
 
-    expect(requestListener).toHaveBeenCalledTimes(1);
-    window.removeEventListener('eip6963:requestProvider', requestListener);
+      expect(requestListener).toHaveBeenCalledTimes(1);
+    } finally {
+      window.removeEventListener('eip6963:requestProvider', requestListener);
+    }
   });
 
   it('calls announceProvider on the SDK instance', async () => {
