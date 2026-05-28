@@ -37,7 +37,8 @@
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "start": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco start",
     "test": "echo \"No test specified\"",
-    "test:verbose": "yarn test"
+    "test:unit": "react-scripts test --watchAll=false",
+    "test:verbose": "yarn test:unit --verbose"
   },
   "browserslist": {
     "production": [
