@@ -176,7 +176,9 @@ export abstract class BaseModalFactory<
         this.displayUriCallback?.(newLink);
         return newLink;
       },
-      onClose: this.onCloseModal.bind(this),
+      onClose: (shouldTerminate) => {
+        this.onCloseModal(shouldTerminate).catch(() => undefined);
+      },
       startDesktopOnboarding: this.onStartDesktopOnboarding.bind(this),
       createConnectionRequest,
       onDisplayUri: this.displayUriCallback,

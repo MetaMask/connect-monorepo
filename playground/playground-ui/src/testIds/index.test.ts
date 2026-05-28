@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
 import { describe, expect, it } from 'vitest';
 
-import { TEST_IDS } from './index';
+import { TEST_IDS } from '.';
 
 describe('TEST_IDS.eip6963', () => {
   it('defines stable panel selectors', () => {

@@ -10,9 +10,7 @@ export class InstallModal extends AbstractInstallModal {
 
   mount(): void {
     const { options } = this;
-    const modal = document.createElement(
-      'mm-install-modal',
-    ) as HTMLMmInstallModalElement;
+    const modal = document.createElement('mm-install-modal');
 
     modal.showInstallModal = options.showInstallModal;
     modal.addEventListener('close', (ev: Event) => {

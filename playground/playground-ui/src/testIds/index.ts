@@ -238,11 +238,7 @@ export const TEST_IDS = {
         String(index),
       ),
     announcementIsLegacyProvider: (index: number) =>
-      createTestId(
-        'eip6963',
-        'announcement-is-legacy-provider',
-        String(index),
-      ),
+      createTestId('eip6963', 'announcement-is-legacy-provider', String(index)),
   },
 
   // ============================================
