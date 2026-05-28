@@ -340,7 +340,6 @@ export class MWPTransport implements ExtendedTransport {
   }): Promise<void> {
     await this.waitForWalletSessionIfNotCached();
     const sessionResponse = await this.request({ method: 'wallet_getSession' });
-    // TODO: verify if this branching logic can ever be hit
     if (sessionResponse.error) {
       throw new Error(sessionResponse.error.message);
     }
@@ -378,7 +377,10 @@ export class MWPTransport implements ExtendedTransport {
         walletSession = response.result as SessionData;
       }
     } else if (!walletSession) {
-      // TODO: verify if this branching logic can ever be hit
+      // Hitting this branch implies that the MWP session was established,
+      // but the user has not yet accepted the initial wallet_createSession approval,
+      // but the page has refreshed and we've lost that previous context and so we
+      // are trying to recover by making a new wallet_createSession request.
       const optionalScopes = addValidAccounts(
         getOptionalScopes(options?.scopes ?? []),
         getValidAccounts(options?.caipAccountIds ?? []),
