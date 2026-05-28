@@ -723,6 +723,16 @@ function expectPeerDependenciesAlsoListedAsDevDependencies(
     const dependencyWorkspace = Yarn.workspace({ ident: dependencyIdent });
 
     if (dependencyWorkspace) {
+      const existingDevDependency =
+        dependencyInstancesByType.get('devDependencies');
+      const ignoredRanges = ALLOWED_INCONSISTENT_DEPENDENCIES[dependencyIdent];
+      if (
+        existingDevDependency &&
+        ignoredRanges?.includes(existingDevDependency.range)
+      ) {
+        continue;
+      }
+
       expectWorkspaceField(
         workspace,
         `devDependencies["${dependencyIdent}"]`,
