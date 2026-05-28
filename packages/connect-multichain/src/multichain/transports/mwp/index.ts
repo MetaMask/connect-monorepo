@@ -412,6 +412,12 @@ export class MWPTransport implements ExtendedTransport {
       forceRequest?: boolean;
     },
   ): Promise<void> {
+    // Captured before any work begins so that a `session_request` event fired
+    // during resume (e.g. when the resume path falls through to
+    // `wallet_createSession`) doesn't skew the timeout decision.
+    const isContinuingPriorAttempt =
+      (await this.getStoredPendingSessionRequest()) !== null;
+
     const resumeDeferred = createDeferredPromise();
     const runOnResumeHandler = async (): Promise<void> => {
       try {
@@ -430,10 +436,17 @@ export class MWPTransport implements ExtendedTransport {
         .catch((err) => resumeDeferred.reject(err));
     }
 
+    // The resume path can fall through to `wallet_createSession` (forceRequest,
+    // recovery from a missing wallet session, or a scope/account change), which
+    // requires a human to approve in the wallet. Use the longer
+    // `connectionTimeout` for those flows; only use the shorter `resumeTimeout`
+    // when we're continuing an in-flight prior attempt.
     const timeoutDeferred = createDeferredPromise<never>();
     const timeout = setTimeout(
       () => timeoutDeferred.reject(new TransportTimeoutError()),
-      this.options.resumeTimeout,
+      isContinuingPriorAttempt
+        ? this.options.resumeTimeout
+        : this.options.connectionTimeout,
     );
 
     const cleanup = () => this.dappClient.off('connected', runOnResumeHandler);
