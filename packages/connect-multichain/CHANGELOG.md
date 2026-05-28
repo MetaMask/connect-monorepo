@@ -14,7 +14,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Rename the storage API methods for the persisted transport type from `getTransport`, `setTransport`, and `removeTransport` to `getTransportType`, `setTransportType`, and `removeTransportType`. The existing `multichain-transport` storage key is unchanged, so no persisted data migration is required. ([#307](https://github.com/MetaMask/connect-monorepo/pull/307))
 - `getVersion()` now returns the real package version injected at build time via `__PACKAGE_VERSION__`, instead of a hardcoded `'0.0.0'` ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
+
+### Fixed
+
+- Failed `createMultichainClient()` singleton initialization now rethrows after clearing the stored singleton promise, preventing the cleanup path from resolving to `undefined` and preserving retry behavior. ([#306](https://github.com/MetaMask/connect-monorepo/pull/306))
+
+## [0.15.0]
+
+### Added
+
+- Add an `analytics.enabled` option to `createMultichainClient()`. Set it to `false` to disable dapp-side analytics events and omit `analytics.remote_session_id` connection metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
+## [0.14.0]
+
+### Added
+
+- Attach a `failure_reason` tag to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed` events via a new `classifyFailureReason` helper, distinguishing transport timeouts, transport disconnects, EIP-1193 wallet errors (`4100 wallet_unauthorized`, `4200 wallet_method_unsupported`, `4902 unrecognized_chain`), and JSON-RPC wallet errors (`-32601`, `-32602`, `-32603`, plus the `-32000…-32099` server-error range), with an `unknown` fallback. Schema-side: [`metamask-sdk-analytics-api#31`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/31). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+- Attach `error_code` and `error_message_sample` companion properties to `mmconnect_wallet_action_failed` and `mmconnect_connection_failed`. `error_code` preserves the raw wallet-side JSON-RPC / EIP-1193 code (e.g. `4001`, `-32603`). `error_message_sample` is a sanitised, 200-char-max preview of the original error message, with wallet addresses, long hex blobs, URLs, and large decimal numbers scrubbed. Both fields are optional and only set on the two `*_failed` events. Schema-side: [`metamask-sdk-analytics-api#32`](https://github.com/consensys-vertical-apps/metamask-sdk-analytics-api/pull/32). ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+
+### Changed
+
+- Improves QR code scanning reliability. The QR code MWP flow (desktop web and Node.js) now omits the initial `wallet_createSession` request from the deeplink URI, instead sending it as a separate request after the wallet completes the MWP handshake. This results in a shorter deeplink URI and a less dense QR code. The native deeplink (non-QR MWP) flow used on mobile web and React Native is unchanged. ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
+
+### Fixed
+
+- Tightened `isRejectionError` so `mmconnect_wallet_action_rejected` more accurately reflects user-driven cancellations: it now unwraps `RPCInvokeMethodErr` (so wallet-side codes survive the router's transport-boundary wrapping rather than being masked by the wrapper's `code: 53`), no longer classifies EIP-1193 `4100 Unauthorized` as a rejection (it's a CAIP-25 permission denial, not a user decision), and narrows the bare `"user"` substring match to four explicit phrases — `"user rejected"` / `"user denied"` / `"user cancelled"` / `"user canceled"` — so unrelated messages like Account Abstraction's `"user operation reverted"` no longer count. Net effect: `_rejected` becomes more precise; `_failed` picks up everything `4100` was previously hiding. ([#292](https://github.com/MetaMask/connect-monorepo/pull/292))
+
+## [0.13.0]
+
+### Uncategorized
+
+- feat: cleanup EvmClient initPromise ([#281](https://github.com/MetaMask/connect-monorepo/pull/281))
+
+### Changed
+
+- Lazy-load MWP transport dependencies: `@metamask/mobile-wallet-protocol-core`, `@metamask/mobile-wallet-protocol-dapp-client`, and `eciesjs` are now dynamically imported only when MWP transport is actually used, allowing bundlers to code-split the entire MWP + crypto dependency tree for consumers who only use the browser extension flow ([#244](https://github.com/MetaMask/connect-monorepo/pull/244))
+- Tighten `MultichainApiClientWrapperTransport` connected transport check on `wallet_getSession` and `wallet_invokeMethod`. Remove defined transport check on `wallet_revokeSession`. ([#280](https://github.com/MetaMask/connect-monorepo/pull/280))
+
+## [0.12.1]
+
+### Fixed
+
+- The QR code modal no longer attempts to create a blob for the MetaMask icon and instead embeds it directly as a `data:` uri. This was breaking the QR code rendering on websites with CSP `connect-src` policy missing `blob:`. ([#273](https://github.com/MetaMask/connect-monorepo/pull/273))
 
 ## [0.12.0]
 
@@ -254,7 +297,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.15.0...HEAD
+[0.15.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.14.0...@metamask/connect-multichain@0.15.0
+[0.14.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.13.0...@metamask/connect-multichain@0.14.0
+[0.13.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.1...@metamask/connect-multichain@0.13.0
+[0.12.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.0...@metamask/connect-multichain@0.12.1
 [0.12.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.1...@metamask/connect-multichain@0.12.0
 [0.11.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.11.0...@metamask/connect-multichain@0.11.1
 [0.11.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.10.0...@metamask/connect-multichain@0.11.0

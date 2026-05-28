@@ -16,7 +16,6 @@ import type {
   Session,
   SessionRequest,
 } from '@metamask/mobile-wallet-protocol-core';
-import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import type { DappClient } from '@metamask/mobile-wallet-protocol-dapp-client';
 import {
   type SessionProperties,
@@ -30,6 +29,8 @@ import type { CaipAccountId } from '@metamask/utils';
 
 import {
   createLogger,
+  getPlatformType,
+  PlatformType,
   type ExtendedTransport,
   type RPCAPI,
   type Scope,
@@ -525,13 +526,27 @@ export class MWPTransport implements ExtendedTransport {
 
             this.dappClient.on('message', initialConnectionMessageHandler);
 
+            const platformType = getPlatformType();
+            const isQRCodeFlow = [
+              PlatformType.DesktopWeb,
+              PlatformType.NonBrowser,
+            ].includes(platformType);
+
+            const initialPayload = {
+              name: MULTICHAIN_PROVIDER_STREAM_NAME,
+              data: request,
+            };
+
             dappClient
               .connect({
                 mode: 'trusted',
-                initialPayload: {
-                  name: MULTICHAIN_PROVIDER_STREAM_NAME,
-                  data: request,
-                },
+                initialPayload: isQRCodeFlow ? undefined : initialPayload,
+              })
+              .then(async () => {
+                if (isQRCodeFlow) {
+                  return dappClient.sendRequest(initialPayload);
+                }
+                return undefined;
               })
               .catch((error) => {
                 if (initialConnectionMessageHandler) {
@@ -662,8 +677,7 @@ export class MWPTransport implements ExtendedTransport {
    * @returns True if transport is connected, false otherwise
    */
   isConnected(): boolean {
-    // biome-ignore lint/suspicious/noExplicitAny:  required if state is not made public in dappClient
-    return (this.dappClient as any).state === 'CONNECTED';
+    return this.dappClient.state === 'CONNECTED';
   }
 
   /**
@@ -813,6 +827,9 @@ export class MWPTransport implements ExtendedTransport {
 
   async getActiveSession(): Promise<Session | undefined> {
     const { kvstore } = this;
+    const { SessionStore } = await import(
+      '@metamask/mobile-wallet-protocol-core'
+    );
     const sessionStore = await SessionStore.create(kvstore);
 
     try {

@@ -1,4 +1,13 @@
-import { Component, Prop, h, Event, EventEmitter, State, Element, Watch } from '@stencil/core';
+import {
+  Component,
+  Prop,
+  h,
+  Event,
+  EventEmitter,
+  State,
+  Element,
+  Watch,
+} from '@stencil/core';
 import { WidgetWrapper } from '../widget-wrapper/widget-wrapper';
 import InstallIcon from '../misc/InstallIcon';
 import CloseButton from '../misc/CloseButton';
@@ -11,10 +20,10 @@ import QRCodeStyling, {
   ErrorCorrectionLevel,
   Mode,
   TypeNumber,
-} from "qr-code-styling";
+} from 'qr-code-styling';
 
 import { SimpleI18n } from '../misc/simple-i18n';
-import SVG from '../../assets/fox.svg'
+import SVG from '../../assets/fox.svg';
 
 @Component({
   tag: 'mm-install-modal',
@@ -22,7 +31,7 @@ import SVG from '../../assets/fox.svg'
   shadow: true,
 })
 export class InstallModal {
-  @Prop() link: string
+  @Prop() link: string;
 
   @Prop() expiresIn: number;
 
@@ -45,7 +54,8 @@ export class InstallModal {
 
   constructor() {
     this.onClose = this.onClose.bind(this);
-    this.onStartDesktopOnboardingHandler = this.onStartDesktopOnboardingHandler.bind(this);
+    this.onStartDesktopOnboardingHandler =
+      this.onStartDesktopOnboardingHandler.bind(this);
     this.render = this.render.bind(this);
 
     this.i18nInstance = new SimpleI18n();
@@ -57,7 +67,7 @@ export class InstallModal {
 
   async connectedCallback() {
     await this.i18nInstance.init({
-      fallbackLng: 'en'
+      fallbackLng: 'en',
     });
     this.translationsLoaded = true;
   }
@@ -72,8 +82,9 @@ export class InstallModal {
       image: SVG,
       imageOptions: {
         hideBackgroundDots: true,
-        crossOrigin: 'anonymous',
-        imageSize:0.3,
+        crossOrigin: undefined,
+        imageSize: 0.3,
+        saveAsBlob: false,
       },
       dotsOptions: {
         color: '#222222',
@@ -84,9 +95,9 @@ export class InstallModal {
       cornersSquareOptions: {
         color: '#222222',
         type: 'square' as CornerSquareType,
-        gradient: undefined
+        gradient: undefined,
       },
-      cornersDotOptions: {
+      cornersDotOptions: {
         color: '#ff5c16',
       },
       backgroundOptions: {
@@ -95,7 +106,7 @@ export class InstallModal {
       qrOptions: {
         typeNumber: 0 as TypeNumber,
         mode: 'Byte' as Mode,
-        errorCorrectionLevel: 'Q' as ErrorCorrectionLevel
+        errorCorrectionLevel: 'Q' as ErrorCorrectionLevel,
       },
     };
     const qrCode = new QRCodeStyling(options);
@@ -112,7 +123,7 @@ export class InstallModal {
   }
 
   @Watch('link')
-  updateLinkHandler(link:string) {
+  updateLinkHandler(link: string) {
     this.generateQRCode(link);
   }
 
@@ -133,48 +144,54 @@ export class InstallModal {
 
     return (
       <WidgetWrapper className="install-model">
-        <div class='backdrop' onClick={() => this.onClose(true)}></div>
-        <div class='modal'>
-          <div class='closeButtonContainer'>
-            <div class='right'>
-              <span class='closeButton' onClick={() => this.onClose(true)}>
+        <div class="backdrop" onClick={() => this.onClose(true)}></div>
+        <div class="modal">
+          <div class="closeButtonContainer">
+            <div class="right">
+              <span class="closeButton" onClick={() => this.onClose(true)}>
                 <CloseButton />
               </span>
             </div>
           </div>
-          <div class='modalHeader'>
-            <h2 class='modalTitle'>{t('CONNECT_WITH_METAMASK')}</h2>
+          <div class="modalHeader">
+            <h2 class="modalTitle">{t('CONNECT_WITH_METAMASK')}</h2>
           </div>
 
-          <div class='modalContent'>
+          <div class="modalContent">
             {showExtensionFirst ? (
               // Extension first, then mobile
               <div>
                 {/* Extension Section */}
-                <div class='connectionSection'>
-                  <h3 class='sectionTitle'>{t('USE_EXTENSION')}</h3>
-                  <p class='sectionDescription'>{t('ONE_CLICK_CONNECT')}</p>
+                <div class="connectionSection">
+                  <h3 class="sectionTitle">{t('USE_EXTENSION')}</h3>
+                  <p class="sectionDescription">{t('ONE_CLICK_CONNECT')}</p>
 
                   <button
-                    class='button extensionButton'
+                    class="button extensionButton"
                     onClick={() => this.onStartDesktopOnboardingHandler()}
                   >
                     <InstallIcon />
-                    <span class='buttonText'>
+                    <span class="buttonText">
                       {t('CONNECT_WITH_EXTENSION')}
                     </span>
                   </button>
                 </div>
 
-                <div class='sectionDivider'></div>
+                <div class="sectionDivider"></div>
 
                 {/* Mobile Section */}
-                <div class='connectionSection'>
-                  <h3 class='sectionTitle'>{t('USE_MOBILE')}</h3>
-                  <p class='sectionDescription'>{t('SCAN_TO_CONNECT')}</p>
+                <div class="connectionSection">
+                  <h3 class="sectionTitle">{t('USE_MOBILE')}</h3>
+                  <p class="sectionDescription">{t('SCAN_TO_CONNECT')}</p>
 
-                  <div class='qrContainer'>
-                    <div id="sdk-mm-qrcode" class='qrCode' ref={(el) => { if (el) this.qrCodeContainer = el; }} />
+                  <div class="qrContainer">
+                    <div
+                      id="sdk-mm-qrcode"
+                      class="qrCode"
+                      ref={(el) => {
+                        if (el) this.qrCodeContainer = el;
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -182,28 +199,36 @@ export class InstallModal {
               // Mobile first, then extension
               <div>
                 {/* Mobile Section */}
-                <div class='connectionSection'>
-                  <h3 class='sectionTitle'>{t('USE_MOBILE')}</h3>
-                  <p class='sectionDescription'>{t('SCAN_TO_CONNECT')}</p>
+                <div class="connectionSection">
+                  <h3 class="sectionTitle">{t('USE_MOBILE')}</h3>
+                  <p class="sectionDescription">{t('SCAN_TO_CONNECT')}</p>
 
-                  <div class='qrContainer'>
-                    <div id="sdk-mm-qrcode" class='qrCode' ref={(el) => { if (el) this.qrCodeContainer = el; }} />
+                  <div class="qrContainer">
+                    <div
+                      id="sdk-mm-qrcode"
+                      class="qrCode"
+                      ref={(el) => {
+                        if (el) this.qrCodeContainer = el;
+                      }}
+                    />
                   </div>
                 </div>
 
-                <div class='sectionDivider'></div>
+                <div class="sectionDivider"></div>
 
                 {/* Extension Section */}
-                <div class='connectionSection'>
-                  <h3 class='sectionTitle'>{t('USE_EXTENSION')}</h3>
-                  <p class='sectionDescription'>{t('INSTALL_MODAL.INSTALL_META_MASK_EXTENSION_TEXT')}</p>
+                <div class="connectionSection">
+                  <h3 class="sectionTitle">{t('USE_EXTENSION')}</h3>
+                  <p class="sectionDescription">
+                    {t('INSTALL_MODAL.INSTALL_META_MASK_EXTENSION_TEXT')}
+                  </p>
 
                   <button
-                    class='button extensionButton'
+                    class="button extensionButton"
                     onClick={() => this.onStartDesktopOnboardingHandler()}
                   >
                     <InstallIcon />
-                    <span class='buttonText'>
+                    <span class="buttonText">
                       {t('INSTALL_MODAL.INSTALL_META_MASK_EXTENSION_BUTTON')}
                     </span>
                   </button>
@@ -212,8 +237,7 @@ export class InstallModal {
             )}
           </div>
         </div>
-    </WidgetWrapper>
-    )
+      </WidgetWrapper>
+    );
   }
 }
-

@@ -15,6 +15,7 @@ import type {
   SolanaConnectOptions,
   SolanaSupportedNetworks,
 } from './types';
+import { isMetamaskExtensionRegistered, logger } from './utils';
 
 // Values substituted by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
@@ -32,6 +33,7 @@ declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param [options.analytics] - Analytics configuration
+ * @param [options.analytics.enabled] - Whether to enable dapp-side analytics (defaults to true)
  * @param [options.analytics.integrationType] - Integration type for analytics (defaults to 'direct')
  * @param options.debug - Enable debug logging
  * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
@@ -78,6 +80,7 @@ export async function createSolanaClient(
       supportedNetworks,
     },
     analytics: {
+      ...(options.analytics ?? {}),
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       integrationType: options.analytics?.integrationType || 'direct',
     },
@@ -108,20 +111,58 @@ export async function createSolanaClient(
 
   const client = core.provider;
 
-  const walletName = 'MetaMask Connect';
+  const walletName = 'MetaMask';
 
-  if (!skipAutoRegister) {
+  let hasRegisteredMmc = false;
+  let handledInitRegistration!: () => void;
+  const initRegistrationHandledPromise = new Promise<void>((resolve) => {
+    handledInitRegistration = resolve;
+  });
+
+  const registerWallet = async (): Promise<void> => {
+    if (hasRegisteredMmc) {
+      logger('MetaMask Connect is already registered. Skipping...');
+      return;
+    }
+
+    if (isMetamaskExtensionRegistered()) {
+      logger('MetaMask extension is already registered. Skipping...');
+      return;
+    }
+
     await registerSolanaWalletStandard({ client, walletName });
+    hasRegisteredMmc = true; // eslint-disable-line require-atomic-updates
+  };
+
+  if (skipAutoRegister) {
+    handledInitRegistration();
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    setTimeout(async () => {
+      try {
+        await registerWallet();
+      } finally {
+        handledInitRegistration();
+      }
+    }, 1000);
+  }
+
+  const provider = getWalletStandard({ client, walletName });
+  const session = await core.provider.getSession();
+  const hasSolanaScope = Object.keys(session?.sessionScopes ?? {}).some(
+    (scope) => scope.startsWith('solana:'),
+  );
+  if (hasSolanaScope) {
+    // This will resolve without needing to prompt the user as we know solana scopes are already granted
+    await provider.features['standard:connect'].connect();
   }
 
   return {
     core,
-    getWallet: () => getWalletStandard({ client, walletName }),
+    getWallet: () => provider,
     registerWallet: async (): Promise<void> => {
-      if (!skipAutoRegister) {
-        return;
-      }
-      await registerSolanaWalletStandard({ client, walletName });
+      await initRegistrationHandledPromise;
+      await registerWallet();
     },
     disconnect: async () =>
       await core.disconnect(Object.values(SOLANA_CAIP_IDS) as Scope[]),

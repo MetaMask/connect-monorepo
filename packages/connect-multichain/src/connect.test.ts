@@ -316,7 +316,7 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.storage).toBeDefined();
 
         await t
-          .expect(sdk.storage.getTransport())
+          .expect(sdk.storage.getTransportType())
           .resolves.toBe(transportString);
       },
     );
@@ -360,7 +360,7 @@ function testSuite<T extends MultichainOptions>({
         }
 
         await t
-          .expect(sdk.storage.getTransport())
+          .expect(sdk.storage.getTransportType())
           .resolves.toBe(transportString);
       },
     );
@@ -440,7 +440,7 @@ function testSuite<T extends MultichainOptions>({
         }
 
         await t
-          .expect(sdk.storage.getTransport())
+          .expect(sdk.storage.getTransportType())
           .resolves.toBe(transportString);
       },
     );

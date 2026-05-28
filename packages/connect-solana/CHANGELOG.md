@@ -15,6 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Move `@metamask/connect-multichain` from `dependencies` to `peerDependencies` ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
 
+## [1.2.0]
+
+### Added
+
+- Add an `analytics.enabled` option to `createSolanaClient()`. Set it to `false` to disable dapp-side analytics events and wallet correlation metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
+## [1.1.0]
+
+### Changed
+
+- `createSolanaClient()` now eagerly initializes the Solana wallet provider during creation. If the underlying multichain session already contains solana scopes, the provider's accounts are populated before the client is returned. ([#282](https://github.com/MetaMask/connect-monorepo/pull/282))
+- `getWallet()` now returns the same wallet instance on every call instead of constructing a new one. ([#282](https://github.com/MetaMask/connect-monorepo/pull/282))
+
+## [1.0.0]
+
+### Changed
+
+- **BREAKING** registerWallet() now registers the MetaMask Connect Solana Provider as `MetaMask` instead of `MetaMask Connect` ([#275](https://github.com/MetaMask/connect-monorepo/pull/275))
+- Prefer the injected Solana provider by no longer announcing the MMC Solana provider if the injected Solana provider is detected ([#275](https://github.com/MetaMask/connect-monorepo/pull/275))
+
+## [0.8.1]
+
+### Changed
+
+- Bump `@metamask/connect-multichain` to `^0.12.1` ([#273](https://github.com/MetaMask/connect-monorepo/pull/273))
+
 ## [0.8.0]
 
 ### Added
@@ -79,9 +105,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release
+- Initial Release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.2.0...HEAD
+[1.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.1.0...@metamask/connect-solana@1.2.0
+[1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.0.0...@metamask/connect-solana@1.1.0
+[1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.1...@metamask/connect-solana@1.0.0
+[0.8.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.0...@metamask/connect-solana@0.8.1
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.7.1...@metamask/connect-solana@0.8.0
 [0.7.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.7.0...@metamask/connect-solana@0.7.1
 [0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.6.0...@metamask/connect-solana@0.7.0

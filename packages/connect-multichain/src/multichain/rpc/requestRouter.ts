@@ -22,6 +22,7 @@ import {
 } from '../../domain';
 import { openDeeplink } from '../utils';
 import {
+  extractErrorDiagnostics,
   getWalletActionAnalyticsProperties,
   isRejectionError,
 } from '../utils/analytics';
@@ -29,6 +30,23 @@ import type { RpcClient } from './handlers/rpcClient';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
 
 let rpcId = 1;
+
+/**
+ * Normalizes unknown invocation errors to the router error type.
+ *
+ * @param error - Unknown error thrown during method execution.
+ * @returns Error instance surfaced by invokeMethod.
+ */
+function toRPCInvokeMethodErr(error: unknown): RPCInvokeMethodErr {
+  if (error instanceof RPCInvokeMethodErr) {
+    return error;
+  }
+  const castError = error as { message?: string; code?: number };
+  return new RPCInvokeMethodErr(
+    castError.message ?? 'Unknown error',
+    castError.code,
+  );
+}
 
 /**
  * Gets the next RPC ID for request tracking.
@@ -124,6 +142,14 @@ export class RequestRouter {
     options: InvokeMethodOptions,
     execute: () => Promise<Json>,
   ): Promise<Json> {
+    if (this.config.analytics?.enabled === false) {
+      try {
+        return await execute();
+      } catch (error) {
+        throw toRPCInvokeMethodErr(error);
+      }
+    }
+
     await this.#trackWalletActionRequested(options);
 
     try {
@@ -138,16 +164,9 @@ export class RequestRouter {
       if (isRejection) {
         await this.#trackWalletActionRejected(options);
       } else {
-        await this.#trackWalletActionFailed(options);
+        await this.#trackWalletActionFailed(options, error);
       }
-      if (error instanceof RPCInvokeMethodErr) {
-        throw error;
-      }
-      const castError = error as { message?: string; code?: number };
-      throw new RPCInvokeMethodErr(
-        castError.message ?? 'Unknown error',
-        castError.code,
-      );
+      throw toRPCInvokeMethodErr(error);
     }
   }
 
@@ -188,14 +207,20 @@ export class RequestRouter {
   /**
    * Tracks wallet action failed event.
    *
-   * @param options
+   * @param options - The invoke method options.
+   * @param error - The error that caused the failure (used to classify the
+   * `failure_reason` property on the event).
    */
-  async #trackWalletActionFailed(options: InvokeMethodOptions): Promise<void> {
+  async #trackWalletActionFailed(
+    options: InvokeMethodOptions,
+    error: unknown,
+  ): Promise<void> {
     const props = await getWalletActionAnalyticsProperties(
       this.config,
       this.config.storage,
       options,
       this.transportType,
+      extractErrorDiagnostics(error),
     );
     analytics.track('mmconnect_wallet_action_failed', props);
   }

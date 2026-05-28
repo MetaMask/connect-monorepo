@@ -165,21 +165,23 @@ Factory function to create a new MetaMask Connect EVM instance.
 
 #### Parameters
 
-| Option                     | Type                                          | Required | Description                                          |
-| -------------------------- | --------------------------------------------- | -------- | ---------------------------------------------------- |
-| `dapp.name`                | `string`                                      | Yes      | Name of your dApp                                    |
-| `api.supportedNetworks`    | `Record<Hex, string>`                         | Yes      | Map of hex chain IDs to RPC URLs                     |
-| `dapp.url`                 | `string`                                      | No       | URL of your dApp                                     |
-| `dapp.iconUrl`             | `string`                                      | No       | Icon URL for your dApp                               |
-| `ui.headless`              | `boolean`                                     | No       | Run without UI (for custom QR implementations)       |
-| `ui.preferExtension`       | `boolean`                                     | No       | Prefer browser extension over mobile (default: true) |
-| `ui.showInstallModal`      | `boolean`                                     | No       | Show installation modal for desktop                  |
-| `mobile.preferredOpenLink` | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                              |
-| `mobile.useDeeplink`       | `boolean`                                     | No       | Use `metamask://` instead of universal links         |
-| `transport.extensionId`    | `string`                                      | No       | Custom extension ID                                  |
-| `transport.onNotification` | `(notification: unknown) => void`             | No       | Notification handler                                 |
-| `eventHandlers`            | `Partial<EventHandlers>`                      | No       | Event handlers for provider events                   |
-| `debug`                    | `boolean`                                     | No       | Enable debug logging                                 |
+| Option                      | Type                                          | Required | Description                                                                                                                  |
+| --------------------------- | --------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `dapp.name`                 | `string`                                      | Yes      | Name of your dApp                                                                                                            |
+| `api.supportedNetworks`     | `Record<Hex, string>`                         | Yes      | Map of hex chain IDs to RPC URLs                                                                                             |
+| `dapp.url`                  | `string`                                      | No       | URL of your dApp                                                                                                             |
+| `dapp.iconUrl`              | `string`                                      | No       | Icon URL for your dApp                                                                                                       |
+| `ui.headless`               | `boolean`                                     | No       | Run without UI (for custom QR implementations)                                                                               |
+| `ui.preferExtension`        | `boolean`                                     | No       | Prefer browser extension over mobile (default: true)                                                                         |
+| `ui.showInstallModal`       | `boolean`                                     | No       | Show installation modal for desktop                                                                                          |
+| `mobile.preferredOpenLink`  | `(deeplink: string, target?: string) => void` | No       | Custom deeplink handler                                                                                                      |
+| `mobile.useDeeplink`        | `boolean`                                     | No       | Use `metamask://` instead of universal links                                                                                 |
+| `analytics.enabled`         | `boolean`                                     | No       | Enables dapp-side analytics. Defaults to `true`; set to `false` to disable analytics events and wallet correlation metadata. |
+| `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                                                               |
+| `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                                                                          |
+| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                                                                         |
+| `eventHandlers`             | `Partial<EventHandlers>`                      | No       | Event handlers for provider events                                                                                           |
+| `debug`                     | `boolean`                                     | No       | Enable debug logging                                                                                                         |
 
 #### Returns
 
@@ -247,10 +249,10 @@ Connects and immediately signs a message using `personal_sign`.
 
 **Returns**
 
-`Promise<string>` - The signature as a hex string.
+`Promise<{ accounts: Address[]; chainId: Hex; signature: string }>` - The connected accounts, the active chain ID used for signing, and the resulting signature as a hex string.
 
 ```typescript
-const signature = await client.connectAndSign({
+const { accounts, chainId, signature } = await client.connectAndSign({
   message: 'Sign this message',
   chainIds: ['0x1'],
 });
@@ -272,10 +274,10 @@ Connects and immediately invokes a method with specified parameters.
 
 **Returns**
 
-`Promise<unknown>` - The result of the method invocation.
+`Promise<{ accounts: Address[]; chainId: Hex; result: unknown }>` - The connected accounts, the active chain ID used for the method call, and the result of the method invocation.
 
 ```typescript
-const result = await client.connectWith({
+const { accounts, chainId, result } = await client.connectWith({
   method: 'eth_sendTransaction',
   params: (account) => [
     {
@@ -546,12 +548,12 @@ type EventHandlers = {
   connectAndSign: (result: {
     accounts: Address[];
     chainId: Hex;
-    signResponse: string;
+    signature: string;
   }) => void;
   connectWith: (result: {
     accounts: Address[];
     chainId: Hex;
-    connectWithResponse: unknown;
+    result: unknown;
   }) => void;
 };
 ```

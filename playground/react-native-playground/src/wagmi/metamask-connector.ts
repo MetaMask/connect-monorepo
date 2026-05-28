@@ -113,16 +113,20 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           const chainIds = config.chains.map((chain) => numberToHex(chain.id));
           if (parameters.connectAndSign || parameters.connectWith) {
             if (parameters.connectAndSign) {
-              signResponse = await instance.connectAndSign({
-                chainIds,
-                message: parameters.connectAndSign,
-              });
+              signResponse = (
+                await instance.connectAndSign({
+                  chainIds,
+                  message: parameters.connectAndSign,
+                })
+              ).signature;
             } else if (parameters.connectWith) {
-              connectWithResponse = await instance.connectWith({
-                chainIds,
-                method: parameters.connectWith.method,
-                params: parameters.connectWith.params,
-              });
+              connectWithResponse = (
+                await instance.connectWith({
+                  chainIds,
+                  method: parameters.connectWith.method,
+                  params: parameters.connectWith.params,
+                })
+              ).result;
             }
 
             accounts = await this.getAccounts();
@@ -147,13 +151,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           provider.emit('connectAndSign', {
             accounts,
             chainId: numberToHex(currentChainId),
-            signResponse,
+            signature: signResponse,
           });
         } else if (connectWithResponse) {
           provider.emit('connectWith', {
             accounts,
             chainId: numberToHex(currentChainId),
-            connectWithResponse,
+            result: connectWithResponse,
           });
         }
 

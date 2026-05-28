@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-evm",
-  "version": "0.10.0",
+  "version": "1.4.0",
   "description": "EVM Layer for MetaMask Connect",
   "keywords": [
     "MetaMask",
@@ -55,7 +55,6 @@
   },
   "dependencies": {
     "@metamask/analytics": "workspace:^",
-    "@metamask/chain-agnostic-permission": "^1.2.2",
     "@metamask/utils": "^11.8.1",
     "semver": "^7.7.4"
   },

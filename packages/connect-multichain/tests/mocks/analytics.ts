@@ -8,6 +8,7 @@ vitest.vi.mock('@metamask/analytics', () => ({
   analytics: {
     setGlobalProperty: vitest.vi.fn(),
     enable: vitest.vi.fn(),
+    disable: vitest.vi.fn(),
     track: vitest.vi.fn(),
   },
 }));

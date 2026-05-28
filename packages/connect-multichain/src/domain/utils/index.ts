@@ -18,6 +18,8 @@ export function getVersion(): string {
 }
 
 export {
+  classifyFailureReason,
   getWalletActionAnalyticsProperties,
   isRejectionError,
 } from '../../multichain/utils/analytics';
+export type { FailureReason } from '../../multichain/utils/analytics';
