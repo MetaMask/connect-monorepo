@@ -391,7 +391,9 @@ export class MWPTransport implements ExtendedTransport {
       runOnResumeHandler();
     } else {
       this.dappClient.once('connected', runOnResumeHandler);
-      this.dappClient.resume(session.id ?? '').catch((err) => resumeDeferred.reject(err));
+      this.dappClient
+        .resume(session.id ?? '')
+        .catch((err) => resumeDeferred.reject(err));
     }
 
     const timeoutDeferred = createDeferredPromise<never>();
