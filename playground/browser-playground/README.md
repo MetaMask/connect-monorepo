@@ -87,8 +87,8 @@ The browser playground includes an **EIP-6963 test bench** for checking provider
 3. Find the **EIP-6963 test bench** section.
 4. Reload the page and watch for an automatic announcement row.
 5. Click **Request providers** to dispatch `eip6963:requestProvider`.
-6. Confirm the MetaMask row includes an `rdns`, UUID, `Provider request` = `Yes`, and `Legacy provider` = `Yes`.
-7. Click **Announce SDK provider** to call `legacySDK.announceProvider()` manually if another announcement is needed.
+6. To validate the SDK-managed provider, use a browser profile without a native MetaMask EIP-6963 provider enabled. Confirm the MetaMask row includes an `rdns`, UUID, `Provider request` = `Yes`, and `Legacy provider` = `Yes`. If native MetaMask is enabled, the SDK-managed provider may be suppressed and the native row can show `Legacy provider` = `No`.
+7. Click **Announce SDK provider** to call `legacySDK.announceProvider()` manually when the SDK-managed provider is not suppressed and another announcement is needed.
 8. Click **Clear** to reset the observed announcement log.
 
 This panel observes real browser `eip6963:announceProvider` events. It does not simulate native wallet announcements.
