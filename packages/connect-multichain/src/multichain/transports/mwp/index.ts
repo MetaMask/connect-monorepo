@@ -210,6 +210,37 @@ export class MWPTransport implements ExtendedTransport {
     return rpcErrors.internal({ message });
   }
 
+  private getResponseError(messagePayload: Record<string, unknown>): unknown {
+    if ('error' in messagePayload && messagePayload.error) {
+      return messagePayload.error;
+    }
+
+    const { result } = messagePayload;
+    if (
+      typeof result === 'object' &&
+      result !== null &&
+      'error' in result &&
+      result.error &&
+      this.isErrorPayload(result.error)
+    ) {
+      return result.error;
+    }
+
+    return undefined;
+  }
+
+  private isErrorPayload(errorPayload: unknown): boolean {
+    if (errorPayload instanceof Error) {
+      return true;
+    }
+
+    const errorData = errorPayload as Record<string, unknown>;
+    return (
+      typeof errorData?.code === 'number' &&
+      typeof errorData?.message === 'string'
+    );
+  }
+
   private handleMessage(message: unknown): void {
     if (typeof message === 'object' && message !== null) {
       if ('data' in message) {
@@ -221,10 +252,11 @@ export class MWPTransport implements ExtendedTransport {
           if (request) {
             clearTimeout(request.timeout);
 
-            // Check if the message contains an error (e.g., user rejected)
-            if ('error' in messagePayload && messagePayload.error) {
+            const responseError = this.getResponseError(messagePayload);
+
+            if (responseError) {
               this.pendingRequests.delete(messagePayload.id);
-              request.reject(this.parseWalletError(messagePayload.error));
+              request.reject(this.parseWalletError(responseError));
               return;
             }
 
@@ -507,11 +539,11 @@ export class MWPTransport implements ExtendedTransport {
                 return;
               }
 
+              const responseError = this.getResponseError(messagePayload);
+
               // Handle error response (e.g., user rejected the connection)
-              if (messagePayload.error) {
-                return rejectConnection(
-                  this.parseWalletError(messagePayload.error),
-                );
+              if (responseError) {
+                return rejectConnection(this.parseWalletError(responseError));
               }
 
               // Success case - store session, notify, and resolve

@@ -17,7 +17,7 @@ export async function preload(): Promise<void> {
     const { defineCustomElements } = await import(
       '@metamask/multichain-ui/loader'
     );
-    await defineCustomElements();
+    defineCustomElements();
   } catch (error) {
     console.error('Failed to load customElements:', error);
   }
