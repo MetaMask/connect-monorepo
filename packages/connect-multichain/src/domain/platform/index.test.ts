@@ -82,6 +82,17 @@ describe('hasExtension', () => {
     await expect(detection).resolves.toBe(false);
   });
 
+  it('uses the captured window if the global window is removed before detection completes', async () => {
+    setupEip6963Window('io.metamask');
+
+    const { hasExtension } = await import('.');
+    const detection = hasExtension();
+    vi.unstubAllGlobals();
+    await vi.advanceTimersByTimeAsync(300);
+
+    await expect(detection).resolves.toBe(true);
+  });
+
   it.each(['io.metamask', 'io.metamask.mobile'])(
     'treats native MetaMask rdns %s as the extension',
     async (rdns) => {
