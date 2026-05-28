@@ -1,10 +1,11 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
 /* eslint-disable @typescript-eslint/parameter-properties -- Constructor shorthand is intentional */
+/* eslint-disable jsdoc/require-jsdoc -- Internal helpers are self-descriptive */
 /* eslint-disable jsdoc/require-param-description -- Auto-generated JSDoc */
 /* eslint-disable jsdoc/require-returns -- Auto-generated JSDoc */
 /* eslint-disable @typescript-eslint/no-misused-promises -- setTimeout callback is async intentionally */
 import { analytics } from '@metamask/analytics';
-import type { Json } from '@metamask/utils';
+import { isValidJson, type Json } from '@metamask/utils';
 
 import {
   METAMASK_CONNECT_BASE_URL,
@@ -30,16 +31,19 @@ import type { RpcClient } from './handlers/rpcClient';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
 
 let rpcId = 1;
+const MAX_ERROR_CAUSE_DEPTH = 5;
 
 type InvocationErrorDetails = {
   reason: string;
   rpcCode?: number;
   rpcMessage?: string;
+  rpcData?: Json;
 };
 
 type CodedErrorDetails = {
   code: number;
   message?: string;
+  data?: Json;
 };
 
 function getErrorObject(value: unknown): Record<string, unknown> | undefined {
@@ -57,6 +61,48 @@ function getNonEmptyMessage(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
+function getJsonData(value: unknown): Json | undefined {
+  return value !== undefined && isValidJson(value) ? value : undefined;
+}
+
+function getFirstNonEmptyMessage(values: unknown[]): string | undefined {
+  for (const value of values) {
+    const message = getNonEmptyMessage(value);
+    if (message !== undefined) {
+      return message;
+    }
+  }
+  return undefined;
+}
+
+function getFirstJsonData(values: unknown[]): Json | undefined {
+  for (const value of values) {
+    const data = getJsonData(value);
+    if (data !== undefined) {
+      return data;
+    }
+  }
+  return undefined;
+}
+
+function getErrorObjectChain(
+  errorObject: Record<string, unknown> | undefined,
+): Record<string, unknown>[] {
+  const chain: Record<string, unknown>[] = [];
+  let currentObject = errorObject;
+
+  for (
+    let depth = 0;
+    currentObject !== undefined && depth < MAX_ERROR_CAUSE_DEPTH;
+    depth += 1
+  ) {
+    chain.push(currentObject);
+    currentObject = getErrorObject(currentObject.cause);
+  }
+
+  return chain;
+}
+
 function getCodedErrorDetails(
   value: Record<string, unknown> | undefined,
 ): CodedErrorDetails | undefined {
@@ -66,9 +112,11 @@ function getCodedErrorDetails(
   }
 
   const message = getNonEmptyMessage(value?.message);
+  const data = getJsonData(value?.data);
   return {
     code,
     ...(message === undefined ? {} : { message }),
+    ...(data === undefined ? {} : { data }),
   };
 }
 
@@ -81,32 +129,43 @@ function getCodedErrorDetails(
  */
 function getInvocationErrorDetails(error: unknown): InvocationErrorDetails {
   const errorObject = getErrorObject(error);
-  const causeObject = getErrorObject(errorObject?.cause);
-  const errorMessage =
-    getNonEmptyMessage(error) ?? getNonEmptyMessage(errorObject?.message);
-  const causeMessage = getNonEmptyMessage(causeObject?.message);
-  const topLevelDetails = getCodedErrorDetails(errorObject);
-  if (topLevelDetails) {
-    const reason =
-      topLevelDetails.message ?? causeMessage ?? errorMessage ?? 'Unknown error';
-    return {
-      reason,
-      rpcCode: topLevelDetails.code,
-      rpcMessage: reason,
-    };
+  const errorObjectChain = getErrorObjectChain(errorObject);
+  const primitiveMessage = getNonEmptyMessage(error);
+  for (const [index, currentObject] of errorObjectChain.entries()) {
+    const codedDetails = getCodedErrorDetails(currentObject);
+    if (codedDetails) {
+      const descendantObjects = errorObjectChain.slice(index + 1);
+      const ancestorObjects = errorObjectChain.slice(0, index);
+      const descendantMessage = getFirstNonEmptyMessage(
+        descendantObjects.map((object) => object.message),
+      );
+      const ancestorMessage = getFirstNonEmptyMessage([
+        primitiveMessage,
+        ...ancestorObjects.map((object) => object.message),
+      ]);
+      const descendantData = getFirstJsonData(
+        descendantObjects.map((object) => object.data),
+      );
+      const reason =
+        codedDetails.message ??
+        descendantMessage ??
+        ancestorMessage ??
+        'Unknown error';
+      return {
+        reason,
+        rpcCode: codedDetails.code,
+        rpcMessage: reason,
+        ...(codedDetails.data === undefined && descendantData === undefined
+          ? {}
+          : { rpcData: codedDetails.data ?? descendantData }),
+      };
+    }
   }
 
-  const causeDetails = getCodedErrorDetails(causeObject);
-  if (causeDetails) {
-    const reason = causeDetails.message ?? errorMessage ?? 'Unknown error';
-    return {
-      reason,
-      rpcCode: causeDetails.code,
-      rpcMessage: reason,
-    };
-  }
-
-  const reason = errorMessage ?? causeMessage ?? 'Unknown error';
+  const reason =
+    primitiveMessage ??
+    getFirstNonEmptyMessage(errorObjectChain.map((object) => object.message)) ??
+    'Unknown error';
 
   return {
     reason,
@@ -124,8 +183,9 @@ function toRPCInvokeMethodErr(error: unknown): RPCInvokeMethodErr {
     return error;
   }
 
-  const { reason, rpcCode, rpcMessage } = getInvocationErrorDetails(error);
-  return new RPCInvokeMethodErr(reason, rpcCode, rpcMessage);
+  const { reason, rpcCode, rpcMessage, rpcData } =
+    getInvocationErrorDetails(error);
+  return new RPCInvokeMethodErr(reason, rpcCode, rpcMessage, rpcData);
 }
 
 /**
@@ -221,8 +281,7 @@ export class RequestRouter {
       try {
         return await execute();
       } catch (error) {
-        const normalizedError = toRPCInvokeMethodErr(error);
-        throw normalizedError;
+        throw toRPCInvokeMethodErr(error);
       }
     }
 

@@ -63,6 +63,34 @@ describe('EIP1193Provider', () => {
       });
     });
 
+    it('preserves JSON-RPC error data on EIP-1193 errors', async () => {
+      const mockCore = createMockCore();
+      const provider = new EIP1193Provider(mockCore as any, vi.fn());
+      provider.selectedChainId = '0x1';
+      const rpcData = {
+        originalError: {
+          code: 3,
+          data: '0x08c379a0',
+          message: 'execution reverted: insufficient funds',
+        },
+      };
+      const rpcError = new RPCInvokeMethodErr(
+        'execution reverted',
+        -32000,
+        'execution reverted',
+      ) as RPCInvokeMethodErr & { rpcData: typeof rpcData };
+      rpcError.rpcData = rpcData;
+      mockCore.invokeMethod.mockRejectedValue(rpcError);
+
+      await expect(
+        provider.request({ method: 'eth_sendTransaction', params: [] }),
+      ).rejects.toMatchObject({
+        message: 'execution reverted',
+        code: -32000,
+        data: rpcData,
+      });
+    });
+
     it('propagates non-RPCInvokeMethodErr errors unchanged', async () => {
       const mockCore = createMockCore();
       const provider = new EIP1193Provider(mockCore as any, vi.fn());

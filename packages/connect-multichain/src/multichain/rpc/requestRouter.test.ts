@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/unbound-method -- referencing the mocked `analytics.track` is intentional in spy assertions */
 /* eslint-disable @typescript-eslint/naming-convention -- analytics event properties are snake_case by schema convention */
 import { analytics } from '@metamask/analytics';
+import type { Json } from '@metamask/utils';
 import * as t from 'vitest';
 
 import type { RequestRouter } from './requestRouter';
@@ -75,24 +76,31 @@ t.describe('RequestRouter', () => {
     reason,
     rpcCode,
     rpcMessage,
+    rpcData,
   }: {
     actual: Promise<unknown>;
     reason: string;
     rpcCode?: number;
     rpcMessage?: string;
+    rpcData?: Json;
   }): Promise<void> => {
-    await t.expect(actual).rejects.toSatisfy((error: unknown) => {
-      t.expect(error).toBeInstanceOf(RPCInvokeMethodErr);
-      const rpcError = error as RPCInvokeMethodErr;
-      t.expect(rpcError.code).toBe(RPCInvokeMethodErr.code);
-      t.expect(rpcError.message).toBe(
-        `RPCErr53: RPC Client invoke method reason (${reason})`,
-      );
-      t.expect(rpcError.reason).toBe(reason);
-      t.expect(rpcError.rpcCode).toBe(rpcCode);
-      t.expect(rpcError.rpcMessage).toBe(rpcMessage);
-      return true;
-    });
+    let thrownError: unknown;
+    try {
+      await actual;
+    } catch (error) {
+      thrownError = error;
+    }
+
+    t.expect(thrownError).toBeInstanceOf(RPCInvokeMethodErr);
+    const rpcError = thrownError as RPCInvokeMethodErr;
+    t.expect(rpcError.code).toBe(RPCInvokeMethodErr.code);
+    t.expect(rpcError.message).toBe(
+      `RPCErr53: RPC Client invoke method reason (${reason})`,
+    );
+    t.expect(rpcError.reason).toBe(reason);
+    t.expect(rpcError.rpcCode).toBe(rpcCode);
+    t.expect(rpcError.rpcMessage).toBe(rpcMessage);
+    t.expect(rpcError.rpcData).toStrictEqual(rpcData);
   };
 
   t.describe('invokeMethod', () => {
@@ -222,6 +230,74 @@ t.describe('RequestRouter', () => {
         );
 
         t.it(
+          'preserves JSON-RPC error data from a wallet response',
+          async () => {
+            const rpcData = {
+              originalError: {
+                code: 3,
+                data: '0x08c379a0',
+                message: 'execution reverted: insufficient funds',
+              },
+            };
+            mockTransport.request.mockResolvedValue({
+              error: {
+                code: -32000,
+                message: 'execution reverted',
+                data: rpcData,
+              },
+            });
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'execution reverted',
+              rpcCode: -32000,
+              rpcMessage: 'execution reverted',
+              rpcData,
+            });
+          },
+        );
+
+        t.it(
+          'walks nested causes to normalize wallet errors wrapped by transport layers',
+          async () => {
+            const rpcData = {
+              originalError: {
+                code: 3,
+                data: '0x08c379a0',
+                message: 'execution reverted: insufficient funds',
+              },
+            };
+            const transportError = new Error('Transport failed') as Error & {
+              cause: {
+                message: string;
+                cause: {
+                  code: number;
+                  message: string;
+                  data: typeof rpcData;
+                };
+              };
+            };
+            transportError.cause = {
+              message: 'Multichain API failed',
+              cause: {
+                code: -32000,
+                message: 'execution reverted',
+                data: rpcData,
+              },
+            };
+            mockTransport.request.mockRejectedValue(transportError);
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'execution reverted',
+              rpcCode: -32000,
+              rpcMessage: 'execution reverted',
+              rpcData,
+            });
+          },
+        );
+
+        t.it(
           'preserves a primitive string rejection as the reason',
           async () => {
             mockTransport.request.mockRejectedValue('Transport string error');
@@ -243,9 +319,9 @@ t.describe('RequestRouter', () => {
             );
             mockTransport.request.mockRejectedValue(rpcError);
 
-            await t.expect(requestRouter.invokeMethod(baseOptions)).rejects.toBe(
-              rpcError,
-            );
+            await t
+              .expect(requestRouter.invokeMethod(baseOptions))
+              .rejects.toBe(rpcError);
           },
         );
 
@@ -255,21 +331,18 @@ t.describe('RequestRouter', () => {
         ] as const)(
           'normalizes %s from transport-specific error shapes',
           (_label, code, message) => {
-            t.it(
-              'normalizes a resolved JSON-RPC error response',
-              async () => {
-                mockTransport.request.mockResolvedValue({
-                  error: { code, message },
-                });
+            t.it('normalizes a resolved JSON-RPC error response', async () => {
+              mockTransport.request.mockResolvedValue({
+                error: { code, message },
+              });
 
-                await expectRpcInvokeMethodErr({
-                  actual: requestRouter.invokeMethod(baseOptions),
-                  reason: message,
-                  rpcCode: code,
-                  rpcMessage: message,
-                });
-              },
-            );
+              await expectRpcInvokeMethodErr({
+                actual: requestRouter.invokeMethod(baseOptions),
+                reason: message,
+                rpcCode: code,
+                rpcMessage: message,
+              });
+            });
 
             t.it('normalizes a rejected coded transport error', async () => {
               const codedError = new Error(message) as Error & {

@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/parameter-properties */
+import type { Json } from '@metamask/utils';
+
 import { BaseErr } from './base';
 import type { RPCErrorCodes } from './types';
 
@@ -42,10 +44,18 @@ export class RPCReadonlyRequestErr extends BaseErr<'RPC', RPCErrorCodes> {
 export class RPCInvokeMethodErr extends BaseErr<'RPC', RPCErrorCodes> {
   static readonly code = 53;
 
+  /**
+   * @param reason - SDK-facing invokeMethod reason.
+   * @param rpcCode - Original wallet JSON-RPC / EIP-1193 error code.
+   * @param rpcMessage - Original provider-facing wallet message. Router
+   * normalization keeps this aligned with `reason` for coded wallet errors.
+   * @param rpcData - Original JSON-RPC error data, when provided by the wallet.
+   */
   constructor(
     public readonly reason: string,
     public readonly rpcCode?: number,
     public readonly rpcMessage?: string,
+    public readonly rpcData?: Json,
   ) {
     super(
       `RPCErr${RPCInvokeMethodErr.code}: RPC Client invoke method reason (${reason})`,
