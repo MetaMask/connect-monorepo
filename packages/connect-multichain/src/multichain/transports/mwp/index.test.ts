@@ -580,6 +580,44 @@ t.describe('MWPTransport', () => {
         );
 
         t.it(
+          'rejects when wallet_createSession returns a response-shaped error',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+
+            const connectPromise = transport.connect({
+              scopes: [],
+              caipAccountIds: [],
+            });
+
+            await t.vi.waitFor(() => {
+              t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+            });
+
+            const sendRequestArgs = mockDappClient.sendRequest.mock.calls[0][0];
+            const initialHandler = getInitialConnectionMessageHandler();
+            t.expect(initialHandler).toBeDefined();
+
+            await initialHandler?.({
+              data: {
+                id: sendRequestArgs.data.id,
+                jsonrpc: '2.0',
+                result: {
+                  error: {
+                    code: 4001,
+                    message: 'User rejected the request',
+                  },
+                },
+              },
+            });
+
+            await t.expect(connectPromise).rejects.toMatchObject({
+              code: 4001,
+              message: 'User rejected the request',
+            });
+          },
+        );
+
+        t.it(
           'when dappClient.connect() rejects, sendRequest() is NOT called and the connect promise rejects',
           async () => {
             mockGetPlatformType.mockReturnValue(platform);
@@ -647,6 +685,44 @@ t.describe('MWPTransport', () => {
               },
             });
             await connectPromise;
+          },
+        );
+
+        t.it(
+          'rejects when inline wallet_createSession returns a response-shaped error',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+
+            const connectPromise = transport.connect({
+              scopes: [],
+              caipAccountIds: [],
+            });
+
+            await t.vi.waitFor(() => {
+              t.expect(mockDappClient.connect).toHaveBeenCalledTimes(1);
+            });
+
+            const connectArgs = mockDappClient.connect.mock.calls[0][0];
+            const initialHandler = getInitialConnectionMessageHandler();
+            t.expect(initialHandler).toBeDefined();
+
+            await initialHandler?.({
+              data: {
+                id: connectArgs.initialPayload.data.id,
+                jsonrpc: '2.0',
+                result: {
+                  error: {
+                    code: 4001,
+                    message: 'User rejected the request',
+                  },
+                },
+              },
+            });
+
+            await t.expect(connectPromise).rejects.toMatchObject({
+              code: 4001,
+              message: 'User rejected the request',
+            });
           },
         );
       },

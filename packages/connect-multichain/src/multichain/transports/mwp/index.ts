@@ -539,10 +539,12 @@ export class MWPTransport implements ExtendedTransport {
                 return;
               }
 
+              const responseError = this.getResponseError(messagePayload);
+
               // Handle error response (e.g., user rejected the connection)
-              if (messagePayload.error) {
+              if (responseError) {
                 return rejectConnection(
-                  this.parseWalletError(messagePayload.error),
+                  this.parseWalletError(responseError),
                 );
               }
 
