@@ -19,12 +19,12 @@ export const EIP6963_REQUEST_PROVIDER_EVENT = 'eip6963:requestProvider';
 export const EIP6963_DETECTION_TIMEOUT_MS = 300;
 
 /**
- * Display name used for the SDK-managed MetaMask EIP-6963 provider.
+ * Display name used for the MMConnect-managed MetaMask EIP-6963 provider.
  */
 export const CONNECT_EVM_EIP6963_NAME = 'MetaMask';
 
 /**
- * Reverse-DNS identifier used for the SDK-managed MetaMask EIP-6963 provider.
+ * Reverse-DNS identifier used for the MMConnect-managed MetaMask EIP-6963 provider.
  */
 export const CONNECT_EVM_EIP6963_RDNS = 'io.metamask.mmc';
 
@@ -37,7 +37,7 @@ export const METAMASK_EIP6963_RDNS = [
 ] as const;
 
 /**
- * Icon URI used for the SDK-managed MetaMask EIP-6963 provider.
+ * Icon URI used for the MMConnect-managed MetaMask EIP-6963 provider.
  */
 export const CONNECT_EVM_EIP6963_ICON = metamaskFoxIcon;
 
@@ -229,7 +229,7 @@ const hasNativeMetaMaskProvider = async (): Promise<boolean> => {
 };
 
 /**
- * Announces an SDK-managed EIP-1193 provider through EIP-6963.
+ * Announces an MMConnect-managed EIP-1193 provider through EIP-6963.
  *
  * Announcement is best-effort and browser-only. Native MetaMask providers with
  * `io.metamask` or `io.metamask.mobile` suppress this SDK provider to avoid
