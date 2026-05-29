@@ -73,6 +73,26 @@ Toggle between multichain and legacy EVM modes to test backwards compatibility w
 
 Test the wagmi integration for React applications with persistent sessions and multichain support.
 
+## Manually validating EIP-6963 announcements
+
+The browser playground includes an **EIP-6963 test bench** for checking provider discovery behavior from `@metamask/connect-evm`.
+
+1. Start the browser playground:
+
+   ```bash
+   yarn workspace @metamask/browser-playground start
+   ```
+
+2. Open `http://localhost:3000`.
+3. Find the **EIP-6963 test bench** section.
+4. Reload the page and watch for an automatic announcement row.
+5. Click **Request providers** to dispatch `eip6963:requestProvider`.
+6. To validate the MMConnect-managed provider, use a browser profile without a native MetaMask EIP-6963 provider enabled. Confirm the MetaMask row includes an `rdns`, UUID, `Provider request` = `Yes`, and `Legacy provider` = `Yes`. If native MetaMask is enabled, the MMConnect-managed provider may be suppressed and the native row can show `Legacy provider` = `No`.
+7. Click **Announce SDK provider** to call `legacySDK.announceProvider()` manually when the MMConnect-managed provider is not suppressed and another announcement is needed.
+8. Click **Clear** to reset the observed announcement log.
+
+This panel observes real browser `eip6963:announceProvider` events. It does not simulate native wallet announcements.
+
 ## Manually testing analytics events
 
 The playground emits analytics events via `@metamask/analytics` to whatever endpoint `METAMASK_ANALYTICS_ENDPOINT` resolves to (defaults to the production sink). For local verification — confirming a new property landed, a classifier picked the right bucket, a new event fired at all — you can point the playground at a local echo server and use the in-page **Analytics test bench** section to drive each code path.

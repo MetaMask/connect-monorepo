@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Announce the MMConnect-managed EIP-1193 provider through EIP-6963 by default when native MetaMask has not already announced, with `skipAutoAnnounce` and `announceProvider()` for manual control. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+
 ### Fixed
 
 - MWP-backed EIP-1193 requests now surface wallet errors through rejected promises consistently with the default transport, so `EvmClient.switchChain()` no longer has to handle returned error payloads. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))

@@ -327,6 +327,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
 
           metamaskPromise = createEVMClient({
             ...parameters,
+            skipAutoAnnounce: parameters.skipAutoAnnounce ?? true,
             api: {
               supportedNetworks: Object.fromEntries(
                 config.chains.map((chain) => [
