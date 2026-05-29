@@ -62,9 +62,12 @@ For typed event handling in TypeScript:
 ```typescript
 import type { MmInstallModalCustomEvent } from '@metamask/multichain-ui';
 
-el.addEventListener('close', (event: MmInstallModalCustomEvent<{ shouldTerminate?: boolean }>) => {
-  // ...
-});
+el.addEventListener(
+  'close',
+  (event: MmInstallModalCustomEvent<{ shouldTerminate?: boolean }>) => {
+    // ...
+  },
+);
 ```
 
 ## Development
