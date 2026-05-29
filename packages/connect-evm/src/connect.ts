@@ -112,10 +112,6 @@ const getRequestedPermissions = ({
   chainIds: Hex[];
   invoker: string;
 }): RequestedPermission[] => {
-  // The Multichain SDK always grants accounts and chains together at connect
-  // time, so we don't validate or honor the requested permission shape — we
-  // simply return both granted permissions in the correct EIP-2255 response
-  // shape.
   const id = createPermissionId();
   const date = Date.now();
 
