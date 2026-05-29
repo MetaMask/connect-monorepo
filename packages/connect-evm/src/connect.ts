@@ -69,6 +69,81 @@ type ConnectOptions = {
   chainIds?: Hex[];
 };
 
+type RequestedPermission = {
+  id: string;
+  parentCapability: 'eth_accounts' | 'endowment:permitted-chains';
+  invoker: string;
+  caveats: {
+    type: 'restrictReturnedAccounts' | 'restrictNetworkSwitching';
+    value: Address[] | Hex[];
+  }[];
+  date: number;
+};
+
+const createPermissionId = (): string => {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+};
+
+const getDappInvoker = (options: MultichainOptions): string => {
+  const { name, nativeScheme, url: dappUrl } = options.dapp;
+  const fallbackInvoker = nativeScheme ?? name;
+
+  if (!dappUrl) {
+    return fallbackInvoker;
+  }
+
+  try {
+    const { origin } = new URL(dappUrl);
+    return origin === 'null' ? fallbackInvoker : origin;
+  } catch {
+    return fallbackInvoker;
+  }
+};
+
+const getRequestedPermissions = ({
+  accounts,
+  chainIds,
+  invoker,
+}: {
+  accounts: Address[];
+  chainIds: Hex[];
+  invoker: string;
+}): RequestedPermission[] => {
+  const id = createPermissionId();
+  const date = Date.now();
+
+  return [
+    {
+      id,
+      parentCapability: 'eth_accounts',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictReturnedAccounts',
+          value: accounts,
+        },
+      ],
+      date,
+    },
+    {
+      id,
+      parentCapability: 'endowment:permitted-chains',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictNetworkSwitching',
+          value: chainIds,
+        },
+      ],
+      date,
+    },
+  ];
+};
+
 export type ConnectEvmStatus = 'disconnected' | 'connected' | 'connecting';
 
 /**
@@ -593,13 +668,6 @@ export class MetamaskConnectEVM {
         params,
       });
 
-      // When using the MWP transport, the error is returned instead of thrown,
-      // so we force it into the catch block here.
-      const resultWithError = result as { error?: { message: string } };
-      if (resultWithError?.error) {
-        throw new Error(resultWithError.error.message);
-      }
-
       await this.#trackWalletActionSucceeded(method, scope, params);
       if ((result as { result: unknown }).result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
@@ -681,6 +749,13 @@ export class MetamaskConnectEVM {
         if (request.method === 'eth_requestAccounts') {
           return result.accounts;
         }
+        if (request.method === 'wallet_requestPermissions') {
+          return getRequestedPermissions({
+            accounts: result.accounts,
+            chainIds: getPermittedEthChainIds(this.#sessionScopes),
+            invoker: getDappInvoker(this.#getCoreOptions()),
+          });
+        }
         return result;
       } catch (error) {
         await this.#trackWalletActionFailed(method, scope, params, error);
@@ -689,13 +764,15 @@ export class MetamaskConnectEVM {
     }
 
     if (isSwitchChainRequest(request)) {
-      return this.switchChain({
+      await this.switchChain({
         chainId: request.params[0].chainId as Hex,
       });
+      return null;
     }
 
     if (isAddChainRequest(request)) {
-      return this.#addEthereumChain(request.params[0]);
+      await this.#addEthereumChain(request.params[0]);
+      return null;
     }
 
     if (isAccountsRequest(request)) {
