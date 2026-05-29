@@ -318,7 +318,7 @@ export const createTest: CreateTestFN = ({
           await mockDappClient.sendRequest({
             name: MULTICHAIN_PROVIDER_STREAM_NAME,
             data: {
-              id: `${this.__reqId++}`,
+              id: `${requestId++}`,
               jsonrpc: '2.0',
               method: 'wallet_getSession',
               params: [],

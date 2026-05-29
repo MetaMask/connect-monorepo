@@ -13,6 +13,7 @@ import {
   type SessionData,
 } from '@metamask/multichain-api-client';
 import type { CaipAccountId, Json } from '@metamask/utils';
+import { createDeferredPromise } from '@metamask/utils';
 
 import {
   METAMASK_CONNECT_BASE_URL,
@@ -283,14 +284,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
       await instance.#init();
       return instance;
-    })();
-
-    globalObject[SINGLETON_KEY] = instancePromise;
-
-    instancePromise.catch((error) => {
+    })().catch((error) => {
       globalObject[SINGLETON_KEY] = undefined;
       console.error('Error initializing MetaMaskConnectMultichain', error);
+      throw error;
     });
+
+    globalObject[SINGLETON_KEY] = instancePromise;
 
     return instancePromise;
   }
@@ -327,7 +327,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async #getStoredTransport(): Promise<ExtendedTransport | undefined> {
-    const transportType = await this.storage.getTransport();
+    const transportType = await this.storage.getTransportType();
     const hasExtensionInstalled = await hasExtension();
     if (transportType) {
       if (transportType === TransportType.Browser) {
@@ -356,7 +356,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         return apiTransport;
       }
 
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
     }
 
     return undefined;
@@ -371,9 +371,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       }
       this.status = 'connected';
       if (this.#transportType === TransportType.MWP) {
-        await this.storage.setTransport(TransportType.MWP);
+        await this.storage.setTransportType(TransportType.MWP);
       } else {
-        await this.storage.setTransport(TransportType.Browser);
+        await this.storage.setTransportType(TransportType.Browser);
       }
     } else {
       this.status = 'loaded';
@@ -410,7 +410,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       await this.#setupAnalytics();
       await this.#setupTransport();
     } catch (error) {
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
       this.status = 'pending';
       logger('MetaMaskSDK error during initialization', error);
     }
@@ -460,13 +460,13 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#listener = this.transport.onNotification(
       this.#onTransportNotification.bind(this),
     );
-    await this.storage.setTransport(TransportType.MWP);
+    await this.storage.setTransportType(TransportType.MWP);
   }
 
   async #onBeforeUnload(): Promise<void> {
     // Fixes glitch with "connecting" state when modal is still visible and we close screen or refresh
     if (this.options.ui.factory.modal?.isMounted) {
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
     }
   }
 
@@ -495,83 +495,88 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     caipAccountIds: CaipAccountId[],
     sessionProperties?: SessionProperties,
   ): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      // Use Connection Modal
-      this.options.ui.factory
-        .renderInstallModal(
-          desktopPreferred,
-          async () => {
-            if (
-              this.dappClient.state === 'CONNECTED' ||
-              this.dappClient.state === 'CONNECTING'
-            ) {
-              await this.dappClient.disconnect();
-            }
-            return new Promise<ConnectionRequest>((_resolve) => {
-              this.dappClient.on(
-                'session_request',
-                (sessionRequest: SessionRequest) => {
-                  _resolve({
-                    sessionRequest,
-                    metadata: this.#buildConnectionMetadata(),
-                  });
-                },
-              );
+    const completion = createDeferredPromise();
 
-              (async (): Promise<void> => {
-                try {
-                  await this.transport.connect({
-                    scopes,
-                    caipAccountIds,
-                    sessionProperties,
-                  });
-                  await this.options.ui.factory.unload();
-                  this.options.ui.factory.modal?.unmount();
-                  this.status = 'connected';
-                  await this.storage.setTransport(TransportType.MWP);
-                } catch (error) {
-                  const { ProtocolError, ErrorCode } = await import(
-                    '@metamask/mobile-wallet-protocol-core'
-                  );
-                  if (error instanceof ProtocolError) {
-                    if (error.code !== ErrorCode.REQUEST_EXPIRED) {
-                      this.status = 'disconnected';
-                      // Close the modal on error
-                      await this.options.ui.factory.unload(error);
-                      reject(error);
-                    }
-                    // If request is expires, the QRCode will automatically be regenerated we can ignore this case
-                  } else {
-                    this.status = 'disconnected';
-                    const normalizedError =
-                      error instanceof Error ? error : new Error(String(error));
-                    // Close the modal on error
-                    await this.options.ui.factory.unload(normalizedError);
-                    reject(normalizedError);
-                  }
-                }
-              })().catch(() => {
-                // Error already handled in the async function
-              });
-            });
-          },
-          async (error?: Error) => {
-            if (error) {
-              await this.storage.removeTransport();
-              reject(error);
-            } else {
-              await this.storage.setTransport(TransportType.MWP);
-              resolve();
+    const createConnectionRequest = async (): Promise<ConnectionRequest> => {
+      if (
+        this.dappClient.state === 'CONNECTED' ||
+        this.dappClient.state === 'CONNECTING'
+      ) {
+        await this.dappClient.disconnect();
+      }
+
+      // The session_request event carries the pending request needed to build
+      // the deeplink / QR code. We resolve this deferred when it fires.
+      const sessionRequestDeferred = createDeferredPromise<ConnectionRequest>();
+      this.dappClient.on(
+        'session_request',
+        (sessionRequest: SessionRequest) => {
+          sessionRequestDeferred.resolve({
+            sessionRequest,
+            metadata: this.#buildConnectionMetadata(),
+          });
+        },
+      );
+
+      // Start the connection flow in the background — it will eventually emit
+      // session_request (resolving sessionRequestDeferred) and then either
+      // succeed (handled by the successCallback below) or fail (rejecting
+      // the outer completion deferred).
+      this.transport
+        .connect({ scopes, caipAccountIds, sessionProperties })
+        .then(async () => {
+          await this.options.ui.factory.unload();
+          this.options.ui.factory.modal?.unmount();
+          this.status = 'connected';
+          await this.storage.setTransportType(TransportType.MWP);
+        })
+        .catch(async (error) => {
+          const { ProtocolError, ErrorCode } = await import(
+            '@metamask/mobile-wallet-protocol-core'
+          );
+          if (error instanceof ProtocolError) {
+            if (error.code !== ErrorCode.REQUEST_EXPIRED) {
+              this.status = 'disconnected';
+              await this.options.ui.factory.unload(error);
+              completion.reject(error);
             }
-          },
-          (uri: string) => {
-            this.emit('display_uri', uri);
-          },
-        )
-        .catch((error) => {
-          reject(error instanceof Error ? error : new Error(String(error)));
+            // If the request is expired the QR code is automatically regenerated — ignore this case
+          } else {
+            this.status = 'disconnected';
+            const normalizedError =
+              error instanceof Error ? error : new Error(String(error));
+            await this.options.ui.factory.unload(normalizedError);
+            completion.reject(normalizedError);
+          }
         });
-    });
+
+      return sessionRequestDeferred.promise;
+    };
+
+    this.options.ui.factory
+      .renderInstallModal(
+        desktopPreferred,
+        createConnectionRequest,
+        async (error?: Error) => {
+          if (error) {
+            await this.storage.removeTransportType();
+            completion.reject(error);
+          } else {
+            await this.storage.setTransportType(TransportType.MWP);
+            completion.resolve();
+          }
+        },
+        (uri: string) => {
+          this.emit('display_uri', uri);
+        },
+      )
+      .catch((error) => {
+        completion.reject(
+          error instanceof Error ? error : new Error(String(error)),
+        );
+      });
+
+    return completion.promise;
   }
 
   async #showInstallModal(
@@ -609,57 +614,44 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     caipAccountIds: CaipAccountId[],
     sessionProperties?: SessionProperties,
   ): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      if (
-        this.dappClient.state === 'CONNECTED' ||
-        this.dappClient.state === 'CONNECTING'
-      ) {
-        this.dappClient.disconnect().catch(() => {
-          // Ignore disconnect errors
-        });
-      }
+    if (
+      this.dappClient.state === 'CONNECTED' ||
+      this.dappClient.state === 'CONNECTING'
+    ) {
+      await this.dappClient.disconnect().catch(() => undefined);
+    }
 
-      // Listen for session_request to generate and emit the QR code link
-      this.dappClient.on(
-        'session_request',
-        (sessionRequest: SessionRequest) => {
-          const connectionRequest: ConnectionRequest = {
-            sessionRequest,
-            metadata: this.#buildConnectionMetadata(),
-          };
-
-          // Generate and emit the QR code link
-          const deeplink =
-            this.options.ui.factory.createConnectionDeeplink(connectionRequest);
-          this.emit('display_uri', deeplink);
-        },
-      );
-
-      // Start the connection
-      this.transport
-        .connect({ scopes, caipAccountIds, sessionProperties })
-        .then(async () => {
-          this.status = 'connected';
-          await this.storage.setTransport(TransportType.MWP);
-          resolve();
-        })
-        .catch(async (error) => {
-          const { ProtocolError } = await import(
-            '@metamask/mobile-wallet-protocol-core'
-          );
-          if (error instanceof ProtocolError) {
-            // In headless mode, we don't auto-regenerate QR codes
-            // since there's no modal to display them
-            this.status = 'disconnected';
-            await this.storage.removeTransport();
-            reject(error);
-          } else {
-            this.status = 'disconnected';
-            await this.storage.removeTransport();
-            reject(error instanceof Error ? error : new Error(String(error)));
-          }
-        });
+    // Listen for session_request to generate and emit the QR code link
+    this.dappClient.on('session_request', (sessionRequest: SessionRequest) => {
+      const connectionRequest: ConnectionRequest = {
+        sessionRequest,
+        metadata: this.#buildConnectionMetadata(),
+      };
+      const deeplink =
+        this.options.ui.factory.createConnectionDeeplink(connectionRequest);
+      this.emit('display_uri', deeplink);
     });
+
+    try {
+      await this.transport.connect({
+        scopes,
+        caipAccountIds,
+        sessionProperties,
+      });
+      this.status = 'connected';
+      await this.storage.setTransportType(TransportType.MWP);
+    } catch (error) {
+      const { ProtocolError } = await import(
+        '@metamask/mobile-wallet-protocol-core'
+      );
+      this.status = 'disconnected';
+      await this.storage.removeTransportType();
+      // In headless mode, we don't auto-regenerate QR codes since there's no modal to display them
+      if (error instanceof ProtocolError || error instanceof Error) {
+        throw error;
+      }
+      throw new Error(String(error));
+    }
   }
 
   async #setupDefaultTransport(
@@ -670,7 +662,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
 
     if (options?.persist) {
-      await this.storage.setTransport(TransportType.Browser);
+      await this.storage.setTransportType(TransportType.Browser);
     }
     const transport = new DefaultTransport();
     this.#listener = transport.onNotification(
@@ -752,7 +744,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         .connect({ scopes, caipAccountIds, sessionProperties })
         .then(resolve)
         .catch(async (error) => {
-          await this.storage.removeTransport();
+          await this.storage.removeTransportType();
           this.dappClient.off('message', dappClientMessageHandler);
           reject(error instanceof Error ? error : new Error(String(error)));
         })
@@ -904,9 +896,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
           })
           .then(async () => {
             if (this.#transportType === TransportType.MWP) {
-              return this.storage.setTransport(TransportType.MWP);
+              return this.storage.setTransportType(TransportType.MWP);
             }
-            return this.storage.setTransport(TransportType.Browser);
+            return this.storage.setTransportType(TransportType.Browser);
           }),
         scopes,
         transportType,
@@ -1016,7 +1008,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     await this.#transport?.disconnect(scopes);
 
     if (remainingScopes.length === 0) {
-      await this.storage.removeTransport();
+      await this.storage.removeTransportType();
 
       // We want to leave the DefaultTransport instance connected so that we can
       // still listen for wallet_sessionChanged events.

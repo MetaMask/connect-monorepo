@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- MWP-backed EIP-1193 requests now surface wallet errors through rejected promises consistently with the default transport, so `EvmClient.switchChain()` no longer has to handle returned error payloads. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))
 - Return spec-compatible values from additional intercepted EIP-1193 provider requests: `wallet_requestPermissions` now resolves to requested permissions, while successful `wallet_switchEthereumChain` and `wallet_addEthereumChain` requests resolve to `null`. ([#310](https://github.com/MetaMask/connect-monorepo/pull/310))
 
 ## [1.4.0]
