@@ -1,11 +1,6 @@
 import { createEVMClient } from '@metamask/connect-evm';
 import { createConnector } from '@wagmi/core';
-import {
-  getAddress,
-  numberToHex,
-  withRetry,
-  withTimeout,
-} from 'viem';
+import { getAddress, numberToHex, withRetry, withTimeout } from 'viem';
 
 import { metaMask } from './metamask-connector';
 
