@@ -104,26 +104,18 @@ const getDappInvoker = (options: MultichainOptions): string => {
 };
 
 const getRequestedPermissions = ({
-  params,
   accounts,
   chainIds,
   invoker,
 }: {
-  params: ProviderRequest['params'];
   accounts: Address[];
   chainIds: Hex[];
   invoker: string;
 }): RequestedPermission[] => {
-  const permissionRequest = Array.isArray(params) ? params[0] : undefined;
-  if (
-    !permissionRequest ||
-    typeof permissionRequest !== 'object' ||
-    Array.isArray(permissionRequest) ||
-    !('eth_accounts' in permissionRequest)
-  ) {
-    return [];
-  }
-
+  // The Multichain SDK always grants accounts and chains together at connect
+  // time, so we don't validate or honor the requested permission shape — we
+  // simply return both granted permissions in the correct EIP-2255 response
+  // shape.
   const id = createPermissionId();
   const date = Date.now();
 
@@ -758,7 +750,6 @@ export class MetamaskConnectEVM {
         }
         if (request.method === 'wallet_requestPermissions') {
           return getRequestedPermissions({
-            params,
             accounts: result.accounts,
             chainIds: getPermittedEthChainIds(this.#sessionScopes),
             invoker: getDappInvoker(this.#getCoreOptions()),

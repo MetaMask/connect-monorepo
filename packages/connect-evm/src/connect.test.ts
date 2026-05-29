@@ -1083,6 +1083,38 @@ describe('MetamaskConnectEVM', () => {
       ]);
     });
 
+    it('returns granted permissions regardless of the requested permission shape', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_requestPermissions',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          params: [{ 'endowment:permitted-chains': {} }],
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({ parentCapability: 'eth_accounts' }),
+        expect.objectContaining({
+          parentCapability: 'endowment:permitted-chains',
+        }),
+      ]);
+    });
+
     it('returns all accounts for eth_accounts', async () => {
       const mockCore = createMockCore();
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
