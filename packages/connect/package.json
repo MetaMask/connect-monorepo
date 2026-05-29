@@ -1,7 +1,7 @@
 {
   "name": "@metamask/connect",
   "version": "0.2.0",
-  "description": "Easily connect to MetaMask and its ecosystem from any application and platform",
+  "description": "Unified entry point for MetaMask Connect — re-exports the multichain core (default) and the EVM adapter (/evm)",
   "keywords": [
     "MetaMask",
     "Ethereum"

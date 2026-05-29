@@ -1,7 +1,7 @@
 {
   "name": "@metamask/connect-evm",
   "version": "1.4.0",
-  "description": "EVM Layer for MetaMask Connect",
+  "description": "MetaMask Connect EVM adapter — EIP-1193 provider over the multichain core",
   "keywords": [
     "MetaMask",
     "Ethereum"
