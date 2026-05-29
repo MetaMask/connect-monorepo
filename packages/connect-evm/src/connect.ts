@@ -88,15 +88,18 @@ const createPermissionId = (): string => {
 };
 
 const getDappInvoker = (options: MultichainOptions): string => {
-  const dappUrl = options?.dapp?.url;
+  const { name, nativeScheme, url: dappUrl } = options.dapp;
+  const fallbackInvoker = nativeScheme ?? name;
+
   if (!dappUrl) {
-    return '';
+    return fallbackInvoker;
   }
 
   try {
-    return new URL(dappUrl).origin;
+    const origin = new URL(dappUrl).origin;
+    return origin === 'null' ? fallbackInvoker : origin;
   } catch {
-    return dappUrl;
+    return fallbackInvoker;
   }
 };
 

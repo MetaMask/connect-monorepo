@@ -38,7 +38,7 @@ type MockCore = MultichainCore & {
   };
   options: {
     analytics: { enabled: boolean };
-    dapp: { name: string; url: string };
+    dapp: { name: string; url?: string; nativeScheme?: string };
   };
 };
 
@@ -1003,6 +1003,83 @@ describe('MetamaskConnectEVM', () => {
           ],
           date: expect.any(Number),
         },
+      ]);
+    });
+
+    it('uses nativeScheme as the wallet_requestPermissions invoker when dapp url is missing', async () => {
+      const mockCore = createMockCore();
+      mockCore.options.dapp = {
+        name: 'Test Dapp',
+        nativeScheme: 'react-native-playground://',
+      };
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_requestPermissions',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          params: [{ eth_accounts: {} }],
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          parentCapability: 'eth_accounts',
+          invoker: 'react-native-playground://',
+        }),
+        expect.objectContaining({
+          parentCapability: 'endowment:permitted-chains',
+          invoker: 'react-native-playground://',
+        }),
+      ]);
+    });
+
+    it('uses dapp name as the wallet_requestPermissions invoker when dapp url and nativeScheme are missing', async () => {
+      const mockCore = createMockCore();
+      mockCore.options.dapp = { name: 'Test Dapp' };
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_requestPermissions',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          params: [{ eth_accounts: {} }],
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          parentCapability: 'eth_accounts',
+          invoker: 'Test Dapp',
+        }),
+        expect.objectContaining({
+          parentCapability: 'endowment:permitted-chains',
+          invoker: 'Test Dapp',
+        }),
       ]);
     });
 
