@@ -123,15 +123,26 @@ const detectionPromise: Promise<boolean> = (async () => {
     targetWindow.dispatchEvent(new Event('eip6963:requestProvider'));
 
     setTimeout(() => {
-      targetWindow.removeEventListener('eip6963:announceProvider', handler);
+      // The window/global can be torn down before this timeout fires (e.g. test
+      // environment teardown, SPA navigation), which makes the captured
+      // reference's methods unavailable. Guard so the timer never throws an
+      // unhandled exception; fall back to "no extension" when detection can't
+      // complete.
+      try {
+        if (typeof targetWindow?.removeEventListener === 'function') {
+          targetWindow.removeEventListener('eip6963:announceProvider', handler);
+        }
 
-      const hasMetaMask = providers.some(
-        (provider) =>
-          typeof provider?.info?.rdns === 'string' &&
-          NATIVE_METAMASK_EIP6963_RDNS.has(provider.info.rdns),
-      );
+        const hasMetaMask = providers.some(
+          (provider) =>
+            typeof provider?.info?.rdns === 'string' &&
+            NATIVE_METAMASK_EIP6963_RDNS.has(provider.info.rdns),
+        );
 
-      resolve(hasMetaMask);
+        resolve(hasMetaMask);
+      } catch {
+        resolve(false);
+      }
     }, 300); // default timeout
   });
 })();
