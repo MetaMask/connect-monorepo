@@ -7,6 +7,11 @@ import type {
 
 import { Eip6963TestBench } from './Eip6963TestBench';
 
+jest.mock('@metamask/connect-evm', () => ({
+  EIP6963_ANNOUNCE_PROVIDER_EVENT: 'eip6963:announceProvider',
+  EIP6963_REQUEST_PROVIDER_EVENT: 'eip6963:requestProvider',
+}));
+
 const uuid = '11111111-2222-4333-8444-555555555555';
 
 const createProvider = (): EIP1193Provider =>
@@ -81,6 +86,9 @@ describe('Eip6963TestBench', () => {
     expect(
       screen.getByTestId(TEST_IDS.eip6963.announcementHasProviderRequest(0)),
     ).toHaveTextContent('Yes');
+    expect(
+      screen.getByRole('columnheader', { name: 'MMConnect SDK provider' }),
+    ).toBeInTheDocument();
     expect(
       screen.getByTestId(TEST_IDS.eip6963.announcementIsLegacyProvider(0)),
     ).toHaveTextContent('Yes');

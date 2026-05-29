@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { TEST_IDS } from '@metamask/playground-ui';
-import type {
-  EIP1193Provider,
-  MetamaskConnectEVM,
+import {
+  EIP6963_ANNOUNCE_PROVIDER_EVENT,
+  EIP6963_REQUEST_PROVIDER_EVENT,
+  type EIP1193Provider,
+  type MetamaskConnectEVM,
 } from '@metamask/connect-evm';
 
-const EIP6963_ANNOUNCE_PROVIDER_EVENT = 'eip6963:announceProvider';
-const EIP6963_REQUEST_PROVIDER_EVENT = 'eip6963:requestProvider';
 const MAX_ANNOUNCEMENTS = 25;
 const NOT_AVAILABLE = 'Not available';
 
@@ -184,7 +184,7 @@ export function Eip6963TestBench({
                   Provider request
                 </th>
                 <th className="px-2 py-2 font-semibold" scope="col">
-                  Legacy provider
+                  MMConnect SDK provider
                 </th>
               </tr>
             </thead>

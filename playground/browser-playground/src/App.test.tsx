@@ -28,6 +28,11 @@ jest.mock('./sdk/LegacyEVMSDKProvider', () => ({
   }),
 }));
 
+jest.mock('@metamask/connect-evm', () => ({
+  EIP6963_ANNOUNCE_PROVIDER_EVENT: 'eip6963:announceProvider',
+  EIP6963_REQUEST_PROVIDER_EVENT: 'eip6963:requestProvider',
+}));
+
 jest.mock('./sdk/SolanaProvider', () => ({
   useSolanaSDK: () => ({
     walletError: null,
