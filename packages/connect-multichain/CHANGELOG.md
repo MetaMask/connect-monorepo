@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Failed `createMultichainClient()` singleton initialization now rethrows after clearing the stored singleton promise, preventing the cleanup path from resolving to `undefined` and preserving retry behavior. ([#306](https://github.com/MetaMask/connect-monorepo/pull/306))
 - `MWPTransport.request()` and `sendEip1193Message()` now reject wallet response errors returned as `result.error`, matching `DefaultTransport` error handling and preserving wallet error codes. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))
+- `MetaMaskConnectMultichain.#headlessConnect()` now removes the `dappClient` `session_request` listener once the connection settles, preventing each headless `connect()` call from leaking a listener that would re-emit `display_uri` with stale deeplinks for every subsequent session request. ([#314](https://github.com/MetaMask/connect-monorepo/pull/314))
 
 ## [0.15.0]
 
