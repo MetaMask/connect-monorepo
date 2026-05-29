@@ -14,10 +14,10 @@ only if you are building a custom UI host or registering the elements manually.
 
 ## Components
 
-| Custom element        | Purpose                                                                                                  |
-| --------------------- | -------------------------------------------------------------------------------------------------------- |
-| `<mm-install-modal>`  | Prompts the user to install/open MetaMask and renders the connection QR code / deeplink for mobile flows |
-| `<mm-otp-modal>`      | Renders the one-time-passcode entry flow used during connection                                          |
+| Custom element       | Purpose                                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| `<mm-install-modal>` | Prompts the user to install/open MetaMask and renders the connection QR code / deeplink for mobile flows |
+| `<mm-otp-modal>`     | Renders the one-time-passcode entry flow used during connection                                          |
 
 `<mm-install-modal>` props: `link` (deeplink/QR payload), `expiresIn`, `showInstallModal`.
 It emits `close`, `startDesktopOnboarding`, `updateLink`, and `updateExpiresIn` events.

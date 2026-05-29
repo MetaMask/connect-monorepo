@@ -134,10 +134,10 @@ See [@metamask/connect-multichain](../connect-multichain/README.md) for detailed
 
 ## When to Use Which
 
-| Use Case                                           | Import Path                    |
-| -------------------------------------------------- | ------------------------------ |
-| Ethereum/EVM dApps with standard EIP-1193 provider | `@metamask/connect/evm`        |
-| Multi-chain dApps (Ethereum + Solana, etc.)        | `@metamask/connect`            |
+| Use Case                                           | Import Path             |
+| -------------------------------------------------- | ----------------------- |
+| Ethereum/EVM dApps with standard EIP-1193 provider | `@metamask/connect/evm` |
+| Multi-chain dApps (Ethereum + Solana, etc.)        | `@metamask/connect`     |
 
 ## Contributing
 
