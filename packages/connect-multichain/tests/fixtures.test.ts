@@ -14,7 +14,6 @@
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors -- Test rejection patterns */
 
 /* eslint-disable no-plusplus -- Test loops */
-/* eslint-disable no-invalid-this -- Test context */
 /* eslint-disable no-useless-catch -- Test error handling */
 
 /** biome-ignore-all lint/suspicious/noAsyncPromiseExecutor: ok for tests */
