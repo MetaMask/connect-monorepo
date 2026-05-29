@@ -110,6 +110,7 @@ const detectionPromise: Promise<boolean> = (async () => {
 
   return new Promise((resolve) => {
     const providers: any[] = [];
+    // Keep the same window reference if the global is torn down before timeout.
     const targetWindow = window;
 
     const handler = (event: any) => {
