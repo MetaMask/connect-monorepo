@@ -96,7 +96,7 @@ const getDappInvoker = (options: MultichainOptions): string => {
   }
 
   try {
-    const origin = new URL(dappUrl).origin;
+    const { origin } = new URL(dappUrl);
     return origin === 'null' ? fallbackInvoker : origin;
   } catch {
     return fallbackInvoker;
