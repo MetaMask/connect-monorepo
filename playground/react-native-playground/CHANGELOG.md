@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0]
 
-### Uncategorized
+### Changed
 
-- feat(connect-evm): auto-announce EIP-6963 provider ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.5.0
+  - @metamask/connect-multichain@1.0.0
 
 ## [0.4.5]
 
