@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0]
+
 ### Uncategorized
 
 - feat(connect-evm): auto-announce EIP-6963 provider ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
@@ -184,7 +186,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.5...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.5.0...HEAD
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.5...@metamask/react-native-playground@0.5.0
 [0.4.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.4...@metamask/react-native-playground@0.4.5
 [0.4.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.3...@metamask/react-native-playground@0.4.4
 [0.4.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.2...@metamask/react-native-playground@0.4.3

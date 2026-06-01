@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0]
+
 ### Uncategorized
 
 - chore(connect-multichain): drop unnecessary any cast in MWPTransport.isConnected ([#309](https://github.com/MetaMask/connect-monorepo/pull/309))
@@ -299,7 +301,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.15.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.0.0...HEAD
+[1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.15.0...@metamask/connect-multichain@1.0.0
 [0.15.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.14.0...@metamask/connect-multichain@0.15.0
 [0.14.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.13.0...@metamask/connect-multichain@0.14.0
 [0.13.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.12.1...@metamask/connect-multichain@0.13.0
