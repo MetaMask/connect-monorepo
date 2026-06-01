@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rename the storage API methods for the persisted transport type from `getTransport`, `setTransport`, and `removeTransport` to `getTransportType`, `setTransportType`, and `removeTransportType`. The existing `multichain-transport` storage key is unchanged, so no persisted data migration is required. ([#307](https://github.com/MetaMask/connect-monorepo/pull/307))
 - Refactor `MWPTransport.connect()` and other internals to replace deeply nested `new Promise()` and event-callback patterns with deferred promises, reducing nesting and breaking `connect()` into smaller helpers. No behavior change. ([#305](https://github.com/MetaMask/connect-monorepo/pull/305))
+- This release promotes @metamask/connect-multichain to a stable 1.0. From here it follows semver strictly — 1.x minor and patch releases will be backward-compatible, and breaking changes will only land in a future major. This lets the ecosystem packages (connect-evm, connect-solana, any future ecosystem packages) depend on ^1.0.0 and pick up all future 1.x improvements without a coordinated re-release, and gives consumers a dependable compatibility contract. ([#317](https://github.com/MetaMask/connect-monorepo/pull/317))
 
 ### Fixed
 
