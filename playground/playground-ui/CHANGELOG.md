@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- feat(connect-evm): auto-announce EIP-6963 provider ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+
 ### Added
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications
