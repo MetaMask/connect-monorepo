@@ -93,7 +93,7 @@ payload shape of each):
 | Action     | `mmconnect_wallet_action_requested`, `mmconnect_wallet_action_succeeded`, `mmconnect_wallet_action_failed`, `mmconnect_wallet_action_rejected` |
 
 Connection events carry a `transport_type` of `browser` (extension), `mwp`, or
-`unknown`, reflecting the transport selected by the multichain core.
+`unknown`, reflecting the transport selected by the multichain client.
 
 ## Content Security Policy
 

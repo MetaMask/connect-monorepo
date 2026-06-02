@@ -1,7 +1,7 @@
 {
   "name": "@metamask/connect-multichain",
   "version": "0.15.0",
-  "description": "MetaMask Connect core — CAIP multichain API, session management, and transport negotiation",
+  "description": "MetaMask Connect multichain client — CAIP multichain API, session management, and transport negotiation",
   "keywords": [
     "MetaMask",
     "Ethereum"

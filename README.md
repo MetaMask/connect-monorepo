@@ -151,10 +151,10 @@ You can also **start with Option A and migrate to Option B** incrementally. The 
 
 ## Architecture
 
-MetaMask Connect is layered: `@metamask/connect-multichain` is the CAIP-25 core that manages
+MetaMask Connect is layered: `@metamask/connect-multichain` is the CAIP-25 client that manages
 the session and negotiates transports, the EVM and Solana adapters wrap it for ecosystem-specific
-APIs, and `@metamask/connect` re-exports the core (default) and the EVM adapter (`/evm`). At
-connect time the core detects the platform and selects a transport — direct messaging to the
+APIs, and `@metamask/connect` re-exports the client (default) and the EVM adapter (`/evm`). At
+connect time the client detects the platform and selects a transport — direct messaging to the
 extension, or the Mobile Wallet Protocol relay for QR/deeplink connections to MetaMask Mobile:
 
 ```mermaid
@@ -165,7 +165,7 @@ graph TD;
   detect -->|"otherwise (no extension,<br/>mobile, node)"| mwp["MWPTransport<br/>DappClient"];
   direct --> ext["MetaMask Extension"];
   mwp --> ui["multichain-ui<br/>install modal / QR / deeplink"];
-  mwp --> relay["Relay<br/>wss://mm-sdk-relay.api.cx.metamask.io"];
+  mwp --> relay["Relay<br/>wss://mm-sdk-relay.api.cx.metamask.io/connection/websocket"];
   ui -.->|"QR scan / deeplink open"| mobile["MetaMask Mobile"];
   relay <-->|"E2E encrypted (ECIES)"| mobile;
   direct --> wrapper["MultichainApiClientWrapperTransport"];
@@ -229,14 +229,14 @@ metadata — run `yarn update-readme-content` to regenerate it.
 
 <!-- start package list -->
 
-| Package                                                       | npm                                                               | Description                                                                                                    |
-| ------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| [`@metamask/analytics`](packages/analytics)                   | [npm](https://www.npmjs.com/package/@metamask/analytics)          | MetaMask Connect telemetry — batched connection-lifecycle events                                               |
-| [`@metamask/connect`](packages/connect)                       | [npm](https://www.npmjs.com/package/@metamask/connect)            | Unified entry point for MetaMask Connect — re-exports the multichain core (default) and the EVM adapter (/evm) |
-| [`@metamask/connect-evm`](packages/connect-evm)               | [npm](https://www.npmjs.com/package/@metamask/connect-evm)        | MetaMask Connect EVM adapter — EIP-1193 provider over the multichain core                                      |
-| [`@metamask/connect-multichain`](packages/connect-multichain) | [npm](https://www.npmjs.com/package/@metamask/connect-multichain) | MetaMask Connect core — CAIP multichain API, session management, and transport negotiation                     |
-| [`@metamask/connect-solana`](packages/connect-solana)         | [npm](https://www.npmjs.com/package/@metamask/connect-solana)     | MetaMask Connect Solana adapter — Wallet Standard integration over the multichain core                         |
-| [`@metamask/multichain-ui`](packages/multichain-ui)           | [npm](https://www.npmjs.com/package/@metamask/multichain-ui)      | MetaMask Connect UI — install modal, OTP modal, and QR codes                                                   |
+| Package                                                       | npm                                                               | Description                                                                                                      |
+| ------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [`@metamask/analytics`](packages/analytics)                   | [npm](https://www.npmjs.com/package/@metamask/analytics)          | MetaMask Connect telemetry — batched connection-lifecycle events                                                 |
+| [`@metamask/connect`](packages/connect)                       | [npm](https://www.npmjs.com/package/@metamask/connect)            | Unified entry point for MetaMask Connect — re-exports the multichain client (default) and the EVM adapter (/evm) |
+| [`@metamask/connect-evm`](packages/connect-evm)               | [npm](https://www.npmjs.com/package/@metamask/connect-evm)        | MetaMask Connect EVM adapter — EIP-1193 provider over the multichain client                                      |
+| [`@metamask/connect-multichain`](packages/connect-multichain) | [npm](https://www.npmjs.com/package/@metamask/connect-multichain) | MetaMask Connect multichain client — CAIP multichain API, session management, and transport negotiation          |
+| [`@metamask/connect-solana`](packages/connect-solana)         | [npm](https://www.npmjs.com/package/@metamask/connect-solana)     | MetaMask Connect Solana adapter — Wallet Standard integration over the multichain client                         |
+| [`@metamask/multichain-ui`](packages/multichain-ui)           | [npm](https://www.npmjs.com/package/@metamask/multichain-ui)      | MetaMask Connect UI — install modal, OTP modal, and QR codes                                                     |
 
 <!-- end package list -->
 

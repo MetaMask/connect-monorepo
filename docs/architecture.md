@@ -6,11 +6,11 @@ see each package's own README.
 
 ## Package topology
 
-MetaMask Connect is layered. `@metamask/connect-multichain` is the core: it speaks the
+MetaMask Connect is layered. `@metamask/connect-multichain` is the client: it speaks the
 CAIP-25 Multichain API, manages the session, and negotiates transports. The ecosystem
-adapters (`connect-evm`, `connect-solana`) wrap the core to expose familiar,
+adapters (`connect-evm`, `connect-solana`) wrap the client to expose familiar,
 ecosystem-specific surfaces (EIP-1193 and Wallet Standard). `@metamask/connect` is a thin
-unified entry point that re-exports the core (default) and the EVM adapter (`/evm`).
+unified entry point that re-exports the client (default) and the EVM adapter (`/evm`).
 
 ```mermaid
 %%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
@@ -22,7 +22,7 @@ graph TD;
     connect_evm(["@metamask/connect-evm<br/>(EIP-1193)"]);
     connect_solana(["@metamask/connect-solana<br/>(Wallet Standard)"]);
   end
-  subgraph Core["Core"]
+  subgraph Core["Client"]
     connect_multichain(["@metamask/connect-multichain<br/>(CAIP-25 Multichain API)"]);
   end
   subgraph Support["Support packages"]
@@ -68,11 +68,11 @@ Key points:
 - **Adapters are optional.** A dapp can use `@metamask/connect-multichain` directly for the
   full scope-based API, or an adapter for a drop-in EIP-1193 / Wallet Standard experience.
 - **Support packages are internal.** `multichain-ui` (connection UI) and `analytics`
-  (telemetry) are pulled in transitively by the core; dapps rarely import them directly.
+  (telemetry) are pulled in transitively by the client; dapps rarely import them directly.
 
 ## Transport selection and composition
 
-When a dapp calls `connect()`, the multichain core detects the platform, picks a transport,
+When a dapp calls `connect()`, the multichain client detects the platform, picks a transport,
 and routes all RPC through a uniform wrapper. Two concrete transports exist:
 
 - **`DefaultTransport`** — direct messaging to the MetaMask **extension** via
@@ -99,7 +99,7 @@ graph TD;
   direct --> ext["MetaMask Extension"];
 
   mwp --> ui["multichain-ui<br/>install modal / QR / deeplink"];
-  mwp --> relay["Relay<br/>wss://mm-sdk-relay.api.cx.metamask.io"];
+  mwp --> relay["Relay<br/>wss://mm-sdk-relay.api.cx.metamask.io/connection/websocket"];
   ui -.->|"QR scan / deeplink open"| mobile["MetaMask Mobile"];
   relay <-->|"E2E encrypted (ECIES)"| mobile;
 
@@ -113,14 +113,14 @@ graph TD;
 
 Notes:
 
-- **Platform entry points.** The core ships three builds — `index.browser.ts`,
+- **Platform entry points.** The client ships three builds — `index.browser.ts`,
   `index.native.ts`, `index.node.ts` — that differ only in their UI modals
   (`web` / `rn` / `node`) and storage adapter (`localStorage` / AsyncStorage / filesystem).
 - **Resumption.** The selected transport type and session data are persisted via the
   platform `StoreAdapter`, so a connection survives page reloads without re-prompting. On
-  load the core checks the stored transport (and, for the extension path, re-verifies
+  load the client checks the stored transport (and, for the extension path, re-verifies
   extension presence) before resuming.
-- **Headless mode.** With `ui.headless: true`, the core skips `multichain-ui` and emits
+- **Headless mode.** With `ui.headless: true`, the client skips `multichain-ui` and emits
   `display_uri` events so the dapp can render its own QR code.
 - **Telemetry.** Connection events are reported through `@metamask/analytics` with a
   `transport_type` of `browser` (extension), `mwp`, or `unknown` — unless
@@ -129,7 +129,7 @@ Notes:
 ## Further reading
 
 - [Root README](../README.md) — integration options, getting started, CSP requirements.
-- [`@metamask/connect-multichain`](../packages/connect-multichain/README.md) — core API and
+- [`@metamask/connect-multichain`](../packages/connect-multichain/README.md) — client API and
   the CAIP standards it implements.
 - [`@metamask/connect-evm`](../packages/connect-evm/README.md) /
   [`@metamask/connect-solana`](../packages/connect-solana/README.md) — adapter APIs.
