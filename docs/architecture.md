@@ -117,70 +117,32 @@ Notes:
 
 ## Connection lifecycle
 
-The diagram above shows how the pieces compose; this one shows the order they run in — from
-`createMultichainClient()` through connect, usage, and disconnect. Telemetry events fired
-along the way are called out in the per-phase notes.
+The transport diagram above shows how the pieces compose; this shows the order of the main
+request flow — connect, use, disconnect. (Transport selection, persistence, and resumption
+are covered under _Transport selection and composition_ above.)
 
 ```mermaid
 sequenceDiagram
-  autonumber
   actor Dapp
   participant Client as connect-multichain
-  participant Store as KV store
-  participant UI as multichain-ui
   participant Wallet as MetaMask
 
-  rect rgb(237, 242, 247)
-    note right of Dapp: Init / resume
-    Dapp->>Client: createMultichainClient()
-    Client->>Store: getTransportType()
-    alt stored transport
-      Store-->>Client: browser | mwp
-      Client->>Wallet: reconnect + wallet_getSession
-      Wallet-->>Client: session scopes (connected)
-    else none
-      note over Client: status = loaded
-    end
-  end
+  Note over Dapp,Wallet: Connect
+  Dapp->>Client: connect(scopes)
+  Note over Client,Wallet: picks transport — extension, or<br/>mobile via QR / deeplink over the relay
+  Client->>Wallet: wallet_createSession
+  Wallet-->>Client: CAIP-25 session (user approves)
+  Client-->>Dapp: connected
 
-  rect rgb(235, 244, 236)
-    note right of Dapp: Connect
-    Dapp->>Client: connect(scopes, accounts)
-    note over Client: select transport<br/>(platform + extension presence)
-    opt MWP only (mobile / no extension)
-      Client->>UI: show QR / deeplink
-      UI->>Wallet: user scans / opens (E2E via relay)
-    end
-    Client->>Wallet: wallet_createSession(scopes)
-    alt user approves
-      Wallet-->>Client: CAIP-25 session
-      Client->>Store: setTransportType()
-      Client-->>Dapp: connected
-    else user rejects
-      Wallet-->>Client: error
-      Client-->>Dapp: throws
-    end
-    note over Client: telemetry: mmconnect_connection_initiated<br/>→ established / rejected / failed
-  end
+  Note over Dapp,Wallet: Use
+  Dapp->>Client: invokeMethod(scope, request)
+  Client->>Wallet: wallet_invokeMethod
+  Wallet-->>Client: result
+  Client-->>Dapp: result
 
-  rect rgb(244, 240, 247)
-    note right of Dapp: Usage
-    Dapp->>Client: invokeMethod(scope, request)
-    Client->>Wallet: wallet_invokeMethod
-    Wallet-->>Client: result
-    Client-->>Dapp: result
-    Wallet--)Client: wallet_sessionChanged
-    Client--)Dapp: emit sessionChanged
-    note over Client: telemetry: mmconnect_wallet_action_requested<br/>→ succeeded / failed / rejected
-  end
-
-  rect rgb(250, 244, 235)
-    note right of Dapp: Disconnect
-    Dapp->>Client: disconnect()
-    Client->>Wallet: wallet_revokeSession
-    Client->>Store: removeTransportType()
-    note over Client,Wallet: extension transport stays alive to keep<br/>listening for wallet_sessionChanged
-  end
+  Note over Dapp,Wallet: Disconnect
+  Dapp->>Client: disconnect()
+  Client->>Wallet: wallet_revokeSession
 ```
 
 ## Further reading
