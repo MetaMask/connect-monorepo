@@ -14,44 +14,28 @@ ecosystem-specific surfaces (EIP-1193 and Wallet Standard).
 ```mermaid
 %%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
 graph TD;
-  subgraph Unified["Unified entry point"]
-    connect(["@metamask/connect"]);
-  end
   subgraph Adapters["Ecosystem adapters"]
     connect_evm(["@metamask/connect-evm<br/>(EIP-1193)"]);
     connect_solana(["@metamask/connect-solana<br/>(Wallet Standard)"]);
   end
-  subgraph Core["Client"]
+  subgraph Client["Client"]
     connect_multichain(["@metamask/connect-multichain<br/>(CAIP-25 Multichain API)"]);
   end
   subgraph Support["Support packages"]
     multichain_ui(["@metamask/multichain-ui<br/>(connection UI)"]);
     analytics(["@metamask/analytics<br/>(telemetry)"]);
   end
-  subgraph Playgrounds["Playgrounds (private, for testing)"]
-    browser_playground(["@metamask/browser-playground"]);
-    node_playground(["@metamask/node-playground"]);
-    react_native_playground(["@metamask/react-native-playground"]);
-    playground_ui(["@metamask/playground-ui"]);
-  end
 
-  connect -->|default| connect_multichain;
-  connect -->|/evm| connect_evm;
   connect_evm --> connect_multichain;
   connect_solana --> connect_multichain;
   connect_evm --> analytics;
   connect_multichain --> analytics;
   connect_multichain --> multichain_ui;
 
-  browser_playground --> connect_evm;
-  browser_playground --> connect_multichain;
-  browser_playground --> playground_ui;
-  node_playground --> connect_evm;
-  node_playground --> connect_multichain;
-  node_playground --> connect_solana;
-  react_native_playground --> connect_evm;
-  react_native_playground --> connect_multichain;
-  react_native_playground --> playground_ui;
+  playgrounds(["Playgrounds<br/>(private, for testing)"]);
+  playgrounds -.-> connect_evm;
+  playgrounds -.-> connect_solana;
+  playgrounds -.-> connect_multichain;
 ```
 
 > The canonical, auto-generated dependency graph of the **published** packages lives in the
