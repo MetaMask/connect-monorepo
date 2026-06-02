@@ -151,11 +151,11 @@ You can also **start with Option A and migrate to Option B** incrementally. The 
 
 ## Architecture
 
-MetaMask Connect is layered: `@metamask/connect-multichain` is the CAIP-25 client that manages
-the session and negotiates transports, the EVM and Solana adapters wrap it for ecosystem-specific
-APIs, and `@metamask/connect` re-exports the client (default) and the EVM adapter (`/evm`). At
-connect time the client detects the platform and selects a transport — direct messaging to the
-extension, or the Mobile Wallet Protocol relay for QR/deeplink connections to MetaMask Mobile:
+MetaMask Connect is layered: `@metamask/connect-multichain` is the CAIP-25 client that
+manages the session and negotiates transports, and the EVM and Solana adapters wrap it for
+ecosystem-specific APIs. At connect time the client detects the platform and selects a
+transport — direct messaging to the extension, or the Mobile Wallet Protocol relay for
+QR/deeplink connections to MetaMask Mobile:
 
 ```mermaid
 %%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%

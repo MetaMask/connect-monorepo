@@ -1,16 +1,15 @@
 # Architecture
 
-This document describes how the packages in `connect-monorepo` fit together and how
-`@metamask/connect` composes its sub-packages and transports. For per-package API details,
-see each package's own README.
+This document describes how the packages in `connect-monorepo` fit together — how the
+multichain client, the ecosystem adapters, and the transports compose. For per-package API
+details, see each package's own README.
 
 ## Package topology
 
 MetaMask Connect is layered. `@metamask/connect-multichain` is the client: it speaks the
 CAIP-25 Multichain API, manages the session, and negotiates transports. The ecosystem
 adapters (`connect-evm`, `connect-solana`) wrap the client to expose familiar,
-ecosystem-specific surfaces (EIP-1193 and Wallet Standard). `@metamask/connect` is a thin
-unified entry point that re-exports the client (default) and the EVM adapter (`/evm`).
+ecosystem-specific surfaces (EIP-1193 and Wallet Standard).
 
 ```mermaid
 %%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
