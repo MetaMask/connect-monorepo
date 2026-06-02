@@ -18,7 +18,7 @@ graph TD;
     connect_evm(["@metamask/connect-evm<br/>(EIP-1193)"]);
     connect_solana(["@metamask/connect-solana<br/>(Wallet Standard)"]);
   end
-  subgraph Client["Client"]
+  subgraph Client["Multichain client"]
     connect_multichain(["@metamask/connect-multichain<br/>(CAIP-25 Multichain API)"]);
   end
   subgraph Support["Support packages"]
