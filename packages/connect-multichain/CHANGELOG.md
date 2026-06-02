@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - **BREAKING:** Remove the `transport.onNotification` constructor option from `createMultichainClient()`. The option was a fan-out of every typed event already exposed via `client.on(...)`. Migrate to the typed event API: `client.on('stateChanged' | 'wallet_sessionChanged' | 'metamask_accountsChanged' | 'metamask_chainChanged' | 'display_uri', handler)`. The `transport.onNotification(callback)` method on the transport instance is unaffected.
-- **BREAKING:** Remove the public `transport` accessor from `MultichainCore` and `MetaMaskConnectMultichain`. Consumers that previously reached the underlying transport to invoke EIP-1193 / legacy provider methods (`wallet_addEthereumChain`, `wallet_switchEthereumChain`, `eth_accounts`) should now go through `client.invokeMethod({ scope, request: { method, params } })`. The multichain client recognizes those methods as EIP-1193 passthroughs and forwards the raw payload to the active transport's `sendEip1193Message`, so behavior is preserved. All other RPCs continue to flow through `invokeMethod` unchanged.
+- **BREAKING:** Remove the public `transport` accessor from `MultichainCore` and `MetaMaskConnectMultichain`. Consumers that previously reached the underlying transport to invoke EIP-1193 / legacy provider methods (`wallet_addEthereumChain`, `wallet_switchEthereumChain`, `eth_accounts`) should now go through `client.invokeMethod({ scope, request: { method, params } })`. `RequestRouter` recognizes those methods as EIP-1193 passthroughs and forwards the raw payload to the active transport's `sendEip1193Message`, so behavior is preserved. All other RPCs continue to flow through `invokeMethod` unchanged.
 
 ### Fixed
 

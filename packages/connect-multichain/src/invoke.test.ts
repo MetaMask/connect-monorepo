@@ -313,7 +313,7 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
-      `${platform} should bypass RequestRouter and route EIP-1193 passthrough methods through transport.sendEip1193Message`,
+      `${platform} should route EIP-1193 passthrough methods through transport.sendEip1193Message instead of wallet_invokeMethod`,
       async () => {
         const scopes = ['eip155:1'] as Scope[];
         const caipAccountIds = [
@@ -340,9 +340,9 @@ function testSuite<T extends MultichainOptions>({
           result: ['0xabc'],
         };
 
-        // The EIP-1193 dispatcher in `MetaMaskConnectMultichain.invokeMethod`
-        // forwards passthrough methods to the active transport's
-        // `sendEip1193Message`. The active transport differs by platform:
+        // `RequestRouter.invokeMethod` dispatches EIP-1193 passthrough methods
+        // to the active transport's `sendEip1193Message`. The active transport
+        // differs by platform:
         // - `web` uses `DefaultTransport` (the wrapper itself implements
         //   `sendEip1193Message` via `window.postMessage` and does not delegate
         //   to the inner `mockDefaultTransport`).
@@ -356,9 +356,13 @@ function testSuite<T extends MultichainOptions>({
         const sendEip1193MessageSpy = t.vi
           .spyOn(transportPrototype, 'sendEip1193Message')
           .mockResolvedValue(expectedResponse as any);
-        const requestRouterSpy = t.vi.spyOn(
-          RequestRouter.prototype,
-          'invokeMethod',
+        // Spy on the private `handleWithWallet` to assert the request did NOT
+        // travel down the standard `wallet_invokeMethod` path.
+        const handleWithWalletSpy = t.vi.spyOn(
+          RequestRouter.prototype as unknown as {
+            handleWithWallet: (...args: unknown[]) => Promise<unknown>;
+          },
+          'handleWithWallet',
         );
 
         for (const method of [
@@ -367,7 +371,7 @@ function testSuite<T extends MultichainOptions>({
           'wallet_switchEthereumChain',
         ]) {
           sendEip1193MessageSpy.mockClear();
-          requestRouterSpy.mockClear();
+          handleWithWalletSpy.mockClear();
 
           const result = await sdk.invokeMethod({
             scope: 'eip155:1',
@@ -379,7 +383,7 @@ function testSuite<T extends MultichainOptions>({
             method,
             params: [],
           });
-          t.expect(requestRouterSpy).not.toHaveBeenCalled();
+          t.expect(handleWithWalletSpy).not.toHaveBeenCalled();
           t.expect(result).toEqual({
             id: 1,
             jsonrpc: '2.0',

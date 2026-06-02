@@ -33,6 +33,7 @@ t.describe('RequestRouter', () => {
     };
     mockTransport = {
       request: t.vi.fn(),
+      sendEip1193Message: t.vi.fn(),
     };
     mockRpcClient = {
       request: t.vi.fn(),
@@ -202,6 +203,88 @@ t.describe('RequestRouter', () => {
       },
     );
   });
+
+  t.describe(
+    'when the request method is in `EIP1193_PASSTHROUGH_METHODS`',
+    () => {
+      t.it.each([
+        'wallet_addEthereumChain',
+        'wallet_switchEthereumChain',
+        'eth_accounts',
+      ])(
+        'forwards %s through transport.sendEip1193Message and bypasses wallet_invokeMethod',
+        async (method) => {
+          const options: InvokeMethodOptions = {
+            scope: 'eip155:1' as Scope,
+            request: { method, params: [] as never },
+          };
+          const expectedResponse = {
+            id: 1,
+            jsonrpc: '2.0' as const,
+            result: ['0xabc'],
+          };
+          mockTransport.sendEip1193Message.mockResolvedValue(expectedResponse);
+
+          const result = await requestRouter.invokeMethod(options);
+
+          t.expect(result).toEqual(expectedResponse);
+          t.expect(mockTransport.sendEip1193Message).toHaveBeenCalledTimes(1);
+          t.expect(mockTransport.sendEip1193Message).toHaveBeenCalledWith({
+            method,
+            params: [],
+          });
+          t.expect(mockTransport.request).not.toHaveBeenCalled();
+        },
+      );
+
+      t.it(
+        'does not emit `mmconnect_wallet_action_*` analytics events for passthrough methods',
+        async () => {
+          const options: InvokeMethodOptions = {
+            scope: 'eip155:1' as Scope,
+            request: {
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x89' }] as never,
+            },
+          };
+          mockTransport.sendEip1193Message.mockResolvedValue({
+            id: 1,
+            jsonrpc: '2.0' as const,
+            result: null,
+          });
+
+          await requestRouter.invokeMethod(options);
+
+          t.expect(analytics.track).not.toHaveBeenCalled();
+        },
+      );
+
+      t.it(
+        'propagates wallet rejections from sendEip1193Message without wrapping them in RPCInvokeMethodErr',
+        async () => {
+          const options: InvokeMethodOptions = {
+            scope: 'eip155:1' as Scope,
+            request: {
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x89' }] as never,
+            },
+          };
+          const walletError = new Error(
+            'Unrecognized chain ID 0x89',
+          ) as Error & { code: number };
+          walletError.code = 4902;
+          mockTransport.sendEip1193Message.mockRejectedValue(walletError);
+
+          await t
+            .expect(requestRouter.invokeMethod(options))
+            .rejects.toMatchObject({
+              message: 'Unrecognized chain ID 0x89',
+              code: 4902,
+            });
+        },
+      );
+    },
+  );
 
   t.describe('failure_reason classification on wallet actions', () => {
     t.it(
