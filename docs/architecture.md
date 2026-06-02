@@ -87,8 +87,8 @@ graph TD;
   ui -.->|"QR scan / deeplink open"| mobile["MetaMask Mobile"];
   relay <-->|"E2E encrypted (ECIES)"| mobile;
 
-  direct --> session["CAIP-25 session<br/>wallet_invokeMethod"];
-  mwp --> session;
+  ext --> session["CAIP-25 session<br/>wallet_invokeMethod"];
+  mobile --> session;
 
   store[("StoreAdapter<br/>web / RN / node")] -.->|"persists transport + session"| start;
   session -.->|"caches session/accounts/chainId"| store;
