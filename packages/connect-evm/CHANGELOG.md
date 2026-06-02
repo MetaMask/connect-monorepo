@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Move `@metamask/connect-multichain` from `dependencies` to `peerDependencies` ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
+- **BREAKING:** `@metamask/connect-multichain` is now a peer dependency.
+  Add it to your own `dependencies` (e.g. `npm install @metamask/connect-multichain`)
+  — it is no longer installed transitively.
 
 ### Fixed
 
