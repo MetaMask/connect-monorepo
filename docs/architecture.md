@@ -72,8 +72,8 @@ Key points:
 
 ## Transport selection and composition
 
-When a dapp calls `connect()`, the multichain client detects the platform, picks a transport,
-and routes all RPC through a uniform wrapper. Two concrete transports exist:
+When a dapp calls `connect()`, the multichain client detects the platform and picks a
+transport. Two concrete transports exist:
 
 - **`DefaultTransport`** — direct messaging to the MetaMask **extension** via
   `window.postMessage` (the `metamask-contentscript` channel). Used when the extension is
@@ -84,9 +84,11 @@ and routes all RPC through a uniform wrapper. Two concrete transports exist:
   (mobile web / React Native) via `multichain-ui`, the wallet scans/opens it, and an
   end-to-end encrypted session is established.
 
-Both are fronted by `MultichainApiClientWrapperTransport`, which exposes the
-`wallet_createSession` / `wallet_getSession` / `wallet_revokeSession` / `wallet_invokeMethod`
-surface to the rest of the SDK.
+Once a transport is connected, the client owns the CAIP-25 session and routes all RPC
+through `wallet_invokeMethod`. The Multichain API is exposed two equivalent ways: directly
+on the client (`connect` / `disconnect` / `invokeMethod`), and as a standard
+[`@metamask/multichain-api-client`](https://www.npmjs.com/package/@metamask/multichain-api-client)
+provider at `client.provider` (wired to the client by an internal adapter).
 
 ```mermaid
 %%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
@@ -103,9 +105,8 @@ graph TD;
   ui -.->|"QR scan / deeplink open"| mobile["MetaMask Mobile"];
   relay <-->|"E2E encrypted (ECIES)"| mobile;
 
-  direct --> wrapper["MultichainApiClientWrapperTransport"];
-  mwp --> wrapper;
-  wrapper --> session["CAIP-25 session<br/>wallet_invokeMethod"];
+  direct --> session["CAIP-25 session<br/>wallet_invokeMethod"];
+  mwp --> session;
 
   store[("StoreAdapter<br/>web / RN / node")] -.->|"persists transport + session"| start;
   session -.->|"caches session/accounts/chainId"| store;

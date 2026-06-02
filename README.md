@@ -168,9 +168,8 @@ graph TD;
   mwp --> relay["Relay<br/>wss://mm-sdk-relay.api.cx.metamask.io/connection/websocket"];
   ui -.->|"QR scan / deeplink open"| mobile["MetaMask Mobile"];
   relay <-->|"E2E encrypted (ECIES)"| mobile;
-  direct --> wrapper["MultichainApiClientWrapperTransport"];
-  mwp --> wrapper;
-  wrapper --> session["CAIP-25 session<br/>wallet_invokeMethod"];
+  direct --> session["CAIP-25 session<br/>wallet_invokeMethod"];
+  mwp --> session;
 ```
 
 See [`docs/architecture.md`](./docs/architecture.md) for the full package topology and a
