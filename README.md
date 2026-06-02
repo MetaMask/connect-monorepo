@@ -155,25 +155,11 @@ MetaMask Connect is layered: `@metamask/connect-multichain` is the CAIP-25 clien
 manages the session and negotiates transports, and the EVM and Solana adapters wrap it for
 ecosystem-specific APIs. At connect time the client detects the platform and selects a
 transport — direct messaging to the extension, or the Mobile Wallet Protocol relay for
-QR/deeplink connections to MetaMask Mobile:
+QR/deeplink connections to MetaMask Mobile.
 
-```mermaid
-%%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
-graph TD;
-  start(["createMultichainClient()"]) --> detect{"Platform detection +<br/>EIP-6963 extension presence"};
-  detect -->|"in-app webview, OR<br/>desktop web + extension + preferExtension"| direct["DefaultTransport<br/>window.postMessage"];
-  detect -->|"otherwise (no extension,<br/>mobile, node)"| mwp["MWPTransport<br/>DappClient"];
-  direct --> ext["MetaMask Extension"];
-  mwp --> ui["multichain-ui<br/>install modal / QR / deeplink"];
-  mwp --> relay["Relay<br/>wss://mm-sdk-relay.api.cx.metamask.io/connection/websocket"];
-  ui -.->|"QR scan / deeplink open"| mobile["MetaMask Mobile"];
-  relay <-->|"E2E encrypted (ECIES)"| mobile;
-  direct --> session["CAIP-25 session<br/>wallet_invokeMethod"];
-  mwp --> session;
-```
-
-See [`docs/architecture.md`](./docs/architecture.md) for the full package topology and a
-detailed walk-through of transport selection, session persistence, and headless mode.
+See [`docs/architecture.md`](./docs/architecture.md) for the package topology and transport
+diagrams, plus a detailed walk-through of transport selection, session persistence, and
+headless mode.
 
 ## Getting Started
 
