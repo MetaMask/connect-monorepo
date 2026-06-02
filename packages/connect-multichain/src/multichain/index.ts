@@ -239,6 +239,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     this.#providerTransportWrapper = new MultichainApiClientWrapperTransport(
       this,
+      () => this.#transport,
     );
     this.#provider = getMultichainClient({
       transport: this.#providerTransportWrapper,

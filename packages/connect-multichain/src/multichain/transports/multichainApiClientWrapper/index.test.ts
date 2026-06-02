@@ -6,6 +6,7 @@ import * as t from 'vitest';
 
 import { MultichainApiClientWrapperTransport } from '.';
 import type { MetaMaskConnectMultichain } from '..';
+import type { ExtendedTransport } from '../../../domain';
 
 type MockTransport = {
   isConnected: t.Mock;
@@ -30,26 +31,16 @@ const buildMockTransport = (): MockTransport => ({
 const buildMockMultichain = (
   overrides: Partial<MockMultichain> = {},
 ): MockMultichain => {
-  const mockMultichain = {
-    connect: t.vi.fn().mockResolvedValue(undefined),
-    disconnect: t.vi.fn().mockResolvedValue(undefined),
-    invokeMethod: t.vi.fn(),
-    emitSessionChanged: t.vi.fn(),
-    ...overrides,
-  };
-
   const defaultTransport = buildMockTransport();
-  Object.defineProperty(mockMultichain, 'transport', {
-    get: () => {
-      if ('transport' in overrides && !overrides.transport) {
-        throw new Error('Transport not initialized');
-      } else {
-        return overrides.transport ?? defaultTransport;
-      }
-    },
-  });
-
-  return mockMultichain as MockMultichain;
+  const transport =
+    'transport' in overrides ? overrides.transport : defaultTransport;
+  return {
+    transport,
+    connect: overrides.connect ?? t.vi.fn().mockResolvedValue(undefined),
+    disconnect: overrides.disconnect ?? t.vi.fn().mockResolvedValue(undefined),
+    invokeMethod: overrides.invokeMethod ?? t.vi.fn(),
+    emitSessionChanged: overrides.emitSessionChanged ?? t.vi.fn(),
+  };
 };
 
 const buildWrapper = (
@@ -57,6 +48,7 @@ const buildWrapper = (
 ): MultichainApiClientWrapperTransport =>
   new MultichainApiClientWrapperTransport(
     multichain as unknown as MetaMaskConnectMultichain,
+    () => multichain.transport as unknown as ExtendedTransport | undefined,
   );
 
 t.describe('MultichainApiClientWrapperTransport', () => {
