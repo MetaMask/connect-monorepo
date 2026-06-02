@@ -41,6 +41,7 @@ export default defineConfig([
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
       options.conditions = ['browser'];
+      options.loader = { ...options.loader, '.svg': 'dataurl' };
       options.outExtension = { '.js': '.mjs' };
     },
   },

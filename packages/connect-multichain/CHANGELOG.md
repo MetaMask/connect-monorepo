@@ -16,10 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rename the storage API methods for the persisted transport type from `getTransport`, `setTransport`, and `removeTransport` to `getTransportType`, `setTransportType`, and `removeTransportType`. The existing `multichain-transport` storage key is unchanged, so no persisted data migration is required. ([#307](https://github.com/MetaMask/connect-monorepo/pull/307))
 - `getVersion()` now returns the real package version injected at build time via `__PACKAGE_VERSION__`, instead of a hardcoded `'0.0.0'` ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
+- Refactor `MWPTransport.connect()` and other internals to replace deeply nested `new Promise()` and event-callback patterns with deferred promises, reducing nesting and breaking `connect()` into smaller helpers. No behavior change. ([#305](https://github.com/MetaMask/connect-monorepo/pull/305))
 
 ### Fixed
 
+- Restrict EIP-6963 extension detection to native MetaMask RDNS values so MMConnect-managed provider announcements do not select the browser-extension transport. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
 - Failed `createMultichainClient()` singleton initialization now rethrows after clearing the stored singleton promise, preventing the cleanup path from resolving to `undefined` and preserving retry behavior. ([#306](https://github.com/MetaMask/connect-monorepo/pull/306))
+- `MWPTransport.request()` and `sendEip1193Message()` now reject wallet response errors returned as `result.error`, matching `DefaultTransport` error handling and preserving wallet error codes. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))
+- `MetaMaskConnectMultichain.#headlessConnect()` now removes the `dappClient` `session_request` listener once the connection settles, preventing each headless `connect()` call from leaking a listener that would re-emit `display_uri` with stale deeplinks for every subsequent session request. ([#314](https://github.com/MetaMask/connect-monorepo/pull/314))
 
 ## [0.15.0]
 

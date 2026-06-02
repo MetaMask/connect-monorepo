@@ -140,45 +140,6 @@ t.describe('RequestRouter', () => {
         );
 
         t.it(
-          'should throw RPCInvokeMethodErr when response contains an error',
-          async () => {
-            mockTransport.request.mockResolvedValue({
-              error: { code: -32603, message: 'Internal error' },
-            });
-
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toBeInstanceOf(RPCInvokeMethodErr);
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toThrow(
-                'RPC Request failed with code -32603: Internal error',
-              );
-          },
-        );
-
-        t.it(
-          'should preserve the original RPC error code on RPCInvokeMethodErr when response contains an error',
-          async () => {
-            mockTransport.request.mockResolvedValue({
-              error: {
-                code: 4001,
-                message:
-                  'MetaMask Tx Signature: User denied transaction signature.',
-              },
-            });
-
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toSatisfy((error: RPCInvokeMethodErr) => {
-                return (
-                  error instanceof RPCInvokeMethodErr && error.rpcCode === 4001
-                );
-              });
-          },
-        );
-
-        t.it(
           'should preserve the original RPC error code when transport rejects with a coded error',
           async () => {
             const codedError = new Error(
@@ -246,9 +207,9 @@ t.describe('RequestRouter', () => {
     t.it(
       'attaches `failure_reason: wallet_internal_error` when the wallet returns code -32603',
       async () => {
-        mockTransport.request.mockResolvedValue({
-          error: { code: -32603, message: 'Internal error' },
-        });
+        const error = new Error('Internal error') as Error & { code: number };
+        error.code = -32603;
+        mockTransport.request.mockRejectedValue(error);
 
         await t
           .expect(requestRouter.invokeMethod(baseOptions))
@@ -267,13 +228,11 @@ t.describe('RequestRouter', () => {
     );
 
     t.it('sanitises addresses out of error_message_sample', async () => {
-      mockTransport.request.mockResolvedValue({
-        error: {
-          code: -32603,
-          message:
-            'Internal error fetching balance for 0x1234567890abcdef1234567890abcdef12345678',
-        },
-      });
+      const error = new Error(
+        'Internal error fetching balance for 0x1234567890abcdef1234567890abcdef12345678',
+      ) as Error & { code: number };
+      error.code = -32603;
+      mockTransport.request.mockRejectedValue(error);
 
       await t
         .expect(requestRouter.invokeMethod(baseOptions))

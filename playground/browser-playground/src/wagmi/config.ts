@@ -12,6 +12,7 @@ export const wagmiConfig = createConfig({
         name: window.location.hostname,
         url: window.location.href,
       },
+      skipAutoAnnounce: true,
     }),
   ],
   transports: {
