@@ -107,7 +107,7 @@
   "dependencies": {
     "@metamask/api-specs": "^0.14.0",
     "@metamask/chain-agnostic-permission": "^1.2.2",
-    "@metamask/utils": "^11.8.1",
+    "@metamask/utils": "^11.10.0",
     "@open-rpc/meta-schema": "^1.14.9"
   },
   "devDependencies": {

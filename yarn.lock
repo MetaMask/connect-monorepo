@@ -3932,7 +3932,7 @@ __metadata:
     "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
     "@metamask/playground-ui": "workspace:^"
-    "@metamask/utils": "npm:^11.8.1"
+    "@metamask/utils": "npm:^11.10.0"
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@open-rpc/schema-utils-js": "npm:^2.0.5"
     "@solana/wallet-adapter-react": "patch:@solana/wallet-adapter-react@npm%3A0.15.39#~/.yarn/patches/@solana-wallet-adapter-react-npm-0.15.39-86277fdcc0.patch"
@@ -3999,7 +3999,7 @@ __metadata:
     "@metamask/analytics": "workspace:^"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/connect-multichain": "workspace:^"
-    "@metamask/utils": "npm:^11.8.1"
+    "@metamask/utils": "npm:^11.10.0"
     "@types/jsdom": "npm:^21.1.7"
     "@vitest/coverage-v8": "npm:^3.2.4"
     jsdom: "npm:^26.1.0"
@@ -4025,7 +4025,7 @@ __metadata:
     "@metamask/eslint-config-jest": "npm:^14.0.0"
     "@metamask/eslint-config-nodejs": "npm:^14.0.0"
     "@metamask/eslint-config-typescript": "npm:^14.0.0"
-    "@metamask/utils": "npm:^11.8.1"
+    "@metamask/utils": "npm:^11.10.0"
     "@ts-bridge/cli": "npm:^0.5.1"
     "@types/jest": "npm:^29.5.14"
     "@types/lodash": "npm:^4.14.191"
@@ -4077,7 +4077,7 @@ __metadata:
     "@metamask/multichain-ui": "workspace:^"
     "@metamask/onboarding": "npm:^1.0.1"
     "@metamask/rpc-errors": "npm:^7.0.3"
-    "@metamask/utils": "npm:^11.8.1"
+    "@metamask/utils": "npm:^11.10.0"
     "@paulmillr/qr": "npm:^0.2.1"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@types/jsdom": "npm:^21.1.7"
@@ -4524,7 +4524,7 @@ __metadata:
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
-    "@metamask/utils": "npm:^11.8.1"
+    "@metamask/utils": "npm:^11.10.0"
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@vitest/coverage-v8": "npm:^3.2.4"
     prettier: "npm:^3.3.3"
@@ -4553,7 +4553,7 @@ __metadata:
     "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
     "@metamask/playground-ui": "workspace:^"
-    "@metamask/utils": "npm:^11.8.1"
+    "@metamask/utils": "npm:^11.10.0"
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-picker/picker": "npm:^2.11.2"
@@ -4664,6 +4664,25 @@ __metadata:
     semver: "npm:^7.5.4"
     uuid: "npm:^9.0.1"
   checksum: 10/f8f5e99ba6c6de0395ed4e0acc82ee9c0dca26991ea6a8f10b3896e72745790966a8eded8c42be905d9f01fa99c1fd29a7f68541e2ef9854fc14984a0b514ad3
+  languageName: node
+  linkType: hard
+
+"@metamask/utils@npm:^11.10.0":
+  version: 11.10.0
+  resolution: "@metamask/utils@npm:11.10.0"
+  dependencies:
+    "@ethereumjs/tx": "npm:^4.2.0"
+    "@metamask/superstruct": "npm:^3.1.0"
+    "@noble/hashes": "npm:^1.3.1"
+    "@scure/base": "npm:^1.1.3"
+    "@types/debug": "npm:^4.1.7"
+    "@types/lodash": "npm:^4.17.20"
+    debug: "npm:^4.3.4"
+    lodash: "npm:^4.17.21"
+    pony-cause: "npm:^2.1.10"
+    semver: "npm:^7.5.4"
+    uuid: "npm:^9.0.1"
+  checksum: 10/691a268af66593b60e9807a069127993cea3cdc941f99d5d7ca4664868754f08945821f1787b2f3e99e4497df63ceb0af37a2419ad494da29a1fddffe94f5797
   languageName: node
   linkType: hard
 
