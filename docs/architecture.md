@@ -90,8 +90,10 @@ graph TD;
   ext --> session["CAIP-25 session<br/>wallet_invokeMethod"];
   mobile --> session;
 
-  store[("StoreAdapter<br/>web / RN / node")] -.->|"restores transport type on reload"| start;
-  session -.->|"persists transport type (+ MWP session)"| store;
+  store[("StoreAdapter / KV store<br/>web / RN / node")];
+  session -.->|"persists transport type"| store;
+  mwp -.->|"persists MWP pairing session<br/>(relay channel + ECIES keypair)"| store;
+  store -.->|"restores transport type +<br/>MWP session on reload"| start;
 ```
 
 Notes:
@@ -100,11 +102,13 @@ Notes:
   `index.native.ts`, `index.node.ts` — that differ only in their UI modals
   (`web` / `rn` / `node`) and storage adapter (`localStorage` / AsyncStorage / filesystem).
 - **Resumption.** The selected transport *type* is persisted via the platform
-  `StoreAdapter`. The MWP session is persisted separately by the Mobile Wallet Protocol
-  `SessionStore` (through the same adapter); on the extension path the session lives in the
-  wallet and is re-fetched via `wallet_getSession`. On load the client restores the stored
-  transport type (and, for the extension path, re-verifies extension presence) before
-  resuming, so a connection survives page reloads without re-prompting.
+  `StoreAdapter`. For MWP, the pairing session — the relay channel and the dapp's ECIES
+  keypair — is persisted in the same KV store by the Mobile Wallet Protocol `SessionStore`,
+  so the encrypted channel resumes across reloads without re-scanning. The CAIP-25 session
+  itself (scopes + accounts) lives in the wallet and is re-fetched via `wallet_getSession`.
+  On load the client restores the stored transport type (and, for the extension path,
+  re-verifies extension presence) before resuming, so a connection survives page reloads
+  without re-prompting.
 - **Headless mode.** With `ui.headless: true`, the client skips `multichain-ui` and emits
   `display_uri` events so the dapp can render its own QR code.
 - **Telemetry.** Connection events are reported through `@metamask/analytics` with a
