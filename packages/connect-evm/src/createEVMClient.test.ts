@@ -114,18 +114,14 @@ function createMockCore(): MockCore {
     },
     disconnect: vi.fn().mockResolvedValue(undefined),
     connect: vi.fn().mockResolvedValue(undefined),
-    invokeMethod: vi.fn().mockResolvedValue(undefined),
+    invokeMethod: vi.fn().mockResolvedValue({
+      result: [],
+      id: 1,
+      jsonrpc: '2.0',
+    }),
     openSimpleDeeplinkIfNeeded: vi.fn(),
     provider: {
       getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
-    },
-    transport: {
-      sendEip1193Message: vi.fn().mockResolvedValue({
-        result: [],
-        id: 1,
-        jsonrpc: '2.0',
-      }),
-      onNotification: vi.fn().mockReturnValue(() => undefined),
     },
     storage: {
       adapter: {

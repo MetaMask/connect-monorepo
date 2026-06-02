@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- Test helper functions */
 /* eslint-disable no-plusplus -- Test loops */
 /* eslint-disable @typescript-eslint/no-shadow -- Vitest globals and test scopes */
+import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import * as t from 'vitest';
 import { vi } from 'vitest';
 
@@ -25,6 +26,8 @@ import {
 } from '../tests/fixtures.test';
 import type { TestSuiteOptions, MockedData } from '../tests/types';
 import { RequestRouter } from './multichain/rpc/requestRouter';
+import { DefaultTransport } from './multichain/transports/default';
+import { MWPTransport } from './multichain/transports/mwp';
 
 vi.mock('cross-fetch', () => {
   const mockFetch = vi.fn();
@@ -178,22 +181,15 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('loaded');
         // Provider is always available via wrapper transport (handles connection state internally)
         t.expect(sdk.provider).toBeDefined();
-        if (platform === 'web') {
-          // Web with extension sets up a DefaultTransport for passive listening
-          t.expect(sdk.transport).toBeDefined();
-        } else {
-          t.expect(() => sdk.transport).toThrow();
-        }
 
         await sdk.connect(scopes, caipAccountIds);
 
         t.expect(sdk.status).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
-        t.expect(sdk.transport).toBeDefined();
         if (platform === 'web-mobile') {
-          sdk.transport.getActiveSession = t.vi
-            .fn()
-            .mockResolvedValue({ id: 'mock-session-id' });
+          t.vi
+            .spyOn(SessionStore.prototype, 'list')
+            .mockResolvedValue([{ id: 'mock-session-id' } as any]);
         }
 
         const providerInvokeMethodSpy = t.vi.spyOn(
@@ -241,9 +237,9 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('connected');
 
         if (platform === 'web-mobile') {
-          sdk.transport.getActiveSession = t.vi
-            .fn()
-            .mockResolvedValue({ id: 'mock-session-id' });
+          t.vi
+            .spyOn(SessionStore.prototype, 'list')
+            .mockResolvedValue([{ id: 'mock-session-id' } as any]);
         }
 
         const options = {
@@ -300,7 +296,6 @@ function testSuite<T extends MultichainOptions>({
 
         t.expect(sdk.status).toBe('loaded');
         t.expect(() => sdk.provider).toThrow();
-        t.expect(() => sdk.transport).toThrow();
 
         await sdk.connect(scopes, caipAccountIds);
 
@@ -339,19 +334,28 @@ function testSuite<T extends MultichainOptions>({
         await sdk.connect(scopes, caipAccountIds);
         t.expect(sdk.status).toBe('connected');
 
-        if (platform === 'web-mobile') {
-          sdk.transport.getActiveSession = t.vi
-            .fn()
-            .mockResolvedValue({ id: 'mock-session-id' });
-        }
+        const expectedResponse = {
+          id: 1,
+          jsonrpc: '2.0',
+          result: ['0xabc'],
+        };
 
+        // The EIP-1193 dispatcher in `MetaMaskConnectMultichain.invokeMethod`
+        // forwards passthrough methods to the active transport's
+        // `sendEip1193Message`. The active transport differs by platform:
+        // - `web` uses `DefaultTransport` (the wrapper itself implements
+        //   `sendEip1193Message` via `window.postMessage` and does not delegate
+        //   to the inner `mockDefaultTransport`).
+        // - `web-mobile`, `node`, and `rn` use `MWPTransport`.
+        // In both cases we spy on the prototype so the wrapper's method is
+        // intercepted regardless of how the SDK reaches it.
+        const transportPrototype =
+          platform === 'web'
+            ? DefaultTransport.prototype
+            : MWPTransport.prototype;
         const sendEip1193MessageSpy = t.vi
-          .spyOn(sdk.transport, 'sendEip1193Message')
-          .mockResolvedValue({
-            id: 1,
-            jsonrpc: '2.0',
-            result: ['0xabc'],
-          } as any);
+          .spyOn(transportPrototype, 'sendEip1193Message')
+          .mockResolvedValue(expectedResponse as any);
         const requestRouterSpy = t.vi.spyOn(
           RequestRouter.prototype,
           'invokeMethod',
@@ -419,9 +423,9 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.provider).toBeDefined();
 
       if (platform === 'web-mobile') {
-        sdk.transport.getActiveSession = t.vi
-          .fn()
-          .mockResolvedValue({ id: 'mock-session-id' });
+        t.vi
+          .spyOn(SessionStore.prototype, 'list')
+          .mockResolvedValue([{ id: 'mock-session-id' } as any]);
       }
 
       await t

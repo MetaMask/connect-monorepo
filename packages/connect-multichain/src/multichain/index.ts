@@ -190,7 +190,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.#provider;
   }
 
-  get transport(): ExtendedTransport {
+  #transportOrThrow(): ExtendedTransport {
     if (!this.#transport) {
       throw new Error('Transport not initialized, establish connection first');
     }
@@ -367,9 +367,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   async #setupTransport(): Promise<void> {
     const transport = await this.#getStoredTransport();
     if (transport) {
-      if (!this.transport.isConnected()) {
+      if (!transport.isConnected()) {
         this.status = 'connecting';
-        await this.transport.connect();
+        await transport.connect();
       }
       this.status = 'connected';
       if (this.#transportType === TransportType.MWP) {
@@ -388,7 +388,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         // and that wallet_sessionChanged (faked) is emitted. But because we are not
         // calling transport.connect(), we need to initialize DefaultTransport manually.
         try {
-          await this.transport.init();
+          await this.#transportOrThrow().init();
         } catch (error) {
           console.error('Passive init failed:', error);
         }
@@ -459,7 +459,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.#transport = apiTransport;
     this.#transportType = TransportType.MWP;
     this.#providerTransportWrapper.setupTransportNotificationListener();
-    this.#listener = this.transport.onNotification(
+    this.#listener = apiTransport.onNotification(
       this.#onTransportNotification.bind(this),
     );
     await this.storage.setTransportType(TransportType.MWP);
@@ -524,7 +524,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       // session_request (resolving sessionRequestDeferred) and then either
       // succeed (handled by the successCallback below) or fail (rejecting
       // the outer completion deferred).
-      this.transport
+      this.#transportOrThrow()
         .connect({ scopes, caipAccountIds, sessionProperties })
         .then(async () => {
           await this.options.ui.factory.unload();
@@ -639,7 +639,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     this.dappClient.on('session_request', onSessionRequest);
 
     try {
-      await this.transport.connect({
+      await this.#transportOrThrow().connect({
         scopes,
         caipAccountIds,
         sessionProperties,
@@ -715,7 +715,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
       let timeout: NodeJS.Timeout | undefined;
 
-      if (this.transport.isConnected()) {
+      if (this.#transportOrThrow().isConnected()) {
         timeout = setTimeout(() => {
           this.openSimpleDeeplinkIfNeeded();
         }, 250);
@@ -748,7 +748,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
         );
       }
 
-      return this.transport
+      return this.#transportOrThrow()
         .connect({ scopes, caipAccountIds, sessionProperties })
         .then(resolve)
         .catch(async (error) => {
@@ -985,7 +985,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     };
     if (this.#transport?.isConnected()) {
       try {
-        const response = await this.transport.request({
+        const response = await this.#transport.request({
           method: 'wallet_getSession',
         });
         if (response.result) {
@@ -1031,7 +1031,8 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   }
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
-    const { transport, options } = this;
+    const transport = this.#transportOrThrow();
+    const { options } = this;
 
     // EIP-1193 passthrough: bypass the multichain `wallet_invokeMethod` envelope
     // and forward the raw payload to the underlying transport's
@@ -1066,7 +1067,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
     if (shouldOpenDeeplink) {
       setTimeout(async () => {
-        const session = await this.transport.getActiveSession();
+        const session = await this.#transportOrThrow().getActiveSession();
         if (!session) {
           throw new Error('No active session found');
         }
@@ -1128,7 +1129,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     }
 
     // Otherwise, we need to fetch the current CAIP session from the wallet
-    const response = await this.transport.request({
+    const response = await this.#transport.request({
       method: 'wallet_getSession',
     });
 

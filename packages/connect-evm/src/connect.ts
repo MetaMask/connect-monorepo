@@ -664,6 +664,7 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_switchEthereumChain',
         params,
       });
@@ -828,6 +829,7 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_addEthereumChain',
         params,
       });
@@ -845,19 +847,28 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Submits a request to the EIP-1193 provider
+   * Submits an EIP-1193 passthrough request to the wallet via the multichain
+   * client. The multichain `invokeMethod` dispatcher recognizes the method as a
+   * passthrough and forwards the raw `{ method, params }` payload to the
+   * underlying transport's `sendEip1193Message`, bypassing the
+   * `wallet_invokeMethod` envelope.
    *
-   * @param request - The request object containing the method and params
+   * @param request - The request object containing the scope, method, and params
+   * @param request.scope - CAIP scope used for analytics/routing context
    * @param request.method - The method to request
    * @param request.params - The parameters to pass to the method
-   * @returns The result of the request
+   * @returns The wallet's full JSON-RPC response envelope (`{ id, jsonrpc, result }`)
    */
   async #request(request: {
+    scope: Scope;
     method: string;
     params: unknown[];
   }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
-    const result = this.#core.transport.sendEip1193Message(request);
+    const result = this.#core.invokeMethod({
+      scope: request.scope,
+      request: { method: request.method, params: request.params },
+    });
     if (
       request.method === 'wallet_addEthereumChain' ||
       request.method === 'wallet_switchEthereumChain'
@@ -892,12 +903,15 @@ export class MetamaskConnectEVM {
     } else {
       let initialAccounts: Address[] = [];
       if (this.#core.status === 'connected') {
-        const ethAccountsResponse =
-          await this.#core.transport.sendEip1193Message({
-            method: 'eth_accounts',
-            params: [],
-          });
-        initialAccounts = ethAccountsResponse.result as Address[];
+        // `eth_accounts` is registered as an EIP-1193 passthrough on the multichain
+        // client, so this routes through `transport.sendEip1193Message` rather than
+        // the `wallet_invokeMethod` envelope. Scope is informational here; the first
+        // permitted chain is used for analytics context.
+        const ethAccountsResponse = (await this.#core.invokeMethod({
+          scope: `eip155:${hexToNumber(hexPermittedChainIds[0])}` as Scope,
+          request: { method: 'eth_accounts', params: [] },
+        })) as { result: Address[] };
+        initialAccounts = ethAccountsResponse.result;
       } else {
         initialAccounts = getEthAccounts(this.#sessionScopes);
       }
