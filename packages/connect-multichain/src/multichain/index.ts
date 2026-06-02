@@ -976,11 +976,6 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     );
   }
 
-  public override emit(event: string, args: any): void {
-    this.options.transport?.onNotification?.({ method: event, params: args });
-    super.emit(event, args);
-  }
-
   async #getCaipSession(): Promise<SessionData> {
     let sessionData: SessionData = {
       sessionScopes: {},
@@ -1108,7 +1103,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
   // when instantiating themselves (as they would have already missed any initial sessionChanged events emitted by ConnectMultichain)
   // without having to concern themselves with the current transport connection status.
   async emitSessionChanged(): Promise<void> {
-    const emptySession = { sessionScopes: {} };
+    const emptySession: SessionData = { sessionScopes: {} };
 
     if (!this.#transport?.isConnected()) {
       // If we aren't connected or connecting, there definitely is no active CAIP session
@@ -1123,6 +1118,9 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     });
 
     // And then simulate a sessionChanged event with the current CAIP session data
-    this.emit('wallet_sessionChanged', response.result ?? emptySession);
+    this.emit(
+      'wallet_sessionChanged',
+      (response.result as SessionData | undefined) ?? emptySession,
+    );
   }
 }

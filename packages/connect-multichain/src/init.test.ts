@@ -200,44 +200,6 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
-      `${platform} should emit stateChanged event when existing valid session is found during init`,
-      async () => {
-        // Set the transport type as a string in storage (this is how it's stored)
-        mockedData.nativeStorageStub.setItem(
-          'multichain-transport',
-          transportString,
-        );
-        mockedData.mockSessionRequest.mockImplementation(
-          async () => mockSessionRequestData,
-        );
-        mockedData.mockWalletCreateSession.mockImplementation(
-          async () => mockSessionData,
-        );
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => mockSessionData,
-        );
-
-        const onNotification = t.vi.fn();
-        const optionsWithEvent = {
-          ...testOptions,
-          transport: {
-            ...(testOptions.transport ?? {}),
-            onNotification,
-          },
-        };
-        sdk = await createSDK(optionsWithEvent);
-
-        t.expect(sdk).toBeDefined();
-
-        t.expect(sdk.status).toBe('connected');
-        t.expect(onNotification).toHaveBeenCalledWith({
-          method: 'stateChanged',
-          params: 'connected',
-        });
-      },
-    );
-
-    t.it(
       `${platform} should update mmconnect_versions analytics global when singleton merges new versions`,
       async () => {
         const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');

@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename the storage API methods for the persisted transport type from `getTransport`, `setTransport`, and `removeTransport` to `getTransportType`, `setTransportType`, and `removeTransportType`. The existing `multichain-transport` storage key is unchanged, so no persisted data migration is required. ([#307](https://github.com/MetaMask/connect-monorepo/pull/307))
 - Refactor `MWPTransport.connect()` and other internals to replace deeply nested `new Promise()` and event-callback patterns with deferred promises, reducing nesting and breaking `connect()` into smaller helpers. No behavior change. ([#305](https://github.com/MetaMask/connect-monorepo/pull/305))
 
+### Removed
+
+- **BREAKING:** Remove the `transport.onNotification` constructor option from `createMultichainClient()`. The option was a fan-out of every typed event already exposed via `client.on(...)`. Migrate to the typed event API: `client.on('stateChanged' | 'wallet_sessionChanged' | 'metamask_accountsChanged' | 'metamask_chainChanged' | 'display_uri', handler)`. The `transport.onNotification(callback)` method on the transport instance is unaffected.
+
 ### Fixed
 
 - Restrict EIP-6963 extension detection to native MetaMask RDNS values so MMConnect-managed provider announcements do not select the browser-extension transport. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))

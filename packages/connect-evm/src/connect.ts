@@ -1132,9 +1132,8 @@ export class MetamaskConnectEVM {
  * @param [options.mobile] - Mobile configuration options
  * @param [options.mobile.preferredOpenLink] - Custom handler for opening deeplinks (useful for React Native, etc.)
  * @param [options.mobile.useDeeplink] - Whether to use native deeplinks instead of universal links
- * @param [options.transport] - Transport configuration (e.g., extensionId, notification handler)
+ * @param [options.transport] - Transport configuration (e.g., extensionId)
  * @param [options.transport.extensionId] - Extension ID for browser extension transport
- * @param [options.transport.onNotification] - Callback for receiving transport notifications
  * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
  * @param [options.debug] - Enable debug logging
  * @param [options.skipAutoAnnounce] - Skip automatic EIP-6963 provider announcement
