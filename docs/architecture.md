@@ -80,7 +80,7 @@ and routes all RPC through a uniform wrapper. Two concrete transports exist:
   present (or inside the MetaMask mobile in-app browser).
 - **`MWPTransport`** — remote connection to **MetaMask Mobile** over the Mobile Wallet
   Protocol. A `DappClient` connects through the relay
-  (`wss://mm-sdk-relay.api.cx.metamask.io`); the dapp shows a QR code (desktop) or deeplink
+  (`wss://mm-sdk-relay.api.cx.metamask.io/connection/websocket`); the dapp shows a QR code (desktop) or deeplink
   (mobile web / React Native) via `multichain-ui`, the wallet scans/opens it, and an
   end-to-end encrypted session is established.
 
@@ -123,7 +123,7 @@ Notes:
 - **Headless mode.** With `ui.headless: true`, the core skips `multichain-ui` and emits
   `display_uri` events so the dapp can render its own QR code.
 - **Telemetry.** Connection events are reported through `@metamask/analytics` with a
-  `transport_type` of `direct` (extension), `websocket`, or `deeplink` — unless
+  `transport_type` of `browser` (extension), `mwp`, or `unknown` — unless
   `analytics.enabled` is `false`.
 
 ## Further reading

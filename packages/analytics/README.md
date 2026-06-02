@@ -42,8 +42,6 @@ analytics.enable();
 // Properties merged into every subsequent event.
 analytics.setGlobalProperty('anon_id', anonId);
 analytics.setGlobalProperty('integration_types', ['wagmi']);
-
-analytics.track('sdk_initialized', { platform: 'web-desktop' });
 ```
 
 ### Endpoint
@@ -60,7 +58,7 @@ off exponentially up to `30s`, resetting on the next success.
 
 ## API
 
-The default export is the singleton `analytics` (an instance of the internal `Analytics`
+The package exports a singleton `analytics` (an instance of the internal `Analytics`
 class).
 
 ### `analytics.enable()`
@@ -89,16 +87,13 @@ Queues an event for sending. No-op while disabled. Each event is wrapped with th
 `track()` accepts one of the following event names (see `src/schema.ts` for the full
 payload shape of each):
 
-| Group      | Events                                                                                                       |
-| ---------- | ------------------------------------------------------------------------------------------------------------ |
-| Lifecycle  | `sdk_initialized`, `sdk_used_chain`                                                                          |
-| Connection | `sdk_connection_initiated`, `sdk_connection_established`, `sdk_connection_rejected`, `sdk_connection_failed` |
-| Wallet     | `wallet_connection_request_received`, `wallet_connection_user_approved`, `wallet_connection_user_rejected`   |
-| Actions    | `sdk_action_requested`, `sdk_action_succeeded`, `sdk_action_failed`, `sdk_action_rejected`                   |
-| Wallet     | `wallet_action_received`, `wallet_action_user_approved`, `wallet_action_user_rejected`                       |
+| Group      | Events                                                                                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connection | `mmconnect_connection_initiated`, `mmconnect_connection_established`, `mmconnect_connection_rejected`, `mmconnect_connection_failed`           |
+| Action     | `mmconnect_wallet_action_requested`, `mmconnect_wallet_action_succeeded`, `mmconnect_wallet_action_failed`, `mmconnect_wallet_action_rejected` |
 
-Connection events carry a `transport_type` of `direct` (extension), `websocket`, or
-`deeplink`, reflecting the transport selected by the multichain core.
+Connection events carry a `transport_type` of `browser` (extension), `mwp`, or
+`unknown`, reflecting the transport selected by the multichain core.
 
 ## Content Security Policy
 
