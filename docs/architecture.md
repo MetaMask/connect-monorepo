@@ -80,9 +80,9 @@ graph TD;
   detect -->|"in-app webview, OR<br/>desktop web + extension + preferExtension"| direct["DefaultTransport<br/>window.postMessage"];
   detect -->|"otherwise (no extension,<br/>mobile, node)"| mwp["MWPTransport<br/>DappClient"];
 
-  direct --> ext["MetaMask Extension"];
+  direct --> ext["MetaMask Extension /<br/>Mobile in-app browser"];
 
-  mwp --> ui["multichain-ui<br/>install modal / QR / deeplink"];
+  mwp -.->|"shows QR / deeplink"| ui["multichain-ui<br/>install modal / QR / deeplink"];
   mwp --> relay["Relay<br/>wss://mm-sdk-relay.api.cx.metamask.io/connection/websocket"];
   ui -.->|"QR scan / deeplink open"| mobile["MetaMask Mobile"];
   relay <-->|"E2E encrypted (ECIES)"| mobile;
@@ -90,8 +90,8 @@ graph TD;
   ext --> session["CAIP-25 session<br/>wallet_invokeMethod"];
   mobile --> session;
 
-  store[("StoreAdapter<br/>web / RN / node")] -.->|"persists transport + session"| start;
-  session -.->|"caches session/accounts/chainId"| store;
+  store[("StoreAdapter<br/>web / RN / node")] -.->|"restores transport type on reload"| start;
+  session -.->|"persists transport type (+ MWP session)"| store;
 ```
 
 Notes:
@@ -99,10 +99,12 @@ Notes:
 - **Platform entry points.** The client ships three builds — `index.browser.ts`,
   `index.native.ts`, `index.node.ts` — that differ only in their UI modals
   (`web` / `rn` / `node`) and storage adapter (`localStorage` / AsyncStorage / filesystem).
-- **Resumption.** The selected transport type and session data are persisted via the
-  platform `StoreAdapter`, so a connection survives page reloads without re-prompting. On
-  load the client checks the stored transport (and, for the extension path, re-verifies
-  extension presence) before resuming.
+- **Resumption.** The selected transport *type* is persisted via the platform
+  `StoreAdapter`. The MWP session is persisted separately by the Mobile Wallet Protocol
+  `SessionStore` (through the same adapter); on the extension path the session lives in the
+  wallet and is re-fetched via `wallet_getSession`. On load the client restores the stored
+  transport type (and, for the extension path, re-verifies extension presence) before
+  resuming, so a connection survives page reloads without re-prompting.
 - **Headless mode.** With `ui.headless: true`, the client skips `multichain-ui` and emits
   `display_uri` events so the dapp can render its own QR code.
 - **Telemetry.** Connection events are reported through `@metamask/analytics` with a
