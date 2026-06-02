@@ -11,10 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Announce the MMConnect-managed EIP-1193 provider through EIP-6963 by default when native MetaMask has not already announced, with `skipAutoAnnounce` and `announceProvider()` for manual control. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
 
-### Fixed
+### Changed
 
-- MWP-backed EIP-1193 requests now surface wallet errors through rejected promises consistently with the default transport, so `EvmClient.switchChain()` no longer has to handle returned error payloads. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))
-- Return spec-compatible values from additional intercepted EIP-1193 provider requests: `wallet_requestPermissions` now resolves to requested permissions, while successful `wallet_switchEthereumChain` and `wallet_addEthereumChain` requests resolve to `null`. ([#310](https://github.com/MetaMask/connect-monorepo/pull/310))
+- Adopts breaking removal of the public `transport` accessor in `@metamask/connect-multichain`. ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
+
+### Removed
+
+- **BREAKING** Remove the `transport.onNotification` option from `createEVMClient()`. The option was a fan-out of typed events already exposed via the EIP-1193 provider (`accountsChanged`, `chainChanged`, `connect`, `disconnect`, `display_uri`) and via `eventHandlers`. Migrate to those listeners instead ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
 
 ## [1.4.0]
 
