@@ -21,6 +21,7 @@ import {
   MWP_RELAY_URL,
 } from '../config';
 import {
+  EIP1193_PASSTHROUGH_METHODS,
   getVersion,
   type InvokeMethodOptions,
   type MultichainOptions,
@@ -1031,6 +1032,19 @@ export class MetaMaskConnectMultichain extends MultichainCore {
 
   async invokeMethod(request: InvokeMethodOptions): Promise<Json> {
     const { transport, options } = this;
+
+    // EIP-1193 passthrough: bypass the multichain `wallet_invokeMethod` envelope
+    // and forward the raw payload to the underlying transport's
+    // `sendEip1193Message`. These methods (e.g. `wallet_addEthereumChain`,
+    // `wallet_switchEthereumChain`, `eth_accounts`) are wallet-side concerns
+    // not modeled by the Multichain API.
+    if (EIP1193_PASSTHROUGH_METHODS.has(request.request.method)) {
+      const response = await transport.sendEip1193Message({
+        method: request.request.method,
+        params: request.request.params,
+      });
+      return response as Json;
+    }
 
     const rpcClient = new RpcClient(options, this.#sdkInfo);
     const requestRouter = new RequestRouter(

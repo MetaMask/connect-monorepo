@@ -203,7 +203,7 @@ function testSuite<T extends MultichainOptions>({
         const options = {
           id: 1,
           scope: 'eip155:1',
-          request: { method: 'eth_accounts', params: [] },
+          request: { method: 'personal_sign', params: [] },
         } as InvokeMethodOptions;
 
         const result = await sdk.invokeMethod(options);
@@ -248,7 +248,7 @@ function testSuite<T extends MultichainOptions>({
 
         const options = {
           scope: 'eip155:1',
-          request: { method: 'eth_accounts', params: [] },
+          request: { method: 'personal_sign', params: [] },
         } as InvokeMethodOptions;
 
         await t
@@ -308,12 +308,80 @@ function testSuite<T extends MultichainOptions>({
 
         const options = {
           scope: 'eip155:1',
-          request: { method: 'eth_accounts', params: [] },
+          request: { method: 'personal_sign', params: [] },
         } as InvokeMethodOptions;
         const result = await sdk.invokeMethod(options);
 
         t.expect(mockFetch).toHaveBeenCalled();
         t.expect(result).toEqual(mockJsonResponse);
+      },
+    );
+
+    t.it(
+      `${platform} should bypass RequestRouter and route EIP-1193 passthrough methods through transport.sendEip1193Message`,
+      async () => {
+        const scopes = ['eip155:1'] as Scope[];
+        const caipAccountIds = [
+          'eip155:1:0x1234567890abcdef1234567890abcdef12345678',
+        ] as any;
+
+        mockedData.mockSessionRequest.mockImplementation(
+          async () => mockSessionRequestData,
+        );
+        mockedData.mockWalletGetSession.mockImplementation(
+          async () => mockSessionData,
+        );
+        mockedData.mockWalletCreateSession.mockImplementation(
+          async () => mockSessionData,
+        );
+
+        sdk = await createSDK(testOptions);
+        await sdk.connect(scopes, caipAccountIds);
+        t.expect(sdk.status).toBe('connected');
+
+        if (platform === 'web-mobile') {
+          sdk.transport.getActiveSession = t.vi
+            .fn()
+            .mockResolvedValue({ id: 'mock-session-id' });
+        }
+
+        const sendEip1193MessageSpy = t.vi
+          .spyOn(sdk.transport, 'sendEip1193Message')
+          .mockResolvedValue({
+            id: 1,
+            jsonrpc: '2.0',
+            result: ['0xabc'],
+          } as any);
+        const requestRouterSpy = t.vi.spyOn(
+          RequestRouter.prototype,
+          'invokeMethod',
+        );
+
+        for (const method of [
+          'eth_accounts',
+          'wallet_addEthereumChain',
+          'wallet_switchEthereumChain',
+        ]) {
+          sendEip1193MessageSpy.mockClear();
+          requestRouterSpy.mockClear();
+
+          const result = await sdk.invokeMethod({
+            scope: 'eip155:1',
+            request: { method, params: [] },
+          } as InvokeMethodOptions);
+
+          t.expect(sendEip1193MessageSpy).toHaveBeenCalledTimes(1);
+          t.expect(sendEip1193MessageSpy).toHaveBeenCalledWith({
+            method,
+            params: [],
+          });
+          t.expect(requestRouterSpy).not.toHaveBeenCalled();
+          t.expect(result).toEqual({
+            id: 1,
+            jsonrpc: '2.0',
+            result: ['0xabc'],
+          });
+        }
       },
     );
 
@@ -343,7 +411,7 @@ function testSuite<T extends MultichainOptions>({
       const options = {
         scope: 'eip155:1',
         request: {
-          method: 'eth_accounts',
+          method: 'personal_sign',
           params: [],
         },
       } as InvokeMethodOptions;
