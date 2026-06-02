@@ -101,7 +101,7 @@ Notes:
 - **Platform entry points.** The client ships three builds — `index.browser.ts`,
   `index.native.ts`, `index.node.ts` — that differ only in their UI modals
   (`web` / `rn` / `node`) and storage adapter (`localStorage` / AsyncStorage / filesystem).
-- **Resumption.** The selected transport *type* is persisted via the platform
+- **Resumption.** The selected transport _type_ is persisted via the platform
   `StoreAdapter`. For MWP, the pairing session — the relay channel and the dapp's ECIES
   keypair — is persisted in the same KV store by the Mobile Wallet Protocol `SessionStore`,
   so the encrypted channel resumes across reloads without re-scanning. The CAIP-25 session
