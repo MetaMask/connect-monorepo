@@ -63,25 +63,24 @@ Key points:
 
 - **One session, many ecosystems.** The EVM and Solana adapters both drive the same
   underlying `MultichainCore` instance, so a dapp using both shares a single CAIP-25
-  session — the user approves once. `createMultichainClient` is a singleton per global
-  context.
+  session. `createMultichainClient` is a singleton per global context.
 - **Adapters are optional.** A dapp can use `@metamask/connect-multichain` directly for the
   full scope-based API, or an adapter for a drop-in EIP-1193 / Wallet Standard experience.
 - **Support packages are internal.** `multichain-ui` (connection UI) and `analytics`
-  (telemetry) are pulled in transitively by the client; dapps rarely import them directly.
+  (telemetry) are pulled in transitively through `@metamask/connect-multichain`; dapps
+  aren't intended to import them directly.
 
 ## Transport selection and composition
 
 When a dapp calls `connect()`, the multichain client detects the platform and picks a
 transport. Two concrete transports exist:
 
-- **`DefaultTransport`** — direct messaging to the MetaMask **extension** via
-  `window.postMessage` (the `metamask-contentscript` channel). Used when the extension is
-  present (or inside the MetaMask mobile in-app browser).
+- **`DefaultTransport`** — direct messaging to the MetaMask **extension** and **mobile
+  in-app browser** via `window.postMessage` (the `metamask-contentscript` channel).
 - **`MWPTransport`** — remote connection to **MetaMask Mobile** over the Mobile Wallet
   Protocol. A `DappClient` connects through the relay
   (`wss://mm-sdk-relay.api.cx.metamask.io/connection/websocket`); the dapp shows a QR code (desktop) or deeplink
-  (mobile web / React Native) via `multichain-ui`, the wallet scans/opens it, and an
+  (mobile native web / React Native) via `multichain-ui`, the wallet scans/opens it, and an
   end-to-end encrypted session is established.
 
 Once a transport is connected, the client owns the CAIP-25 session and routes all RPC
