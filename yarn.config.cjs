@@ -641,6 +641,15 @@ function expectUpToDateWorkspacePeerDependencies(Yarn, workspace) {
       dependencyWorkspace !== null &&
       dependency.type === 'peerDependencies'
     ) {
+      // Yarn rewrites `workspace:` protocol ranges to a satisfying semver
+      // range at publish time (e.g. `workspace:^` -> `^<workspace-version>`),
+      // so by construction they always satisfy the workspace version. Skip
+      // the satisfies() check, which would otherwise treat `workspace:^` as
+      // an invalid range and "fix" it to `^<major>.0.0`.
+      if (dependency.range.startsWith('workspace:')) {
+        continue;
+      }
+
       const dependencyWorkspaceVersion = new semver.SemVer(
         dependencyWorkspace.manifest.version,
       );
