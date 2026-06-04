@@ -45,6 +45,8 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   abstract transportType: TransportType;
 
+  abstract version: string;
+
   /**
    * Establishes a connection to the multichain provider, or re-use existing session
    *
