@@ -106,6 +106,7 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-node${{ matrix.node-version }}-
       - run: yarn turbo run test
+      - run: yarn test:scripts
       - name: Require clean working directory
         shell: bash
         run: |
