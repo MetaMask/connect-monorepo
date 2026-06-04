@@ -228,3 +228,71 @@ describe('createEVMClient EIP-6963 announcement', () => {
     );
   });
 });
+
+describe('createEVMClient multichain peer version check', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.mocked(createMultichainClient).mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('warns when core.version does not satisfy the configured peer range', async () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '^0.15.0');
+    const core = createMockCore();
+    core.version = '0.14.0';
+    vi.mocked(createMultichainClient).mockResolvedValue(core);
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+
+    await createEVMClient({ ...evmOptions, skipAutoAnnounce: true });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      '@metamask/connect-evm expected @metamask/connect-multichain version ^0.15.0, but got 0.14.0. This may lead to unexpected behavior.',
+    );
+  });
+
+  it('does not warn when core.version satisfies the configured peer range', async () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '^0.15.0');
+    const core = createMockCore();
+    core.version = '0.15.2';
+    vi.mocked(createMultichainClient).mockResolvedValue(core);
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+
+    await createEVMClient({ ...evmOptions, skipAutoAnnounce: true });
+
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining(
+        '@metamask/connect-evm expected @metamask/connect-multichain',
+      ),
+    );
+  });
+
+  it('does not warn when the peer range is an empty string', async () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '');
+    const core = createMockCore();
+    core.version = '0.14.0';
+    vi.mocked(createMultichainClient).mockResolvedValue(core);
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+
+    await createEVMClient({ ...evmOptions, skipAutoAnnounce: true });
+
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining(
+        '@metamask/connect-evm expected @metamask/connect-multichain',
+      ),
+    );
+  });
+});
