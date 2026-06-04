@@ -1104,7 +1104,6 @@ describe('MetamaskConnectEVM', () => {
       await expect(
         client.getProvider().request({
           method: 'wallet_requestPermissions',
-
           params: [{ 'endowment:permitted-chains': {} }],
         }),
       ).resolves.toEqual([
