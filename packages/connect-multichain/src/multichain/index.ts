@@ -65,9 +65,6 @@ import {
 
 export { getInfuraRpcUrls } from '../domain/multichain/api/infura';
 
-// Value substitued by tsup at build time
-declare const __PACKAGE_VERSION__: string | undefined;
-
 // ENFORCE NAMESPACE THAT CAN BE DISABLED
 const logger = createLogger('metamask-sdk:core');
 
@@ -77,6 +74,7 @@ type ReusableMultichainSingleton = {
   mergeOptions: (options: MultichainOptions) => void;
   options: MultichainOptions;
   storage: StoreClient;
+  version?: string;
 };
 
 /**
@@ -211,6 +209,10 @@ export class MetaMaskConnectMultichain extends MultichainCore {
     return this.options.storage;
   }
 
+  get version(): string {
+    return getVersion();
+  }
+
   readonly #sdkInfo = `Sdk/Javascript SdkVersion/${getVersion()} Platform/${getPlatformType()} dApp/${this.options.dapp.url ?? this.options.dapp.name} dAppTitle/${this.options.dapp.name}`;
 
   constructor(options: MultichainOptions) {
@@ -225,12 +227,7 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       },
       analytics: normalizeAnalyticsOptions(options.analytics),
       versions: {
-        // typeof guard needed: Metro (React Native) bundles TS source directly,
-        // bypassing the tsup build that substitutes __PACKAGE_VERSION__.
-        'connect-multichain':
-          typeof __PACKAGE_VERSION__ === 'undefined'
-            ? 'unknown'
-            : __PACKAGE_VERSION__,
+        'connect-multichain': getVersion(),
         ...(options.versions ?? {}),
       },
     };
@@ -262,6 +259,16 @@ export class MetaMaskConnectMultichain extends MultichainCore {
       | undefined;
     if (existing) {
       const instance = await existing;
+
+      if (instance.version !== getVersion()) {
+        console.warn(
+          `MetaMask Connect does not support using multiple versions of @metamask/connect-multichain. ` +
+            `Attempted to create a new instance with version ${getVersion()}, but an existing ${instance.version} singleton was already initialized. ` +
+            `Using the existing ${instance.version} singleton. This is NOT supported and may lead to unexpected behavior. ` +
+            `Please ensure there is only one version of @metamask/connect-multichain package resolved in your application.`,
+        );
+      }
+
       instance.mergeOptions(options);
       if (instance instanceof MetaMaskConnectMultichain) {
         await instance.#setupAnalytics();

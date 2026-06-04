@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Validate `@metamask/connect-multichain` peer version at runtime and warn on mismatch ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
 - Announce the MMConnect-managed EIP-1193 provider through EIP-6963 by default when native MetaMask has not already announced, with `skipAutoAnnounce` and `announceProvider()` for manual control. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
 
 ### Changed
 
+- **BREAKING:** `@metamask/connect-multichain` is now a peer dependency.
+  Add it to your own `dependencies` (e.g. `npm install @metamask/connect-multichain`)
+  — it is no longer installed transitively.
 - Adopts breaking removal of the public `transport` accessor in `@metamask/connect-multichain`. ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
 
 ### Removed

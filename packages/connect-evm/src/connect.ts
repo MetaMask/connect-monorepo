@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
-/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 import { analytics } from '@metamask/analytics';
 import type {
   MultichainCore,
@@ -14,6 +14,7 @@ import {
   TransportType,
 } from '@metamask/connect-multichain';
 import { hexToNumber } from '@metamask/utils';
+import { satisfies } from 'semver';
 
 import { CONNECT_EVM_SESSION_PROPERTIES, IGNORED_METHODS } from './constants';
 import { EIP6963ProviderAnnouncer } from './eip6963';
@@ -43,8 +44,9 @@ import {
   validSupportedChainsUrls,
 } from './utils/type-guards';
 
-// Value substitued by tsup at build time
+// Values substituted by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
+declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -1215,6 +1217,21 @@ export async function createEVMClient(
             : __PACKAGE_VERSION__,
       },
     });
+
+    const multichainClientPeerRange =
+      typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'undefined'
+        ? 'unknown'
+        : __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__;
+
+    if (
+      multichainClientPeerRange !== 'unknown' &&
+      multichainClientPeerRange !== '' &&
+      !satisfies(core.version, multichainClientPeerRange)
+    ) {
+      console.warn(
+        `@metamask/connect-evm expected @metamask/connect-multichain version ${multichainClientPeerRange}, but got ${core.version}. This may lead to unexpected behavior.`,
+      );
+    }
 
     const client = await MetamaskConnectEVM.create({
       core,
