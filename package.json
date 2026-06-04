@@ -36,6 +36,7 @@
     "test": "yarn test:scripts --silent && yarn test:packages",
     "test:clean": "yarn build:only-clean && turbo run test",
     "test:packages": "turbo run test:verbose",
+    "test:scripts": "vitest run --config scripts/vitest.config.ts",
     "test:verbose": "turbo run test:verbose",
     "update-readme-content": "tsx scripts/update-readme-content.ts",
     "workspaces:list-versions": "./scripts/list-workspace-versions.sh"
