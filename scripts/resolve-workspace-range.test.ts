@@ -1,5 +1,3 @@
-/* eslint-disable n/no-extraneous-import -- vitest is a root devDependency */
-/* eslint-disable import-x/no-extraneous-dependencies -- vitest is a root devDependency */
 /* eslint-disable @typescript-eslint/no-shadow -- vitest globals */
 import { describe, it, expect } from 'vitest';
 

@@ -242,7 +242,6 @@ describe('createEVMClient multichain peer version check', () => {
   });
 
   it('warns when core.version does not satisfy the configured peer range', async () => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '^0.15.0');
     const core = createMockCore();
     core.version = '0.14.0';
@@ -259,7 +258,6 @@ describe('createEVMClient multichain peer version check', () => {
   });
 
   it('does not warn when core.version satisfies the configured peer range', async () => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '^0.15.0');
     const core = createMockCore();
     core.version = '0.15.2';
@@ -278,7 +276,6 @@ describe('createEVMClient multichain peer version check', () => {
   });
 
   it('does not warn when the peer range is an empty string', async () => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '');
     const core = createMockCore();
     core.version = '0.14.0';

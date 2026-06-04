@@ -1104,7 +1104,7 @@ describe('MetamaskConnectEVM', () => {
       await expect(
         client.getProvider().request({
           method: 'wallet_requestPermissions',
-          // eslint-disable-next-line @typescript-eslint/naming-convention
+
           params: [{ 'endowment:permitted-chains': {} }],
         }),
       ).resolves.toEqual([
