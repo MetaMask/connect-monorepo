@@ -109,7 +109,11 @@ export class RequestRouter {
       method: options.request.method,
       params: options.request.params,
     });
-    return response as Json;
+    // Note that this result object will not be in the same shape as the wallet's wallet_invokeMethod response envelope.
+    // This is a purposeful deviation. EIP1193_PASSTHROUGH_METHODS are only meant to be called via the MultichainClient.invokeMethod()
+    // by our connect-evm package. No other external callers should be calling these methods through this entry point. These methods should not be
+    // documented as part of the MultichainClient.invokeMethod().
+    return response.result as Json;
   }
 
   /**
