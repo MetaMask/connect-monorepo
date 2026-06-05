@@ -672,7 +672,7 @@ export class MetamaskConnectEVM {
       });
 
       await this.#trackWalletActionSucceeded(method, scope, params);
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -836,7 +836,7 @@ export class MetamaskConnectEVM {
         params,
       });
 
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // if result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -853,13 +853,16 @@ export class MetamaskConnectEVM {
    * client. The multichain `invokeMethod` dispatcher recognizes the method as a
    * passthrough and forwards the raw `{ method, params }` payload to the
    * underlying transport's `sendEip1193Message`, bypassing the
-   * `wallet_invokeMethod` envelope.
+   * `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC envelope
+   * before returning, so the resolved value is the raw `result` (e.g. `null` for
+   * a successful `wallet_switchEthereumChain`, an accounts array for
+   * `eth_accounts`).
    *
    * @param request - The request object containing the scope, method, and params
    * @param request.scope - CAIP scope used for analytics/routing context
    * @param request.method - The method to request
    * @param request.params - The parameters to pass to the method
-   * @returns The wallet's full JSON-RPC response envelope (`{ id, jsonrpc, result }`)
+   * @returns The wallet's raw RPC result (envelope already unwrapped).
    */
   async #request(request: {
     scope: Scope;
@@ -907,13 +910,14 @@ export class MetamaskConnectEVM {
       if (this.#core.status === 'connected') {
         // `eth_accounts` is registered as an EIP-1193 passthrough on the multichain
         // client, so this routes through `transport.sendEip1193Message` rather than
-        // the `wallet_invokeMethod` envelope. Scope is informational here; the first
-        // permitted chain is used for analytics context.
-        const ethAccountsResponse = (await this.#core.invokeMethod({
+        // the `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC
+        // envelope for passthrough methods and returns just the raw `result`
+        // value. Scope is informational here; the first permitted chain is used
+        // for analytics context.
+        initialAccounts = (await this.#core.invokeMethod({
           scope: `eip155:${hexToNumber(hexPermittedChainIds[0])}` as Scope,
           request: { method: 'eth_accounts', params: [] },
-        })) as { result: Address[] };
-        initialAccounts = ethAccountsResponse.result;
+        })) as Address[];
       } else {
         initialAccounts = getEthAccounts(this.#sessionScopes);
       }

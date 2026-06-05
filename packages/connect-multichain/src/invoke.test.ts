@@ -384,11 +384,9 @@ function testSuite<T extends MultichainOptions>({
             params: [],
           });
           t.expect(handleWithWalletSpy).not.toHaveBeenCalled();
-          t.expect(result).toEqual({
-            id: 1,
-            jsonrpc: '2.0',
-            result: ['0xabc'],
-          });
+          // The router unwraps the JSON-RPC envelope for EIP-1193 passthrough
+          // methods and returns just the inner `result` value.
+          t.expect(result).toEqual(['0xabc']);
         }
       },
     );
