@@ -79,13 +79,10 @@ function createMockCore(): MockCore {
     // `invokeMethod` is the unified entry point on `MultichainCore`. The
     // multichain client routes EIP-1193 passthrough methods (e.g.
     // `eth_accounts`, `wallet_addEthereumChain`, `wallet_switchEthereumChain`)
-    // through this same method internally; the default mock returns the
-    // JSON-RPC envelope shape that those passthrough methods expect.
-    invokeMethod: vi.fn().mockResolvedValue({
-      result: [] as string[],
-      id: 1,
-      jsonrpc: '2.0' as const,
-    }),
+    // through this same method internally and unwraps the JSON-RPC envelope,
+    // so the default mock returns the raw `result` value (an empty accounts
+    // array) the way the real router does.
+    invokeMethod: vi.fn().mockResolvedValue([] as string[]),
     openSimpleDeeplinkIfNeeded: vi.fn(),
     provider: {
       getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
@@ -404,12 +401,11 @@ describe('MetamaskConnectEVM', () => {
         mockCore._status = 'connected';
         mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
         // `eth_accounts` is dispatched as an EIP-1193 passthrough by the
-        // multichain client, which returns the raw JSON-RPC envelope.
-        mockCore.invokeMethod.mockResolvedValue({
-          result: ['0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
-          id: 1,
-          jsonrpc: '2.0',
-        });
+        // multichain client, whose router unwraps the JSON-RPC envelope and
+        // returns the raw `result` array.
+        mockCore.invokeMethod.mockResolvedValue([
+          '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+        ]);
 
         const client = await MetamaskConnectEVM.create({ core: mockCore });
 
@@ -805,7 +801,7 @@ describe('MetamaskConnectEVM', () => {
             error.code = 4902;
             throw error;
           }
-          return { result: null, id: 1, jsonrpc: '2.0' as const };
+          return null;
         },
       );
 
@@ -833,7 +829,7 @@ describe('MetamaskConnectEVM', () => {
             error.code = 4902;
             throw error;
           }
-          return { result: null, id: 1, jsonrpc: '2.0' as const };
+          return null;
         },
       );
 
@@ -857,7 +853,7 @@ describe('MetamaskConnectEVM', () => {
           if (options.request.method === 'wallet_switchEthereumChain') {
             throw new Error('User rejected the request');
           }
-          return { result: null, id: 1, jsonrpc: '2.0' as const };
+          return null;
         },
       );
 
@@ -885,11 +881,7 @@ describe('MetamaskConnectEVM', () => {
           analytics: { enabled: false, integrationType: 'direct' },
           versions: {},
         } as MultichainCore['options'];
-      mockCore.invokeMethod.mockResolvedValue({
-        result: null,
-        id: 1,
-        jsonrpc: '2.0' as const,
-      });
+      mockCore.invokeMethod.mockResolvedValue(null);
 
       await client.switchChain({ chainId: '0x89' });
 
@@ -905,11 +897,7 @@ describe('MetamaskConnectEVM', () => {
     });
 
     it('returns null for wallet_switchEthereumChain provider requests', async () => {
-      mockCore.invokeMethod.mockResolvedValue({
-        result: null,
-        id: 1,
-        jsonrpc: '2.0' as const,
-      });
+      mockCore.invokeMethod.mockResolvedValue(null);
 
       await expect(
         client.getProvider().request({
@@ -1249,11 +1237,7 @@ describe('MetamaskConnectEVM', () => {
 
     it('returns null for wallet_addEthereumChain provider requests', async () => {
       const mockCore = createMockCore();
-      mockCore.invokeMethod.mockResolvedValue({
-        result: null,
-        id: 1,
-        jsonrpc: '2.0' as const,
-      });
+      mockCore.invokeMethod.mockResolvedValue(null);
 
       const client = await MetamaskConnectEVM.create({ core: mockCore });
 

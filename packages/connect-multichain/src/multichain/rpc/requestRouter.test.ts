@@ -212,22 +212,24 @@ t.describe('RequestRouter', () => {
         'wallet_switchEthereumChain',
         'eth_accounts',
       ])(
-        'forwards %s through transport.sendEip1193Message and bypasses wallet_invokeMethod',
+        'forwards %s through transport.sendEip1193Message and returns the unwrapped `result` (bypasses wallet_invokeMethod)',
         async (method) => {
           const options: InvokeMethodOptions = {
             scope: 'eip155:1' as Scope,
             request: { method, params: [] as never },
           };
-          const expectedResponse = {
+          // The transport hands back the full JSON-RPC envelope from the
+          // wallet; the router intentionally returns only the inner `result`
+          // for EIP-1193 passthrough methods (see `handleWithEip1193Passthrough`).
+          mockTransport.sendEip1193Message.mockResolvedValue({
             id: 1,
             jsonrpc: '2.0' as const,
             result: ['0xabc'],
-          };
-          mockTransport.sendEip1193Message.mockResolvedValue(expectedResponse);
+          });
 
           const result = await requestRouter.invokeMethod(options);
 
-          t.expect(result).toEqual(expectedResponse);
+          t.expect(result).toEqual(['0xabc']);
           t.expect(mockTransport.sendEip1193Message).toHaveBeenCalledTimes(1);
           t.expect(mockTransport.sendEip1193Message).toHaveBeenCalledWith({
             method,
