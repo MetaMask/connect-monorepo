@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0]
+
 ### Added
 
 - Validate `@metamask/connect-multichain` peer version at runtime and warn on mismatch ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
@@ -16,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `@metamask/connect-multichain` is now a peer dependency.
   Add it to your own `dependencies` (e.g. `npm install @metamask/connect-multichain`)
   — it is no longer installed transitively.
+- Bump workspace dependencies:
+  - @metamask/connect-multichain@1.0.0
 
 ## [1.2.0]
 
@@ -109,7 +113,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@2.0.0...HEAD
+[2.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.2.0...@metamask/connect-solana@2.0.0
 [1.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.1.0...@metamask/connect-solana@1.2.0
 [1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@1.0.0...@metamask/connect-solana@1.1.0
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-solana@0.8.1...@metamask/connect-solana@1.0.0
