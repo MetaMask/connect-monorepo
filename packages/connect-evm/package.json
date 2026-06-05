@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-evm",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "MetaMask Connect EVM adapter — EIP-1193 provider over the multichain client",
   "keywords": [
     "MetaMask",

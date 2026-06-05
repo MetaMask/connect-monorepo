@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Opt the browser playground wagmi connector out of automatic EIP-6963 provider announcement to avoid duplicate MMConnect-managed announcements while validating the direct legacy EVM SDK path. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
 - Bump workspace dependencies:
-  - @metamask/connect-evm@1.5.0
+  - @metamask/connect-evm@2.0.0
   - @metamask/connect-multichain@1.0.0
 
 ### Fixed
