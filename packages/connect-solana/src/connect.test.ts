@@ -280,3 +280,92 @@ describe('createSolanaClient', () => {
     });
   });
 });
+
+describe('createSolanaClient multichain peer version check', () => {
+  const baseOptions: SolanaConnectOptions = {
+    dapp: { name: 'Test DApp', url: 'https://testdapp.com' },
+  };
+
+  /**
+   * Builds a fresh minimal multichain core mock for peer-range tests.
+   *
+   * @param version - The runtime version exposed on the mocked core.
+   * @returns A mocked multichain core.
+   */
+  function buildCore(version: string): {
+    version: string;
+    provider: { getSession: ReturnType<typeof vi.fn> };
+    disconnect: ReturnType<typeof vi.fn>;
+  } {
+    return {
+      version,
+      provider: {
+        getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
+      },
+      disconnect: vi.fn().mockResolvedValue(undefined),
+    };
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('warns when core.version does not satisfy the configured peer range', async () => {
+    vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '^0.15.0');
+    (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
+      buildCore('0.14.0'),
+    );
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+
+    await createSolanaClient({ ...baseOptions, skipAutoRegister: true });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      '@metamask/connect-solana expected @metamask/connect-multichain version ^0.15.0, but got 0.14.0. This may lead to unexpected behavior.',
+    );
+  });
+
+  it('does not warn when core.version satisfies the configured peer range', async () => {
+    vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '^0.15.0');
+    (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
+      buildCore('0.15.2'),
+    );
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+
+    await createSolanaClient({ ...baseOptions, skipAutoRegister: true });
+
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining(
+        '@metamask/connect-solana expected @metamask/connect-multichain',
+      ),
+    );
+  });
+
+  it('does not warn when the peer range is an empty string', async () => {
+    vi.stubGlobal('__CONNECT_MULTICHAIN_PEER_VERSION_RANGE__', '');
+    (createMultichainClient as ReturnType<typeof vi.fn>).mockResolvedValue(
+      buildCore('0.14.0'),
+    );
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+
+    await createSolanaClient({ ...baseOptions, skipAutoRegister: true });
+
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining(
+        '@metamask/connect-solana expected @metamask/connect-multichain',
+      ),
+    );
+  });
+});

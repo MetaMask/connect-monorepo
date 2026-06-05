@@ -8,11 +8,7 @@ import type { CaipAccountId, Json } from '@metamask/utils';
 
 import { EventEmitter, type SDKEvents } from '../events';
 import type { InvokeMethodOptions, RPCAPI, Scope } from './api/types';
-import type {
-  ExtendedTransport,
-  MergeableMultichainOptions,
-  MultichainOptions,
-} from './types';
+import type { MergeableMultichainOptions, MultichainOptions } from './types';
 import type { StoreClient } from '../store/client';
 
 export type ConnectionStatus =
@@ -41,9 +37,9 @@ export abstract class MultichainCore extends EventEmitter<SDKEvents> {
 
   abstract provider: MultichainApiClient<RPCAPI>;
 
-  abstract transport: ExtendedTransport;
-
   abstract transportType: TransportType;
+
+  abstract version: string;
 
   /**
    * Establishes a connection to the multichain provider, or re-use existing session
