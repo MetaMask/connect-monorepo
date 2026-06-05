@@ -16,6 +16,7 @@ import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
 import { MwpDeeplinkReproCard } from './components/MwpDeeplinkReproCard';
+import { InvokeReturnShapeCard } from './components/InvokeReturnShapeCard';
 import { Eip6963TestBench } from './components/Eip6963TestBench';
 import { AnalyticsTestBench } from './components/AnalyticsTestBench';
 import { useSolanaSDK } from './sdk/SolanaProvider';
@@ -405,6 +406,8 @@ function App() {
             </p>
           </section>
         )}
+
+        <InvokeReturnShapeCard />
 
         <div className="mb-6">
           <Eip6963TestBench
