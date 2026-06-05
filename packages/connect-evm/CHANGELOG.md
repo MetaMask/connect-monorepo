@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `@metamask/connect-multichain` is now a peer dependency.
   Add it to your own `dependencies` (e.g. `npm install @metamask/connect-multichain`)
   — it is no longer installed transitively.
+- Adopts breaking removal of the public `transport` accessor in `@metamask/connect-multichain`. ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
+
+### Removed
+
+- **BREAKING** Remove the `transport.onNotification` option from `createEVMClient()`. The option was a fan-out of typed events already exposed via the EIP-1193 provider (`accountsChanged`, `chainChanged`, `connect`, `disconnect`, `display_uri`) and via `eventHandlers`. Migrate to those listeners instead ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
 
 ### Fixed
 

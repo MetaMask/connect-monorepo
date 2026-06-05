@@ -666,12 +666,13 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_switchEthereumChain',
         params,
       });
 
       await this.#trackWalletActionSucceeded(method, scope, params);
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -830,11 +831,12 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_addEthereumChain',
         params,
       });
 
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // if result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -847,19 +849,31 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Submits a request to the EIP-1193 provider
+   * Submits an EIP-1193 passthrough request to the wallet via the multichain
+   * client. The multichain `invokeMethod` dispatcher recognizes the method as a
+   * passthrough and forwards the raw `{ method, params }` payload to the
+   * underlying transport's `sendEip1193Message`, bypassing the
+   * `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC envelope
+   * before returning, so the resolved value is the raw `result` (e.g. `null` for
+   * a successful `wallet_switchEthereumChain`, an accounts array for
+   * `eth_accounts`).
    *
-   * @param request - The request object containing the method and params
+   * @param request - The request object containing the scope, method, and params
+   * @param request.scope - CAIP scope used for analytics/routing context
    * @param request.method - The method to request
    * @param request.params - The parameters to pass to the method
-   * @returns The result of the request
+   * @returns The wallet's raw RPC result (envelope already unwrapped).
    */
   async #request(request: {
+    scope: Scope;
     method: string;
     params: unknown[];
   }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
-    const result = this.#core.transport.sendEip1193Message(request);
+    const result = this.#core.invokeMethod({
+      scope: request.scope,
+      request: { method: request.method, params: request.params },
+    });
     if (
       request.method === 'wallet_addEthereumChain' ||
       request.method === 'wallet_switchEthereumChain'
@@ -894,12 +908,16 @@ export class MetamaskConnectEVM {
     } else {
       let initialAccounts: Address[] = [];
       if (this.#core.status === 'connected') {
-        const ethAccountsResponse =
-          await this.#core.transport.sendEip1193Message({
-            method: 'eth_accounts',
-            params: [],
-          });
-        initialAccounts = ethAccountsResponse.result as Address[];
+        // `eth_accounts` is registered as an EIP-1193 passthrough on the multichain
+        // client, so this routes through `transport.sendEip1193Message` rather than
+        // the `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC
+        // envelope for passthrough methods and returns just the raw `result`
+        // value. Scope is informational here; the first permitted chain is used
+        // for analytics context.
+        initialAccounts = (await this.#core.invokeMethod({
+          scope: `eip155:${hexToNumber(hexPermittedChainIds[0])}` as Scope,
+          request: { method: 'eth_accounts', params: [] },
+        })) as Address[];
       } else {
         initialAccounts = getEthAccounts(this.#sessionScopes);
       }
@@ -1134,9 +1152,8 @@ export class MetamaskConnectEVM {
  * @param [options.mobile] - Mobile configuration options
  * @param [options.mobile.preferredOpenLink] - Custom handler for opening deeplinks (useful for React Native, etc.)
  * @param [options.mobile.useDeeplink] - Whether to use native deeplinks instead of universal links
- * @param [options.transport] - Transport configuration (e.g., extensionId, notification handler)
+ * @param [options.transport] - Transport configuration (e.g., extensionId)
  * @param [options.transport.extensionId] - Extension ID for browser extension transport
- * @param [options.transport.onNotification] - Callback for receiving transport notifications
  * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
  * @param [options.debug] - Enable debug logging
  * @param [options.skipAutoAnnounce] - Skip automatic EIP-6963 provider announcement

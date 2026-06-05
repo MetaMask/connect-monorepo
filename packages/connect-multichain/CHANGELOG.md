@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `getVersion()` now returns the real package version injected at build time via `__PACKAGE_VERSION__`, instead of a hardcoded `'0.0.0'` ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
 - Refactor `MWPTransport.connect()` and other internals to replace deeply nested `new Promise()` and event-callback patterns with deferred promises, reducing nesting and breaking `connect()` into smaller helpers. No behavior change. ([#305](https://github.com/MetaMask/connect-monorepo/pull/305))
 
+### Removed
+
+- **BREAKING:** Remove the `transport.onNotification` constructor option from `createMultichainClient()`. The option was a fan-out of every typed event already exposed via `client.on(...)`. Migrate to the typed event API: `client.on('stateChanged' | 'wallet_sessionChanged' | 'metamask_accountsChanged' | 'metamask_chainChanged' | 'display_uri', handler)`. ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
+- **BREAKING:** Remove the public `transport` accessor from `MultichainCore` and `MetaMaskConnectMultichain`. Consumers that previously reached the underlying transport to invoke EIP-1193 / legacy provider methods (`wallet_addEthereumChain`, `wallet_switchEthereumChain`, `eth_accounts`) should now go through `client.invokeMethod({ scope, request: { method, params } })`. `RequestRouter` recognizes those methods as EIP-1193 passthroughs and forwards the raw payload to the active transport's `sendEip1193Message`, so behavior is preserved. All other RPCs continue to flow through `invokeMethod` unchanged. ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
+
 ### Fixed
 
 - Restrict EIP-6963 extension detection to native MetaMask RDNS values so MMConnect-managed provider announcements do not select the browser-extension transport. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))

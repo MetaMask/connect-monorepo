@@ -611,6 +611,13 @@ export const createTest: CreateTestFN = ({
     mocks.mockWalletRevokeSession.mockRestore();
     mocks.showInstallModalSpy.mockRestore();
 
+    // Restore any per-test prototype spies (e.g. SessionStore.prototype.list,
+    // MWPTransport.prototype.sendEip1193Message). Without restore, vi.spyOn
+    // wraps persist across tests and bleed configured implementations into
+    // subsequent tests' setup paths (e.g. MWPTransport.connect resumes with a
+    // stale session). Module-level vi.mock(...) mocks are not affected.
+    vi.restoreAllMocks();
+
     // Clear all mocks
     vi.clearAllMocks();
 

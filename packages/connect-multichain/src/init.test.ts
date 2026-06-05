@@ -162,12 +162,6 @@ function testSuite<T extends MultichainOptions>({
       async () => {
         sdk = await createSDK(testOptions);
         t.expect(sdk.status).toBe('loaded');
-        if (platform === 'web') {
-          // Web with extension sets up a DefaultTransport for passive listening
-          t.expect(sdk.transport).toBeDefined();
-        } else {
-          t.expect(() => sdk.transport).toThrow();
-        }
       },
     );
 
@@ -193,47 +187,7 @@ function testSuite<T extends MultichainOptions>({
         sdk = await createSDK(testOptions);
 
         t.expect(sdk.status).toBe('connected');
-
-        t.expect(sdk.transport).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
-      },
-    );
-
-    t.it(
-      `${platform} should emit stateChanged event when existing valid session is found during init`,
-      async () => {
-        // Set the transport type as a string in storage (this is how it's stored)
-        mockedData.nativeStorageStub.setItem(
-          'multichain-transport',
-          transportString,
-        );
-        mockedData.mockSessionRequest.mockImplementation(
-          async () => mockSessionRequestData,
-        );
-        mockedData.mockWalletCreateSession.mockImplementation(
-          async () => mockSessionData,
-        );
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => mockSessionData,
-        );
-
-        const onNotification = t.vi.fn();
-        const optionsWithEvent = {
-          ...testOptions,
-          transport: {
-            ...(testOptions.transport ?? {}),
-            onNotification,
-          },
-        };
-        sdk = await createSDK(optionsWithEvent);
-
-        t.expect(sdk).toBeDefined();
-
-        t.expect(sdk.status).toBe('connected');
-        t.expect(onNotification).toHaveBeenCalledWith({
-          method: 'stateChanged',
-          params: 'connected',
-        });
       },
     );
 
