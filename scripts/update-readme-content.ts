@@ -8,6 +8,7 @@ type Workspace = {
   location: string;
   name: string;
   workspaceDependencies: string[];
+  description: string;
 };
 
 const DEPENDENCY_GRAPH_START_MARKER = '<!-- start dependency graph -->';
@@ -33,9 +34,15 @@ main().catch((error) => {
  */
 async function main(): Promise<void> {
   const workspaces = await retrieveWorkspaces();
+  // Only the published libraries under `packages/` drive the auto-generated
+  // sections. Playgrounds and other non-private workspaces are documented by
+  // hand in the README (Playgrounds table) and in docs/architecture.md.
+  const publishedPackages = workspaces.filter((workspace) =>
+    workspace.location.startsWith('packages/'),
+  );
   await updateReadme(
-    getDependencyGraph(workspaces),
-    getPackageList(workspaces),
+    getDependencyGraph(publishedPackages),
+    getPackageList(publishedPackages),
   );
   console.log('README content updated.');
 }
@@ -56,7 +63,17 @@ async function retrieveWorkspaces(): Promise<Workspace[]> {
     '--verbose',
   ]);
 
-  return stdout.split('\n').map((line) => JSON.parse(line));
+  return stdout.split('\n').map((line) => {
+    const workspace = JSON.parse(line) as Omit<Workspace, 'description'>;
+    const manifestPath = path.resolve(
+      __dirname,
+      '..',
+      workspace.location,
+      'package.json',
+    );
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    return { ...workspace, description: manifest.description ?? '' };
+  });
 }
 
 /**
@@ -146,10 +163,33 @@ function assembleMermaidMarkdownFragment(
  * @returns The new package list Markdown fragment.
  */
 function getPackageList(workspaces: Workspace[]): string {
-  return workspaces
+  const rows = workspaces
     .sort((a, b) => a.name.localeCompare(b.name))
-    .map((workspace) => `- [\`${workspace.name}\`](${workspace.location})`)
-    .join('\n');
+    .map((workspace) => [
+      `[\`${workspace.name}\`](${workspace.location})`,
+      `[npm](https://www.npmjs.com/package/${workspace.name})`,
+      workspace.description,
+    ]);
+  return formatMarkdownTable(['Package', 'npm', 'Description'], rows);
+}
+
+/**
+ * Formats a Markdown table with columns aligned to their widest cell, matching
+ * Prettier's output so the regenerated README passes `yarn lint:misc --check`
+ * without a separate formatting pass.
+ *
+ * @param headers - The column header cells.
+ * @param rows - The table rows, each an array of cells aligned to `headers`.
+ * @returns The aligned Markdown table as a string.
+ */
+function formatMarkdownTable(headers: string[], rows: string[][]): string {
+  const widths = headers.map((header, column) =>
+    Math.max(3, header.length, ...rows.map((row) => row[column].length)),
+  );
+  const formatRow = (cells: string[]): string =>
+    `| ${cells.map((cell, column) => cell.padEnd(widths[column])).join(' | ')} |`;
+  const separator = `| ${widths.map((width) => '-'.repeat(width)).join(' | ')} |`;
+  return [formatRow(headers), separator, ...rows.map(formatRow)].join('\n');
 }
 
 /**

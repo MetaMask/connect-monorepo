@@ -46,6 +46,9 @@ const client = await createEVMClient({
   },
 });
 
+// The MMConnect-managed provider is announced through EIP-6963 by default.
+// Pass `skipAutoAnnounce: true` to opt out and call `client.announceProvider()` manually.
+
 // Connect to MetaMask
 let accounts, chainId;
 try {
@@ -179,8 +182,8 @@ Factory function to create a new MetaMask Connect EVM instance.
 | `analytics.enabled`         | `boolean`                                     | No       | Enables dapp-side analytics. Defaults to `true`; set to `false` to disable analytics events and wallet correlation metadata. |
 | `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                                                               |
 | `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                                                                          |
-| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                                                                         |
 | `eventHandlers`             | `Partial<EventHandlers>`                      | No       | Event handlers for provider events                                                                                           |
+| `skipAutoAnnounce`          | `boolean`                                     | No       | Skip automatic EIP-6963 provider announcement                                                                                |
 | `debug`                     | `boolean`                                     | No       | Enable debug logging                                                                                                         |
 
 #### Returns
@@ -304,6 +307,22 @@ None.
 
 ```typescript
 await client.disconnect();
+```
+
+##### `announceProvider()`
+
+Announces the MMConnect-managed EIP-1193 provider through EIP-6963 unless a native MetaMask provider has already announced with `rdns` `io.metamask` or `io.metamask.mobile`. This is called automatically by `createEVMClient()` unless `skipAutoAnnounce: true` is set. The first call may take up to 300 ms while native providers are requested.
+
+**Parameters**
+
+None.
+
+**Returns**
+
+`Promise<void>`
+
+```typescript
+await client.announceProvider();
 ```
 
 ##### `switchChain(options)`

@@ -155,7 +155,6 @@ Factory function to create a new Multichain SDK instance.
 | `analytics.enabled`         | `boolean`                                     | No       | Enables dapp-side analytics. Defaults to `true`; set to `false` to disable analytics events and wallet correlation metadata. |
 | `analytics.integrationType` | `string`                                      | No       | Integration type for analytics                                                                                               |
 | `transport.extensionId`     | `string`                                      | No       | Custom extension ID                                                                                                          |
-| `transport.onNotification`  | `(notification: unknown) => void`             | No       | Notification handler                                                                                                         |
 | `versions`                  | `Partial<ConnectVersions>`                    | No       | Internal: set automatically by `createEVMClient` / `createSolanaClient`. Consumers do not need to provide this.              |
 | `debug`                     | `boolean`                                     | No       | Enable debug logging                                                                                                         |
 

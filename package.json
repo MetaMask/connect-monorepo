@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-monorepo",
-  "version": "36.0.0",
+  "version": "37.0.0",
   "private": true,
   "description": "MetaMask Connect Monorepo",
   "repository": {
@@ -36,6 +36,7 @@
     "test": "yarn test:scripts --silent && yarn test:packages",
     "test:clean": "yarn build:only-clean && turbo run test",
     "test:packages": "turbo run test:verbose",
+    "test:scripts": "vitest run --config scripts/vitest.config.ts",
     "test:verbose": "turbo run test:verbose",
     "update-readme-content": "tsx scripts/update-readme-content.ts",
     "workspaces:list-versions": "./scripts/list-workspace-versions.sh"
@@ -62,7 +63,7 @@
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.14.191",
     "@types/node": "^22.9.0",
-    "@types/semver": "^7",
+    "@types/semver": "^7.7.1",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@yarnpkg/types": "^4.0.0",
@@ -87,12 +88,13 @@
     "prettier-2": "npm:prettier@^2.8.8",
     "prettier-plugin-packagejson": "^2.4.5",
     "rimraf": "^5.0.5",
-    "semver": "^7.6.3",
+    "semver": "^7.7.4",
     "simple-git-hooks": "^2.8.0",
     "tsx": "^4.19.3",
     "turbo": "^2.8.17",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.10.0",
+    "vitest": "^3.1.2",
     "yargs": "^17.7.2"
   },
   "packageManager": "yarn@4.9.2",
@@ -107,7 +109,9 @@
       "eslint-plugin-import-x>unrs-resolver": false,
       "tsx>esbuild": false,
       "jest>jest-cli>jest-config>jest-environment-jsdom>jsdom>ws>bufferutil": false,
-      "jest>jest-cli>jest-config>jest-environment-jsdom>jsdom>ws>utf-8-validate": false
+      "jest>jest-cli>jest-config>jest-environment-jsdom>jsdom>ws>utf-8-validate": false,
+      "vitest>jsdom>ws>bufferutil": false,
+      "vitest>jsdom>ws>utf-8-validate": false
     }
   }
 }

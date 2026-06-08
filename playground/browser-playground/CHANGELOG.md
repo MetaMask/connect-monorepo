@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0]
+
+### Added
+
+- Add an EIP-6963 validation panel for observing provider announcements, dispatching `eip6963:requestProvider`, manually re-announcing the legacy EVM SDK provider, and distinguishing the MMConnect-managed provider from native/provider-discovery entries. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+
+### Changed
+
+- Opt the browser playground wagmi connector out of automatic EIP-6963 provider announcement to avoid duplicate MMConnect-managed announcements while validating the direct legacy EVM SDK path. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.0.0
+  - @metamask/connect-multichain@1.0.0
+
+### Fixed
+
+- Fixed Connected Network cards not appearing automatically after refresh ([#313](https://github.com/MetaMask/connect-monorepo/pull/313))
+
 ## [0.7.5]
 
 ### Added
@@ -236,7 +253,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.5...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.8.0...HEAD
+[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.5...@metamask/browser-playground@0.8.0
 [0.7.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.4...@metamask/browser-playground@0.7.5
 [0.7.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.3...@metamask/browser-playground@0.7.4
 [0.7.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.2...@metamask/browser-playground@0.7.3

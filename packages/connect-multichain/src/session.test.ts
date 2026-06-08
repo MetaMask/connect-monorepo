@@ -195,7 +195,6 @@ function testSuite<T extends MultichainOptions>({
       sdk = await createSDK(testOptions);
 
       t.expect(sdk.status).toBe('connected');
-      t.expect(sdk.transport).toBeDefined();
       t.expect(sdk.provider).toBeDefined();
       t.expect(sdk.storage).toBeDefined();
       await t
@@ -275,7 +274,6 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('connected');
 
         t.expect(sdk).toBeDefined();
-        t.expect(sdk.transport).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
 
         await sdk.connect(scopes, caipAccountIds);

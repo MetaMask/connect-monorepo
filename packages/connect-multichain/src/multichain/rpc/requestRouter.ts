@@ -11,6 +11,7 @@ import {
   METAMASK_DEEPLINK_BASE,
 } from '../../config';
 import {
+  EIP1193_PASSTHROUGH_METHODS,
   type ExtendedTransport,
   type InvokeMethodOptions,
   isSecure,
@@ -58,6 +59,9 @@ export class RequestRouter {
    */
   async invokeMethod(options: InvokeMethodOptions): Promise<Json> {
     const { method } = options.request;
+    if (EIP1193_PASSTHROUGH_METHODS.has(method)) {
+      return this.handleWithEip1193Passthrough(options);
+    }
     if (RPC_HANDLED_METHODS.has(method)) {
       return this.handleWithRpcNode(options);
     }
@@ -65,6 +69,34 @@ export class RequestRouter {
       return this.handleWithSdkState(options);
     }
     return this.handleWithWallet(options);
+  }
+
+  /**
+   * Forwards EIP-1193 / legacy provider methods (e.g. `wallet_addEthereumChain`,
+   * `wallet_switchEthereumChain`, `eth_accounts`) directly to the underlying
+   * transport's `sendEip1193Message`, bypassing the multichain
+   * `wallet_invokeMethod` envelope. These methods are wallet-side concerns the
+   * Multichain API does not model, so we forward the raw `{ method, params }`
+   * payload and return the wallet's full JSON-RPC response envelope unchanged.
+   *
+   * Analytics tracking is intentionally skipped here: ecosystem clients
+   * (e.g. `connect-evm`) emit their own `wallet_action_*` events around these
+   * passthrough calls, and adding router-level tracking would double-count.
+   *
+   * @param options
+   */
+  private async handleWithEip1193Passthrough(
+    options: InvokeMethodOptions,
+  ): Promise<Json> {
+    const response = await this.transport.sendEip1193Message({
+      method: options.request.method,
+      params: options.request.params,
+    });
+    // Note that this result object will not be in the same shape as the wallet's wallet_invokeMethod response envelope.
+    // This is a purposeful deviation. EIP1193_PASSTHROUGH_METHODS are only meant to be called via the MultichainClient.invokeMethod()
+    // by our connect-evm package. No other external callers should be calling these methods through this entry point. These methods should not be
+    // documented as part of the MultichainClient.invokeMethod().
+    return response.result as Json;
   }
 
   /**

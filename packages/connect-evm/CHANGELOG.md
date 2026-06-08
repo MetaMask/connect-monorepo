@@ -11,6 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `EIP1193Provider.request()` now preserves JSON-RPC error `data` on provider-facing errors when `connect-multichain` surfaces a wallet error through `RPCInvokeMethodErr`. Dapps can read revert reasons, custom-error bytes, and other wallet-provided error metadata from `error.data` alongside the original wallet `error.code` and `error.message`. ([#312](https://github.com/MetaMask/connect-monorepo/pull/312))
 
+## [2.0.0]
+
+### Added
+
+- Validate `@metamask/connect-multichain` peer version at runtime and warn on mismatch ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
+- Announce the MMConnect-managed EIP-1193 provider through EIP-6963 by default when native MetaMask has not already announced, with `skipAutoAnnounce` and `announceProvider()` for manual control. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+
+### Changed
+
+- **BREAKING:** `@metamask/connect-multichain` is now a peer dependency.
+  Add it to your own `dependencies` (e.g. `npm install @metamask/connect-multichain`)
+  — it is no longer installed transitively.
+- Adopts breaking removal of the public `transport` accessor in `@metamask/connect-multichain`. ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
+
+### Removed
+
+- **BREAKING** Remove the `transport.onNotification` option from `createEVMClient()`. The option was a fan-out of typed events already exposed via the EIP-1193 provider (`accountsChanged`, `chainChanged`, `connect`, `disconnect`, `display_uri`) and via `eventHandlers`. Migrate to those listeners instead ([#318](https://github.com/MetaMask/connect-monorepo/pull/318))
+
+### Fixed
+
+- MWP-backed EIP-1193 requests now surface wallet errors through rejected promises consistently with the default transport, so `EvmClient.switchChain()` no longer has to handle returned error payloads. ([#311](https://github.com/MetaMask/connect-monorepo/pull/311))
+- Return spec-compatible values from additional intercepted EIP-1193 provider requests: `wallet_requestPermissions` now resolves to requested permissions, while successful `wallet_switchEthereumChain` and `wallet_addEthereumChain` requests resolve to `null`. ([#310](https://github.com/MetaMask/connect-monorepo/pull/310))
+
 ## [1.4.0]
 
 ### Added
@@ -243,7 +266,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@2.0.0...HEAD
+[2.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.4.0...@metamask/connect-evm@2.0.0
 [1.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.3.1...@metamask/connect-evm@1.4.0
 [1.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.3.0...@metamask/connect-evm@1.3.1
 [1.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.2.0...@metamask/connect-evm@1.3.0

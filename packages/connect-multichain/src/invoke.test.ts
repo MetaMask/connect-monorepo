@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- Test helper functions */
 /* eslint-disable no-plusplus -- Test loops */
 /* eslint-disable @typescript-eslint/no-shadow -- Vitest globals and test scopes */
+import { SessionStore } from '@metamask/mobile-wallet-protocol-core';
 import * as t from 'vitest';
 import { vi } from 'vitest';
 
@@ -25,6 +26,8 @@ import {
 } from '../tests/fixtures.test';
 import type { TestSuiteOptions, MockedData } from '../tests/types';
 import { RequestRouter } from './multichain/rpc/requestRouter';
+import { DefaultTransport } from './multichain/transports/default';
+import { MWPTransport } from './multichain/transports/mwp';
 
 vi.mock('cross-fetch', () => {
   const mockFetch = vi.fn();
@@ -178,22 +181,15 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('loaded');
         // Provider is always available via wrapper transport (handles connection state internally)
         t.expect(sdk.provider).toBeDefined();
-        if (platform === 'web') {
-          // Web with extension sets up a DefaultTransport for passive listening
-          t.expect(sdk.transport).toBeDefined();
-        } else {
-          t.expect(() => sdk.transport).toThrow();
-        }
 
         await sdk.connect(scopes, caipAccountIds);
 
         t.expect(sdk.status).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
-        t.expect(sdk.transport).toBeDefined();
         if (platform === 'web-mobile') {
-          sdk.transport.getActiveSession = t.vi
-            .fn()
-            .mockResolvedValue({ id: 'mock-session-id' });
+          t.vi
+            .spyOn(SessionStore.prototype, 'list')
+            .mockResolvedValue([{ id: 'mock-session-id' } as any]);
         }
 
         const providerInvokeMethodSpy = t.vi.spyOn(
@@ -203,7 +199,7 @@ function testSuite<T extends MultichainOptions>({
         const options = {
           id: 1,
           scope: 'eip155:1',
-          request: { method: 'eth_accounts', params: [] },
+          request: { method: 'personal_sign', params: [] },
         } as InvokeMethodOptions;
 
         const result = await sdk.invokeMethod(options);
@@ -241,14 +237,14 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('connected');
 
         if (platform === 'web-mobile') {
-          sdk.transport.getActiveSession = t.vi
-            .fn()
-            .mockResolvedValue({ id: 'mock-session-id' });
+          t.vi
+            .spyOn(SessionStore.prototype, 'list')
+            .mockResolvedValue([{ id: 'mock-session-id' } as any]);
         }
 
         const options = {
           scope: 'eip155:1',
-          request: { method: 'eth_accounts', params: [] },
+          request: { method: 'personal_sign', params: [] },
         } as InvokeMethodOptions;
 
         await t
@@ -300,7 +296,6 @@ function testSuite<T extends MultichainOptions>({
 
         t.expect(sdk.status).toBe('loaded');
         t.expect(() => sdk.provider).toThrow();
-        t.expect(() => sdk.transport).toThrow();
 
         await sdk.connect(scopes, caipAccountIds);
 
@@ -308,12 +303,91 @@ function testSuite<T extends MultichainOptions>({
 
         const options = {
           scope: 'eip155:1',
-          request: { method: 'eth_accounts', params: [] },
+          request: { method: 'personal_sign', params: [] },
         } as InvokeMethodOptions;
         const result = await sdk.invokeMethod(options);
 
         t.expect(mockFetch).toHaveBeenCalled();
         t.expect(result).toEqual(mockJsonResponse);
+      },
+    );
+
+    t.it(
+      `${platform} should route EIP-1193 passthrough methods through transport.sendEip1193Message instead of wallet_invokeMethod`,
+      async () => {
+        const scopes = ['eip155:1'] as Scope[];
+        const caipAccountIds = [
+          'eip155:1:0x1234567890abcdef1234567890abcdef12345678',
+        ] as any;
+
+        mockedData.mockSessionRequest.mockImplementation(
+          async () => mockSessionRequestData,
+        );
+        mockedData.mockWalletGetSession.mockImplementation(
+          async () => mockSessionData,
+        );
+        mockedData.mockWalletCreateSession.mockImplementation(
+          async () => mockSessionData,
+        );
+
+        sdk = await createSDK(testOptions);
+        await sdk.connect(scopes, caipAccountIds);
+        t.expect(sdk.status).toBe('connected');
+
+        const expectedResponse = {
+          id: 1,
+          jsonrpc: '2.0',
+          result: ['0xabc'],
+        };
+
+        // `RequestRouter.invokeMethod` dispatches EIP-1193 passthrough methods
+        // to the active transport's `sendEip1193Message`. The active transport
+        // differs by platform:
+        // - `web` uses `DefaultTransport` (the wrapper itself implements
+        //   `sendEip1193Message` via `window.postMessage` and does not delegate
+        //   to the inner `mockDefaultTransport`).
+        // - `web-mobile`, `node`, and `rn` use `MWPTransport`.
+        // In both cases we spy on the prototype so the wrapper's method is
+        // intercepted regardless of how the SDK reaches it.
+        const transportPrototype =
+          platform === 'web'
+            ? DefaultTransport.prototype
+            : MWPTransport.prototype;
+        const sendEip1193MessageSpy = t.vi
+          .spyOn(transportPrototype, 'sendEip1193Message')
+          .mockResolvedValue(expectedResponse as any);
+        // Spy on the private `handleWithWallet` to assert the request did NOT
+        // travel down the standard `wallet_invokeMethod` path.
+        const handleWithWalletSpy = t.vi.spyOn(
+          RequestRouter.prototype as unknown as {
+            handleWithWallet: (...args: unknown[]) => Promise<unknown>;
+          },
+          'handleWithWallet',
+        );
+
+        for (const method of [
+          'eth_accounts',
+          'wallet_addEthereumChain',
+          'wallet_switchEthereumChain',
+        ]) {
+          sendEip1193MessageSpy.mockClear();
+          handleWithWalletSpy.mockClear();
+
+          const result = await sdk.invokeMethod({
+            scope: 'eip155:1',
+            request: { method, params: [] },
+          } as InvokeMethodOptions);
+
+          t.expect(sendEip1193MessageSpy).toHaveBeenCalledTimes(1);
+          t.expect(sendEip1193MessageSpy).toHaveBeenCalledWith({
+            method,
+            params: [],
+          });
+          t.expect(handleWithWalletSpy).not.toHaveBeenCalled();
+          // The router unwraps the JSON-RPC envelope for EIP-1193 passthrough
+          // methods and returns just the inner `result` value.
+          t.expect(result).toEqual(['0xabc']);
+        }
       },
     );
 
@@ -343,7 +417,7 @@ function testSuite<T extends MultichainOptions>({
       const options = {
         scope: 'eip155:1',
         request: {
-          method: 'eth_accounts',
+          method: 'personal_sign',
           params: [],
         },
       } as InvokeMethodOptions;
@@ -351,9 +425,9 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.provider).toBeDefined();
 
       if (platform === 'web-mobile') {
-        sdk.transport.getActiveSession = t.vi
-          .fn()
-          .mockResolvedValue({ id: 'mock-session-id' });
+        t.vi
+          .spyOn(SessionStore.prototype, 'list')
+          .mockResolvedValue([{ id: 'mock-session-id' } as any]);
       }
 
       await t

@@ -15,9 +15,6 @@ type MockCore = MultichainCore & {
       set: Mock<(key: string, value: string) => Promise<void>>;
     };
   };
-  transport: MultichainCore['transport'] & {
-    sendEip1193Message: Mock;
-  };
   disconnect: Mock<(scopes?: unknown[]) => Promise<void>>;
   connect: Mock<
     (
@@ -36,6 +33,10 @@ type MockCore = MultichainCore & {
   provider: MultichainCore['provider'] & {
     getSession: Mock<() => Promise<SessionData>>;
   };
+  options: {
+    analytics: { enabled: boolean };
+    dapp: { name: string; url?: string; nativeScheme?: string };
+  };
 };
 
 /**
@@ -46,15 +47,6 @@ type MockCore = MultichainCore & {
 function createMockCore(): MockCore {
   const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
   const _status: ConnectEvmStatus = 'disconnected';
-
-  const sendEip1193Message = vi.fn().mockResolvedValue({
-    result: [] as string[],
-    id: 1,
-    jsonrpc: '2.0' as const,
-  });
-  const onNotification = vi.fn().mockReturnValue(() => {
-    // noop
-  });
 
   const storageGet = vi.fn().mockResolvedValue(null);
   const storageSet = vi.fn().mockResolvedValue(undefined);
@@ -84,14 +76,20 @@ function createMockCore(): MockCore {
     },
     disconnect: vi.fn().mockResolvedValue(undefined),
     connect: vi.fn().mockResolvedValue(undefined),
-    invokeMethod: vi.fn().mockResolvedValue('0xsignature'),
+    // `invokeMethod` is the unified entry point on `MultichainCore`. The
+    // multichain client routes EIP-1193 passthrough methods (e.g.
+    // `eth_accounts`, `wallet_addEthereumChain`, `wallet_switchEthereumChain`)
+    // through this same method internally and unwraps the JSON-RPC envelope,
+    // so the default mock returns the raw `result` value (an empty accounts
+    // array) the way the real router does.
+    invokeMethod: vi.fn().mockResolvedValue([] as string[]),
     openSimpleDeeplinkIfNeeded: vi.fn(),
     provider: {
       getSession: vi.fn().mockResolvedValue({ sessionScopes: {} }),
     },
-    transport: {
-      sendEip1193Message,
-      onNotification,
+    options: {
+      analytics: { enabled: false },
+      dapp: { name: 'Test Dapp', url: 'https://metamask.github.io' },
     },
     storage: {
       getAnonId: vi.fn().mockResolvedValue('anon-id'),
@@ -402,11 +400,12 @@ describe('MetamaskConnectEVM', () => {
         const mockCore = createMockCore();
         mockCore._status = 'connected';
         mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
-        mockCore.transport.sendEip1193Message.mockResolvedValue({
-          result: ['0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
-          id: 1,
-          jsonrpc: '2.0',
-        });
+        // `eth_accounts` is dispatched as an EIP-1193 passthrough by the
+        // multichain client, whose router unwraps the JSON-RPC envelope and
+        // returns the raw `result` array.
+        mockCore.invokeMethod.mockResolvedValue([
+          '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+        ]);
 
         const client = await MetamaskConnectEVM.create({ core: mockCore });
 
@@ -433,10 +432,11 @@ describe('MetamaskConnectEVM', () => {
         expect(connectData.accounts).toContain(
           '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
         );
-        expect(mockCore.transport.sendEip1193Message).toHaveBeenCalledWith({
-          method: 'eth_accounts',
-          params: [],
-        });
+        expect(mockCore.invokeMethod).toHaveBeenCalledWith(
+          expect.objectContaining({
+            request: { method: 'eth_accounts', params: [] },
+          }),
+        );
       });
 
       it('connects using the cached eth_chainId when valid and also in the CAIP-25 permission scopes', async () => {
@@ -788,20 +788,20 @@ describe('MetamaskConnectEVM', () => {
 
       // Ignore the eth_accounts call made during the connect flow above so
       // each test can assert against a clean call log.
-      mockCore.transport.sendEip1193Message.mockClear();
+      mockCore.invokeMethod.mockClear();
     });
 
     it('falls back to wallet_addEthereumChain when wallet_switchEthereumChain fails with "Unrecognized chain ID" and chainConfiguration is provided', async () => {
-      mockCore.transport.sendEip1193Message.mockImplementation(
-        async (request: { method: string }) => {
-          if (request.method === 'wallet_switchEthereumChain') {
+      mockCore.invokeMethod.mockImplementation(
+        async (options: { request: { method: string } }) => {
+          if (options.request.method === 'wallet_switchEthereumChain') {
             const error = new Error('Unrecognized chain ID 0x89') as Error & {
               code: number;
             };
             error.code = 4902;
             throw error;
           }
-          return { result: null, id: 1, jsonrpc: '2.0' as const };
+          return null;
         },
       );
 
@@ -810,8 +810,8 @@ describe('MetamaskConnectEVM', () => {
         chainConfiguration: polygonChainConfiguration,
       });
 
-      const calls = mockCore.transport.sendEip1193Message.mock.calls.map(
-        ([req]) => (req as { method: string }).method,
+      const calls = mockCore.invokeMethod.mock.calls.map(
+        ([args]) => (args as { request: { method: string } }).request.method,
       );
       expect(calls).toEqual([
         'wallet_switchEthereumChain',
@@ -820,16 +820,16 @@ describe('MetamaskConnectEVM', () => {
     });
 
     it('rethrows the original "Unrecognized chain ID" error (preserving code 4902) when no chainConfiguration is provided', async () => {
-      mockCore.transport.sendEip1193Message.mockImplementation(
-        async (request: { method: string }) => {
-          if (request.method === 'wallet_switchEthereumChain') {
+      mockCore.invokeMethod.mockImplementation(
+        async (options: { request: { method: string } }) => {
+          if (options.request.method === 'wallet_switchEthereumChain') {
             const error = new Error('Unrecognized chain ID 0x89') as Error & {
               code: number;
             };
             error.code = 4902;
             throw error;
           }
-          return { result: null, id: 1, jsonrpc: '2.0' as const };
+          return null;
         },
       );
 
@@ -840,20 +840,20 @@ describe('MetamaskConnectEVM', () => {
         code: 4902,
       });
 
-      const calls = mockCore.transport.sendEip1193Message.mock.calls.map(
-        ([req]) => (req as { method: string }).method,
+      const calls = mockCore.invokeMethod.mock.calls.map(
+        ([args]) => (args as { request: { method: string } }).request.method,
       );
       expect(calls).toEqual(['wallet_switchEthereumChain']);
       expect(calls).not.toContain('wallet_addEthereumChain');
     });
 
     it('rethrows non "Unrecognized chain ID" errors without falling back, even when chainConfiguration is provided', async () => {
-      mockCore.transport.sendEip1193Message.mockImplementation(
-        async (request: { method: string }) => {
-          if (request.method === 'wallet_switchEthereumChain') {
+      mockCore.invokeMethod.mockImplementation(
+        async (options: { request: { method: string } }) => {
+          if (options.request.method === 'wallet_switchEthereumChain') {
             throw new Error('User rejected the request');
           }
-          return { result: null, id: 1, jsonrpc: '2.0' as const };
+          return null;
         },
       );
 
@@ -864,8 +864,8 @@ describe('MetamaskConnectEVM', () => {
         }),
       ).rejects.toThrow('User rejected the request');
 
-      const calls = mockCore.transport.sendEip1193Message.mock.calls.map(
-        ([req]) => (req as { method: string }).method,
+      const calls = mockCore.invokeMethod.mock.calls.map(
+        ([args]) => (args as { request: { method: string } }).request.method,
       );
       expect(calls).toEqual(['wallet_switchEthereumChain']);
       expect(calls).not.toContain('wallet_addEthereumChain');
@@ -881,19 +881,30 @@ describe('MetamaskConnectEVM', () => {
           analytics: { enabled: false, integrationType: 'direct' },
           versions: {},
         } as MultichainCore['options'];
-      mockCore.transport.sendEip1193Message.mockResolvedValue({
-        result: null,
-        id: 1,
-        jsonrpc: '2.0' as const,
-      });
+      mockCore.invokeMethod.mockResolvedValue(null);
 
       await client.switchChain({ chainId: '0x89' });
 
       expect(mockCore.storage.getAnonId).not.toHaveBeenCalled();
-      expect(mockCore.transport.sendEip1193Message).toHaveBeenCalledWith({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x89' }],
-      });
+      expect(mockCore.invokeMethod).toHaveBeenCalledWith(
+        expect.objectContaining({
+          request: {
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x89' }],
+          },
+        }),
+      );
+    });
+
+    it('returns null for wallet_switchEthereumChain provider requests', async () => {
+      mockCore.invokeMethod.mockResolvedValue(null);
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x89' }],
+        }),
+      ).resolves.toBeNull();
     });
   });
 
@@ -924,8 +935,71 @@ describe('MetamaskConnectEVM', () => {
       ).resolves.toEqual(['0x1234567890123456789012345678901234567890']);
     });
 
-    it('keeps wallet_requestPermissions returning the connect result', async () => {
+    it('returns faked account and chain permissions for wallet_requestPermissions', async () => {
       const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+            'eip155:137': {
+              methods: [],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_requestPermissions',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          params: [{ eth_accounts: {} }],
+        }),
+      ).resolves.toEqual([
+        {
+          id: expect.any(String),
+          parentCapability: 'eth_accounts',
+          invoker: 'https://metamask.github.io',
+          caveats: [
+            {
+              type: 'restrictReturnedAccounts',
+              value: ['0x1234567890123456789012345678901234567890'],
+            },
+          ],
+          date: expect.any(Number),
+        },
+        {
+          id: expect.any(String),
+          parentCapability: 'endowment:permitted-chains',
+          invoker: 'https://metamask.github.io',
+          caveats: [
+            {
+              type: 'restrictNetworkSwitching',
+              value: ['0x1', '0x89'],
+            },
+          ],
+          date: expect.any(Number),
+        },
+      ]);
+    });
+
+    it('uses nativeScheme as the wallet_requestPermissions invoker when dapp url is missing', async () => {
+      const mockCore = createMockCore();
+      mockCore.options.dapp = {
+        name: 'Test Dapp',
+        nativeScheme: 'react-native-playground://',
+      };
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
       mockCore.connect.mockImplementation(async (): Promise<void> => {
         const session: SessionData = {
@@ -948,10 +1022,84 @@ describe('MetamaskConnectEVM', () => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           params: [{ eth_accounts: {} }],
         }),
-      ).resolves.toEqual({
-        accounts: ['0x1234567890123456789012345678901234567890'],
-        chainId: '0x1',
+      ).resolves.toEqual([
+        expect.objectContaining({
+          parentCapability: 'eth_accounts',
+          invoker: 'react-native-playground://',
+        }),
+        expect.objectContaining({
+          parentCapability: 'endowment:permitted-chains',
+          invoker: 'react-native-playground://',
+        }),
+      ]);
+    });
+
+    it('uses dapp name as the wallet_requestPermissions invoker when dapp url and nativeScheme are missing', async () => {
+      const mockCore = createMockCore();
+      mockCore.options.dapp = { name: 'Test Dapp' };
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
       });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_requestPermissions',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          params: [{ eth_accounts: {} }],
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          parentCapability: 'eth_accounts',
+          invoker: 'Test Dapp',
+        }),
+        expect.objectContaining({
+          parentCapability: 'endowment:permitted-chains',
+          invoker: 'Test Dapp',
+        }),
+      ]);
+    });
+
+    it('returns granted permissions regardless of the requested permission shape', async () => {
+      const mockCore = createMockCore();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+          },
+        };
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_requestPermissions',
+          params: [{ 'endowment:permitted-chains': {} }],
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({ parentCapability: 'eth_accounts' }),
+        expect.objectContaining({
+          parentCapability: 'endowment:permitted-chains',
+        }),
+      ]);
     });
 
     it('returns all accounts for eth_accounts', async () => {
@@ -1085,6 +1233,31 @@ describe('MetamaskConnectEVM', () => {
       const scopes = secondConnectCall[0] as string[];
       expect(scopes[0]).toBe('eip155:137');
       expect(scopes).toContain('eip155:1');
+    });
+
+    it('returns null for wallet_addEthereumChain provider requests', async () => {
+      const mockCore = createMockCore();
+      mockCore.invokeMethod.mockResolvedValue(null);
+
+      const client = await MetamaskConnectEVM.create({ core: mockCore });
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: '0x89',
+              chainName: 'Polygon',
+              nativeCurrency: {
+                name: 'MATIC',
+                symbol: 'MATIC',
+                decimals: 18,
+              },
+              rpcUrls: ['https://polygon-rpc.com'],
+            },
+          ],
+        }),
+      ).resolves.toBeNull();
     });
   });
 

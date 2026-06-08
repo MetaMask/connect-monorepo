@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
-/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 import { analytics } from '@metamask/analytics';
 import type {
   MultichainCore,
@@ -14,8 +14,10 @@ import {
   TransportType,
 } from '@metamask/connect-multichain';
 import { hexToNumber } from '@metamask/utils';
+import { satisfies } from 'semver';
 
 import { CONNECT_EVM_SESSION_PROPERTIES, IGNORED_METHODS } from './constants';
+import { EIP6963ProviderAnnouncer } from './eip6963';
 import { enableDebug, logger } from './logger';
 import { EIP1193Provider } from './provider';
 import type {
@@ -42,8 +44,9 @@ import {
   validSupportedChainsUrls,
 } from './utils/type-guards';
 
-// Value substitued by tsup at build time
+// Values substituted by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
+declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
@@ -66,6 +69,81 @@ type ConnectOptions = {
   forceRequest?: boolean;
   /** All available chain IDs in the dapp in hex format */
   chainIds?: Hex[];
+};
+
+type RequestedPermission = {
+  id: string;
+  parentCapability: 'eth_accounts' | 'endowment:permitted-chains';
+  invoker: string;
+  caveats: {
+    type: 'restrictReturnedAccounts' | 'restrictNetworkSwitching';
+    value: Address[] | Hex[];
+  }[];
+  date: number;
+};
+
+const createPermissionId = (): string => {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+};
+
+const getDappInvoker = (options: MultichainOptions): string => {
+  const { name, nativeScheme, url: dappUrl } = options.dapp;
+  const fallbackInvoker = nativeScheme ?? name;
+
+  if (!dappUrl) {
+    return fallbackInvoker;
+  }
+
+  try {
+    const { origin } = new URL(dappUrl);
+    return origin === 'null' ? fallbackInvoker : origin;
+  } catch {
+    return fallbackInvoker;
+  }
+};
+
+const getRequestedPermissions = ({
+  accounts,
+  chainIds,
+  invoker,
+}: {
+  accounts: Address[];
+  chainIds: Hex[];
+  invoker: string;
+}): RequestedPermission[] => {
+  const id = createPermissionId();
+  const date = Date.now();
+
+  return [
+    {
+      id,
+      parentCapability: 'eth_accounts',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictReturnedAccounts',
+          value: accounts,
+        },
+      ],
+      date,
+    },
+    {
+      id,
+      parentCapability: 'endowment:permitted-chains',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictNetworkSwitching',
+          value: chainIds,
+        },
+      ],
+      date,
+    },
+  ];
 };
 
 export type ConnectEvmStatus = 'disconnected' | 'connected' | 'connecting';
@@ -104,6 +182,9 @@ export class MetamaskConnectEVM {
 
   /** An instance of the EIP-1193 provider interface */
   readonly #provider: EIP1193Provider;
+
+  /** Handles EIP-6963 discovery announcements for the provider */
+  readonly #eip6963Announcer: EIP6963ProviderAnnouncer;
 
   /** The session scopes currently permitted */
   #sessionScopes: SessionData['sessionScopes'] = {};
@@ -146,6 +227,7 @@ export class MetamaskConnectEVM {
       core,
       this.#requestInterceptor.bind(this),
     );
+    this.#eip6963Announcer = new EIP6963ProviderAnnouncer(this.#provider);
 
     this.#eventHandlers = eventHandlers;
 
@@ -584,19 +666,13 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_switchEthereumChain',
         params,
       });
 
-      // When using the MWP transport, the error is returned instead of thrown,
-      // so we force it into the catch block here.
-      const resultWithError = result as { error?: { message: string } };
-      if (resultWithError?.error) {
-        throw new Error(resultWithError.error.message);
-      }
-
       await this.#trackWalletActionSucceeded(method, scope, params);
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -676,6 +752,13 @@ export class MetamaskConnectEVM {
         if (request.method === 'eth_requestAccounts') {
           return result.accounts;
         }
+        if (request.method === 'wallet_requestPermissions') {
+          return getRequestedPermissions({
+            accounts: result.accounts,
+            chainIds: getPermittedEthChainIds(this.#sessionScopes),
+            invoker: getDappInvoker(this.#getCoreOptions()),
+          });
+        }
         return result;
       } catch (error) {
         await this.#trackWalletActionFailed(method, scope, params, error);
@@ -684,13 +767,15 @@ export class MetamaskConnectEVM {
     }
 
     if (isSwitchChainRequest(request)) {
-      return this.switchChain({
+      await this.switchChain({
         chainId: request.params[0].chainId as Hex,
       });
+      return null;
     }
 
     if (isAddChainRequest(request)) {
-      return this.#addEthereumChain(request.params[0]);
+      await this.#addEthereumChain(request.params[0]);
+      return null;
     }
 
     if (isAccountsRequest(request)) {
@@ -746,11 +831,12 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_addEthereumChain',
         params,
       });
 
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // if result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -763,19 +849,31 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Submits a request to the EIP-1193 provider
+   * Submits an EIP-1193 passthrough request to the wallet via the multichain
+   * client. The multichain `invokeMethod` dispatcher recognizes the method as a
+   * passthrough and forwards the raw `{ method, params }` payload to the
+   * underlying transport's `sendEip1193Message`, bypassing the
+   * `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC envelope
+   * before returning, so the resolved value is the raw `result` (e.g. `null` for
+   * a successful `wallet_switchEthereumChain`, an accounts array for
+   * `eth_accounts`).
    *
-   * @param request - The request object containing the method and params
+   * @param request - The request object containing the scope, method, and params
+   * @param request.scope - CAIP scope used for analytics/routing context
    * @param request.method - The method to request
    * @param request.params - The parameters to pass to the method
-   * @returns The result of the request
+   * @returns The wallet's raw RPC result (envelope already unwrapped).
    */
   async #request(request: {
+    scope: Scope;
     method: string;
     params: unknown[];
   }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
-    const result = this.#core.transport.sendEip1193Message(request);
+    const result = this.#core.invokeMethod({
+      scope: request.scope,
+      request: { method: request.method, params: request.params },
+    });
     if (
       request.method === 'wallet_addEthereumChain' ||
       request.method === 'wallet_switchEthereumChain'
@@ -810,12 +908,16 @@ export class MetamaskConnectEVM {
     } else {
       let initialAccounts: Address[] = [];
       if (this.#core.status === 'connected') {
-        const ethAccountsResponse =
-          await this.#core.transport.sendEip1193Message({
-            method: 'eth_accounts',
-            params: [],
-          });
-        initialAccounts = ethAccountsResponse.result as Address[];
+        // `eth_accounts` is registered as an EIP-1193 passthrough on the multichain
+        // client, so this routes through `transport.sendEip1193Message` rather than
+        // the `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC
+        // envelope for passthrough methods and returns just the raw `result`
+        // value. Scope is informational here; the first permitted chain is used
+        // for analytics context.
+        initialAccounts = (await this.#core.invokeMethod({
+          scope: `eip155:${hexToNumber(hexPermittedChainIds[0])}` as Scope,
+          request: { method: 'eth_accounts', params: [] },
+        })) as Address[];
       } else {
         initialAccounts = getEthAccounts(this.#sessionScopes);
       }
@@ -968,6 +1070,17 @@ export class MetamaskConnectEVM {
   }
 
   /**
+   * Announces the EIP-1193 provider through EIP-6963 wallet discovery.
+   *
+   * This is a no-op when a native MetaMask EIP-6963 provider has already
+   * announced, or when running outside a browser environment. The first call
+   * may take up to 300 ms while native providers are requested.
+   */
+  async announceProvider(): Promise<void> {
+    await this.#eip6963Announcer.announce();
+  }
+
+  /**
    * Gets the currently selected chain ID on the wallet
    *
    * @returns The currently selected chain ID or undefined if no chain is selected
@@ -1039,11 +1152,11 @@ export class MetamaskConnectEVM {
  * @param [options.mobile] - Mobile configuration options
  * @param [options.mobile.preferredOpenLink] - Custom handler for opening deeplinks (useful for React Native, etc.)
  * @param [options.mobile.useDeeplink] - Whether to use native deeplinks instead of universal links
- * @param [options.transport] - Transport configuration (e.g., extensionId, notification handler)
+ * @param [options.transport] - Transport configuration (e.g., extensionId)
  * @param [options.transport.extensionId] - Extension ID for browser extension transport
- * @param [options.transport.onNotification] - Callback for receiving transport notifications
  * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
  * @param [options.debug] - Enable debug logging
+ * @param [options.skipAutoAnnounce] - Skip automatic EIP-6963 provider announcement
  * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
@@ -1055,6 +1168,7 @@ export async function createEVMClient(
   } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
+    skipAutoAnnounce?: boolean;
     api: {
       supportedNetworks: Record<Hex, string>;
     };
@@ -1108,11 +1222,34 @@ export async function createEVMClient(
       },
     });
 
-    return MetamaskConnectEVM.create({
+    const multichainClientPeerRange =
+      typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'undefined'
+        ? 'unknown'
+        : __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__;
+
+    if (
+      multichainClientPeerRange !== 'unknown' &&
+      multichainClientPeerRange !== '' &&
+      !satisfies(core.version, multichainClientPeerRange)
+    ) {
+      console.warn(
+        `@metamask/connect-evm expected @metamask/connect-multichain version ${multichainClientPeerRange}, but got ${core.version}. This may lead to unexpected behavior.`,
+      );
+    }
+
+    const client = await MetamaskConnectEVM.create({
       core,
       eventHandlers: options.eventHandlers,
       supportedNetworks: options.api.supportedNetworks,
     });
+
+    if (!options.skipAutoAnnounce) {
+      client.announceProvider().catch((error) => {
+        logger('EIP-6963 provider announcement failed', error);
+      });
+    }
+
+    return client;
   } catch (error) {
     console.error('Error creating Metamask Connect/EVM', error);
     throw error;
