@@ -28,16 +28,16 @@ describe('EIP1193Provider', () => {
 
       mockCore.invokeMethod.mockRejectedValue(
         new RPCInvokeMethodErr(
-          'User rejected the request',
+          'User rejected the request.',
           4001,
-          'User rejected the request',
+          'User rejected the request.',
         ),
       );
 
       await expect(
         provider.request({ method: 'eth_sendTransaction', params: [] }),
       ).rejects.toMatchObject({
-        message: 'User rejected the request',
+        message: 'User rejected the request.',
         code: 4001,
       });
     });
