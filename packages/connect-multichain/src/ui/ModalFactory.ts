@@ -177,7 +177,7 @@ export abstract class BaseModalFactory<
         return newLink;
       },
       onClose: (shouldTerminate?: boolean) => {
-        this.onCloseModal(shouldTerminate).catch((error: unknown) => {
+        this.onCloseModal(shouldTerminate).catch((error) => {
           console.error('Failed to close modal:', error);
         });
       },
