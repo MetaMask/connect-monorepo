@@ -192,7 +192,7 @@ t.describe('RequestRouter', () => {
         );
 
         t.it(
-          'falls back to the wrapper message when a coded cause has no message',
+          'falls back to the wrapper message for the reason but leaves rpcMessage unset when a coded cause has no message',
           async () => {
             const transportError = new Error('Transport failed') as Error & {
               cause: { code: number };
@@ -204,13 +204,12 @@ t.describe('RequestRouter', () => {
               actual: requestRouter.invokeMethod(baseOptions),
               reason: 'Transport failed',
               rpcCode: 4001,
-              rpcMessage: 'Transport failed',
             });
           },
         );
 
         t.it(
-          'uses a cause message when a top-level coded error has no message',
+          'uses a cause message for the reason but leaves rpcMessage unset when a top-level coded error has no message',
           async () => {
             const codedError = new Error() as Error & {
               code: number;
@@ -224,7 +223,6 @@ t.describe('RequestRouter', () => {
               actual: requestRouter.invokeMethod(baseOptions),
               reason: 'User rejected the request',
               rpcCode: 4001,
-              rpcMessage: 'User rejected the request',
             });
           },
         );

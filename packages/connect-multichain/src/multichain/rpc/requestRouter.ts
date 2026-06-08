@@ -75,16 +75,6 @@ function getFirstNonEmptyMessage(values: unknown[]): string | undefined {
   return undefined;
 }
 
-function getFirstJsonData(values: unknown[]): Json | undefined {
-  for (const value of values) {
-    const data = getJsonData(value);
-    if (data !== undefined) {
-      return data;
-    }
-  }
-  return undefined;
-}
-
 function getErrorObjectChain(
   errorObject: Record<string, unknown> | undefined,
 ): Record<string, unknown>[] {
@@ -134,6 +124,10 @@ function getInvocationErrorDetails(error: unknown): InvocationErrorDetails {
   for (const [index, currentObject] of errorObjectChain.entries()) {
     const codedDetails = getCodedErrorDetails(currentObject);
     if (codedDetails) {
+      // The rpc* fields mirror the wallet's own JSON-RPC error, so they are
+      // sourced strictly from the coded node. The human-readable `reason` may
+      // still fall back through the cause chain (deeper cause first, then outer
+      // wrappers) so logs stay descriptive when the wallet omits a message.
       const descendantObjects = errorObjectChain.slice(index + 1);
       const ancestorObjects = errorObjectChain.slice(0, index);
       const descendantMessage = getFirstNonEmptyMessage(
@@ -143,9 +137,6 @@ function getInvocationErrorDetails(error: unknown): InvocationErrorDetails {
         primitiveMessage,
         ...ancestorObjects.map((object) => object.message),
       ]);
-      const descendantData = getFirstJsonData(
-        descendantObjects.map((object) => object.data),
-      );
       const reason =
         codedDetails.message ??
         descendantMessage ??
@@ -154,10 +145,12 @@ function getInvocationErrorDetails(error: unknown): InvocationErrorDetails {
       return {
         reason,
         rpcCode: codedDetails.code,
-        rpcMessage: reason,
-        ...(codedDetails.data === undefined && descendantData === undefined
+        ...(codedDetails.message === undefined
           ? {}
-          : { rpcData: codedDetails.data ?? descendantData }),
+          : { rpcMessage: codedDetails.message }),
+        ...(codedDetails.data === undefined
+          ? {}
+          : { rpcData: codedDetails.data }),
       };
     }
   }
