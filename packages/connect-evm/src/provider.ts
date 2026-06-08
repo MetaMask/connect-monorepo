@@ -104,7 +104,7 @@ export class EIP1193Provider extends EventEmitter<EIP1193ProviderEvents> {
       });
     } catch (error) {
       if (error instanceof RPCInvokeMethodErr && error.rpcCode !== undefined) {
-        const invokeError = error as RPCInvokeMethodErr & { rpcData?: unknown };
+        const invokeError = error;
         const rpcError = new Error(
           error.rpcMessage ?? error.reason,
         ) as Error & { code: number; data?: unknown };

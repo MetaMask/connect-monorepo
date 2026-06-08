@@ -108,6 +108,58 @@ t.describe('MWPTransport', () => {
     );
 
     t.it(
+      'should preserve the wallet error `data` on the rejected error',
+      async () => {
+        return new Promise<void>((resolve) => {
+          const mockResolve = t.vi.fn();
+          const mockReject = t.vi.fn();
+          const mockTimeout = setTimeout(() => {}, 60000) as any;
+
+          const requestId = 'test-request-data';
+          transport.pendingRequests.set(requestId, {
+            resolve: mockResolve,
+            reject: mockReject,
+            timeout: mockTimeout,
+          } as any);
+
+          const data = {
+            originalError: {
+              code: 3,
+              data: '0x08c379a0',
+              message: 'execution reverted: insufficient funds',
+            },
+          };
+          const errorMessage = {
+            data: {
+              id: requestId,
+              error: {
+                code: -32000,
+                message: 'execution reverted',
+                data,
+              },
+            },
+          };
+
+          const messageHandler = mockDappClient.on.mock.calls.find(
+            (call: any[]) => call[0] === 'message',
+          )?.[1];
+
+          messageHandler?.(errorMessage);
+
+          t.expect(mockReject).toHaveBeenCalled();
+          const rejectedError = mockReject.mock.calls[0][0];
+          t.expect(rejectedError.code).toBe(-32000);
+          t.expect(rejectedError.message).toBe('execution reverted');
+          t.expect(rejectedError.data).toStrictEqual(data);
+          t.expect(mockResolve).not.toHaveBeenCalled();
+
+          clearTimeout(mockTimeout);
+          resolve();
+        });
+      },
+    );
+
+    t.it(
       'should resolve promise when WebSocket message contains success result',
       async () => {
         return new Promise<void>((resolve) => {
