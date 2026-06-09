@@ -8,7 +8,8 @@ import {
   type TransportRequest,
   type TransportResponse,
 } from '@metamask/multichain-api-client';
-import type { CaipAccountId } from '@metamask/utils';
+import type { CaipAccountId, Json } from '@metamask/utils';
+import { isValidJson } from '@metamask/utils';
 import type { ExtendedTransport, RPCAPI, Scope, SessionData } from 'src/domain';
 
 import {
@@ -61,10 +62,19 @@ export class DefaultTransport implements ExtendedTransport {
       typeof errorData.message === 'string'
         ? errorData.message
         : 'Request failed',
-    ) as Error & { code?: number };
+    ) as Error & { code?: number; data?: Json };
 
     if (typeof errorData.code === 'number') {
       error.code = errorData.code;
+    }
+
+    // Preserve the wallet's JSON-RPC error `data` (e.g. revert reason bytes /
+    // custom-error payloads) so it survives to the RequestRouter and can reach
+    // dapps via `error.data`. Without this, the data is dropped at this
+    // boundary and the normalized `RPCInvokeMethodErr.rpcData` is always unset.
+    const { data } = errorData;
+    if (isValidJson(data)) {
+      error.data = data;
     }
 
     return error;

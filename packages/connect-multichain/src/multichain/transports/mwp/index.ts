@@ -22,7 +22,7 @@ import {
 } from '@metamask/multichain-api-client';
 import { JsonRpcError, providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
-import { createDeferredPromise } from '@metamask/utils';
+import { createDeferredPromise, isValidJson } from '@metamask/utils';
 
 import {
   createLogger,
@@ -191,12 +191,18 @@ export class MWPTransport implements ExtendedTransport {
       typeof errorData.message === 'string'
     ) {
       const { code, message } = errorData;
+      // Preserve the wallet's JSON-RPC error `data` (e.g. revert reason bytes /
+      // custom-error payloads) so it survives to the RequestRouter and can
+      // reach dapps via `error.data`. Without this, the data is dropped here
+      // and the normalized `RPCInvokeMethodErr.rpcData` is always unset.
+      const rawData = errorData.data;
+      const data = isValidJson(rawData) ? rawData : undefined;
 
       if (code >= 1000 && code <= 4999) {
-        return providerErrors.custom({ code, message });
+        return providerErrors.custom({ code, message, data });
       }
 
-      return new JsonRpcError(code, message);
+      return new JsonRpcError(code, message, data);
     }
 
     const message =

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `EIP1193Provider.request()` now preserves JSON-RPC error `data` on provider-facing errors when `connect-multichain` surfaces a wallet error through `RPCInvokeMethodErr`. Dapps can read revert reasons, custom-error bytes, and other wallet-provided error metadata from `error.data` alongside the original wallet `error.code` and `error.message`. ([#312](https://github.com/MetaMask/connect-monorepo/pull/312))
+
 ## [2.0.0]
 
 ### Added

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Normalize `invokeMethod()` wallet errors across transports. Wallet-side JSON-RPC / EIP-1193 `code`, `message`, and `data` fields are now preserved in `RPCInvokeMethodErr` as `rpcCode`, `rpcMessage`, and `rpcData` whether the wallet error arrives as a resolved JSON-RPC error response or as a rejected transport error. Wrapped transport errors now walk a capped `cause` chain so wallet error details are not hidden by transport/API wrapper errors. ([#312](https://github.com/MetaMask/connect-monorepo/pull/312))
+- `DefaultTransport` and `MWPTransport` now preserve the wallet's JSON-RPC error `data` when parsing a failed wallet response. Previously both transports dropped `data` while constructing the rejected error, so revert reasons / custom-error bytes never reached `RequestRouter` (leaving `RPCInvokeMethodErr.rpcData` unset). ([#312](https://github.com/MetaMask/connect-monorepo/pull/312))
+
 ## [1.0.0]
 
 ### Added

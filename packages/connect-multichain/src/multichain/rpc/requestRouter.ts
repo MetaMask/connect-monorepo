@@ -17,7 +17,6 @@ import {
   isSecure,
   type MultichainOptions,
   RPC_HANDLED_METHODS,
-  RPCInvokeMethodErr,
   SDK_HANDLED_METHODS,
   type TransportType,
 } from '../../domain';
@@ -29,25 +28,9 @@ import {
 } from '../utils/analytics';
 import type { RpcClient } from './handlers/rpcClient';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
+import { toRPCInvokeMethodErr } from './invocationError';
 
 let rpcId = 1;
-
-/**
- * Normalizes unknown invocation errors to the router error type.
- *
- * @param error - Unknown error thrown during method execution.
- * @returns Error instance surfaced by invokeMethod.
- */
-function toRPCInvokeMethodErr(error: unknown): RPCInvokeMethodErr {
-  if (error instanceof RPCInvokeMethodErr) {
-    return error;
-  }
-  const castError = error as { message?: string; code?: number };
-  return new RPCInvokeMethodErr(
-    castError.message ?? 'Unknown error',
-    castError.code,
-  );
-}
 
 /**
  * Gets the next RPC ID for request tracking.
@@ -150,6 +133,10 @@ export class RequestRouter {
       }
 
       const response = await request;
+      if (response.error) {
+        throw toRPCInvokeMethodErr(response.error);
+      }
+
       return response.result as Json;
     });
   }
@@ -182,14 +169,17 @@ export class RequestRouter {
 
       return result;
     } catch (error) {
-      const isRejection = isRejectionError(error);
+      const normalizedError = toRPCInvokeMethodErr(error);
+      const analyticsError =
+        normalizedError.rpcCode === undefined ? error : normalizedError;
+      const isRejection = isRejectionError(analyticsError);
 
       if (isRejection) {
         await this.#trackWalletActionRejected(options);
       } else {
-        await this.#trackWalletActionFailed(options, error);
+        await this.#trackWalletActionFailed(options, analyticsError);
       }
-      throw toRPCInvokeMethodErr(error);
+      throw normalizedError;
     }
   }
 
