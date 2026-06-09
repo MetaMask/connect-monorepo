@@ -186,6 +186,12 @@ To use a preview build for a package within a project, you need to override the 
 
 ## Releasing changes
 
+Before preparing a release, read [Release Branch Protocols](./release-branch-protocols.md)
+to understand which packages must be released together. The rules in that document — in
+particular the handling of `peerDependencies` across `@metamask/connect-multichain` and
+the ecosystem adapters (`@metamask/connect-evm`, `@metamask/connect-solana`) — drive
+which packages you should select in step 2 below.
+
 Use the following process to release new packages in this repo:
 
 1. **Start the release tool.**

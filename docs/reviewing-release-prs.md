@@ -4,9 +4,19 @@ In order to publish a new release of the monorepo, a release PR must be created.
 
 This document shows you how to do that.
 
+> Reviewers should also be familiar with the
+> [Release Branch Protocols](./release-branch-protocols.md), which define which
+> packages must be released together (especially in the presence of `peerDependencies`
+> between workspace packages). Those rules complement the
+> reviewer checklist below.
+
 ## 0. tl;dr — if you've done this sort of thing before
 
 - [ ] Are there any packages with version bumps that should not be published?
+- [ ] Does the release set follow the [Release Branch Protocols](./release-branch-protocols.md)? In particular:
+  - [ ] If any package being released with a `major` bump is listed as a `peerDependency` of another workspace package, are **all** such workspace dependents also in the release set?
+  - [ ] If any ecosystem client is in the release set, does it actually rely on changes in its peer dependency (rather than being a no-op release)?
+  - [ ] If the release spec contains any `intentionally-skip` entries, is the justification explicit in the PR description?
 - For all packages being published:
   - [ ] Does the new version string sufficiently communicate the impact of changes?
   - [ ] Are there any changelog entries that do not need to be listed?
