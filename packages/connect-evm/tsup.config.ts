@@ -16,7 +16,7 @@ const external = [...deps, ...peerDeps];
 const entryName = pkg.name.replace('@metamask/', '');
 
 const multichainPeerRange = resolveWorkspaceRange(
-  pkg.peerDependencies?.['@metamask/connect-multichain'],
+  pkg.dependencies?.['@metamask/connect-multichain'],
   multichainPkg.version,
 );
 

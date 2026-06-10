@@ -4011,8 +4011,6 @@ __metadata:
     typedoc-plugin-missing-exports: "npm:^4.1.2"
     typescript: "npm:^5.9.3"
     vitest: "npm:^3.1.2"
-  peerDependencies:
-    "@metamask/connect-multichain": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -4136,8 +4134,6 @@ __metadata:
     typedoc-plugin-missing-exports: "npm:^4.1.2"
     typescript: "npm:^5.9.3"
     vitest: "npm:^3.1.2"
-  peerDependencies:
-    "@metamask/connect-multichain": "workspace:^"
   languageName: unknown
   linkType: soft
 
