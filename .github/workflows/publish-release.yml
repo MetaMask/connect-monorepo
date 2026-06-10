@@ -12,6 +12,9 @@ on:
       INFURA_API_KEY:
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   publish-release:
     permissions:
