@@ -21,23 +21,23 @@ function createMockCore(
 
 describe('EIP1193Provider', () => {
   describe('#request', () => {
-    it('re-throws RPCInvokeMethodErr as an EIP-1193 error with the correct code', async () => {
+    it('maps normalized RPCInvokeMethodErr to an EIP-1193 error with the wallet code', async () => {
       const mockCore = createMockCore();
       const provider = new EIP1193Provider(mockCore as any, vi.fn());
       provider.selectedChainId = '0x1';
 
       mockCore.invokeMethod.mockRejectedValue(
         new RPCInvokeMethodErr(
-          'RPC Request failed with code 4001: User denied transaction signature.',
+          'User rejected the request.',
           4001,
-          'User denied transaction signature.',
+          'User rejected the request.',
         ),
       );
 
       await expect(
         provider.request({ method: 'eth_sendTransaction', params: [] }),
       ).rejects.toMatchObject({
-        message: 'User denied transaction signature.',
+        message: 'User rejected the request.',
         code: 4001,
       });
     });
@@ -60,6 +60,36 @@ describe('EIP1193Provider', () => {
       ).rejects.toMatchObject({
         message: 'Internal error.',
         code: -32603,
+      });
+    });
+
+    it('preserves JSON-RPC error data on EIP-1193 errors', async () => {
+      const mockCore = createMockCore();
+      const provider = new EIP1193Provider(mockCore as any, vi.fn());
+      provider.selectedChainId = '0x1';
+      const rpcData = {
+        originalError: {
+          code: 3,
+          data: '0x08c379a0',
+          message: 'execution reverted: insufficient funds',
+        },
+      };
+      const rpcError = Object.assign(
+        new RPCInvokeMethodErr(
+          'execution reverted',
+          -32000,
+          'execution reverted',
+        ),
+        { rpcData },
+      );
+      mockCore.invokeMethod.mockRejectedValue(rpcError);
+
+      await expect(
+        provider.request({ method: 'eth_sendTransaction', params: [] }),
+      ).rejects.toMatchObject({
+        message: 'execution reverted',
+        code: -32000,
+        data: rpcData,
       });
     });
 

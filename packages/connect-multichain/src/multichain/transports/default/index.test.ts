@@ -59,5 +59,45 @@ t.describe('DefaultTransport', () => {
           });
       },
     );
+
+    t.it(
+      'preserves the wallet error `data` on the rejected error',
+      async () => {
+        const data = {
+          originalError: {
+            code: 3,
+            data: '0x08c379a0',
+            message: 'execution reverted: insufficient funds',
+          },
+        };
+        mocks.innerTransport.request.mockResolvedValue({
+          id: '1',
+          jsonrpc: '2.0',
+          error: {
+            code: -32000,
+            message: 'execution reverted',
+            data,
+          },
+        });
+
+        const transport = new DefaultTransport();
+
+        await t
+          .expect(
+            transport.request({
+              method: 'wallet_invokeMethod',
+              params: {
+                scope: 'eip155:1',
+                request: { method: 'eth_sendTransaction', params: [] },
+              },
+            } as never),
+          )
+          .rejects.toMatchObject({
+            code: -32000,
+            message: 'execution reverted',
+            data,
+          });
+      },
+    );
   });
 });
