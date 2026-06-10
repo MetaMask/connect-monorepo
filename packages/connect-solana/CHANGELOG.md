@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `@metamask/connect-multichain` is no longer a peer dependency and will be installed transitively as a regular dependency ([#323](https://github.com/MetaMask/connect-monorepo/pull/323))
+
 ## [2.0.0]
 
 ### Added
