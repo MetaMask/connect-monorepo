@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - @metamask/connect-evm@2.1.0
   - @metamask/connect-multichain@1.1.0
 
-
 ## [0.8.0]
 
 ### Added
