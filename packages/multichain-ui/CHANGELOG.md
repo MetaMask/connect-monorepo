@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Uncategorized
+
+- chore: improve package documentation and add architecture diagrams ([#315](https://github.com/MetaMask/connect-monorepo/pull/315))
+
 ## [0.4.1]
 
 ### Uncategorized
