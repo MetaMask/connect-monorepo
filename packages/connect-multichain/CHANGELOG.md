@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0]
-
 ### Fixed
 
 - Normalize `invokeMethod()` wallet errors across transports. Wallet-side JSON-RPC / EIP-1193 `code`, `message`, and `data` fields are now preserved in `RPCInvokeMethodErr` as `rpcCode`, `rpcMessage`, and `rpcData` whether the wallet error arrives as a resolved JSON-RPC error response or as a rejected transport error. Wrapped transport errors now walk a capped `cause` chain so wallet error details are not hidden by transport/API wrapper errors. ([#312](https://github.com/MetaMask/connect-monorepo/pull/312))
@@ -316,8 +314,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.1.0...HEAD
-[1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.0.0...@metamask/connect-multichain@1.1.0
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.0.0...HEAD
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.15.0...@metamask/connect-multichain@1.0.0
 [0.15.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.14.0...@metamask/connect-multichain@0.15.0
 [0.14.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.13.0...@metamask/connect-multichain@0.14.0
