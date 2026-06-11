@@ -105,7 +105,6 @@
     "viem": "2.*",
     "wagmi": "^3.5.0"
   },
-  "packageManager": "yarn@4.1.1",
   "engines": {
     "node": ">=20.19.0"
   },
