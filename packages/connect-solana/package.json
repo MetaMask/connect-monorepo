@@ -1,6 +1,6 @@
 {
   "name": "@metamask/connect-solana",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "MetaMask Connect Solana adapter — Wallet Standard integration over the multichain client",
   "keywords": [
     "MetaMask",
