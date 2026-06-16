@@ -1,4 +1,5 @@
 /* eslint-disable id-length -- vitest alias */
+import { providerErrors } from '@metamask/rpc-errors';
 import * as t from 'vitest';
 
 import {
@@ -485,6 +486,13 @@ t.describe('isRejectionError', () => {
       );
     },
   );
+
+  t.it('treats the modal-close error as a rejection', () => {
+    // BaseModalFactory.onCloseModal rejects with this when the user closes
+    // the QR/install modal mid-connection. It must classify as `_rejected`,
+    // not `_failed`.
+    t.expect(isRejectionError(providerErrors.userRejectedRequest())).toBe(true);
+  });
 
   t.it(
     'unwraps RPCInvokeMethodErr to detect wallet-side rejection codes',

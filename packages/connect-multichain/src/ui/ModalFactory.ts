@@ -8,6 +8,7 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 import MetaMaskOnboarding from '@metamask/onboarding';
+import { providerErrors } from '@metamask/rpc-errors';
 
 import { METAMASK_CONNECT_BASE_URL, METAMASK_DEEPLINK_BASE } from '../config';
 import {
@@ -17,9 +18,9 @@ import {
   type OTPCode,
   PlatformType,
 } from '../domain';
+import { compressString } from '../multichain/utils';
 import type { AbstractOTPCodeModal } from './modals/base/AbstractOTPModal';
 import type { FactoryModals, ModalTypes } from './modals/types';
-import { compressString } from '../multichain/utils';
 
 /**
  * Preload function type for loading UI dependencies
@@ -138,8 +139,11 @@ export abstract class BaseModalFactory<
   }
 
   private async onCloseModal(shouldTerminate = true) {
+    // Closing the modal is a user-driven cancellation, so reject with the
+    // canonical EIP-1193 4001 error. This lets `isRejectionError` classify it
+    // as `mmconnect_connection_rejected` instead of `mmconnect_connection_failed`.
     return this.unload(
-      shouldTerminate ? new Error('User closed modal') : undefined,
+      shouldTerminate ? providerErrors.userRejectedRequest() : undefined,
     );
   }
 

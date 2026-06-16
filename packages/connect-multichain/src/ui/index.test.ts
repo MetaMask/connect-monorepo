@@ -24,6 +24,7 @@ import {
   type QRLink,
 } from '../domain';
 import type { FactoryModals } from './modals/types';
+import { isRejectionError } from '../multichain/utils/analytics';
 
 // Mock external dependencies
 t.vi.mock('@metamask/onboarding', () => ({
@@ -370,10 +371,13 @@ t.describe('ModalFactory', () => {
           },
         };
 
+        let closeError: Error | undefined;
         await uiModule.renderInstallModal(
           false,
           async () => Promise.resolve(connectionRequest),
-          async () => {},
+          async (error?: Error) => {
+            closeError = error;
+          },
         );
 
         const constructorArgs = (mockFactoryOptions.InstallModal as any).mock
@@ -383,6 +387,12 @@ t.describe('ModalFactory', () => {
 
         // Multichain SDK is what will close the modal instead
         t.expect(mockModal.unmount).toHaveBeenCalled();
+
+        // Closing the modal is a user-driven cancellation: the error handed to
+        // the success callback must classify as a rejection so the SDK emits
+        // `mmconnect_connection_rejected`, not `_failed` (WAPI-1552).
+        t.expect(closeError).toBeDefined();
+        t.expect(isRejectionError(closeError)).toBe(true);
       });
 
       t.it('should handle desktop onboarding correctly', async () => {
