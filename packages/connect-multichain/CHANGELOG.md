@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Closing the QR code / install modal mid-connection now emits `mmconnect_connection_rejected` instead of `mmconnect_connection_failed`. Modal close is a user-driven cancellation; it previously rejected with a plain `Error('User closed modal')` that `isRejectionError` did not recognise, so user cancellations polluted the `_failed` bucket. The close handler now rejects with the canonical EIP-1193 `4001` error (`providerErrors.userRejectedRequest()`). Genuine errors (transport timeouts/disconnects, wallet RPC errors) still emit `mmconnect_connection_failed`. ([#333](https://github.com/MetaMask/connect-monorepo/pull/333))
+
 ## [1.1.0]
 
 ### Fixed
