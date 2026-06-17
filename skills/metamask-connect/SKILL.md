@@ -8,6 +8,7 @@ description: Build dApps that integrate MetaMask via the MetaMask Connect SDK �
 ## When to use
 
 - You want to set up a dApp's MetaMask integration — EVM, Solana, or both (multichain) — in vanilla browser JS/TS, React, or React Native
+- You want a headless integration — a Node.js CLI, server, or bot that connects to MetaMask Mobile via a terminal QR code
 - You want to connect/disconnect, manage the provider and session state, or switch chains
 - You want to sign messages (`personal_sign`, `eth_signTypedData_v4`, Solana `signMessage`) — e.g. Sign-In With Ethereum or nonce auth
 - You want to send transactions (`eth_sendTransaction`, Solana `sendTransaction` / `signAndSendTransaction`)
@@ -42,6 +43,7 @@ Before writing or reviewing **any** MetaMask Connect code, read [references/conv
 | Solana dApp — React               | [workflows/setup-solana-react.md](workflows/setup-solana-react.md)               |
 | Solana dApp — React Native        | [workflows/setup-solana-react-native.md](workflows/setup-solana-react-native.md) |
 | EVM + Solana (multichain)         | [workflows/setup-multichain.md](workflows/setup-multichain.md)                   |
+| Node.js CLI / server (headless)   | [workflows/setup-node.md](workflows/setup-node.md)                               |
 | wagmi app                         | [workflows/setup-wagmi.md](workflows/setup-wagmi.md)                             |
 | wagmi + the connect-evm connector | [workflows/setup-wagmi-connector.md](workflows/setup-wagmi-connector.md)         |
 
