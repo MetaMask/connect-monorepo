@@ -466,6 +466,27 @@ npm install @metamask/connect-multichain@^1.0.0
 
 ---
 
+### 22. Connection hangs or QR fails to render under a strict Content-Security-Policy
+
+**Cause:** The host page's CSP blocks an origin MetaMask Connect needs. A blocked relay socket presents exactly like a hung connection (see #1); a blocked icon or style breaks the QR modal (related to #14 / #16):
+
+- `connect-src` missing `wss://mm-sdk-relay.api.cx.metamask.io` → remote (mobile / no-extension) connections never establish.
+- `img-src` missing `data:` → the QR code's embedded MetaMask icon (a `data:` URI) fails, so the QR does not render.
+- `style-src` missing `'unsafe-inline'` → the `@metamask/multichain-ui` modal (Stencil, runtime-injected styles) renders unstyled.
+- `connect-src` missing `https://mm-sdk-analytics.api.cx.metamask.io` → analytics requests are blocked (harmless to the connection; only relevant when analytics are enabled).
+
+**Fix:** Allow the required origins (browser only — CSP does not apply in Node.js / React Native):
+
+```
+connect-src 'self' wss://mm-sdk-relay.api.cx.metamask.io https://mm-sdk-analytics.api.cx.metamask.io https://*.infura.io;
+img-src 'self' data:;
+style-src 'self' 'unsafe-inline';
+```
+
+Add `connect-src` entries for any custom RPC endpoints you pass to `supportedNetworks`. See the Content Security Policy section in [conventions.md](conventions.md) for the full breakdown.
+
+---
+
 ## Diagnostic Checklist
 
 Run through this checklist when any MetaMask Connect integration is misbehaving:

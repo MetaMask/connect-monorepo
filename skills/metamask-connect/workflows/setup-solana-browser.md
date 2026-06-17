@@ -258,6 +258,7 @@ main().catch(console.error);
 - **Injected Solana provider wins** — since `@metamask/connect-solana` 1.0.0, if an injected Solana provider is already present (e.g. the MetaMask browser extension), `createSolanaClient` will not announce its own wallet-standard provider. Don't expect two `"MetaMask"` entries in the registered wallets list.
 - **Eager provider initialization + stable `getWallet()`** — since `@metamask/connect-solana` 1.1.0, `createSolanaClient()` eagerly initializes the Solana wallet provider during creation; if the underlying multichain session already contains Solana scopes, the provider's accounts are populated by the time the client resolves (no need to wait for `wallet_sessionChanged` on cold start). `getWallet()` also returns the same wallet instance on every call now — safe to cache in a module-level constant, no need to re-await or recreate on subsequent access.
 - **`disconnect()` only revokes Solana scopes** — EVM sessions managed by other clients remain active.
+- **Content Security Policy** — if your host page sets a strict CSP, you must allow the relay socket (`connect-src wss://mm-sdk-relay.api.cx.metamask.io`) and the QR icon (`img-src data:`); a blocked relay looks like a hung connection. See the Content Security Policy section in [../references/conventions.md](../references/conventions.md).
 - **Chrome on Android** has a known bug where the page may unload during the connection flow. Add a `beforeunload` listener as a workaround:
   ```typescript
   window.addEventListener('beforeunload', (e) => {

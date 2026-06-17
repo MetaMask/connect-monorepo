@@ -295,5 +295,6 @@ document
 - **Register event listeners before connecting** — set up `accountsChanged`, `chainChanged`, and `disconnect` handlers immediately after getting the provider.
 - **`chainConfiguration` is a fallback, not a forced add** — it is only used if the wallet doesn't already have the chain configured. If the chain exists, only `wallet_switchEthereumChain` fires.
 - **Page reloads restore automatically** — the EVM client syncs any persisted session before `createEVMClient` resolves and re-emits `connect`/`accountsChanged` on the provider. The EVM client has no `.on()` method and no `wallet_sessionChanged` handler — use the provider events (or `eventHandlers.connect`) to restore UI state.
+- **Content Security Policy** — if your host page sets a strict CSP, you must allow the relay socket (`connect-src wss://mm-sdk-relay.api.cx.metamask.io`) and the QR icon (`img-src data:`); a blocked relay looks like a hung connection. See the Content Security Policy section in [../references/conventions.md](../references/conventions.md).
 - **Error code 4001** means the user deliberately rejected — show a retry option, not a crash screen.
 - **Error code -32002** means a request is already pending — do not send another `connect()`. Wait for the user to respond in MetaMask.
