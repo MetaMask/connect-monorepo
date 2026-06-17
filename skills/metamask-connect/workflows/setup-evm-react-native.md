@@ -327,6 +327,6 @@ const styles = StyleSheet.create({
 - **Chain IDs are always hex strings** — use `'0x1'`, `'0x89'`, `'0xaa36a7'`. Never decimal.
 - **`0x1` is auto-included** in every `connect()` call.
 - **The empty module stub** (`src/empty-module.js`) is used for Node built-ins the SDK's transitive dependencies reference but never actually call at runtime in React Native. The `stream` module is the exception — it needs a real shim (`readable-stream`).
-- **`createEVMClient` is a singleton** — do not call it on every render or in a component body. Initialize once and store the promise.
+- **Create the client once** — `createEVMClient` returns a fresh wrapper on every call (only the underlying multichain core is a singleton), so do not call it on every render or in a component body. Initialize once at startup and store the promise.
 - **Session restoration** — the EVM client syncs any persisted session before `createEVMClient` resolves; detect restores via the `connect` / `accountsChanged` events (in `eventHandlers` or on the provider). There is no `wallet_sessionChanged` handler on the EVM client — that event belongs to the multichain client.
 - **iOS requires `Linking` permissions** — ensure your `Info.plist` includes the `metamask` URL scheme in `LSApplicationQueriesSchemes` so `Linking.openURL` can open the MetaMask app.

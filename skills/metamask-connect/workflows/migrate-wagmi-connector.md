@@ -13,7 +13,7 @@ The MetaMask connector in wagmi has been **completely rewritten**. The underlyin
 
 **Key impacts:**
 
-- New optional peer dependency: `@metamask/connect-evm` must be installed explicitly, at a version inside wagmi's declared peer range (check `npm info @wagmi/connectors peerDependencies` — currently `^1.3.0`)
+- New optional peer dependency: `@metamask/connect-evm` must be installed explicitly, at a version inside wagmi's declared peer range (check `npm info @wagmi/connectors peerDependencies` — currently `^2.1.0`)
 - Old dependency `@metamask/sdk` should be removed
 - Configuration parameter names changed (`dappMetadata` → `dapp`, `useDeeplink` → `mobile.useDeeplink`)
 - Several deprecated SDK-specific options are removed entirely

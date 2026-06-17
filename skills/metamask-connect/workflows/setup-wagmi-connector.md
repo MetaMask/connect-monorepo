@@ -16,11 +16,11 @@ npm install wagmi viem @tanstack/react-query
 
 # Check which @metamask/connect-evm range wagmi's connector was built against:
 npm info @wagmi/connectors peerDependencies
-# ... then install a version inside that range (currently ^1.3.0):
-npm install @metamask/connect-evm@"^1.3.0"
+# ... then install a version inside that range (currently ^2.1.0):
+npm install @metamask/connect-evm@"^2.1.0"
 ```
 
-The connect-evm-backed `metaMask()` connector ships in **wagmi >= 3.6 / `@wagmi/connectors` >= 8**, which declares `@metamask/connect-evm` as an **optional peer dependency**. Install a version that satisfies wagmi's declared peer range — do **not** install `@metamask/connect-evm@latest` blindly: the current 2.x line does not satisfy `^1.3.0`, and pairing the connector with a major it wasn't built against produces peer warnings and undefined behavior. `@metamask/connect-multichain` is installed transitively by `connect-evm`; you do not need to add it.
+The connect-evm-backed `metaMask()` connector ships in **wagmi >= 3.6 / `@wagmi/connectors` >= 8**, which declares `@metamask/connect-evm` as an **optional peer dependency** (currently `^2.1.0`). Install a version that satisfies wagmi's declared peer range — do **not** install `@metamask/connect-evm@latest` blindly: pairing the connector with a major it wasn't built against produces peer warnings and undefined behavior. The range moves as wagmi bumps it, so always confirm with `npm info @wagmi/connectors peerDependencies`. `@metamask/connect-multichain` is installed transitively by `connect-evm`; you do not need to add it.
 
 ### Step 2: Create Wagmi Config
 
@@ -294,7 +294,7 @@ Ensure React Native polyfills are set up per the `react-native-polyfills` rule.
 
 - The connector ID is `'metaMaskSDK'` and the display name is `'MetaMask'`
 - The connector RDNS is `['io.metamask', 'io.metamask.mobile']`
-- `@metamask/connect-evm` is an optional peer dependency of `@wagmi/connectors` — only needed when you use the `metaMask()` connector, and the installed version must satisfy wagmi's declared peer range (currently `^1.3.0`), not "latest"
+- `@metamask/connect-evm` is an optional peer dependency of `@wagmi/connectors` — only needed when you use the `metaMask()` connector, and the installed version must satisfy wagmi's declared peer range (currently `^2.1.0`), not "latest"
 - The `supportedNetworks` map is auto-built from wagmi chain config — no manual RPC URL configuration needed
 - If no `dapp` config is provided, defaults to `{ name: window.location.hostname, url: window.location.href }` in browsers
 - `useAccount()` is deprecated in favor of `useConnection()` — both work but prefer the new name

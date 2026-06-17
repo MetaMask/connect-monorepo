@@ -67,8 +67,9 @@ import { createSolanaClient } from '@metamask/connect-solana';
 ```typescript
 // Requires wagmi >= 3.6 / @wagmi/connectors >= 8 (the connect-evm-backed
 // connector), with @metamask/connect-evm installed at wagmi's declared peer
-// range (currently ^1.3.0). On older wagmi, copy the reference connector
-// from connect-monorepo/integrations/wagmi/metamask-connector.ts.
+// range (currently ^2.1.0; confirm with `npm info @wagmi/connectors
+// peerDependencies`). On older wagmi, copy the reference connector from
+// connect-monorepo/integrations/wagmi/metamask-connector.ts.
 import { metaMask } from 'wagmi/connectors';
 ```
 

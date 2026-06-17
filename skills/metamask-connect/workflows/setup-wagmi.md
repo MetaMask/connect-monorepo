@@ -17,11 +17,11 @@ Use this skill when:
 npm install wagmi @tanstack/react-query viem
 
 # Install the @metamask/connect-evm version wagmi declares as its peer range
-# (check with: npm info @wagmi/connectors peerDependencies — currently ^1.3.0):
-npm install @metamask/connect-evm@"^1.3.0"
+# (check with: npm info @wagmi/connectors peerDependencies — currently ^2.1.0):
+npm install @metamask/connect-evm@"^2.1.0"
 ```
 
-The connect-evm-backed `metaMask()` connector requires **wagmi >= 3.6 / `@wagmi/connectors` >= 8**. Match `@metamask/connect-evm` to wagmi's declared optional peer range rather than installing "latest" — the current 2.x line does not satisfy `^1.3.0`. `@metamask/connect-multichain` is installed transitively; you do not need to add it.
+The connect-evm-backed `metaMask()` connector requires **wagmi >= 3.6 / `@wagmi/connectors` >= 8**. Match `@metamask/connect-evm` to wagmi's declared optional peer range (currently `^2.1.0`) rather than blindly installing "latest" — the range moves as wagmi bumps it, so always confirm with `npm info @wagmi/connectors peerDependencies`. `@metamask/connect-multichain` is installed transitively; you do not need to add it.
 
 ### Step 2: Create wagmi config (browser)
 
