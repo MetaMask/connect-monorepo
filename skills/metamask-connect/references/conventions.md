@@ -27,8 +27,8 @@ These cross-cutting rules apply to every MetaMask Connect integration regardless
 - Import multichain client from `@metamask/connect-multichain`
 - Import Solana client from `@metamask/connect-solana`
 - Never import from internal sub-packages like `@metamask/connect/dist/...` or `@metamask/connect-evm/src/...`
-- Use the wagmi connector from the published entrypoint your installed version exposes; do not assume `@metamask/connect-evm/wagmi` exists unless your package version exports it
-- `@metamask/connect-multichain` is a **regular dependency** of both `@metamask/connect-evm` and `@metamask/connect-solana` (since 2.1.0) and is installed transitively — you do not need to add it yourself. (Only the 2.0.0 releases briefly made it a peer dependency.) Both clients warn at runtime on duplicate or mismatched `@metamask/connect-multichain` resolutions; if you do depend on it directly (e.g. to use `createMultichainClient`), use `^1.0.0` — it is a stable 1.x package following strict semver
+- For wagmi, import the `metaMask()` connector from `wagmi/connectors` (wagmi >= 3.6 / `@wagmi/connectors` >= 8) — it uses `@metamask/connect-evm` under the hood as an optional peer dependency. `@metamask/connect-evm` does **not** ship its own wagmi entrypoint (there is no `@metamask/connect-evm/wagmi`). See [setup-wagmi-connector.md](../workflows/setup-wagmi-connector.md)
+- `@metamask/connect-multichain` is a **regular (transitive) dependency** of both `@metamask/connect-evm` and `@metamask/connect-solana` — it's installed automatically and you don't need to add it to your `package.json`. (If you import `createMultichainClient` directly, you can still rely on that transitively-installed copy; both clients `console.warn` at runtime if they detect a mismatched or duplicate `@metamask/connect-multichain` resolution.)
 
 ### Required Configuration
 
