@@ -31,7 +31,7 @@ npm install @metamask/connect-solana
 
 No polyfill configuration is needed for web environments (Vite, Webpack, Next.js, etc.) — `@metamask/connect-*` packages no longer depend on Node.js built-ins in the browser.
 
-**React Native only:** Polyfills must be imported in a specific order. See the `react-native-polyfills` rule for required import order, window/Event/CustomEvent shims, and metro configuration. Note: `Buffer` is self-polyfilled by `@metamask/connect-multichain` but should still be set early as a safety net for peer deps.
+**React Native only:** Polyfills must be imported in a specific order. See [../references/react-native.md](../references/react-native.md) for required import order, window/Event/CustomEvent shims, and metro configuration. Note: `Buffer` is self-polyfilled by `@metamask/connect-multichain` but should still be set early as a safety net for peer deps.
 
 ---
 

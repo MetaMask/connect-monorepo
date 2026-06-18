@@ -288,7 +288,7 @@ metaMask({
 });
 ```
 
-Ensure React Native polyfills are set up per the `react-native-polyfills` rule.
+Ensure React Native polyfills are set up per [../references/react-native.md](../references/react-native.md).
 
 ## Important Notes
 
