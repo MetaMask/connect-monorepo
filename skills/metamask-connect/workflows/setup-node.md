@@ -100,7 +100,9 @@ Solana messages are **base64-encoded**, params take an `account: { address }` ob
 
 ```typescript
 const SOLANA_MAINNET = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
-const messageBase64 = Buffer.from('Hello from Node!', 'utf8').toString('base64');
+const messageBase64 = Buffer.from('Hello from Node!', 'utf8').toString(
+  'base64',
+);
 
 const result = await client.invokeMethod({
   scope: SOLANA_MAINNET,
