@@ -487,7 +487,7 @@ t.describe('isRejectionError', () => {
     },
   );
 
-  t.it('treats the modal-close error as a rejection', () => {
+  t.it('recognises userRejectedRequest (4001) as a rejection', () => {
     // BaseModalFactory.onCloseModal rejects with this when the user closes
     // the QR/install modal mid-connection. It must classify as `_rejected`,
     // not `_failed`.
