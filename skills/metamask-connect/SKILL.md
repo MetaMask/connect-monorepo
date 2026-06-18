@@ -30,7 +30,7 @@ Pick the client for your integration:
 
 ## Always-on conventions
 
-Before writing or reviewing **any** MetaMask Connect code, read [references/conventions.md](references/conventions.md) — hex chain IDs, `supportedNetworks` validation, EIP-1193 provider events, multichain session lifecycle, Solana constraints, React Native polyfills, and testing patterns. Apply it alongside every workflow below.
+Before writing or reviewing **any** MetaMask Connect code, read [references/conventions.md](references/conventions.md) — the always-on core guardrails (import paths, required config, `supportedNetworks`, singleton behavior, error handling, connection state) plus a topic index into focused references. Then load the focused reference(s) for your task: [evm.md](references/evm.md) (chain IDs / `switchChain`), [events.md](references/events.md), [multichain.md](references/multichain.md), [solana.md](references/solana.md), [react-native.md](references/react-native.md) (polyfills / Metro), [csp.md](references/csp.md), [testing.md](references/testing.md). Each topic has a single canonical home, so apply the relevant reference alongside every workflow below.
 
 ## Set up (choose your stack)
 

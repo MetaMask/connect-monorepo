@@ -21,6 +21,8 @@ npm install @metamask/connect-evm @metamask/connect-multichain react-native-get-
 
 `@metamask/connect-multichain` is installed transitively by `@metamask/connect-evm` (only the 2.0.0 release briefly made it a peer dependency; 2.1.0 reverted that) — installing it explicitly is harmless but not required. The SDK warns at runtime on duplicate or mismatched copies. `react-native-get-random-values` provides `crypto.getRandomValues` — strictly required only on React Native < 0.72 (Hermes 0.72+ ships `globalThis.crypto.getRandomValues` natively), but recommended as a safety net on all versions. It **must** be imported before any other SDK-related code. `readable-stream` provides the `stream` shim for Metro. `buffer` is recommended as a safety net for peer dependencies — `@metamask/connect-multichain` self-polyfills Buffer internally, but other deps (e.g. `eciesjs`) may load before it. `@react-native-async-storage/async-storage` is needed for session persistence.
 
+> The canonical reference for React Native polyfills — the per-package matrix (which ones you actually need), import-order reasoning, the `Buffer`/`window`/`Event` shims, Metro `extraNodeModules`, and `preferredOpenLink` — is [../references/react-native.md](../references/react-native.md). The steps below are the runnable EVM-specific recipe; consult that file for the rules behind each shim.
+
 ### Step 2: Create polyfills.ts
 
 Create `src/polyfills.ts` with all required global shims. This file must be imported before anything else:

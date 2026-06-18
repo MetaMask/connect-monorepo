@@ -299,4 +299,4 @@ try {
 - **Selective disconnect:** Passing specific scopes only revokes those scopes. Omit arguments to fully terminate the session.
 - **Node.js / React Native:** `dapp.url` is **required** in non-browser environments (there is no `window.location`).
 - **Solana networks:** mainnet, devnet, and testnet scopes are all modeled by the SDK; non-mainnet availability depends on the connected MetaMask build/version, so handle connection errors rather than assuming a cluster is present.
-- **Content Security Policy (browser):** under a strict CSP, allow the relay socket (`connect-src wss://mm-sdk-relay.api.cx.metamask.io`) and the QR icon (`img-src data:`) — a blocked relay looks like a hung connection. See the Content Security Policy section in [../references/conventions.md](../references/conventions.md).
+- **Content Security Policy (browser):** under a strict CSP, allow the relay socket (`connect-src wss://mm-sdk-relay.api.cx.metamask.io`) and the QR icon (`img-src data:`) — a blocked relay looks like a hung connection. See [../references/csp.md](../references/csp.md).

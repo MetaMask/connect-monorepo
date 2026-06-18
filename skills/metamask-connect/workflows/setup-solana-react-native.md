@@ -19,6 +19,8 @@ npm install @metamask/connect-solana @metamask/connect-multichain @solana/web3.j
 
 `@metamask/connect-multichain` is a regular dependency of `@metamask/connect-solana` and is installed transitively — but this skill imports `createMultichainClient` directly (to configure `mobile.preferredOpenLink`, which `createSolanaClient` does not forward), so declare it explicitly to keep strict package managers (pnpm) happy. The SDK warns at runtime if duplicate or mismatched copies are resolved.
 
+> The canonical reference for React Native polyfills — the per-package matrix (which ones you actually need), import-order reasoning, the `Buffer`/`window` shims, Metro `extraNodeModules`, and `preferredOpenLink` — is [../references/react-native.md](../references/react-native.md). The steps below are the runnable Solana-specific recipe; consult that file for the rules behind each shim. (Standalone `connect-solana` does **not** need the `Event`/`CustomEvent` shims — those are wagmi-only.)
+
 ### Step 2: Create the polyfills file
 
 Create `polyfills.ts` at the root of your project.

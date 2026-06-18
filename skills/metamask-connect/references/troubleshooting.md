@@ -483,7 +483,7 @@ img-src 'self' data:;
 style-src 'self' 'unsafe-inline';
 ```
 
-Add `connect-src` entries for any custom RPC endpoints you pass to `supportedNetworks`. See the Content Security Policy section in [conventions.md](conventions.md) for the full breakdown.
+Add `connect-src` entries for any custom RPC endpoints you pass to `supportedNetworks`. See [csp.md](csp.md) for the full breakdown.
 
 ---
 
