@@ -44,10 +44,6 @@ metamask-connect/
 
 The agent reads `SKILL.md` first, then loads the relevant reference(s) and workflow for the task at hand.
 
-## Provenance
-
-Generated from the [`metamask-connect-cursor-plugin`](https://github.com/MetaMask/metamask-connect-cursor-plugin)'s `skills/` and always-on `rules/`, and source-verified against the published `@metamask/connect-*` packages in this monorepo. It lives here so it stays in sync with the SDK it documents.
-
 ## License
 
 This skill is part of the connect-monorepo and is covered by the repository's [`LICENCE`](../../LICENCE).
