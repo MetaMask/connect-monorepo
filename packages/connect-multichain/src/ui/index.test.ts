@@ -388,9 +388,6 @@ t.describe('ModalFactory', () => {
         // Multichain SDK is what will close the modal instead
         t.expect(mockModal.unmount).toHaveBeenCalled();
 
-        // Closing the modal is a user-driven cancellation: the error handed to
-        // the success callback must classify as a rejection so the SDK emits
-        // `mmconnect_connection_rejected`, not `_failed` (WAPI-1552).
         t.expect(closeError).toBeDefined();
         t.expect(isRejectionError(closeError)).toBe(true);
       });
