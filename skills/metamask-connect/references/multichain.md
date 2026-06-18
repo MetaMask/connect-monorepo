@@ -86,10 +86,8 @@ client.on('wallet_sessionChanged', (session) => {
 
 ## Bundle / Lazy-loaded Transport
 
-- Since `@metamask/connect-multichain` 0.13.0, the MWP transport modules — `@metamask/mobile-wallet-protocol-core`, `@metamask/mobile-wallet-protocol-dapp-client`, and `eciesjs` — are dynamically imported only when MWP transport is actually used
-- Bundlers (webpack, Vite, Rollup, Metro) can now code-split the entire MWP + crypto dependency tree out of the main chunk for consumers who only use the browser-extension flow
-- Do not statically import the MWP modules yourself in app code — that defeats the code-split and re-inflates the bundle
-- Since `@metamask/connect-multichain` 0.14.0, the QR-code MWP flow (desktop web and Node.js) omits the initial `wallet_createSession` request from the deeplink URI and sends it as a separate request after the wallet completes the MWP handshake. The result is a shorter deeplink URI and a less dense QR code. The native deeplink (non-QR MWP) flow used on mobile web and React Native is unchanged — no app-side action required
+- The MWP transport modules (`@metamask/mobile-wallet-protocol-*`, `eciesjs`) are dynamically imported only when the MWP transport is actually used, so bundlers can code-split that crypto dependency tree out of the main chunk for browser-extension-only consumers
+- **Do not statically import the MWP modules yourself in app code** — that defeats the code-split and re-inflates the bundle
 
 ## Permission Handling
 

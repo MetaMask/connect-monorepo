@@ -33,8 +33,7 @@ These cross-cutting rules apply to every MetaMask Connect integration regardless
 ### Required Configuration
 
 - `dapp.name` is always required — it appears in the MetaMask connection prompt
-- `dapp.url` is required in Node.js and React Native environments (no `window.location` available)
-- `dapp.url` in browser can default to `window.location.href` but explicit is safer
+- `dapp.url` is required in Node.js and React Native (no `window.location`); in the browser it defaults to `window.location.href`, but passing it explicitly is safer
 - `dapp.iconUrl` is optional — displayed in MetaMask connection UI
 - `dapp.base64Icon` is an alternative to `iconUrl` — pass a base64-encoded icon string directly (useful when a hosted URL is unavailable, e.g., in React Native)
 
@@ -85,9 +84,9 @@ These cross-cutting rules apply to every MetaMask Connect integration regardless
 - Do not call `connect()` on page reload if a session already exists — listen for session restoration via events
 - **Multichain client:** `disconnect()` with no arguments revokes all scopes and terminates the session; `disconnect(scopes)` revokes only those scopes
 - **EVM client:** `disconnect()` revokes only the `eip155:*` scopes — Solana scopes on the same session survive; full teardown requires the multichain client
-- `disconnect(scopes)` with specific scopes only revokes those scopes
+- **Solana client:** `disconnect()` revokes only the Solana scopes — EVM scopes on the same session survive; full teardown requires the multichain client
 
 ### Unsupported Methods
 
-- The EVM client **rejects** certain methods with `Method: <name> is not supported by Metamask Connect/EVM` (they are not silently ignored)
+- The EVM client **rejects** these methods with `Method: <name> is not supported by Metamask Connect/EVM` (they are not silently ignored): `metamask_getProviderState`, `metamask_sendDomainMetadata`, `metamask_logWeb3ShimUsage`, `wallet_registerOnboarding`, `net_version`, `wallet_getPermissions`
 - Since `@metamask/connect-evm` 2.0.0, `wallet_requestPermissions` resolves to a spec-shaped requested-permissions array — but `connect()` remains the canonical way to establish permissions

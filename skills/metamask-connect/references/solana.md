@@ -10,7 +10,7 @@ Constraints for Solana integration: wallet-adapter config, CAIP-2 genesis-hash i
 - [RPC Routing](#rpc-routing)
 - [Disconnect Scopes Behavior](#disconnect-scopes-behavior)
 - [Chrome Android Bug](#chrome-android-bug)
-- [React Native Limitation](#react-native-limitation)
+- [React Native (no wallet-adapter)](#react-native-no-wallet-adapter)
 
 ## Wallet Adapter Configuration
 
@@ -51,13 +51,12 @@ Constraints for Solana integration: wallet-adapter config, CAIP-2 genesis-hash i
 
 ## Chrome Android Bug
 
-- There is a known issue with `@solana/wallet-adapter-react` on Chrome Android when used with the wallet-standard provider from `@metamask/connect-solana`
-- The connect monorepo carries a patch for the wallet-adapter behavior in that setup
-- Treat Solana wallet-adapter flows on mobile Chrome as fragile until you verify them explicitly
-- Test Solana flows on desktop Chrome and MetaMask browser extension wallet before targeting mobile
+- `@solana/wallet-adapter-react`'s `WalletProvider` registers a `beforeunload` listener to detect window-unload disconnects. On Chrome for Android this misfires with MetaMask's wallet-standard provider (which doesn't emit a disconnect on unload), corrupting connection state
+- This repo works around it with an **internal** yarn patch (`.yarn/patches/@solana-wallet-adapter-react-*.patch`) that removes that `beforeunload` effect — but the patch is **not shipped in `@metamask/connect-solana`**, so your app does not inherit it
+- If you use `@solana/wallet-adapter-react` and target Chrome Android, apply the equivalent patch yourself (`yarn patch` / `patch-package`), or drive the wallet-standard provider directly without the React adapter
+- Test Solana flows on desktop Chrome and the MetaMask browser extension before targeting mobile
 
-## React Native Limitation
+## React Native (no wallet-adapter)
 
-- The Solana wallet adapter (`@solana/wallet-adapter-react`) is **not supported** in React Native
-- For Solana in React Native, use the multichain client (`createMultichainClient`) with `invokeMethod` directly
-- Do not attempt to import `@solana/wallet-adapter-react` or `@solana/wallet-adapter-react-ui` in RN — they depend on browser APIs
+- `@solana/wallet-adapter-react` / `-react-ui` are browser-only (they depend on `window` and other DOM APIs), so the wallet-adapter-based Solana flow can't run in React Native — don't import them in an RN app
+- This is a constraint of the third-party adapter, not of `@metamask/connect-solana`. For Solana in RN, skip the adapter and use the multichain client (`createMultichainClient`) with `invokeMethod` on CAIP-scoped Solana RPC methods (see [setup-solana-react-native.md](../workflows/setup-solana-react-native.md))

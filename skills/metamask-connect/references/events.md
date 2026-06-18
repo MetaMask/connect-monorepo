@@ -1,6 +1,6 @@
 # MetaMask Connect — Event Handling
 
-EVM provider and `connect-evm` event handling: EIP-1193 events, SDK `eventHandlers`, payload types, `display_uri` timing, EIP-6963 announcement, cached state, and listener best practices. For multichain `wallet_sessionChanged` see [multichain.md](multichain.md); for always-on core guardrails see [conventions.md](conventions.md).
+Event handling across MetaMask Connect. The EVM client is the only family with a first-class event emitter — the EIP-1193 `provider.on(...)` API — so most of this file is EVM-focused: EIP-1193 events, SDK `eventHandlers`, payload types, `display_uri` timing, EIP-6963 announcement, and cached state. Reactive state for **multichain and Solana** flows through the multichain core's `stateChanged` event (see [Multichain stateChanged Event](#multichain-statechanged-event) and [Solana State Changes](#solana-state-changes)). For multichain `wallet_sessionChanged` see [multichain.md](multichain.md); for always-on core guardrails see [conventions.md](conventions.md).
 
 ## Contents
 
@@ -9,6 +9,7 @@ EVM provider and `connect-evm` event handling: EIP-1193 events, SDK `eventHandle
 - [SDK eventHandlers (Client Options)](#sdk-eventhandlers-client-options)
 - [display_uri Timing](#display_uri-timing)
 - [Multichain stateChanged Event](#multichain-statechanged-event)
+- [Solana State Changes](#solana-state-changes)
 - [Transport Events](#transport-events)
 - [EIP-6963 Provider Announcement](#eip-6963-provider-announcement)
 - [Cached State Methods](#cached-state-methods)
@@ -90,6 +91,12 @@ const client = await createEVMClient({
 - The multichain core client emits `stateChanged` whenever the connection status changes
 - Listen via `client.on('stateChanged', (status) => ...)` on the multichain client, where `status` is a `ConnectionStatus` string
 - This is available on the multichain client (`createMultichainClient`) and on the Solana client's public `.core` property. The EVM client does **not** expose `.core` (it is private) — use `client.status` / provider events there
+
+## Solana State Changes
+
+- The Solana client (`createSolanaClient`) does **not** expose its own event emitter. Observe connection/session state via its public `.core` property: `solanaClient.core.on('stateChanged', (status) => ...)` (same `ConnectionStatus` values as the multichain client)
+- Since `@metamask/connect-solana` 1.1.0 the client eagerly initializes the wallet provider on creation, so on cold start you can read accounts directly without waiting for a `wallet_sessionChanged` event
+- If you integrate through `@solana/wallet-adapter-react`, get account/connection changes from the adapter's own hooks (`useWallet()`), not from a provider `.on(...)` call
 
 ## Transport Events
 
