@@ -41,8 +41,8 @@ These cross-cutting rules apply to every MetaMask Connect integration regardless
 ### Supported Networks
 
 - Every chain the dApp interacts with must be in `api.supportedNetworks` with a reachable RPC URL
-- Use `getInfuraRpcUrls({ infuraApiKey: 'API_KEY', chainIds?: Hex[] })` to populate common EVM chains — it returns a hex-keyed map for `createEVMClient`
-- Use `getInfuraRpcUrls({ infuraApiKey: 'API_KEY', caipChainIds?: string[] })` to populate CAIP-2 chains for `createMultichainClient`
+- Use `getInfuraRpcUrls({ infuraApiKey: 'API_KEY', chainIds?: Hex[] })` from `@metamask/connect-evm` to populate common EVM chains — it returns a hex-keyed map for `createEVMClient`
+- Use `getInfuraRpcUrls({ infuraApiKey: 'API_KEY', caipChainIds?: string[] })` from `@metamask/connect-multichain` to populate CAIP-2 chains for `createMultichainClient`
 - Use `getInfuraRpcUrls({ infuraApiKey: 'API_KEY', networks: SolanaNetwork[] })` from `@metamask/connect-solana` to populate a network-name-keyed map for `createSolanaClient` — `networks` is required
 - Chain `0x1` (Ethereum mainnet) is auto-included in the EVM `connect()` permission request if not specified — but it is **not** auto-added to `supportedNetworks`, which must list every chain explicitly
 - Making an RPC request whose active chain is missing from `supportedNetworks` throws "not configured in supportedNetworks" (the check runs in the provider's `request()` path, not in `connect()`). See [evm.md → Validation Error](evm.md#validation-error)
