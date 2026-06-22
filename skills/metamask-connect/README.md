@@ -2,7 +2,7 @@
 
 An [agent skill](https://skills.sh) for building dApps that integrate MetaMask via the **MetaMask Connect SDK** — EVM (`@metamask/connect-evm`), Solana (`@metamask/connect-solana`), and multichain (`@metamask/connect-multichain`), plus the wagmi `metaMask()` connector.
 
-It teaches coding agents (Cursor, Claude Code, Copilot, Codex, etc.) how to set up clients across browser / React / React Native, connect and manage sessions, sign messages, send transactions, run multichain `invokeMethod` across CAIP-2 scopes, migrate from `@metamask/sdk`, and troubleshoot connection/polyfill issues — with guidance source-verified against the published packages.
+It teaches coding agents (Cursor, Claude Code, Copilot, Codex, etc.) how to set up clients across browser / React / React Native / nodejs, connect and manage sessions, sign messages, send transactions, run multichain `invokeMethod` across CAIP-2 scopes, migrate from `@metamask/sdk`, and troubleshoot connection/polyfill issues — with guidance source-verified against the published packages.
 
 ## Install
 
