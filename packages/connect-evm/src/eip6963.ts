@@ -34,6 +34,7 @@ export const CONNECT_EVM_EIP6963_RDNS = 'io.metamask.mmc';
 export const METAMASK_EIP6963_RDNS = [
   'io.metamask',
   'io.metamask.mobile',
+  'io.metamask.flask',
 ] as const;
 
 /**
@@ -232,8 +233,8 @@ const hasNativeMetaMaskProvider = async (): Promise<boolean> => {
  * Announces an MMConnect-managed EIP-1193 provider through EIP-6963.
  *
  * Announcement is best-effort and browser-only. Native MetaMask providers with
- * `io.metamask` or `io.metamask.mobile` suppress this SDK provider to avoid
- * duplicate MetaMask entries in wallet pickers.
+ * `io.metamask`, `io.metamask.mobile`, or `io.metamask.flask` suppress this SDK
+ * provider to avoid duplicate MetaMask entries in wallet pickers.
  */
 export class EIP6963ProviderAnnouncer {
   /** EIP-1193 provider exposed in EIP-6963 announcements. */

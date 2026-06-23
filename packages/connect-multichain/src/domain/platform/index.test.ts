@@ -93,7 +93,7 @@ describe('hasExtension', () => {
     await expect(detection).resolves.toBe(true);
   });
 
-  it.each(['io.metamask', 'io.metamask.mobile'])(
+  it.each(['io.metamask', 'io.metamask.mobile', 'io.metamask.flask'])(
     'treats native MetaMask rdns %s as the extension',
     async (rdns) => {
       setupEip6963Window(rdns);

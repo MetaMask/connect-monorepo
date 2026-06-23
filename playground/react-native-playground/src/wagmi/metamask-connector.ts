@@ -95,7 +95,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
   return createConnector<Provider, Properties>((config) => ({
     id: 'metaMaskSDK',
     name: 'MetaMask',
-    rdns: ['io.metamask', 'io.metamask.mobile'],
+    rdns: ['io.metamask', 'io.metamask.mobile', 'io.metamask.flask'],
     type: metaMask.type,
     async connect({ chainId = 1, isReconnecting, withCapabilities } = {}) {
       const instance = await this.getInstance();

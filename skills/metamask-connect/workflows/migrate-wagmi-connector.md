@@ -270,7 +270,7 @@ metaMask({
 
 - `@metamask/connect-evm` is an **optional peer dependency** of `@wagmi/connectors` — you only need it if you use the `metaMask()` connector
 - The connector ID remains `'metaMaskSDK'` and the name remains `'MetaMask'` — no changes to connector identity
-- The connector's `rdns` is `['io.metamask', 'io.metamask.mobile']` — unchanged
+- The connector's `rdns` is `['io.metamask', 'io.metamask.mobile', 'io.metamask.flask']` — MetaMask Flask is recognized as a native install, so it connects through the extension transport like the production extension (the legacy `@metamask/sdk` also recognized Flask)
 - The `supportedNetworks` map is now auto-built from wagmi's configured chains and their default RPC URLs — you no longer need to pass `readonlyRPCMap`
 - The `dappMetadata` parameter still works (it's mapped to `dapp` internally) but is deprecated — migrate to `dapp` for forward compatibility
 - The `logging` parameter still works (mapped to `debug: true`) but is deprecated
