@@ -311,7 +311,7 @@ await client.disconnect();
 
 ##### `announceProvider()`
 
-Announces the MMConnect-managed EIP-1193 provider through EIP-6963 unless a native MetaMask provider has already announced with `rdns` `io.metamask` or `io.metamask.mobile`. This is called automatically by `createEVMClient()` unless `skipAutoAnnounce: true` is set. The first call may take up to 300 ms while native providers are requested.
+Announces the MMConnect-managed EIP-1193 provider through EIP-6963 unless a native MetaMask provider has already announced with `rdns` `io.metamask`, `io.metamask.mobile`, or `io.metamask.flask`. This is called automatically by `createEVMClient()` unless `skipAutoAnnounce: true` is set. The first call may take up to 300 ms while native providers are requested.
 
 **Parameters**
 

@@ -293,7 +293,7 @@ Ensure React Native polyfills are set up per [../references/react-native.md](../
 ## Important Notes
 
 - The connector ID is `'metaMaskSDK'` and the display name is `'MetaMask'`
-- The connector RDNS is `['io.metamask', 'io.metamask.mobile']`
+- The connector RDNS is `['io.metamask', 'io.metamask.mobile', 'io.metamask.flask']` — MetaMask Flask (`io.metamask.flask`) is recognized as a native MetaMask install, so the connector uses the extension transport for Flask just like the production extension
 - `@metamask/connect-evm` is an optional peer dependency of `@wagmi/connectors` — only needed when you use the `metaMask()` connector, and the installed version must satisfy wagmi's declared peer range (currently `^2.1.0`), not "latest"
 - The `supportedNetworks` map is auto-built from wagmi chain config — no manual RPC URL configuration needed
 - If no `dapp` config is provided, defaults to `{ name: window.location.hostname, url: window.location.href }` in browsers

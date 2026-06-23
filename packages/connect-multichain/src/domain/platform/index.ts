@@ -21,6 +21,7 @@ export enum PlatformType {
 const NATIVE_METAMASK_EIP6963_RDNS = new Set([
   'io.metamask',
   'io.metamask.mobile',
+  'io.metamask.flask',
 ]);
 
 function isNotBrowser(): boolean {

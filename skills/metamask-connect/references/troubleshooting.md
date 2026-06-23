@@ -487,6 +487,16 @@ Add `connect-src` entries for any custom RPC endpoints you pass to `supportedNet
 
 ---
 
+### 23. MetaMask Flask not detected as the extension (falls back to QR / mobile)
+
+**Cause:** Before this fix, MetaMask Connect only recognized the native MetaMask RDNS values `io.metamask` (production extension) and `io.metamask.mobile`. MetaMask **Flask** announces itself over EIP-6963 with `rdns: 'io.metamask.flask'`, which was not in the allowlist — so `hasExtension()` returned `false` when only Flask was installed, and `connect()` fell through to the MWP transport (QR code / mobile deeplink) instead of using the local Flask extension. (The legacy `@metamask/sdk` did recognize Flask, which is why this looked like a regression.)
+
+**Fix:** `io.metamask.flask` is now included in the recognized native MetaMask RDNS values (extension detection, the connect-evm EIP-6963 announcement suppression, and the wagmi `metaMask()` connector's `rdns`). With a current version, Flask connects through the browser extension transport just like the production extension — no extra configuration needed.
+
+If you are pinned to an older version and cannot upgrade, the workaround is to connect through wagmi's built-in EIP-6963 auto-discovery: Flask shows up as a separate connector whose `id` is its rdns, `io.metamask.flask`. Selecting that connector talks directly to the Flask injected provider, but note it bypasses the MetaMask Connect SDK (no MWP fallback, no Connect session handling).
+
+---
+
 ## Diagnostic Checklist
 
 Run through this checklist when any MetaMask Connect integration is misbehaving:

@@ -263,7 +263,7 @@ describe('EIP-6963 announcement', () => {
     expect(details).toHaveLength(0);
   });
 
-  it('does not suppress the SDK provider when MetaMask Flask has announced', async () => {
+  it('suppresses the SDK provider when MetaMask Flask has announced', async () => {
     const client = await MetamaskConnectEVM.create({ core: createMockCore() });
     const nativeHandler = (): void =>
       announceNativeMetaMaskProvider('io.metamask.flask');
@@ -278,8 +278,7 @@ describe('EIP-6963 announcement', () => {
       EIP6963_REQUEST_PROVIDER_EVENT,
       nativeHandler,
     );
-    expect(details).toHaveLength(1);
-    expect(details[0].info.rdns).toBe(CONNECT_EVM_EIP6963_RDNS);
+    expect(details).toHaveLength(0);
   });
 
   it('re-announces the same SDK provider detail on later EIP-6963 provider requests', async () => {
