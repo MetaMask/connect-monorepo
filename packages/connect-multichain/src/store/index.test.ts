@@ -152,61 +152,61 @@ function createStoreTests(
     });
   });
 
-  t.describe(`${adapterName} getTransport`, () => {
+  t.describe(`${adapterName} getTransportType`, () => {
     t.it(
-      'should return the transport value when it exists - Browser',
+      'should return the transport type when it exists - Browser',
       async () => {
         await adapter.set('multichain-transport', 'browser');
-        const result = await store.getTransport();
+        const result = await store.getTransportType();
         t.expect(result).toBe(TransportType.Browser);
       },
     );
 
-    t.it('should return the transport value when it exists - MPW', async () => {
+    t.it('should return the transport type when it exists - MWP', async () => {
       await adapter.set('multichain-transport', 'mwp');
-      const result = await store.getTransport();
+      const result = await store.getTransportType();
       t.expect(result).toBe(TransportType.MWP);
     });
 
     t.it('should return UNKNOWN for unknown transport types', async () => {
       await adapter.set('multichain-transport', 'unknown-transport');
-      const result = await store.getTransport();
+      const result = await store.getTransportType();
       t.expect(result).toBe(TransportType.UNKNOWN);
     });
 
     t.it('should return null when transport does not exist', async () => {
-      const result = await store.getTransport();
+      const result = await store.getTransportType();
       t.expect(result).toBeNull();
     });
   });
 
-  t.describe(`${adapterName} setTransport`, () => {
-    t.it('should set the transport successfully - Browser', async () => {
-      await store.setTransport(TransportType.Browser);
+  t.describe(`${adapterName} setTransportType`, () => {
+    t.it('should set the transport type successfully - Browser', async () => {
+      await store.setTransportType(TransportType.Browser);
       const result = await adapter.get('multichain-transport');
       t.expect(result).toBe('browser');
     });
 
-    t.it('should set the transport successfully - MWP', async () => {
-      await store.setTransport(TransportType.MWP);
+    t.it('should set the transport type successfully - MWP', async () => {
+      await store.setTransportType(TransportType.MWP);
       const result = await adapter.get('multichain-transport');
       t.expect(result).toBe('mwp');
     });
 
-    t.it('should set the transport successfully - UNKNOWN', async () => {
-      await store.setTransport(TransportType.UNKNOWN);
+    t.it('should set the transport type successfully - UNKNOWN', async () => {
+      await store.setTransportType(TransportType.UNKNOWN);
       const result = await adapter.get('multichain-transport');
       t.expect(result).toBe('unknown');
     });
   });
 
-  t.describe(`${adapterName} removeTransport`, () => {
-    t.it('should remove the transport successfully', async () => {
+  t.describe(`${adapterName} removeTransportType`, () => {
+    t.it('should remove the transport type successfully', async () => {
       await adapter.set('multichain-transport', 'browser');
       const beforeRemove = await adapter.get('multichain-transport');
       t.expect(beforeRemove).toBe('browser');
 
-      await store.removeTransport();
+      await store.removeTransportType();
       const afterRemove = await adapter.get('multichain-transport');
       t.expect(afterRemove).toBeNull();
     });
@@ -223,7 +223,7 @@ function createStoreTests(
         .rejects.toBeInstanceOf(StorageGetErr);
       await t.expect(store.getDebug()).rejects.toBeInstanceOf(StorageGetErr);
       await t
-        .expect(store.getTransport())
+        .expect(store.getTransportType())
         .rejects.toBeInstanceOf(StorageGetErr);
     });
 
@@ -235,7 +235,7 @@ function createStoreTests(
         .expect(store.setExtensionId('test-id'))
         .rejects.toThrow(StorageSetErr);
       await t
-        .expect(store.setTransport(TransportType.Browser))
+        .expect(store.setTransportType(TransportType.Browser))
         .rejects.toThrow(StorageSetErr);
     });
 
@@ -251,7 +251,7 @@ function createStoreTests(
           .expect(store.removeExtensionId())
           .rejects.toThrow(StorageDeleteErr);
         await t
-          .expect(store.removeTransport())
+          .expect(store.removeTransportType())
           .rejects.toThrow(StorageDeleteErr);
       },
     );

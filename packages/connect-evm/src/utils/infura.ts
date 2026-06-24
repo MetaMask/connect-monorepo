@@ -38,7 +38,7 @@ export const getInfuraRpcUrls = ({
         return acc;
       }
       const chainId = numberToHex(parseInt(reference, 10));
-      acc[chainId] = url as string;
+      acc[chainId] = url;
       return acc;
     },
     {},

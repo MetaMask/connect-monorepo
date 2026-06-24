@@ -15,6 +15,9 @@ import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
+import { MwpDeeplinkReproCard } from './components/MwpDeeplinkReproCard';
+import { Eip6963TestBench } from './components/Eip6963TestBench';
+import { AnalyticsTestBench } from './components/AnalyticsTestBench';
 import { useSolanaSDK } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
 
@@ -403,6 +406,19 @@ function App() {
           </section>
         )}
 
+        <div className="mb-6">
+          <Eip6963TestBench
+            legacyProvider={legacyProvider}
+            legacySDK={legacySDK}
+          />
+        </div>
+
+        <AnalyticsTestBench
+          connectedScopes={
+            Object.keys(session?.sessionScopes ?? {}) as Scope[]
+          }
+        />
+
         <section
           data-testid={TEST_IDS.app.sectionConnected}
           className="bg-white rounded-lg p-8 mb-6 shadow-sm"
@@ -464,6 +480,9 @@ function App() {
             </div>
           </section>
         )}
+        <div className="mt-8">
+          <MwpDeeplinkReproCard />
+        </div>
       </div>
     </div>
   );

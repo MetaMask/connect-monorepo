@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0]
+
+### Changed
+
+- `@metamask/connect-multichain` is no longer a peer dependency and will be installed transitively as a regular dependency ([#323](https://github.com/MetaMask/connect-monorepo/pull/323))
+
+## [2.0.0]
+
+### Added
+
+- Validate `@metamask/connect-multichain` peer version at runtime and warn on mismatch ([#253](https://github.com/MetaMask/connect-monorepo/pull/253))
+
+### Changed
+
+- **BREAKING:** `@metamask/connect-multichain` is now a peer dependency.
+  Add it to your own `dependencies` (e.g. `npm install @metamask/connect-multichain`)
+  — it is no longer installed transitively.
+- Bump workspace dependencies:
+  - @metamask/connect-multichain@1.0.0
+
+## [1.2.0]
+
+### Added
+
+- Add an `analytics.enabled` option to `createSolanaClient()`. Set it to `false` to disable dapp-side analytics events and wallet correlation metadata. ([#303](https://github.com/MetaMask/connect-monorepo/pull/303))
+
+## [1.1.0]
+
+### Changed
+
+- `createSolanaClient()` now eagerly initializes the Solana wallet provider during creation. If the underlying multichain session already contains solana scopes, the provider's accounts are populated before the client is returned. ([#282](https://github.com/MetaMask/connect-monorepo/pull/282))
+- `getWallet()` now returns the same wallet instance on every call instead of constructing a new one. ([#282](https://github.com/MetaMask/connect-monorepo/pull/282))
+
 ## [1.0.0]
 
 ### Changed
@@ -86,7 +119,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Release
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@1.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@2.1.0...HEAD
+[2.1.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@2.0.0...@metamask/connect-solana@2.1.0
+[2.0.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@1.2.0...@metamask/connect-solana@2.0.0
+[1.2.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@1.1.0...@metamask/connect-solana@1.2.0
+[1.1.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@1.0.0...@metamask/connect-solana@1.1.0
 [1.0.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.8.1...@metamask/connect-solana@1.0.0
 [0.8.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.8.0...@metamask/connect-solana@0.8.1
 [0.8.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/connect-solana@0.7.1...@metamask/connect-solana@0.8.0

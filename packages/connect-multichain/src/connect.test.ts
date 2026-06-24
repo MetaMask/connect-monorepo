@@ -170,12 +170,6 @@ function testSuite<T extends MultichainOptions>({
       t.expect(sdk.status).toBe('loaded');
       // Provider is always available via wrapper transport (handles connection state internally)
       t.expect(sdk.provider).toBeDefined();
-      if (platform === 'web') {
-        // Web with extension sets up a DefaultTransport for passive listening
-        t.expect(sdk.transport).toBeDefined();
-      } else {
-        t.expect(() => sdk.transport).toThrow();
-      }
 
       // Expect sdk.connect to reject if transport cannot connect
       // Add timeout wrapper for web-mobile platform to prevent hanging
@@ -269,17 +263,11 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('loaded');
         // Provider is always available via wrapper transport (handles connection state internally)
         t.expect(sdk.provider).toBeDefined();
-        if (platform === 'web') {
-          t.expect(sdk.transport).toBeDefined();
-        } else {
-          t.expect(() => sdk.transport).toThrow();
-        }
 
         await sdk.connect(scopes, caipAccountIds);
 
         t.expect(sdk.status).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
-        t.expect(sdk.transport).toBeDefined();
         t.expect(sdk.provider).toBeDefined();
 
         if (isMWPPlatform) {
@@ -311,12 +299,11 @@ function testSuite<T extends MultichainOptions>({
 
         sdk = await createSDK(testOptions);
         t.expect(sdk.status).toBe('connected');
-        t.expect(sdk.transport).toBeDefined();
         t.expect(sdk.provider).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
 
         await t
-          .expect(sdk.storage.getTransport())
+          .expect(sdk.storage.getTransportType())
           .resolves.toBe(transportString);
       },
     );
@@ -344,7 +331,6 @@ function testSuite<T extends MultichainOptions>({
         }
 
         sdk = await createSDK(testOptions);
-        t.expect(sdk.transport).toBeDefined();
         t.expect(sdk.provider).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
         t.expect(sdk.status).toBe('connected');
@@ -360,7 +346,7 @@ function testSuite<T extends MultichainOptions>({
         }
 
         await t
-          .expect(sdk.storage.getTransport())
+          .expect(sdk.storage.getTransportType())
           .resolves.toBe(transportString);
       },
     );
@@ -390,11 +376,6 @@ function testSuite<T extends MultichainOptions>({
         unloadSpy = t.vi.spyOn((sdk as any).options.ui.factory, 'unload');
 
         t.expect(sdk.status).toBe('loaded');
-        if (platform === 'web') {
-          t.expect(sdk.transport).toBeDefined();
-        } else {
-          t.expect(() => sdk.transport).toThrow();
-        }
 
         if (platform !== 'web' && platform !== 'web-mobile') {
           showModalPromise = waitForInstallModal(sdk).catch(() => {
@@ -431,7 +412,6 @@ function testSuite<T extends MultichainOptions>({
         t.expect(sdk.status).toBe('connected');
         t.expect(sdk.storage).toBeDefined();
         t.expect(sdk.provider).toBeDefined();
-        t.expect(sdk.transport).toBeDefined();
 
         if (isMWPPlatform) {
           t.expect(mockedData.mockDappClient.state).toBe('CONNECTED');
@@ -440,7 +420,7 @@ function testSuite<T extends MultichainOptions>({
         }
 
         await t
-          .expect(sdk.storage.getTransport())
+          .expect(sdk.storage.getTransportType())
           .resolves.toBe(transportString);
       },
     );
@@ -463,11 +443,6 @@ function testSuite<T extends MultichainOptions>({
       sdk = await createSDK(testOptions);
 
       t.expect(sdk.status).toBe('loaded');
-      if (platform === 'web') {
-        t.expect(sdk.transport).toBeDefined();
-      } else {
-        t.expect(() => sdk.transport).toThrow();
-      }
 
       // Add timeout wrapper for web-mobile platform to prevent hanging
       let timeoutId: NodeJS.Timeout;
@@ -576,7 +551,6 @@ function testSuite<T extends MultichainOptions>({
       await sdk.connect(scopes, caipAccountIds);
       t.expect(sdk.status).toBe('connected');
       t.expect(sdk.provider).toBeDefined();
-      t.expect(sdk.transport).toBeDefined();
 
       if (platform === 'web') {
         // DefaultTransport.disconnect() sends wallet_revokeSession via the inner transport's request(),
@@ -605,7 +579,6 @@ function testSuite<T extends MultichainOptions>({
 
           t.expect(sdk.status).toBe('connected');
           t.expect(sdk.provider).toBeDefined();
-          t.expect(sdk.transport).toBeDefined();
 
           t.expect(mockedData.mockDappClient.state).toBe('CONNECTED');
           await mockedData.mockDappClient.disconnect();

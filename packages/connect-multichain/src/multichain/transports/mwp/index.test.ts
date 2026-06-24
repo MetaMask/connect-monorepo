@@ -1,9 +1,20 @@
 /* eslint-disable id-length -- vitest alias */
 /* eslint-disable no-empty-function -- Empty mock functions */
 import * as t from 'vitest';
+import { vi } from 'vitest';
 
 import { MWPTransport } from '.';
 import type { StoreAdapter } from '../../../domain';
+import { getPlatformType, PlatformType } from '../../../domain/platform';
+import { MULTICHAIN_PROVIDER_STREAM_NAME } from '../constants';
+
+vi.mock('../../../domain/platform', async () => {
+  const actual = await vi.importActual('../../../domain/platform');
+  return {
+    ...actual,
+    getPlatformType: vi.fn(),
+  };
+});
 
 t.describe('MWPTransport', () => {
   let mockDappClient: any;
@@ -13,17 +24,20 @@ t.describe('MWPTransport', () => {
   t.beforeEach(() => {
     mockDappClient = {
       on: t.vi.fn(),
+      off: t.vi.fn(),
       reconnect: t.vi.fn(),
       send: t.vi.fn(),
-      disconnect: t.vi.fn(),
+      sendRequest: t.vi.fn().mockResolvedValue(undefined),
+      connect: t.vi.fn().mockResolvedValue(undefined),
+      disconnect: t.vi.fn().mockResolvedValue(undefined),
       isConnected: t.vi.fn().mockReturnValue(false),
     };
 
     mockKvstore = {
       get: t.vi.fn(),
       set: t.vi.fn(),
-      del: t.vi.fn(),
-    };
+      delete: t.vi.fn().mockResolvedValue(undefined),
+    } as unknown as StoreAdapter;
 
     transport = new MWPTransport(mockDappClient, mockKvstore);
   });
@@ -31,6 +45,13 @@ t.describe('MWPTransport', () => {
   t.afterEach(() => {
     t.vi.clearAllMocks();
   });
+
+  const getMessageHandler = ():
+    | ((message: unknown) => Promise<void> | void)
+    | undefined =>
+    mockDappClient.on.mock.calls.find(
+      (call: any[]) => call[0] === 'message',
+    )?.[1];
 
   t.describe('handleMessage error handling', () => {
     t.it(
@@ -79,6 +100,58 @@ t.describe('MWPTransport', () => {
 
           // Verify: Request should be removed from pending requests
           t.expect(transport.pendingRequests.has(requestId)).toBe(false);
+
+          clearTimeout(mockTimeout);
+          resolve();
+        });
+      },
+    );
+
+    t.it(
+      'should preserve the wallet error `data` on the rejected error',
+      async () => {
+        return new Promise<void>((resolve) => {
+          const mockResolve = t.vi.fn();
+          const mockReject = t.vi.fn();
+          const mockTimeout = setTimeout(() => {}, 60000) as any;
+
+          const requestId = 'test-request-data';
+          transport.pendingRequests.set(requestId, {
+            resolve: mockResolve,
+            reject: mockReject,
+            timeout: mockTimeout,
+          } as any);
+
+          const data = {
+            originalError: {
+              code: 3,
+              data: '0x08c379a0',
+              message: 'execution reverted: insufficient funds',
+            },
+          };
+          const errorMessage = {
+            data: {
+              id: requestId,
+              error: {
+                code: -32000,
+                message: 'execution reverted',
+                data,
+              },
+            },
+          };
+
+          const messageHandler = mockDappClient.on.mock.calls.find(
+            (call: any[]) => call[0] === 'message',
+          )?.[1];
+
+          messageHandler?.(errorMessage);
+
+          t.expect(mockReject).toHaveBeenCalled();
+          const rejectedError = mockReject.mock.calls[0][0];
+          t.expect(rejectedError.code).toBe(-32000);
+          t.expect(rejectedError.message).toBe('execution reverted');
+          t.expect(rejectedError.data).toStrictEqual(data);
+          t.expect(mockResolve).not.toHaveBeenCalled();
 
           clearTimeout(mockTimeout);
           resolve();
@@ -350,5 +423,361 @@ t.describe('MWPTransport', () => {
         resolve();
       });
     });
+
+    t.it(
+      'request rejects when the wallet resolves a response-shaped error',
+      async () => {
+        mockDappClient.state = 'CONNECTED';
+
+        const requestPromise = transport.request({
+          method: 'wallet_invokeMethod',
+          params: {
+            scope: 'eip155:1',
+            request: { method: 'personal_sign', params: [] },
+          },
+        } as never);
+
+        await t.vi.waitFor(() => {
+          t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+        });
+
+        const sendRequestPayload = mockDappClient.sendRequest.mock.calls[0][0];
+        const requestId = sendRequestPayload.data.id;
+        const messageHandler = getMessageHandler();
+
+        await messageHandler?.({
+          data: {
+            id: requestId,
+            jsonrpc: '2.0',
+            result: {
+              error: {
+                code: 4001,
+                message: 'User rejected the request',
+              },
+            },
+          },
+        });
+
+        await t.expect(requestPromise).rejects.toMatchObject({
+          code: 4001,
+          message: 'User rejected the request',
+        });
+        t.expect(transport.pendingRequests.has(requestId)).toBe(false);
+      },
+    );
+
+    t.it(
+      'sendEip1193Message rejects when the wallet resolves a response-shaped error',
+      async () => {
+        const requestPromise = transport.sendEip1193Message({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x89' }],
+        } as never);
+
+        await t.vi.waitFor(() => {
+          t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+        });
+
+        const sendRequestPayload = mockDappClient.sendRequest.mock.calls[0][0];
+        const requestId = sendRequestPayload.data.id;
+        const messageHandler = getMessageHandler();
+
+        await messageHandler?.({
+          data: {
+            id: requestId,
+            jsonrpc: '2.0',
+            result: {
+              error: {
+                code: 4902,
+                message: 'Unrecognized chain ID 0x89',
+              },
+            },
+          },
+        });
+
+        await t.expect(requestPromise).rejects.toMatchObject({
+          code: 4902,
+          message: 'Unrecognized chain ID 0x89',
+        });
+        t.expect(transport.pendingRequests.has(requestId)).toBe(false);
+      },
+    );
+  });
+
+  t.describe('connect() initialPayload platform branching', () => {
+    const mockGetPlatformType = t.vi.mocked(getPlatformType);
+
+    // Platforms that go through the QR-code flow: dappClient.connect() is
+    // called WITHOUT initialPayload, then the initial wallet_createSession
+    // request is delivered via a separate dappClient.sendRequest() call.
+    const qrCodeFlowPlatforms = [
+      ['DesktopWeb', PlatformType.DesktopWeb],
+      ['NonBrowser', PlatformType.NonBrowser],
+    ] as const;
+
+    // Platforms that pass the initial wallet_createSession request inline
+    // via dappClient.connect({ initialPayload }) and do NOT call sendRequest().
+    const inlinePayloadFlowPlatforms = [
+      ['MobileWeb', PlatformType.MobileWeb],
+      ['ReactNative', PlatformType.ReactNative],
+    ] as const;
+
+    /**
+     * Retrieves the `initialConnectionMessageHandler` registered by connect()
+     * via `dappClient.on('message', ...)`. The constructor also registers a
+     * `message` handler, so this returns the most recently registered one.
+     *
+     * @returns The message handler registered by connect(), if any.
+     */
+    const getInitialConnectionMessageHandler = ():
+      | ((message: unknown) => Promise<void> | void)
+      | undefined => {
+      const messageHandlers = mockDappClient.on.mock.calls
+        .filter((call: unknown[]) => call[0] === 'message')
+        .map((call: unknown[]) => call[1]);
+      return messageHandlers[messageHandlers.length - 1];
+    };
+
+    t.beforeEach(() => {
+      t.vi
+        .spyOn(transport, 'getActiveSession')
+        .mockResolvedValue(undefined as never);
+      t.vi
+        .spyOn(transport, 'getStoredPendingSessionRequest')
+        .mockResolvedValue(null);
+    });
+
+    t.describe.each(qrCodeFlowPlatforms)(
+      'QR-code MWP flow (%s)',
+      (_label, platform) => {
+        t.it(
+          'passes undefined initialPayload to dappClient.connect() and sends payload via sendRequest()',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+
+            // Connection promise hangs until we trigger the message handler.
+            // Swallow the eventual rejection (we reject it for cleanup below).
+            const connectPromise = transport
+              .connect({ scopes: [], caipAccountIds: [] })
+              .catch(() => undefined);
+
+            await t.vi.waitFor(() => {
+              t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+            });
+
+            t.expect(mockDappClient.connect).toHaveBeenCalledTimes(1);
+            const connectArgs = mockDappClient.connect.mock.calls[0][0];
+            t.expect(connectArgs.mode).toBe('trusted');
+            t.expect(connectArgs.initialPayload).toBeUndefined();
+
+            const sendRequestArgs = mockDappClient.sendRequest.mock.calls[0][0];
+            t.expect(sendRequestArgs.name).toBe(
+              MULTICHAIN_PROVIDER_STREAM_NAME,
+            );
+            t.expect(sendRequestArgs.data.method).toBe('wallet_createSession');
+            t.expect(sendRequestArgs.data.jsonrpc).toBe('2.0');
+            t.expect(typeof sendRequestArgs.data.id).toBe('string');
+
+            // Cleanup: drive connect() to rejection so the timeout/handler unwind.
+            const initialHandler = getInitialConnectionMessageHandler();
+            t.expect(initialHandler).toBeDefined();
+            await initialHandler?.({
+              data: {
+                id: sendRequestArgs.data.id,
+                error: { code: 4001, message: 'User rejected' },
+              },
+            });
+            await connectPromise;
+          },
+        );
+
+        t.it(
+          'sends the wallet_createSession payload contents (sessionProperties + optionalScopes) via sendRequest()',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+
+            const connectPromise = transport
+              .connect({
+                scopes: ['eip155:1'],
+                caipAccountIds: [],
+                sessionProperties: { foo: 'bar' } as unknown as Record<
+                  string,
+                  unknown
+                >,
+              } as never)
+              .catch(() => undefined);
+
+            await t.vi.waitFor(() => {
+              t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+            });
+
+            const sendRequestArgs = mockDappClient.sendRequest.mock.calls[0][0];
+            t.expect(sendRequestArgs.name).toBe(
+              MULTICHAIN_PROVIDER_STREAM_NAME,
+            );
+            t.expect(
+              sendRequestArgs.data.params.sessionProperties,
+            ).toStrictEqual({ foo: 'bar' });
+            t.expect(sendRequestArgs.data.params.optionalScopes).toBeDefined();
+
+            const initialHandler = getInitialConnectionMessageHandler();
+            await initialHandler?.({
+              data: {
+                id: sendRequestArgs.data.id,
+                error: { code: 4001, message: 'User rejected' },
+              },
+            });
+            await connectPromise;
+          },
+        );
+
+        t.it(
+          'rejects when wallet_createSession returns a response-shaped error',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+
+            const connectPromise = transport.connect({
+              scopes: [],
+              caipAccountIds: [],
+            });
+
+            await t.vi.waitFor(() => {
+              t.expect(mockDappClient.sendRequest).toHaveBeenCalledTimes(1);
+            });
+
+            const sendRequestArgs = mockDappClient.sendRequest.mock.calls[0][0];
+            const initialHandler = getInitialConnectionMessageHandler();
+            t.expect(initialHandler).toBeDefined();
+
+            await initialHandler?.({
+              data: {
+                id: sendRequestArgs.data.id,
+                jsonrpc: '2.0',
+                result: {
+                  error: {
+                    code: 4001,
+                    message: 'User rejected the request',
+                  },
+                },
+              },
+            });
+
+            await t.expect(connectPromise).rejects.toMatchObject({
+              code: 4001,
+              message: 'User rejected the request',
+            });
+          },
+        );
+
+        t.it(
+          'when dappClient.connect() rejects, sendRequest() is NOT called and the connect promise rejects',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+            mockDappClient.connect.mockRejectedValue(
+              new Error('connect failed'),
+            );
+
+            let caughtError: unknown;
+            const connectPromise = transport
+              .connect({ scopes: [], caipAccountIds: [] })
+              .catch((error: unknown) => {
+                caughtError = error;
+              });
+
+            // The connect promise itself resolves once cleanup completes,
+            // so awaiting it is enough — no need to flush extra timers.
+            await connectPromise;
+
+            t.expect(caughtError).toBeInstanceOf(Error);
+            t.expect((caughtError as Error).message).toBe('connect failed');
+            t.expect(mockDappClient.sendRequest).not.toHaveBeenCalled();
+            // Off should have been called to clean up the message handler.
+            t.expect(mockDappClient.off).toHaveBeenCalledWith(
+              'message',
+              t.expect.any(Function),
+            );
+          },
+        );
+      },
+    );
+
+    t.describe.each(inlinePayloadFlowPlatforms)(
+      'Native deeplink MWP flow (%s)',
+      (_label, platform) => {
+        t.it(
+          'passes initialPayload to dappClient.connect() and does NOT call sendRequest()',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+
+            const connectPromise = transport
+              .connect({ scopes: [], caipAccountIds: [] })
+              .catch(() => undefined);
+
+            await t.vi.waitFor(() => {
+              t.expect(mockDappClient.connect).toHaveBeenCalledTimes(1);
+            });
+
+            const connectArgs = mockDappClient.connect.mock.calls[0][0];
+            t.expect(connectArgs.mode).toBe('trusted');
+            t.expect(connectArgs.initialPayload).toBeDefined();
+            t.expect(connectArgs.initialPayload.name).toBe(
+              MULTICHAIN_PROVIDER_STREAM_NAME,
+            );
+            t.expect(connectArgs.initialPayload.data.method).toBe(
+              'wallet_createSession',
+            );
+
+            t.expect(mockDappClient.sendRequest).not.toHaveBeenCalled();
+
+            const initialHandler = getInitialConnectionMessageHandler();
+            await initialHandler?.({
+              data: {
+                id: connectArgs.initialPayload.data.id,
+                error: { code: 4001, message: 'User rejected' },
+              },
+            });
+            await connectPromise;
+          },
+        );
+
+        t.it(
+          'rejects when inline wallet_createSession returns a response-shaped error',
+          async () => {
+            mockGetPlatformType.mockReturnValue(platform);
+
+            const connectPromise = transport.connect({
+              scopes: [],
+              caipAccountIds: [],
+            });
+
+            await t.vi.waitFor(() => {
+              t.expect(mockDappClient.connect).toHaveBeenCalledTimes(1);
+            });
+
+            const connectArgs = mockDappClient.connect.mock.calls[0][0];
+            const initialHandler = getInitialConnectionMessageHandler();
+            t.expect(initialHandler).toBeDefined();
+
+            await initialHandler?.({
+              data: {
+                id: connectArgs.initialPayload.data.id,
+                jsonrpc: '2.0',
+                result: {
+                  error: {
+                    code: 4001,
+                    message: 'User rejected the request',
+                  },
+                },
+              },
+            });
+
+            await t.expect(connectPromise).rejects.toMatchObject({
+              code: 4001,
+              message: 'User rejected the request',
+            });
+          },
+        );
+      },
+    );
   });
 });

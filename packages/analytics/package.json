@@ -1,7 +1,7 @@
 {
   "name": "@metamask/analytics",
-  "version": "0.4.0",
-  "description": "Analytics package for MetaMask Connect",
+  "version": "0.6.0",
+  "description": "MetaMask Connect telemetry — batched connection-lifecycle events",
   "keywords": [
     "MetaMask",
     "Ethereum"

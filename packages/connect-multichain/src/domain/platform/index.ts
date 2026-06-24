@@ -18,6 +18,12 @@ export enum PlatformType {
   ReactNative = 'react-native',
 }
 
+const NATIVE_METAMASK_EIP6963_RDNS = new Set([
+  'io.metamask',
+  'io.metamask.mobile',
+  'io.metamask.flask',
+]);
+
 function isNotBrowser(): boolean {
   if (typeof window === 'undefined') {
     return true;
@@ -105,6 +111,8 @@ const detectionPromise: Promise<boolean> = (async () => {
 
   return new Promise((resolve) => {
     const providers: any[] = [];
+    // Keep the same window reference if the global is torn down before timeout.
+    const targetWindow = window;
 
     const handler = (event: any) => {
       if (event?.detail?.info?.rdns) {
@@ -112,17 +120,30 @@ const detectionPromise: Promise<boolean> = (async () => {
       }
     };
 
-    window.addEventListener('eip6963:announceProvider', handler);
-    window.dispatchEvent(new Event('eip6963:requestProvider'));
+    targetWindow.addEventListener('eip6963:announceProvider', handler);
+    targetWindow.dispatchEvent(new Event('eip6963:requestProvider'));
 
     setTimeout(() => {
-      window.removeEventListener('eip6963:announceProvider', handler);
+      // The window/global can be torn down before this timeout fires (e.g. test
+      // environment teardown, SPA navigation), which makes the captured
+      // reference's methods unavailable. Guard so the timer never throws an
+      // unhandled exception; fall back to "no extension" when detection can't
+      // complete.
+      try {
+        if (typeof targetWindow?.removeEventListener === 'function') {
+          targetWindow.removeEventListener('eip6963:announceProvider', handler);
+        }
 
-      const hasMetaMask = providers.some((provider) =>
-        provider?.info?.rdns?.startsWith('io.metamask'),
-      );
+        const hasMetaMask = providers.some(
+          (provider) =>
+            typeof provider?.info?.rdns === 'string' &&
+            NATIVE_METAMASK_EIP6963_RDNS.has(provider.info.rdns),
+        );
 
-      resolve(hasMetaMask);
+        resolve(hasMetaMask);
+      } catch {
+        resolve(false);
+      }
     }, 300); // default timeout
   });
 })();

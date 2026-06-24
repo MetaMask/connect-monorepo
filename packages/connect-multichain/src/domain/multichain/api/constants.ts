@@ -168,3 +168,17 @@ export const RPC_HANDLED_METHODS = new Set([
 
 // Methods that are handled by the SDK directly
 export const SDK_HANDLED_METHODS = new Set(['eth_accounts', 'eth_chainId']);
+
+// EIP-1193 / legacy provider methods that bypass the multichain `wallet_invokeMethod`
+// envelope and are forwarded directly to the underlying transport's
+// `sendEip1193Message` (raw method/params, native extension/MWP postMessage routing).
+// These are wallet-side concerns that the Multichain API does not model:
+// - `wallet_addEthereumChain` / `wallet_switchEthereumChain` mutate the wallet's
+//   chain configuration, not session scope state.
+// - `eth_accounts` is occasionally needed as a live read against the wallet
+//   (see EVM `#onSessionChanged`) outside the cached SDK session state.
+export const EIP1193_PASSTHROUGH_METHODS = new Set([
+  'wallet_addEthereumChain',
+  'wallet_switchEthereumChain',
+  'eth_accounts',
+]);

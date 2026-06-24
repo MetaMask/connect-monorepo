@@ -4,38 +4,49 @@ import type {
   IKeyManager,
   KeyPair,
 } from '@metamask/mobile-wallet-protocol-core';
-import { decrypt, encrypt, PrivateKey, PublicKey } from 'eciesjs';
 
-class KeyManager implements IKeyManager {
-  generateKeyPair(): KeyPair {
-    const privateKey = new PrivateKey();
-    return {
-      privateKey: new Uint8Array(privateKey.secret),
-      publicKey: privateKey.publicKey.toBytes(true),
-    };
-  }
+/**
+ * Creates an {@link IKeyManager} backed by the `eciesjs` library.
+ *
+ * The factory dynamically imports `eciesjs` so the heavy crypto dependency is
+ * only loaded when MWP transport is actually used. The returned object closes
+ * over the imported symbols, allowing synchronous methods like
+ * `generateKeyPair` and `validatePeerKey` to work without a second await.
+ *
+ * @returns A ready-to-use key manager instance.
+ */
+export async function createKeyManager(): Promise<IKeyManager> {
+  const { decrypt, encrypt, PrivateKey, PublicKey } = await import('eciesjs');
 
-  async encrypt(
-    plaintext: string,
-    theirPublicKey: Uint8Array,
-  ): Promise<string> {
-    const plaintextBuffer = Buffer.from(plaintext, 'utf8');
-    const encryptedBuffer = encrypt(theirPublicKey, plaintextBuffer);
-    return encryptedBuffer.toString('base64');
-  }
+  return {
+    generateKeyPair(): KeyPair {
+      const privateKey = new PrivateKey();
+      return {
+        privateKey: new Uint8Array(privateKey.secret),
+        publicKey: privateKey.publicKey.toBytes(true),
+      };
+    },
 
-  async decrypt(
-    encryptedB64: string,
-    myPrivateKey: Uint8Array,
-  ): Promise<string> {
-    const encryptedBuffer = Buffer.from(encryptedB64, 'base64');
-    const decryptedBuffer = await decrypt(myPrivateKey, encryptedBuffer);
-    return Buffer.from(decryptedBuffer).toString('utf8');
-  }
+    async encrypt(
+      plaintext: string,
+      theirPublicKey: Uint8Array,
+    ): Promise<string> {
+      const plaintextBuffer = Buffer.from(plaintext, 'utf8');
+      const encryptedBuffer = encrypt(theirPublicKey, plaintextBuffer);
+      return encryptedBuffer.toString('base64');
+    },
 
-  validatePeerKey(key: Uint8Array): void {
-    PublicKey.fromHex(Buffer.from(key).toString('hex'));
-  }
+    async decrypt(
+      encryptedB64: string,
+      myPrivateKey: Uint8Array,
+    ): Promise<string> {
+      const encryptedBuffer = Buffer.from(encryptedB64, 'base64');
+      const decryptedBuffer = await decrypt(myPrivateKey, encryptedBuffer);
+      return Buffer.from(decryptedBuffer).toString('utf8');
+    },
+
+    validatePeerKey(key: Uint8Array): void {
+      PublicKey.fromHex(Buffer.from(key).toString('hex'));
+    },
+  };
 }
-
-export const keymanager = new KeyManager();

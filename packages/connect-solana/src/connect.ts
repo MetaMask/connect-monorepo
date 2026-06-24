@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 import {
   createMultichainClient,
   type Scope,
@@ -7,6 +7,7 @@ import {
   getWalletStandard,
   registerSolanaWalletStandard,
 } from '@metamask/solana-wallet-standard';
+import { satisfies } from 'semver';
 
 import { convertNetworksToCAIP, SOLANA_CAIP_IDS } from './networks';
 import type {
@@ -16,8 +17,9 @@ import type {
 } from './types';
 import { isMetamaskExtensionRegistered, logger } from './utils';
 
-// Value substitued by tsup at build time
+// Values substituted by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
+declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
 
 /**
  * Creates a new Solana client for connecting to MetaMask via wallet-standard.
@@ -31,6 +33,7 @@ declare const __PACKAGE_VERSION__: string | undefined;
  * @param options.api - Optional API configuration with supported networks
  * @param options.api.supportedNetworks - Record mapping network names (mainnet, devnet, testnet) to RPC URLs
  * @param [options.analytics] - Analytics configuration
+ * @param [options.analytics.enabled] - Whether to enable dapp-side analytics (defaults to true)
  * @param [options.analytics.integrationType] - Integration type for analytics (defaults to 'direct')
  * @param options.debug - Enable debug logging
  * @param options.skipAutoRegister - Skip auto-registering the wallet during creation (defaults to false)
@@ -77,6 +80,7 @@ export async function createSolanaClient(
       supportedNetworks,
     },
     analytics: {
+      ...(options.analytics ?? {}),
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       integrationType: options.analytics?.integrationType || 'direct',
     },
@@ -89,6 +93,21 @@ export async function createSolanaClient(
           : __PACKAGE_VERSION__,
     },
   });
+
+  const multichainClientPeerRange =
+    typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'undefined'
+      ? 'unknown'
+      : __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__;
+
+  if (
+    multichainClientPeerRange !== 'unknown' &&
+    multichainClientPeerRange !== '' &&
+    !satisfies(core.version, multichainClientPeerRange)
+  ) {
+    console.warn(
+      `@metamask/connect-solana expected @metamask/connect-multichain version ${multichainClientPeerRange}, but got ${core.version}. This may lead to unexpected behavior.`,
+    );
+  }
 
   const client = core.provider;
 
@@ -128,9 +147,19 @@ export async function createSolanaClient(
     }, 1000);
   }
 
+  const provider = getWalletStandard({ client, walletName });
+  const session = await core.provider.getSession();
+  const hasSolanaScope = Object.keys(session?.sessionScopes ?? {}).some(
+    (scope) => scope.startsWith('solana:'),
+  );
+  if (hasSolanaScope) {
+    // This will resolve without needing to prompt the user as we know solana scopes are already granted
+    await provider.features['standard:connect'].connect();
+  }
+
   return {
     core,
-    getWallet: () => getWalletStandard({ client, walletName }),
+    getWallet: () => provider,
     registerWallet: async (): Promise<void> => {
       await initRegistrationHandledPromise;
       await registerWallet();

@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.1.0
+  - @metamask/connect-multichain@1.1.0
+
+## [0.5.0]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.0.0
+  - @metamask/connect-multichain@1.0.0
+
+## [0.4.5]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.4.0
+  - @metamask/connect-multichain@0.15.0
+
+## [0.4.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.1
+
+## [0.4.3]
+
+### Added
+
+- Add network checkboxes for HyperEVM Mainnet (`eip155:999`), MegaETH Mainnet (`eip155:4326`), Monad Mainnet (`eip155:143`), Sei Mainnet (`eip155:1329`), and Tempo Mainnet (`eip155:4217`) to the multichain connect form ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.0
+  - @metamask/connect-multichain@0.14.0
+
+## [0.4.2]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.2.0
+  - @metamask/connect-multichain@0.13.0
+
+## [0.4.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.1.0
+  - @metamask/connect-multichain@0.13.0
+
 ## [0.4.0]
 
 ### Changed
@@ -137,7 +196,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.4.0...HEAD
+[Unreleased]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.5.1...HEAD
+[0.5.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.5.0...@metamask/react-native-playground@0.5.1
+[0.5.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.4.5...@metamask/react-native-playground@0.5.0
+[0.4.5]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.4.4...@metamask/react-native-playground@0.4.5
+[0.4.4]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.4.3...@metamask/react-native-playground@0.4.4
+[0.4.3]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.4.2...@metamask/react-native-playground@0.4.3
+[0.4.2]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.4.1...@metamask/react-native-playground@0.4.2
+[0.4.1]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.4.0...@metamask/react-native-playground@0.4.1
 [0.4.0]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.3.6...@metamask/react-native-playground@0.4.0
 [0.3.6]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.3.5...@metamask/react-native-playground@0.3.6
 [0.3.5]: https://github.com/MetaMask/metamask-connect/compare/@metamask/react-native-playground@0.3.4...@metamask/react-native-playground@0.3.5

@@ -8,7 +8,8 @@ import {
   type TransportRequest,
   type TransportResponse,
 } from '@metamask/multichain-api-client';
-import type { CaipAccountId } from '@metamask/utils';
+import type { CaipAccountId, Json } from '@metamask/utils';
+import { isValidJson } from '@metamask/utils';
 import type { ExtendedTransport, RPCAPI, Scope, SessionData } from 'src/domain';
 
 import {
@@ -55,6 +56,30 @@ export class DefaultTransport implements ExtendedTransport {
     }
   }
 
+  #parseWalletError(errorPayload: unknown): Error {
+    const errorData = errorPayload as Record<string, unknown>;
+    const error = new Error(
+      typeof errorData.message === 'string'
+        ? errorData.message
+        : 'Request failed',
+    ) as Error & { code?: number; data?: Json };
+
+    if (typeof errorData.code === 'number') {
+      error.code = errorData.code;
+    }
+
+    // Preserve the wallet's JSON-RPC error `data` (e.g. revert reason bytes /
+    // custom-error payloads) so it survives to the RequestRouter and can reach
+    // dapps via `error.data`. Without this, the data is dropped at this
+    // boundary and the normalized `RPCInvokeMethodErr.rpcData` is always unset.
+    const { data } = errorData;
+    if (isValidJson(data)) {
+      error.data = data;
+    }
+
+    return error;
+  }
+
   #isMetamaskProviderEvent(event: MessageEvent): boolean {
     return (
       event?.data?.data?.name === 'metamask-provider' &&
@@ -94,16 +119,7 @@ export class DefaultTransport implements ExtendedTransport {
 
         const response = responseData as TransportResponse;
         if ('error' in response && response.error) {
-          // Attach the numeric RPC code so it survives the transport boundary
-          // and can be re-surfaced as an EIP-1193 error by higher layers.
-          // This path is exercised by sendEip1193Message callers.
-          const error = new Error(
-            response.error.message || 'Request failed',
-          ) as Error & { code?: number };
-          if (typeof response.error.code === 'number') {
-            error.code = response.error.code;
-          }
-          pendingRequest.reject(error);
+          pendingRequest.reject(this.#parseWalletError(response.error));
         } else {
           pendingRequest.resolve(response);
         }
@@ -302,7 +318,13 @@ export class DefaultTransport implements ExtendedTransport {
     request: TRequest,
     options: { timeout?: number } = this.#defaultRequestOptions,
   ): Promise<TResponse> {
-    return this.#transport.request(request, options);
+    const response = await this.#transport.request(request, options);
+
+    if (response.error) {
+      throw this.#parseWalletError(response.error);
+    }
+
+    return response as TResponse;
   }
 
   onNotification(callback: (data: unknown) => void): () => void {

@@ -1,5 +1,31 @@
 # Browser Playground Scripts
 
+## analytics-echo-server.mjs
+
+### Purpose
+
+A tiny local HTTP server (`POST /v2/events`, default port `8787`) that stands in for `https://mm-sdk-analytics.api.cx.metamask.io` during manual testing. Pretty-prints every event it receives, with `event_name`, `failure_reason`, `method`, and `transport` highlighted, so you can verify the playground is emitting the analytics events you expect.
+
+Pair it with the **Analytics test bench** section in the playground UI (`src/components/AnalyticsTestBench.tsx`) — see [the playground README](../README.md#manually-testing-analytics-events) for the full walkthrough.
+
+### Usage
+
+```bash
+yarn analytics:echo                # listens on :8787
+PORT=9090 yarn analytics:echo      # custom port
+```
+
+Then start the playground with the analytics endpoint pointed at it:
+
+```bash
+METAMASK_ANALYTICS_ENDPOINT="http://localhost:8787/" yarn start
+```
+
+### Important Notes
+
+- The env var injection is wired through `craco.config.js`'s `DefinePlugin`; CRA only exposes `REACT_APP_*` vars to the bundle by default, so a plain `process.env.METAMASK_ANALYTICS_ENDPOINT` would be `undefined` at runtime without that patch.
+- `public/index.html`'s `Content-Security-Policy` meta tag includes `http://localhost:*` and `http://127.0.0.1:*` in `connect-src` so local sinks are reachable — without this the browser silently blocks the request and the Network tab shows nothing.
+
 ## copy-wagmi-connector.js
 
 ### Purpose

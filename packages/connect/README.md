@@ -61,8 +61,11 @@ const balance = await provider.request({
 
 ### Multichain Connections
 
+Multichain functionality is the package's default export, so import it directly from
+`@metamask/connect`:
+
 ```typescript
-import { createMultichainClient } from '@metamask/connect/multichain';
+import { createMultichainClient } from '@metamask/connect';
 
 const client = await createMultichainClient({
   dapp: {
@@ -122,17 +125,19 @@ See [@metamask/connect-multichain](../connect-multichain/README.md) for detailed
 ## Package Structure
 
 ```
-@metamask/connect
-├── /           → Re-exports from @metamask/connect-multichain
-└── /evm        → Re-exports from @metamask/connect-evm
+@metamask/connect          → Re-exports from @metamask/connect-multichain (default export)
+@metamask/connect/evm      → Re-exports from @metamask/connect-evm
 ```
+
+> These are the only two entry points. There is no `@metamask/connect/multichain` subpath —
+> the multichain API is the default export at `@metamask/connect`.
 
 ## When to Use Which
 
-| Use Case                                           | Import Path                    |
-| -------------------------------------------------- | ------------------------------ |
-| Ethereum/EVM dApps with standard EIP-1193 provider | `@metamask/connect/evm`        |
-| Multi-chain dApps (Ethereum + Solana, etc.)        | `@metamask/connect/multichain` |
+| Use Case                                           | Import Path             |
+| -------------------------------------------------- | ----------------------- |
+| Ethereum/EVM dApps with standard EIP-1193 provider | `@metamask/connect/evm` |
+| Multi-chain dApps (Ethereum + Solana, etc.)        | `@metamask/connect`     |
 
 ## Contributing
 

@@ -51,6 +51,20 @@ export type ConnectVersions = { 'connect-multichain': string } & Partial<
   Record<'connect-evm' | 'connect-solana', string>
 >;
 
+export type AnalyticsOptions = {
+  /**
+   * Whether to enable analytics tracking. Defaults to `true` when omitted.
+   * Set to `false` to disable all analytics event collection.
+   */
+  enabled?: boolean;
+  /**
+   * Identifies the integration surface that instantiated the SDK (e.g. `'direct'`,
+   * `'wagmi'`). Recorded as the `integration_types` global analytics property.
+   * Defaults to `'direct'` when omitted or empty.
+   */
+  integrationType?: string;
+};
+
 /**
  * Constructor options for creating a Multichain SDK instance.
  *
@@ -67,7 +81,7 @@ export type MultichainOptions = {
     supportedNetworks: RpcUrlsMap;
   };
   /** Analytics configuration */
-  analytics?: { integrationType: string };
+  analytics?: AnalyticsOptions;
   /** Storage client for persisting SDK data */
   storage: StoreClient;
   /** UI configuration options */
@@ -90,7 +104,6 @@ export type MultichainOptions = {
   transport?: {
     /** Extension ID for browser extension transport */
     extensionId?: string;
-    onNotification?: (notification: unknown) => void;
   };
   /** Enable debug logging */
   debug?: boolean;
@@ -112,6 +125,7 @@ export type MergeableMultichainOptions = Omit<
   MultichainOptions,
   'dapp' | 'analytics' | 'storage' | 'api' | 'ui' | 'transport' | 'versions'
 > & {
+  analytics?: AnalyticsOptions;
   api?: MultichainOptions['api'];
   ui?: Pick<
     MultichainOptions['ui'],
