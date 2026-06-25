@@ -12,15 +12,15 @@ import * as t from 'vitest';
 
 import { Store } from '.';
 import type { StoreAdapter } from '../domain';
+import { StoreAdapterNode } from './adapters/node';
+import { StoreAdapterRN } from './adapters/rn';
+import { StoreAdapterWeb } from './adapters/web';
 import {
   StorageDeleteErr,
   StorageGetErr,
   StorageSetErr,
 } from '../domain/errors/storage';
 import { TransportType } from '../domain/multichain';
-import { StoreAdapterNode } from './adapters/node';
-import { StoreAdapterRN } from './adapters/rn';
-import { StoreAdapterWeb } from './adapters/web';
 
 /**
  * Dummy mocked storage to keep track of data between tests

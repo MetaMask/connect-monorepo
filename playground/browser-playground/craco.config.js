@@ -3,6 +3,8 @@
 /* eslint-disable require-unicode-regexp -- Webpack config */
 /* eslint-disable n/no-process-env -- Build tool env */
 require('dotenv').config();
+const path = require('path');
+const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const webpack = require('webpack');
 
 module.exports = {
@@ -34,7 +36,6 @@ module.exports = {
       // In a yarn workspace the real node_modules lives at the monorepo root, so we must
       // also extend ModuleScopePlugin's allowedPaths to include it; otherwise CRA rejects
       // the resolved absolute path as "outside src/".
-      const path = require('path');
       const bitcoinjsLibCjs = require.resolve('bitcoinjs-lib');
       const bitcoinjsLibEsm = bitcoinjsLibCjs.replace(
         'src/cjs/index.cjs',
@@ -42,7 +43,6 @@ module.exports = {
       );
       const monorepoNodeModules = path.dirname(path.dirname(bitcoinjsLibCjs)); // …/node_modules
 
-      const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
       webpackConfig.resolve.plugins = webpackConfig.resolve.plugins.map(
         (plugin) => {
           if (plugin instanceof ModuleScopePlugin) {
