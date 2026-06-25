@@ -11,4 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add Bitcoin Wallet Standard integration for MetaMask Connect.
 
+### Changed
+
+- Bump `@metamask/bitcoin-wallet-standard` to `^1.3.0`.
+
 [Unreleased]: https://github.com/MetaMask/connect-monorepo/
