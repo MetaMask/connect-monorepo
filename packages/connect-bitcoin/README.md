@@ -61,20 +61,22 @@ function App() {
       },
     }).then(() => {
       // Bitcoin client initialized and wallet registered
-      const wallets = getWallets().get()
+      const wallets = getWallets().get();
 
       // Prompt wallet for connection
-      const { accounts } = await wallets[0].features['bitcoin:connect'].connect()
-      
-      // Sign message
-      const signedMessage = await wallets[0].features['bitcoin:signAndSendTransaction'].signMessage({
-        account: accounts[0],
-        message: 'Hello bitcoin'
-      })
-    })
-  }, [])
-}
+      const { accounts } =
+        await wallets[0].features['bitcoin:connect'].connect();
 
+      // Sign message
+      const signedMessage = await wallets[0].features[
+        'bitcoin:signAndSendTransaction'
+      ].signMessage({
+        account: accounts[0],
+        message: 'Hello bitcoin',
+      });
+    });
+  }, []);
+}
 ```
 
 ## API Reference
@@ -85,14 +87,14 @@ Creates a new Bitcoin client instance. By default, the wallet is automatically r
 
 #### Parameters
 
-| Option                  | Type                      | Required | Description                                                            |
-| ----------------------- | ------------------------- | -------- | ---------------------------------------------------------------------- |
-| `dapp.name`             | `string`                  | Yes      | Name of your dApp                                                      |
-| `dapp.url`              | `string`                  | No       | URL of your dApp                                                       |
-| `dapp.iconUrl`          | `string`                  | No       | Icon URL for your dApp                                                 |
-| `api.supportedNetworks` | `BitcoinSupportedNetworks` | No       | Map of network names (`mainnet`, `testnet`, `regtest`) to RPC URLs      |
-| `debug`                 | `boolean`                 | No       | Enable debug logging                                                   |
-| `skipAutoRegister`      | `boolean`                 | No       | Skip auto-registering the wallet during creation (defaults to `false`) |
+| Option                  | Type                       | Required | Description                                                            |
+| ----------------------- | -------------------------- | -------- | ---------------------------------------------------------------------- |
+| `dapp.name`             | `string`                   | Yes      | Name of your dApp                                                      |
+| `dapp.url`              | `string`                   | No       | URL of your dApp                                                       |
+| `dapp.iconUrl`          | `string`                   | No       | Icon URL for your dApp                                                 |
+| `api.supportedNetworks` | `BitcoinSupportedNetworks` | No       | Map of network names (`mainnet`, `testnet`, `regtest`) to RPC URLs     |
+| `debug`                 | `boolean`                  | No       | Enable debug logging                                                   |
+| `skipAutoRegister`      | `boolean`                  | No       | Skip auto-registering the wallet during creation (defaults to `false`) |
 
 #### Returns
 

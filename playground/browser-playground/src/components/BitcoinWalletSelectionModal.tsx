@@ -3,11 +3,10 @@ import { type CSSProperties, useCallback, useEffect, useState } from 'react';
 import {
   isBitcoinStandardWalletStandardWallet,
   isBitcoinStatsConnectWalletStandardWallet,
-  WalletConnectionType
+  WalletConnectionType,
 } from '../helpers/bitcoinFeatures';
 import { useBitcoin } from '../sdk/BitcoinProvider';
 import { TEST_IDS } from '@metamask/playground-ui';
-
 
 // Add spinner animation keyframes to document
 const addSpinnerKeyframes = () => {
@@ -34,7 +33,12 @@ interface BitcoinWalletSelectionModalProps {
   connectingWallet?: Wallet | undefined;
 }
 
-export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connectingWallet }: BitcoinWalletSelectionModalProps) {
+export function BitcoinWalletSelectionModal({
+  isOpen,
+  wallets,
+  onClose,
+  connectingWallet,
+}: BitcoinWalletSelectionModalProps) {
   // Initialize spinner keyframes
   useEffect(() => {
     if (isOpen) {
@@ -43,17 +47,25 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
     addSpinnerKeyframes();
   }, [isOpen]);
 
-  const { connectWithStandardWallet, connectWithSatsConnectWallet } = useBitcoin();
-  const [expandedWallet, setExpandedWallet] = useState<Wallet | undefined>(undefined);
+  const { connectWithStandardWallet, connectWithSatsConnectWallet } =
+    useBitcoin();
+  const [expandedWallet, setExpandedWallet] = useState<Wallet | undefined>(
+    undefined,
+  );
 
   const isDualCompatible = useCallback((wallet: Wallet) => {
-    return isBitcoinStandardWalletStandardWallet(wallet) && isBitcoinStatsConnectWalletStandardWallet(wallet);
+    return (
+      isBitcoinStandardWalletStandardWallet(wallet) &&
+      isBitcoinStatsConnectWalletStandardWallet(wallet)
+    );
   }, []);
 
   const handleWalletClick = useCallback(
     (wallet: Wallet) => {
       if (isDualCompatible(wallet)) {
-        setExpandedWallet(expandedWallet?.name === wallet.name ? undefined : wallet);
+        setExpandedWallet(
+          expandedWallet?.name === wallet.name ? undefined : wallet,
+        );
       } else {
         setExpandedWallet(undefined);
         // For single-compatible wallets, connect directly with the appropriate type
@@ -67,7 +79,13 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
         onClose();
       }
     },
-    [expandedWallet, onClose, isDualCompatible, connectWithStandardWallet, connectWithSatsConnectWallet],
+    [
+      expandedWallet,
+      onClose,
+      isDualCompatible,
+      connectWithStandardWallet,
+      connectWithSatsConnectWallet,
+    ],
   );
 
   const handleTypeSelection = useCallback(
@@ -117,7 +135,8 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
   const contentStyle: CSSProperties = {
     background: 'white',
     borderRadius: '12px',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    boxShadow:
+      '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
     maxWidth: '500px',
     width: '100%',
     maxHeight: '80vh',
@@ -179,7 +198,10 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
     gap: '12px',
   };
 
-  const getWalletItemStyle = (isDisabled: boolean, isConnecting: boolean): CSSProperties => ({
+  const getWalletItemStyle = (
+    isDisabled: boolean,
+    isConnecting: boolean,
+  ): CSSProperties => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -315,10 +337,15 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
           {wallets.length === 0 ? (
             <div style={emptyStyle}>
               <p style={emptyTextStyle}>No wallet available</p>
-              <p style={helpTextStyle}>Make sure you have installed a compatible Bitcoin wallet</p>
+              <p style={helpTextStyle}>
+                Make sure you have installed a compatible Bitcoin wallet
+              </p>
             </div>
           ) : (
-            <div data-testid={TEST_IDS.bitcoin.walletSelectionModal.walletList} style={walletListStyle}>
+            <div
+              data-testid={TEST_IDS.bitcoin.walletSelectionModal.walletList}
+              style={walletListStyle}
+            >
               {wallets.map((wallet, index) => {
                 const isConnecting = connectingWallet === wallet;
                 const isDisabled = !!connectingWallet;
@@ -327,7 +354,9 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
                   <div key={`${wallet.name}-${index}`}>
                     {expandedWallet?.name !== wallet.name && (
                       <button
-                        data-testid={TEST_IDS.bitcoin.walletSelectionModal.walletOption}
+                        data-testid={
+                          TEST_IDS.bitcoin.walletSelectionModal.walletOption
+                        }
                         type="button"
                         style={getWalletItemStyle(isDisabled, isConnecting)}
                         onClick={() => handleWalletClick(wallet)}
@@ -337,12 +366,15 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
                             e.currentTarget.style.borderColor = '#3b82f6';
                             e.currentTarget.style.boxShadow =
                               '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.transform =
+                              'translateY(-1px)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (!isDisabled) {
-                            e.currentTarget.style.borderColor = isConnecting ? '#3b82f6' : '#e5e7eb';
+                            e.currentTarget.style.borderColor = isConnecting
+                              ? '#3b82f6'
+                              : '#e5e7eb';
                             e.currentTarget.style.boxShadow = 'none';
                             e.currentTarget.style.transform = 'none';
                           }
@@ -350,7 +382,9 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
                       >
                         <div style={walletInfoStyle}>
                           <div style={walletNameStyle}>{wallet.name}</div>
-                          <div style={walletFeaturesStyle}>{getWalletFeatureLabel(wallet)}</div>
+                          <div style={walletFeaturesStyle}>
+                            {getWalletFeatureLabel(wallet)}
+                          </div>
                         </div>
                         <div style={walletIconStyle}>
                           {isConnecting ? (
@@ -358,7 +392,13 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
                               <div style={spinnerStyle} />
                             </div>
                           ) : (
-                            wallet.icon && <img src={wallet.icon} alt={wallet.name} style={walletIconImgStyle} />
+                            wallet.icon && (
+                              <img
+                                src={wallet.icon}
+                                alt={wallet.name}
+                                style={walletIconImgStyle}
+                              />
+                            )
                           )}
                         </div>
                       </button>
@@ -367,10 +407,18 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
                       <div style={connectionTypeContainerStyle}>
                         <div style={connectionTypeButtonsStyle}>
                           <button
-                            data-testid={TEST_IDS.bitcoin.walletSelectionModal.standardButton}
+                            data-testid={
+                              TEST_IDS.bitcoin.walletSelectionModal
+                                .standardButton
+                            }
                             type="button"
                             style={connectionTypeButtonStyle}
-                            onClick={() => handleTypeSelection(wallet, WalletConnectionType.Standard)}
+                            onClick={() =>
+                              handleTypeSelection(
+                                wallet,
+                                WalletConnectionType.Standard,
+                              )
+                            }
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = '#3b82f6';
                               e.currentTarget.style.color = '#ffffff';
@@ -383,10 +431,18 @@ export function BitcoinWalletSelectionModal({ isOpen, wallets, onClose, connecti
                             Standard
                           </button>
                           <button
-                            data-testid={TEST_IDS.bitcoin.walletSelectionModal.satsConnectButton}
+                            data-testid={
+                              TEST_IDS.bitcoin.walletSelectionModal
+                                .satsConnectButton
+                            }
                             type="button"
                             style={connectionTypeButtonStyle}
-                            onClick={() => handleTypeSelection(wallet, WalletConnectionType.SatsConnect)}
+                            onClick={() =>
+                              handleTypeSelection(
+                                wallet,
+                                WalletConnectionType.SatsConnect,
+                              )
+                            }
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = '#3b82f6';
                               e.currentTarget.style.color = '#ffffff';

@@ -1,7 +1,12 @@
 import { createBitcoinClient } from '@metamask/connect-bitcoin';
 import { type WalletAccount, getWallets } from '@wallet-standard/core';
 import type { Wallet } from '@wallet-standard/base';
-import { AddressPurpose, BitcoinNetworkType, getAddress, sendBtcTransaction } from 'sats-connect';
+import {
+  AddressPurpose,
+  BitcoinNetworkType,
+  getAddress,
+  sendBtcTransaction,
+} from 'sats-connect';
 import type React from 'react';
 import {
   createContext,
@@ -26,7 +31,7 @@ import {
   BitcoinSignTransaction,
   BitcoinSignTransactionFeature,
   BitcoinSignMessageFeature,
-  WalletConnectionType
+  WalletConnectionType,
 } from '../helpers/bitcoinFeatures';
 
 const BITCOIN_MAINNET_ENDPOINT = 'https://api.mainnet.bitcoin.com';
@@ -47,7 +52,10 @@ type BitcoinSDKContextType = {
   disconnect: () => Promise<void>;
   signMessage: (message: Uint8Array) => Promise<Uint8Array<ArrayBufferLike>>;
   sendPayment: (to: string, amountSats: bigint) => Promise<string>;
-  signPsbt: (psbt: string, inputsToSign: any[]) => Promise<{ psbtBase64: string; txId: string }>;
+  signPsbt: (
+    psbt: string,
+    inputsToSign: any[],
+  ) => Promise<{ psbtBase64: string; txId: string }>;
   setSatsConnectProvider: (p: any | undefined) => void;
   setSelectedWallet: (w: Wallet | undefined) => void;
 };
@@ -57,11 +65,17 @@ const BitcoinSDKContext = createContext<BitcoinSDKContextType | undefined>(
 );
 
 function useConnect() {
-  const [selectedAccount, setSelectedAccount] = useState<WalletAccount | undefined>(undefined);
+  const [selectedAccount, setSelectedAccount] = useState<
+    WalletAccount | undefined
+  >(undefined);
   const [accounts, setAccounts] = useState<WalletAccount[]>([]);
   const [wallet, setWallet] = useState<Wallet | undefined>(undefined);
-  const [statsConnectProvider, setSatsConnectProvider] = useState<any | undefined>(undefined);
-  const [selectedConnectionType, setSelectedConnectionType] = useState<WalletConnectionType | undefined>(undefined);
+  const [statsConnectProvider, setSatsConnectProvider] = useState<
+    any | undefined
+  >(undefined);
+  const [selectedConnectionType, setSelectedConnectionType] = useState<
+    WalletConnectionType | undefined
+  >(undefined);
   const connected = !!selectedAccount;
   const network = 'bitcoin:mainnet';
 
@@ -104,9 +118,13 @@ function useConnect() {
       let provider = statsConnectProvider;
       if (!provider) {
         // Pick first wallet if provider not yet selected
-        const feature = wallet.features[BitcoinSatsConnect] as { provider?: any };
+        const feature = wallet.features[BitcoinSatsConnect] as {
+          provider?: any;
+        };
         if (!feature?.provider) {
-          throw new Error('Sats Connect feature not available on selected wallet');
+          throw new Error(
+            'Sats Connect feature not available on selected wallet',
+          );
         }
         provider = feature.provider;
         if (!provider) {
@@ -125,7 +143,10 @@ function useConnect() {
         cb: onDisconnectSatsConnect,
       });
 
-      const networkType = network === 'bitcoin:mainnet' ? BitcoinNetworkType.Mainnet : BitcoinNetworkType.Testnet;
+      const networkType =
+        network === 'bitcoin:mainnet'
+          ? BitcoinNetworkType.Mainnet
+          : BitcoinNetworkType.Testnet;
       await getAddress({
         getProvider: async () => provider,
         payload: {
@@ -134,9 +155,13 @@ function useConnect() {
           network: { type: networkType },
         },
         onFinish: (response: any) => {
-          const list = (response.addresses || []).map((a: any) => ({ address: a.address, purpose: a.purpose }));
+          const list = (response.addresses || []).map((a: any) => ({
+            address: a.address,
+            purpose: a.purpose,
+          }));
           setAccounts(list);
-          const derived = list.find((a: any) => a.purpose === 'payment') || list[0] || null;
+          const derived =
+            list.find((a: any) => a.purpose === 'payment') || list[0] || null;
           setSelectedAccount(derived);
           setWallet(wallet);
           setSelectedConnectionType(WalletConnectionType.SatsConnect);
@@ -155,27 +180,28 @@ function useConnect() {
     setSelectedAccount(undefined);
   }, [setWallet, setAccounts, setSelectedAccount]);
 
-  const disconnect = useCallback(
-    async () => {
-      if (!wallet) {
-        throw new Error('No wallet selected');
-      }
-  
-      resetLocalState();
-  
-      if (isBitcoinStandardWalletStandardWallet(wallet)) {
-        await wallet.features[BitcoinDisconnect].disconnect();
-      }
-    },
-    [wallet, resetLocalState],
-  );
+  const disconnect = useCallback(async () => {
+    if (!wallet) {
+      throw new Error('No wallet selected');
+    }
+
+    resetLocalState();
+
+    if (isBitcoinStandardWalletStandardWallet(wallet)) {
+      await wallet.features[BitcoinDisconnect].disconnect();
+    }
+  }, [wallet, resetLocalState]);
 
   const onChangeAccountSatsConnect = useCallback(
     (event: any) => {
       if (event.addresses) {
-        const list = (event.addresses || []).map((a: any) => ({ address: a.address, purpose: a.purpose }));
+        const list = (event.addresses || []).map((a: any) => ({
+          address: a.address,
+          purpose: a.purpose,
+        }));
         setAccounts(list);
-        const derived = list.find((a: any) => a.purpose === 'payment') || list[0] || null;
+        const derived =
+          list.find((a: any) => a.purpose === 'payment') || list[0] || null;
         setSelectedAccount(derived);
       }
     },
@@ -211,7 +237,9 @@ function useConnect() {
 
         return result[0]!.signature;
       } catch (error) {
-        throw new Error(`Failed to sign message: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(
+          `Failed to sign message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
       }
     },
     [selectedAccount, wallet],
@@ -227,13 +255,21 @@ function useConnect() {
       }
 
       // Check if wallet supports bitcoin:signAndSendTransaction feature
-      const signAndSendFeature = wallet.features[BitcoinSignAndSendTransaction] as any;
+      const signAndSendFeature = wallet.features[
+        BitcoinSignAndSendTransaction
+      ] as any;
       if (!signAndSendFeature) {
-        throw new Error('Wallet does not support transaction signing and sending');
+        throw new Error(
+          'Wallet does not support transaction signing and sending',
+        );
       }
 
       // Build PSBT
-      const { psbt, inputCount } = await buildPSBT(selectedAccount.address, to, amountSats);
+      const { psbt, inputCount } = await buildPSBT(
+        selectedAccount.address,
+        to,
+        amountSats,
+      );
 
       // Prepare inputs to sign - all inputs need to be signed by the sender account
       const inputsToSign = [
@@ -267,7 +303,10 @@ function useConnect() {
       if (!statsConnectProvider) {
         throw new Error('Sats Connect provider not available');
       }
-      const networkType = network === 'bitcoin:mainnet' ? BitcoinNetworkType.Mainnet : BitcoinNetworkType.Testnet;
+      const networkType =
+        network === 'bitcoin:mainnet'
+          ? BitcoinNetworkType.Mainnet
+          : BitcoinNetworkType.Testnet;
       const res = await new Promise((resolve, reject) =>
         sendBtcTransaction({
           getProvider: async () => statsConnectProvider,
@@ -301,10 +340,16 @@ function useConnect() {
         case WalletConnectionType.SatsConnect:
           return sendPaymentWithSatsConnect(to, amountSats);
         default:
-          throw new Error(`Unsupported connection type: ${selectedConnectionType}`);
+          throw new Error(
+            `Unsupported connection type: ${selectedConnectionType}`,
+          );
       }
     },
-    [selectedConnectionType, sendPaymentWithStandard, sendPaymentWithSatsConnect],
+    [
+      selectedConnectionType,
+      sendPaymentWithStandard,
+      sendPaymentWithSatsConnect,
+    ],
   );
 
   const signPsbt = useCallback(
@@ -335,7 +380,9 @@ function useConnect() {
       });
 
       return {
-        psbtBase64: Buffer.from(result[0]!.signedPsbt.buffer).toString('base64'),
+        psbtBase64: Buffer.from(result[0]!.signedPsbt.buffer).toString(
+          'base64',
+        ),
         txId: '',
       };
     },
@@ -361,7 +408,7 @@ function useConnect() {
     setSatsConnectProvider,
     setSelectedWallet: setWallet,
     setSelectedConnectionType,
-  }
+  };
 }
 
 /**
@@ -480,9 +527,11 @@ export const BitcoinWalletProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useBitcoin = () => {
   const context = useContext(BitcoinSDKContext);
   if (context === undefined) {
-    throw new Error('useBitcoinSDK must be used within a BitcoinWalletProvider');
+    throw new Error(
+      'useBitcoinSDK must be used within a BitcoinWalletProvider',
+    );
   }
   return context;
 };
 
-export { getWallets }
+export { getWallets };

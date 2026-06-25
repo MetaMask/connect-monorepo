@@ -76,9 +76,15 @@ export const BitcoinWalletCard: React.FC = () => {
   }, [selectedAccount, signPsbt, rawPsbt]);
 
   return (
-    <div data-testid={TEST_IDS.bitcoin.card} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+    <div
+      data-testid={TEST_IDS.bitcoin.card}
+      className="bg-white rounded-lg p-6 shadow-sm border border-gray-200"
+    >
       <div className="flex items-center justify-between mb-4">
-        <h3 data-testid={TEST_IDS.bitcoin.title} className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        <h3
+          data-testid={TEST_IDS.bitcoin.title}
+          className="text-lg font-semibold text-gray-800 flex items-center gap-2"
+        >
           <span className="text-2xl">₿</span>
           Bitcoin Wallet
         </h3>
@@ -96,7 +102,10 @@ export const BitcoinWalletCard: React.FC = () => {
 
       <div className="space-y-4">
         {/* Connection Status */}
-        <div data-testid={TEST_IDS.bitcoin.status} className="flex items-center gap-2">
+        <div
+          data-testid={TEST_IDS.bitcoin.status}
+          className="flex items-center gap-2"
+        >
           <span
             className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-gray-400'}`}
           />
@@ -107,15 +116,23 @@ export const BitcoinWalletCard: React.FC = () => {
 
         {/* Wallet Address */}
         {selectedAccount && (
-          <div data-testid={TEST_IDS.bitcoin.addressContainer} className="bg-gray-50 rounded p-3">
+          <div
+            data-testid={TEST_IDS.bitcoin.addressContainer}
+            className="bg-gray-50 rounded p-3"
+          >
             <p className="text-xs text-gray-500 mb-1">Address</p>
-            <p className="text-sm font-mono break-all">{selectedAccount.address}</p>
+            <p className="text-sm font-mono break-all">
+              {selectedAccount.address}
+            </p>
           </div>
         )}
 
         {/* Sign Message Section */}
         {connected && (
-          <div data-testid={TEST_IDS.bitcoin.signMessageSection} className="border-t pt-4 mt-4">
+          <div
+            data-testid={TEST_IDS.bitcoin.signMessageSection}
+            className="border-t pt-4 mt-4"
+          >
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Sign Message
             </h4>
@@ -138,7 +155,10 @@ export const BitcoinWalletCard: React.FC = () => {
             </button>
 
             {signedMessage && (
-              <div data-testid={TEST_IDS.bitcoin.signedMessageResult} className="mt-3 bg-green-50 rounded p-3">
+              <div
+                data-testid={TEST_IDS.bitcoin.signedMessageResult}
+                className="mt-3 bg-green-50 rounded p-3"
+              >
                 <p className="text-xs text-green-700 mb-1">Signed Message</p>
                 <p className="text-xs font-mono break-all text-green-800">
                   {signedMessage}
@@ -147,11 +167,13 @@ export const BitcoinWalletCard: React.FC = () => {
             )}
           </div>
         )}
-        
 
         {/* Send Payment Section */}
         {connected && (
-          <div data-testid={TEST_IDS.bitcoin.transactionsSection} className="border-t pt-4 mt-4">
+          <div
+            data-testid={TEST_IDS.bitcoin.transactionsSection}
+            className="border-t pt-4 mt-4"
+          >
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Send Payment
             </h4>
@@ -176,7 +198,10 @@ export const BitcoinWalletCard: React.FC = () => {
             </div>
 
             {txId && (
-              <div data-testid={TEST_IDS.bitcoin.txIdResult} className="mt-3 bg-blue-50 rounded p-3">
+              <div
+                data-testid={TEST_IDS.bitcoin.txIdResult}
+                className="mt-3 bg-blue-50 rounded p-3"
+              >
                 <p className="text-xs text-blue-700 mb-1">Transaction ID</p>
                 <p className="text-xs font-mono break-all text-blue-800">
                   {txId}
@@ -188,7 +213,10 @@ export const BitcoinWalletCard: React.FC = () => {
 
         {/* PSBT Section */}
         {connected && (
-          <div data-testid={TEST_IDS.bitcoin.psbtSection} className="border-t pt-4 mt-4">
+          <div
+            data-testid={TEST_IDS.bitcoin.psbtSection}
+            className="border-t pt-4 mt-4"
+          >
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Sign PSBT
             </h4>
@@ -215,7 +243,10 @@ export const BitcoinWalletCard: React.FC = () => {
             </div>
 
             {signedPsbt && (
-              <div data-testid={TEST_IDS.bitcoin.psbtSignatureResult} className="mt-3 bg-blue-50 rounded p-3">
+              <div
+                data-testid={TEST_IDS.bitcoin.psbtSignatureResult}
+                className="mt-3 bg-blue-50 rounded p-3"
+              >
                 <p className="text-xs text-blue-700 mb-1">Signed PSBT</p>
                 <p className="text-xs font-mono break-all text-blue-800">
                   {signedPsbt}
@@ -224,11 +255,13 @@ export const BitcoinWalletCard: React.FC = () => {
             )}
           </div>
         )}
-        
 
         {/* Error Display */}
         {error && (
-          <div data-testid={TEST_IDS.bitcoin.errorContainer} className="bg-red-50 border border-red-200 rounded p-3">
+          <div
+            data-testid={TEST_IDS.bitcoin.errorContainer}
+            className="bg-red-50 border border-red-200 rounded p-3"
+          >
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}

@@ -30,18 +30,21 @@ const CONNECT_AND_SIGN_MESSAGE = 'Hello from MetaMask Connect Playground!';
 
 function App() {
   const [customScopes, setCustomScopes] = useState<string[]>(
-    window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+    window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === 'localhost'
       ? ['eip155:1337']
       : ['eip155:1'],
   );
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
-  const [bitcoinWalletSelectionModalOpen, setBitcoinWalletSelectionModalOpen] = useState(false);
+  const [bitcoinWalletSelectionModalOpen, setBitcoinWalletSelectionModalOpen] =
+    useState(false);
 
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
   const [legacySignature, setLegacySignature] = useState<string | null>(null);
 
   // Get Solana wallet error from provider context
-  const { walletError: solanaError, clearWalletError: clearSolanaError } = useSolanaSDK();
+  const { walletError: solanaError, clearWalletError: clearSolanaError } =
+    useSolanaSDK();
 
   const {
     error,
@@ -61,7 +64,8 @@ function App() {
     connectAndSign: legacyConnectAndSign,
     disconnect: legacyDisconnect,
   } = useLegacyEVMSDK();
-  const { address: wagmiAddress, isConnected: wagmiConnected } = useConnection();
+  const { address: wagmiAddress, isConnected: wagmiConnected } =
+    useConnection();
   const {
     connectors,
     connectAsync: wagmiConnectAsync,
@@ -221,11 +225,7 @@ function App() {
       await bitcoinDisconnect();
     }
     await sdkDisconnect();
-  }, [
-    sdkDisconnect,
-    bitcoinDisconnect,
-    bitcoinConnected,
-  ]);
+  }, [sdkDisconnect, bitcoinDisconnect, bitcoinConnected]);
 
   const availableOptions = Object.keys(FEATURED_NETWORKS).reduce<
     { name: string; value: string }[]
@@ -303,7 +303,7 @@ function App() {
               </button>
             )}
 
-            {(!wagmiConnected) && (
+            {!wagmiConnected && (
               <button
                 type="button"
                 data-testid={TEST_IDS.app.btnConnect('wagmi')}
@@ -354,7 +354,9 @@ function App() {
                 data-testid={TEST_IDS.app.btnReconnect}
                 onClick={connect}
                 className="bg-blue-500 text-white px-5 py-2 rounded text-base hover:bg-blue-600 transition-colors"
-              > Reconnect (Multichain) </button>
+              >
+                Reconnect (Multichain)
+              </button>
             )}
 
             {(isConnected ||
@@ -447,9 +449,7 @@ function App() {
         </div>
 
         <AnalyticsTestBench
-          connectedScopes={
-            Object.keys(session?.sessionScopes ?? {}) as Scope[]
-          }
+          connectedScopes={Object.keys(session?.sessionScopes ?? {}) as Scope[]}
         />
 
         <section
