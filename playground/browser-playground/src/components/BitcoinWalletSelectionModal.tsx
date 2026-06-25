@@ -4,7 +4,7 @@ import {
   isBitcoinStandardWalletStandardWallet,
   isBitcoinStatsConnectWalletStandardWallet,
   WalletConnectionType,
-} from '../helpers/bitcoinFeatures';
+} from '../helpers/bitcoinWalletUtils';
 import { useBitcoin } from '../sdk/BitcoinProvider';
 import { TEST_IDS } from '@metamask/playground-ui';
 

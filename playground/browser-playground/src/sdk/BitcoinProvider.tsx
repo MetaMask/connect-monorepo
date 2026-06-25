@@ -20,19 +20,21 @@ import {
 import { buildPSBT } from '../helpers/bitcoinHelpers';
 import {
   BitcoinConnect,
-  assertIsBitcoinStandardWalletStandardWallet,
-  assertIsBitcoinStatsConnectWalletStandardWallet,
   BitcoinSatsConnect,
   BitcoinEvents,
   BitcoinDisconnect,
   BitcoinSignMessage,
   BitcoinSignAndSendTransaction,
-  isBitcoinStandardWalletStandardWallet,
   BitcoinSignTransaction,
-  BitcoinSignTransactionFeature,
-  BitcoinSignMessageFeature,
+  type BitcoinSignTransactionFeature,
+  type BitcoinSignMessageFeature,
+} from '@metamask/bitcoin-wallet-standard';
+import {
+  assertIsBitcoinStandardWalletStandardWallet,
+  assertIsBitcoinStatsConnectWalletStandardWallet,
+  isBitcoinStandardWalletStandardWallet,
   WalletConnectionType,
-} from '../helpers/bitcoinFeatures';
+} from '../helpers/bitcoinWalletUtils';
 
 const BITCOIN_MAINNET_ENDPOINT = 'https://api.mainnet.bitcoin.com';
 

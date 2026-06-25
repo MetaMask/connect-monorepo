@@ -2573,7 +2573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@exodus/bitcoin-wallet-standard@npm:^0.0.0":
+"@exodus/bitcoin-wallet-standard@npm:0.0.0":
   version: 0.0.0
   resolution: "@exodus/bitcoin-wallet-standard@npm:0.0.0"
   dependencies:
@@ -3957,17 +3957,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/bitcoin-wallet-standard@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@metamask/bitcoin-wallet-standard@npm:0.2.0"
+"@metamask/bitcoin-wallet-standard@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@metamask/bitcoin-wallet-standard@npm:1.2.0"
   dependencies:
-    "@exodus/bitcoin-wallet-standard": "npm:^0.0.0"
-    "@wallet-standard/base": "npm:^1.1.0"
-    "@wallet-standard/features": "npm:^1.1.0"
-    "@wallet-standard/wallet": "npm:^1.1.0"
-    bs58: "npm:^6.0.0"
-    jsontokens: "npm:^4.0.1"
-  checksum: 10/e5429074cf8ab4b17af419c3842febb105e415d876efc44c9cd0a0c42d1213f6cae8592b5a3d13fa64fa2290bd5bb831734854680919d2ea14f9d6106ecd4ac6
+    "@exodus/bitcoin-wallet-standard": "npm:0.0.0"
+    "@metamask/multichain-api-client": "npm:0.12.0"
+    "@wallet-standard/base": "npm:1.1.0"
+    "@wallet-standard/features": "npm:1.1.0"
+    "@wallet-standard/wallet": "npm:1.1.0"
+  checksum: 10/319fb734e92038a0fd3bf4b627abc378c973b0296f0ebdf9afe76fff6156897c449417083282ba59c48a49deb5b82e925d592ffcc9feb2e856f96d5c2c6f03dd
   languageName: node
   linkType: hard
 
@@ -3980,6 +3979,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "npm:^2.0.0"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.4"
+    "@metamask/bitcoin-wallet-standard": "npm:^1.2.0"
     "@metamask/chain-agnostic-permission": "npm:^1.2.2"
     "@metamask/connect-evm": "workspace:^"
     "@metamask/connect-multichain": "workspace:^"
@@ -4051,7 +4051,7 @@ __metadata:
   resolution: "@metamask/connect-bitcoin@workspace:packages/connect-bitcoin"
   dependencies:
     "@metamask/auto-changelog": "npm:^3.4.4"
-    "@metamask/bitcoin-wallet-standard": "npm:^0.2.0"
+    "@metamask/bitcoin-wallet-standard": "npm:^1.2.0"
     "@metamask/connect-multichain": "workspace:^"
     "@types/jsdom": "npm:^21.1.7"
     "@vitest/coverage-v8": "npm:^3.2.4"
@@ -4150,7 +4150,7 @@ __metadata:
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/mobile-wallet-protocol-core": "npm:^0.4.0"
     "@metamask/mobile-wallet-protocol-dapp-client": "npm:^0.3.0"
-    "@metamask/multichain-api-client": "npm:^0.10.1"
+    "@metamask/multichain-api-client": "npm:^0.12.0"
     "@metamask/multichain-ui": "workspace:^"
     "@metamask/onboarding": "npm:^1.0.1"
     "@metamask/rpc-errors": "npm:^7.0.3"
@@ -4470,10 +4470,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/multichain-api-client@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "@metamask/multichain-api-client@npm:0.10.1"
-  checksum: 10/adedb90f433cd619eee54943197dc32eb30e461173e928ea698ec70bf8c6780d9ac0bb9b12a22a17f984170841c071d228aa49e6988d5060e8a30e99c433a8f5
+"@metamask/multichain-api-client@npm:0.12.0, @metamask/multichain-api-client@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "@metamask/multichain-api-client@npm:0.12.0"
+  checksum: 10/79f7b2e53cae25fb825a825650b98bbedf4d700b82b87a4df90c7e5ae62eb1aa8d3089fcdeaa66b104d737fe1ade93f202eae1b2599346599fccbc62d046a5fa
   languageName: node
   linkType: hard
 
@@ -8716,7 +8716,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wallet-standard/base@npm:^1.0.1, @wallet-standard/base@npm:^1.1.0":
+"@wallet-standard/base@npm:1.1.0, @wallet-standard/base@npm:^1.0.1, @wallet-standard/base@npm:^1.1.0":
   version: 1.1.0
   resolution: "@wallet-standard/base@npm:1.1.0"
   checksum: 10/11dbb8ed80566265916ab193ad5eab1585d55996781a88039d2bc4480428b1e778901b2dcff3e688dcac7de45e8a9272026f37f07f1e75168caff581906c5079
@@ -8748,7 +8748,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wallet-standard/features@npm:^1.0.3, @wallet-standard/features@npm:^1.1.0":
+"@wallet-standard/features@npm:1.1.0, @wallet-standard/features@npm:^1.0.3, @wallet-standard/features@npm:^1.1.0":
   version: 1.1.0
   resolution: "@wallet-standard/features@npm:1.1.0"
   dependencies:
@@ -8757,7 +8757,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wallet-standard/wallet@npm:^1.1.0":
+"@wallet-standard/wallet@npm:1.1.0, @wallet-standard/wallet@npm:^1.1.0":
   version: 1.1.0
   resolution: "@wallet-standard/wallet@npm:1.1.0"
   dependencies:
@@ -18387,7 +18387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsontokens@npm:4.0.1, jsontokens@npm:^4.0.1":
+"jsontokens@npm:4.0.1":
   version: 4.0.1
   resolution: "jsontokens@npm:4.0.1"
   dependencies:

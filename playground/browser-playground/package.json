@@ -52,6 +52,9 @@
       "last 1 safari version"
     ]
   },
+  "dependencies": {
+    "@metamask/bitcoin-wallet-standard": "^1.2.0"
+  },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
     "@lavamoat/allow-scripts": "^3.0.4",
