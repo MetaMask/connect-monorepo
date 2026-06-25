@@ -203,6 +203,17 @@ async function bumpPlaygroundIfNeeded(
 }
 
 /**
+ * Escapes regular-expression metacharacters so a string can be safely embedded
+ * in a dynamically-constructed `RegExp`.
+ *
+ * @param value - The raw string to escape.
+ * @returns The string with all regex metacharacters escaped.
+ */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
+
+/**
  * Updates the CHANGELOG.md file for a playground package.
  *
  * @param playgroundPath - The path to the playground package.
@@ -238,7 +249,7 @@ ${depsList}
 
   // Update the links at the bottom
   const unreleasedLinkPattern = new RegExp(
-    `\\[Unreleased\\]: (https://github\\.com/MetaMask/metamask-connect/compare/${packageName.replace(/\//gu, '\\/')}@)[\\d.]+\\.\\.\\.HEAD`,
+    `\\[Unreleased\\]: (https://github\\.com/MetaMask/metamask-connect/compare/${escapeRegExp(packageName)}@)[\\d.]+\\.\\.\\.HEAD`,
     'u',
   );
 
