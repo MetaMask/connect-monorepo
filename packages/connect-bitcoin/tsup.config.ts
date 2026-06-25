@@ -1,13 +1,30 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type -- Tsup config convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 
 import { defineConfig } from 'tsup';
 
-import pkg from './package.json';
+import packageJson from './package.json';
+import { resolveWorkspaceRange } from '../../scripts/resolve-workspace-range';
+import multichainPackageJson from '../connect-multichain/package.json';
 
-const deps = Object.keys((pkg as any).dependencies ?? {});
-const peerDeps = Object.keys((pkg as any).peerDependencies ?? {});
+const pkg: any = packageJson as any;
+const multichainPkg: any = multichainPackageJson as any;
+
+const deps = Object.keys(pkg.dependencies ?? {});
+const peerDeps = Object.keys(pkg.peerDependencies ?? {});
 const external = [...deps, ...peerDeps];
-const entryName = (pkg as any).name.replace('@metamask/', '');
+const entryName = pkg.name.replace('@metamask/', '');
+
+const multichainPeerRange = resolveWorkspaceRange(
+  pkg.dependencies?.['@metamask/connect-multichain'],
+  multichainPkg.version,
+);
+
+const versionDefine = {
+  __PACKAGE_VERSION__: JSON.stringify(pkg.version),
+  __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__:
+    JSON.stringify(multichainPeerRange),
+};
 
 export default defineConfig([
   // Browser ESM build
@@ -22,6 +39,7 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: versionDefine,
     esbuildOptions: (options) => {
       options.platform = 'browser';
       options.mainFields = ['browser', 'module', 'main'];
@@ -44,6 +62,7 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: versionDefine,
     esbuildOptions: (options) => {
       options.platform = 'node';
       options.mainFields = ['module', 'main'];
@@ -66,6 +85,7 @@ export default defineConfig([
     sourcemap: true,
     external,
     tsconfig: './tsconfig.json',
+    define: versionDefine,
     esbuildOptions: (options) => {
       options.platform = 'node';
       options.mainFields = ['module', 'main'];

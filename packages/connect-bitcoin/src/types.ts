@@ -28,7 +28,10 @@ export type BitcoinSupportedNetworks = Partial<Record<BitcoinNetwork, string>>;
  *
  * Derived from MultichainOptions to ensure consistency with the core SDK.
  */
-export type BitcoinConnectOptions = Pick<MultichainOptions, 'dapp'> & {
+export type BitcoinConnectOptions = Pick<
+  MultichainOptions,
+  'dapp' | 'analytics'
+> & {
   /**
    * Optional API configuration.
    * Maps network names (mainnet, devnet, testnet) to RPC URLs.
