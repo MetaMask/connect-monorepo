@@ -48,7 +48,7 @@ export type ConnectionRequest = {
  * appear only when their client is instantiated.
  */
 export type ConnectVersions = { 'connect-multichain': string } & Partial<
-  Record<'connect-evm' | 'connect-solana', string>
+  Record<'connect-bitcoin' | 'connect-evm' | 'connect-solana', string>
 >;
 
 export type AnalyticsOptions = {
