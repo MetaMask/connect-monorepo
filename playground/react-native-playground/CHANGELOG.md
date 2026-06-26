@@ -7,8 +7,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1]
+
 ### Changed
 
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.1.0
+  - @metamask/connect-multichain@1.1.0
+
+## [0.5.0]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.0.0
+  - @metamask/connect-multichain@1.0.0
+
+## [0.4.5]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.4.0
+  - @metamask/connect-multichain@0.15.0
+
+## [0.4.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.1
+
+## [0.4.3]
+
+### Added
+
+- Add network checkboxes for HyperEVM Mainnet (`eip155:999`), MegaETH Mainnet (`eip155:4326`), Monad Mainnet (`eip155:143`), Sei Mainnet (`eip155:1329`), and Tempo Mainnet (`eip155:4217`) to the multichain connect form ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.0
+  - @metamask/connect-multichain@0.14.0
+
+## [0.4.2]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.2.0
+  - @metamask/connect-multichain@0.13.0
+
+## [0.4.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.1.0
+  - @metamask/connect-multichain@0.13.0
+
+## [0.4.0]
+
+### Changed
+
+- Update wagmi `metamask-connector` to unwrap `.signature` / `.result` from the new `connectAndSign` / `connectWith` return values ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.0.0
+  - @metamask/connect-solana@1.0.0
+
+## [0.3.6]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.2
+  - @metamask/connect-multichain@0.12.1
+
+## [0.3.5]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.1
+
+## [0.3.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.0
+
+## [0.3.3]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.10.0
+  - @metamask/connect-multichain@0.12.0
+
+## [0.3.2]
+
+### Changed
+
+- Bump workspace dependencies: @metamask/connect-evm@0.9.1, @metamask/connect-multichain@0.11.1
 - Bump wagmi from `^2.19.2` to `^3.5.0` and apply v3 migration changes: use `useConnectors()` instead of `useConnect().connectors`, `useChains()` instead of `useSwitchChain().chains`, and rename `useAccount` to `useConnection` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@wagmi/core` from `^2.22.1` to `^3.4.0` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@tanstack/react-query` from `>=5.45.1` to `^5.90.21` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
@@ -95,7 +196,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.5.1...HEAD
+[0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.5.0...@metamask/react-native-playground@0.5.1
+[0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.5...@metamask/react-native-playground@0.5.0
+[0.4.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.4...@metamask/react-native-playground@0.4.5
+[0.4.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.3...@metamask/react-native-playground@0.4.4
+[0.4.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.2...@metamask/react-native-playground@0.4.3
+[0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.1...@metamask/react-native-playground@0.4.2
+[0.4.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.4.0...@metamask/react-native-playground@0.4.1
+[0.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.6...@metamask/react-native-playground@0.4.0
+[0.3.6]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.5...@metamask/react-native-playground@0.3.6
+[0.3.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.4...@metamask/react-native-playground@0.3.5
+[0.3.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.3...@metamask/react-native-playground@0.3.4
+[0.3.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.2...@metamask/react-native-playground@0.3.3
+[0.3.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.1...@metamask/react-native-playground@0.3.2
 [0.3.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.3.0...@metamask/react-native-playground@0.3.1
 [0.3.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.2.1...@metamask/react-native-playground@0.3.0
 [0.2.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/react-native-playground@0.2.0...@metamask/react-native-playground@0.2.1

@@ -39,6 +39,18 @@ class Sender<T> {
     this.schedule();
   }
 
+  /**
+   * Clears queued items and cancels the scheduled flush.
+   */
+  public clear(): void {
+    this.batch = [];
+    this.currentTimeoutMs = this.baseTimeoutMs;
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+  }
+
   private schedule(): void {
     // If the batch is not full and there is no scheduled flush, schedule a flush
     if (this.batch.length > 0 && !this.timeoutId) {

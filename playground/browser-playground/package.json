@@ -1,6 +1,6 @@
 {
   "name": "@metamask/browser-playground",
-  "version": "0.5.1",
+  "version": "0.8.1",
   "description": "A browser test dapp for multichain api",
   "keywords": [
     "MetaMask",
@@ -24,6 +24,7 @@
     "build/"
   ],
   "scripts": {
+    "analytics:echo": "node scripts/analytics-echo-server.mjs",
     "build": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco build",
     "build:docs": "typedoc",
     "changelog:format": "../../scripts/format-changelog.sh @metamask/browser-playground",
@@ -36,7 +37,8 @@
     "since-latest-release": "../../scripts/since-latest-release.sh",
     "start": "yarn copy-wagmi-connector && DISABLE_ESLINT_PLUGIN=true craco start",
     "test": "echo \"No test specified\"",
-    "test:verbose": "yarn test"
+    "test:unit": "react-scripts test --watchAll=false",
+    "test:verbose": "yarn test:unit --verbose"
   },
   "browserslist": {
     "production": [
@@ -103,7 +105,6 @@
     "viem": "2.*",
     "wagmi": "^3.5.0"
   },
-  "packageManager": "yarn@4.1.1",
   "engines": {
     "node": ">=20.19.0"
   },

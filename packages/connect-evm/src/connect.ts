@@ -1,9 +1,7 @@
 /* eslint-disable no-restricted-syntax -- Private class properties use established patterns */
-/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ is an esbuild define convention */
+/* eslint-disable @typescript-eslint/naming-convention -- __PACKAGE_VERSION__ and __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ are esbuild define conventions */
 import { analytics } from '@metamask/analytics';
-import { parseScopeString } from '@metamask/chain-agnostic-permission';
 import type {
-  ConnectionStatus,
   MultichainCore,
   MultichainOptions,
   Scope,
@@ -16,8 +14,10 @@ import {
   TransportType,
 } from '@metamask/connect-multichain';
 import { hexToNumber } from '@metamask/utils';
+import { satisfies } from 'semver';
 
-import { IGNORED_METHODS } from './constants';
+import { CONNECT_EVM_SESSION_PROPERTIES, IGNORED_METHODS } from './constants';
+import { EIP6963ProviderAnnouncer } from './eip6963';
 import { enableDebug, logger } from './logger';
 import { EIP1193Provider } from './provider';
 import type {
@@ -30,7 +30,11 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
+import {
+  getEthAccounts,
+  getPermittedEthChainIds,
+  parseScopeString,
+} from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -40,11 +44,22 @@ import {
   validSupportedChainsUrls,
 } from './utils/type-guards';
 
-// Value substitued by tsup at build time
+// Values substituted by tsup at build time
 declare const __PACKAGE_VERSION__: string | undefined;
+declare const __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__: string | undefined;
 
 const DEFAULT_CHAIN_ID = '0x1';
 const CHAIN_STORE_KEY = 'cache_eth_chainId';
+
+/**
+ * Checks whether dapp-side analytics are enabled for the multichain core.
+ *
+ * @param options - Current multichain options.
+ * @returns Whether analytics events should be collected and sent.
+ */
+function isAnalyticsEnabled(options: MultichainOptions | undefined): boolean {
+  return options?.analytics?.enabled !== false;
+}
 
 /** The options for the connect method */
 type ConnectOptions = {
@@ -54,6 +69,81 @@ type ConnectOptions = {
   forceRequest?: boolean;
   /** All available chain IDs in the dapp in hex format */
   chainIds?: Hex[];
+};
+
+type RequestedPermission = {
+  id: string;
+  parentCapability: 'eth_accounts' | 'endowment:permitted-chains';
+  invoker: string;
+  caveats: {
+    type: 'restrictReturnedAccounts' | 'restrictNetworkSwitching';
+    value: Address[] | Hex[];
+  }[];
+  date: number;
+};
+
+const createPermissionId = (): string => {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+};
+
+const getDappInvoker = (options: MultichainOptions): string => {
+  const { name, nativeScheme, url: dappUrl } = options.dapp;
+  const fallbackInvoker = nativeScheme ?? name;
+
+  if (!dappUrl) {
+    return fallbackInvoker;
+  }
+
+  try {
+    const { origin } = new URL(dappUrl);
+    return origin === 'null' ? fallbackInvoker : origin;
+  } catch {
+    return fallbackInvoker;
+  }
+};
+
+const getRequestedPermissions = ({
+  accounts,
+  chainIds,
+  invoker,
+}: {
+  accounts: Address[];
+  chainIds: Hex[];
+  invoker: string;
+}): RequestedPermission[] => {
+  const id = createPermissionId();
+  const date = Date.now();
+
+  return [
+    {
+      id,
+      parentCapability: 'eth_accounts',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictReturnedAccounts',
+          value: accounts,
+        },
+      ],
+      date,
+    },
+    {
+      id,
+      parentCapability: 'endowment:permitted-chains',
+      invoker,
+      caveats: [
+        {
+          type: 'restrictNetworkSwitching',
+          value: chainIds,
+        },
+      ],
+      date,
+    },
+  ];
 };
 
 export type ConnectEvmStatus = 'disconnected' | 'connected' | 'connecting';
@@ -92,6 +182,9 @@ export class MetamaskConnectEVM {
 
   /** An instance of the EIP-1193 provider interface */
   readonly #provider: EIP1193Provider;
+
+  /** Handles EIP-6963 discovery announcements for the provider */
+  readonly #eip6963Announcer: EIP6963ProviderAnnouncer;
 
   /** The session scopes currently permitted */
   #sessionScopes: SessionData['sessionScopes'] = {};
@@ -134,6 +227,7 @@ export class MetamaskConnectEVM {
       core,
       this.#requestInterceptor.bind(this),
     );
+    this.#eip6963Announcer = new EIP6963ProviderAnnouncer(this.#provider);
 
     this.#eventHandlers = eventHandlers;
 
@@ -172,7 +266,13 @@ export class MetamaskConnectEVM {
     options: MetamaskConnectEVMOptions,
   ): Promise<MetamaskConnectEVM> {
     const instance = new MetamaskConnectEVM(options);
-    await instance.#core.emitSessionChanged();
+    let session;
+    try {
+      session = await instance.#core.provider.getSession();
+    } catch {
+      session = { sessionScopes: {} };
+    }
+    await instance.#onSessionChanged(session);
     return instance;
   }
 
@@ -220,6 +320,10 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -247,6 +351,10 @@ export class MetamaskConnectEVM {
     params: unknown[],
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -276,6 +384,10 @@ export class MetamaskConnectEVM {
     error: unknown,
   ): Promise<void> {
     const coreOptions = this.#getCoreOptions();
+    if (!isAnalyticsEnabled(coreOptions)) {
+      return;
+    }
+
     try {
       const invokeOptions = this.#createInvokeOptions(method, scope, params);
       const props = await getWalletActionAnalyticsProperties(
@@ -387,7 +499,7 @@ export class MetamaskConnectEVM {
       await this.#core.connect(
         caipChainIds as Scope[],
         caipAccountIds as CaipAccountId[],
-        undefined,
+        CONNECT_EVM_SESSION_PROPERTIES,
         forceRequest,
       );
 
@@ -409,7 +521,7 @@ export class MetamaskConnectEVM {
    * @param options - The connection options
    * @param options.message - The message to sign after connecting
    * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
-   * @returns A promise that resolves with the signature
+   * @returns A promise that resolves with the connected accounts, chainId, and signature
    * @throws Error if the selected account is not available after timeout
    */
   async connectAndSign({
@@ -418,12 +530,12 @@ export class MetamaskConnectEVM {
   }: {
     message: string;
     chainIds?: Hex[];
-  }): Promise<string> {
+  }): Promise<{ accounts: Address[]; chainId: Hex; signature: string }> {
     const { accounts, chainId } = await this.connect({
       chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
     });
 
-    const result = (await this.#provider.request({
+    const signature = (await this.#provider.request({
       method: 'personal_sign',
       params: [accounts[0], message],
     })) as string;
@@ -431,10 +543,10 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectAndSign?.({
       accounts,
       chainId,
-      signResponse: result,
+      signature,
     });
 
-    return result;
+    return { accounts, chainId, signature };
   }
 
   /**
@@ -446,7 +558,7 @@ export class MetamaskConnectEVM {
    * @param [options.chainIds] - Optional hex chain IDs to connect to (defaults to ethereum mainnet if not provided)
    * @param [options.account] - Optional specific account to connect to
    * @param [options.forceRequest] - Whether to force a request regardless of an existing session
-   * @returns A promise that resolves with the result of the method invocation
+   * @returns A promise that resolves with the connected accounts, chainId, and the result of the method invocation
    * @throws Error if the selected account is not available after timeout (for methods that require an account)
    */
   async connectWith({
@@ -461,7 +573,7 @@ export class MetamaskConnectEVM {
     chainIds?: Hex[];
     account?: string | undefined;
     forceRequest?: boolean;
-  }): Promise<unknown> {
+  }): Promise<{ accounts: Address[]; chainId: Hex; result: unknown }> {
     const { accounts: connectedAccounts, chainId: connectedChainId } =
       await this.connect({
         chainIds: chainIds ?? [DEFAULT_CHAIN_ID],
@@ -480,10 +592,10 @@ export class MetamaskConnectEVM {
     this.#eventHandlers?.connectWith?.({
       accounts: connectedAccounts,
       chainId: connectedChainId,
-      connectWithResponse: result,
+      result,
     });
 
-    return result;
+    return { accounts: connectedAccounts, chainId: connectedChainId, result };
   }
 
   /**
@@ -554,19 +666,13 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_switchEthereumChain',
         params,
       });
 
-      // When using the MWP transport, the error is returned instead of thrown,
-      // so we force it into the catch block here.
-      const resultWithError = result as { error?: { message: string } };
-      if (resultWithError?.error) {
-        throw new Error(resultWithError.error.message);
-      }
-
       await this.#trackWalletActionSucceeded(method, scope, params);
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -574,8 +680,10 @@ export class MetamaskConnectEVM {
       return Promise.resolve();
     } catch (error) {
       await this.#trackWalletActionFailed(method, scope, params, error);
-      // Fallback to add the chain if its not configured in the wallet.
-      if ((error as Error).message.includes('Unrecognized chain ID')) {
+      const isChainMissingInWallet = (error as Error).message.includes(
+        'Unrecognized chain ID',
+      );
+      if (isChainMissingInWallet && chainConfiguration) {
         return this.#addEthereumChain(chainConfiguration);
       }
       throw error;
@@ -617,17 +725,40 @@ export class MetamaskConnectEVM {
         request.method === 'wallet_requestPermissions';
 
       const { method, params } = request;
-      const initiallySelectedChainId = DEFAULT_CHAIN_ID;
-      const scope: Scope = `eip155:${initiallySelectedChainId}`;
+      const permitted = getPermittedEthChainIds(this.#sessionScopes);
+      if (permitted.length === 0) {
+        permitted.push(DEFAULT_CHAIN_ID);
+      }
+
+      const selected = this.#provider.selectedChainId;
+      const preferred =
+        selected && permitted.includes(selected) ? selected : permitted[0];
+
+      const chainIds = [
+        preferred,
+        ...permitted.filter((id) => id !== preferred),
+      ];
+
+      const scope: Scope = `eip155:${hexToNumber(preferred)}`;
 
       await this.#trackWalletActionRequested(method, scope, params);
 
       try {
         const result = await this.connect({
-          chainIds: [initiallySelectedChainId],
+          chainIds,
           forceRequest: shouldForceConnectionRequest,
         });
         await this.#trackWalletActionSucceeded(method, scope, params);
+        if (request.method === 'eth_requestAccounts') {
+          return result.accounts;
+        }
+        if (request.method === 'wallet_requestPermissions') {
+          return getRequestedPermissions({
+            accounts: result.accounts,
+            chainIds: getPermittedEthChainIds(this.#sessionScopes),
+            invoker: getDappInvoker(this.#getCoreOptions()),
+          });
+        }
         return result;
       } catch (error) {
         await this.#trackWalletActionFailed(method, scope, params, error);
@@ -636,16 +767,21 @@ export class MetamaskConnectEVM {
     }
 
     if (isSwitchChainRequest(request)) {
-      return this.switchChain({
+      await this.switchChain({
         chainId: request.params[0].chainId as Hex,
       });
+      return null;
     }
 
     if (isAddChainRequest(request)) {
-      return this.#addEthereumChain(request.params[0]);
+      await this.#addEthereumChain(request.params[0]);
+      return null;
     }
 
     if (isAccountsRequest(request)) {
+      if (request.method === 'eth_coinbase') {
+        return this.#provider.selectedAccount ?? null;
+      }
       return this.#provider.accounts;
     }
 
@@ -695,11 +831,12 @@ export class MetamaskConnectEVM {
 
     try {
       const result = await this.#request({
+        scope,
         method: 'wallet_addEthereumChain',
         params,
       });
 
-      if ((result as { result: unknown }).result === null) {
+      if (result === null) {
         // if result is successful we eagerly call onChainChanged to update the provider's selected chain ID.
         await this.#cacheChainId(chainId);
         this.#onChainChanged(chainId);
@@ -712,19 +849,31 @@ export class MetamaskConnectEVM {
   }
 
   /**
-   * Submits a request to the EIP-1193 provider
+   * Submits an EIP-1193 passthrough request to the wallet via the multichain
+   * client. The multichain `invokeMethod` dispatcher recognizes the method as a
+   * passthrough and forwards the raw `{ method, params }` payload to the
+   * underlying transport's `sendEip1193Message`, bypassing the
+   * `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC envelope
+   * before returning, so the resolved value is the raw `result` (e.g. `null` for
+   * a successful `wallet_switchEthereumChain`, an accounts array for
+   * `eth_accounts`).
    *
-   * @param request - The request object containing the method and params
+   * @param request - The request object containing the scope, method, and params
+   * @param request.scope - CAIP scope used for analytics/routing context
    * @param request.method - The method to request
    * @param request.params - The parameters to pass to the method
-   * @returns The result of the request
+   * @returns The wallet's raw RPC result (envelope already unwrapped).
    */
   async #request(request: {
+    scope: Scope;
     method: string;
     params: unknown[];
   }): Promise<unknown> {
     logger('direct request to metamask-provider called', request);
-    const result = this.#core.transport.sendEip1193Message(request);
+    const result = this.#core.invokeMethod({
+      scope: request.scope,
+      request: { method: request.method, params: request.params },
+    });
     if (
       request.method === 'wallet_addEthereumChain' ||
       request.method === 'wallet_switchEthereumChain'
@@ -759,12 +908,16 @@ export class MetamaskConnectEVM {
     } else {
       let initialAccounts: Address[] = [];
       if (this.#core.status === 'connected') {
-        const ethAccountsResponse =
-          await this.#core.transport.sendEip1193Message({
-            method: 'eth_accounts',
-            params: [],
-          });
-        initialAccounts = ethAccountsResponse.result as Address[];
+        // `eth_accounts` is registered as an EIP-1193 passthrough on the multichain
+        // client, so this routes through `transport.sendEip1193Message` rather than
+        // the `wallet_invokeMethod` envelope. The router unwraps the JSON-RPC
+        // envelope for passthrough methods and returns just the raw `result`
+        // value. Scope is informational here; the first permitted chain is used
+        // for analytics context.
+        initialAccounts = (await this.#core.invokeMethod({
+          scope: `eip155:${hexToNumber(hexPermittedChainIds[0])}` as Scope,
+          request: { method: 'eth_accounts', params: [] },
+        })) as Address[];
       } else {
         initialAccounts = getEthAccounts(this.#sessionScopes);
       }
@@ -789,8 +942,8 @@ export class MetamaskConnectEVM {
     }
     logger('handler: chainChanged', { chainId });
     this.#provider.selectedChainId = chainId;
-    this.#eventHandlers?.chainChanged?.(chainId);
     this.#provider.emit('chainChanged', chainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
   }
 
   /**
@@ -831,37 +984,47 @@ export class MetamaskConnectEVM {
       accounts,
     };
 
-    if (this.#status !== 'connected') {
-      this.#status = 'connected';
-      this.#provider.emit('connect', data);
-      this.#eventHandlers?.connect?.(data);
-
-      this.#removeNotificationHandler?.();
-
-      const onAccountsChanged = (accs: string[]): void => {
-        logger('core-event: accountsChanged', accs);
-        this.#onAccountsChanged(accs as Address[]);
-      };
-
-      const onChainChanged = (chainChanged: { chainId: string }): void => {
-        logger('core-event: chainChanged', chainChanged.chainId);
-        this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
-          logger('Error caching chainId in notification handler', error);
-        });
-        this.#onChainChanged(chainChanged.chainId as Hex);
-      };
-
-      this.#core.on('metamask_accountsChanged', onAccountsChanged);
-      this.#core.on('metamask_chainChanged', onChainChanged);
-
-      this.#removeNotificationHandler = (): void => {
-        this.#core.off('metamask_accountsChanged', onAccountsChanged);
-        this.#core.off('metamask_chainChanged', onChainChanged);
-      };
+    if (this.#status === 'connected') {
+      this.#onChainChanged(chainId);
+      this.#onAccountsChanged(accounts);
+      return;
     }
 
-    this.#onChainChanged(chainId);
-    this.#onAccountsChanged(accounts);
+    this.#provider.selectedChainId = chainId;
+    this.#provider.accounts = accounts;
+
+    this.#status = 'connected';
+    this.#provider.emit('connect', data);
+    this.#eventHandlers?.connect?.(data);
+
+    this.#provider.emit('chainChanged', chainId);
+    this.#eventHandlers?.chainChanged?.(chainId);
+
+    this.#provider.emit('accountsChanged', accounts);
+    this.#eventHandlers?.accountsChanged?.(accounts);
+
+    this.#removeNotificationHandler?.();
+
+    const onAccountsChanged = (accs: string[]): void => {
+      logger('core-event: accountsChanged', accs);
+      this.#onAccountsChanged(accs as Address[]);
+    };
+
+    const onChainChanged = (chainChanged: { chainId: string }): void => {
+      logger('core-event: chainChanged', chainChanged.chainId);
+      this.#cacheChainId(chainChanged.chainId as Hex).catch((error) => {
+        logger('Error caching chainId in notification handler', error);
+      });
+      this.#onChainChanged(chainChanged.chainId as Hex);
+    };
+
+    this.#core.on('metamask_accountsChanged', onAccountsChanged);
+    this.#core.on('metamask_chainChanged', onChainChanged);
+
+    this.#removeNotificationHandler = (): void => {
+      this.#core.off('metamask_accountsChanged', onAccountsChanged);
+      this.#core.off('metamask_chainChanged', onChainChanged);
+    };
   }
 
   /**
@@ -904,6 +1067,17 @@ export class MetamaskConnectEVM {
    */
   getProvider(): EIP1193Provider {
     return this.#provider;
+  }
+
+  /**
+   * Announces the EIP-1193 provider through EIP-6963 wallet discovery.
+   *
+   * This is a no-op when a native MetaMask EIP-6963 provider has already
+   * announced, or when running outside a browser environment. The first call
+   * may take up to 300 ms while native providers are requested.
+   */
+  async announceProvider(): Promise<void> {
+    await this.#eip6963Announcer.announce();
   }
 
   /**
@@ -957,8 +1131,8 @@ export class MetamaskConnectEVM {
    *
    * @returns The current connection status
    */
-  get status(): ConnectionStatus {
-    return this.#core.status;
+  get status(): ConnectEvmStatus {
+    return this.#status;
   }
 }
 
@@ -969,6 +1143,7 @@ export class MetamaskConnectEVM {
  * @param options.dapp - Dapp identification and branding settings
  * @param options.api - API configuration including read-only RPC map
  * @param options.api.supportedNetworks - A map of hex chain IDs to RPC URLs for read-only requests
+ * @param [options.analytics.enabled] - Whether to enable dapp-side analytics (defaults to true)
  * @param [options.analytics.integrationType] - Integration type for analytics
  * @param [options.ui] - UI configuration options
  * @param [options.ui.headless] - Whether to run without UI
@@ -977,11 +1152,11 @@ export class MetamaskConnectEVM {
  * @param [options.mobile] - Mobile configuration options
  * @param [options.mobile.preferredOpenLink] - Custom handler for opening deeplinks (useful for React Native, etc.)
  * @param [options.mobile.useDeeplink] - Whether to use native deeplinks instead of universal links
- * @param [options.transport] - Transport configuration (e.g., extensionId, notification handler)
+ * @param [options.transport] - Transport configuration (e.g., extensionId)
  * @param [options.transport.extensionId] - Extension ID for browser extension transport
- * @param [options.transport.onNotification] - Callback for receiving transport notifications
  * @param [options.eventHandlers] - Event handlers for the Metamask Connect/EVM layer
  * @param [options.debug] - Enable debug logging
+ * @param [options.skipAutoAnnounce] - Skip automatic EIP-6963 provider announcement
  * @returns The Metamask-Connect EVM client instance
  */
 export async function createEVMClient(
@@ -993,6 +1168,7 @@ export async function createEVMClient(
   } & {
     eventHandlers?: Partial<EventHandlers>;
     debug?: boolean;
+    skipAutoAnnounce?: boolean;
     api: {
       supportedNetworks: Record<Hex, string>;
     };
@@ -1032,6 +1208,7 @@ export async function createEVMClient(
         supportedNetworks: supportedNetworksCaipChainId,
       },
       analytics: {
+        ...(options.analytics ?? {}),
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         integrationType: options.analytics?.integrationType || 'direct',
       },
@@ -1045,11 +1222,34 @@ export async function createEVMClient(
       },
     });
 
-    return MetamaskConnectEVM.create({
+    const multichainClientPeerRange =
+      typeof __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__ === 'undefined'
+        ? 'unknown'
+        : __CONNECT_MULTICHAIN_PEER_VERSION_RANGE__;
+
+    if (
+      multichainClientPeerRange !== 'unknown' &&
+      multichainClientPeerRange !== '' &&
+      !satisfies(core.version, multichainClientPeerRange)
+    ) {
+      console.warn(
+        `@metamask/connect-evm expected @metamask/connect-multichain version ${multichainClientPeerRange}, but got ${core.version}. This may lead to unexpected behavior.`,
+      );
+    }
+
+    const client = await MetamaskConnectEVM.create({
       core,
       eventHandlers: options.eventHandlers,
       supportedNetworks: options.api.supportedNetworks,
     });
+
+    if (!options.skipAutoAnnounce) {
+      client.announceProvider().catch((error) => {
+        logger('EIP-6963 provider announcement failed', error);
+      });
+    }
+
+    return client;
   } catch (error) {
     console.error('Error creating Metamask Connect/EVM', error);
     throw error;

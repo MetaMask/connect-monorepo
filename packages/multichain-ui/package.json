@@ -1,7 +1,7 @@
 {
   "name": "@metamask/multichain-ui",
-  "version": "0.4.0",
-  "description": "MetaMask Connect Install Modal for Web",
+  "version": "0.4.1",
+  "description": "MetaMask Connect UI — install modal, OTP modal, and QR codes",
   "keywords": [
     "MetaMask",
     "Ethereum"

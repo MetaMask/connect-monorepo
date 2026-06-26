@@ -34,6 +34,14 @@ class Analytics {
     this.enabled = true;
   }
 
+  /**
+   * Disables analytics and drops queued events.
+   */
+  public disable(): void {
+    this.enabled = false;
+    this.sender.clear();
+  }
+
   public setGlobalProperty<K extends keyof MMConnectProperties>(
     key: K,
     value: MMConnectProperties[K],

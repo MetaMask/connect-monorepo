@@ -7,8 +7,150 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1]
+
 ### Changed
 
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.1.0
+  - @metamask/connect-multichain@1.1.0
+
+## [0.8.0]
+
+### Added
+
+- Add an EIP-6963 validation panel for observing provider announcements, dispatching `eip6963:requestProvider`, manually re-announcing the legacy EVM SDK provider, and distinguishing the MMConnect-managed provider from native/provider-discovery entries. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+
+### Changed
+
+- Opt the browser playground wagmi connector out of automatic EIP-6963 provider announcement to avoid duplicate MMConnect-managed announcements while validating the direct legacy EVM SDK path. ([#304](https://github.com/MetaMask/connect-monorepo/pull/304))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.0.0
+  - @metamask/connect-multichain@1.0.0
+
+### Fixed
+
+- Fixed Connected Network cards not appearing automatically after refresh ([#313](https://github.com/MetaMask/connect-monorepo/pull/313))
+
+## [0.7.5]
+
+### Added
+
+- Added an **MWP deeplink failure repros** collapsible panel (`MwpDeeplinkReproCard`) that surfaces one `metamask://connect/mwp?…` deeplink per failure branch in the mobile app's `ConnectionRegistry.handleConnectDeeplink`. Lets QA reproducibly trigger each branch (parse failures, internal-origin block, decompression mismatch, payload-too-large, etc.) without needing a misconfigured dapp, and acts as the verification surface for the Sentry coverage added in MetaMask/metamask-mobile#30343.
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.4.0
+  - @metamask/connect-multichain@0.15.0
+
+## [0.7.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.1
+
+## [0.7.3]
+
+### Added
+
+- Added an **Analytics test bench** collapsible panel with one button per `failure_reason` classifier branch, plus a local `yarn analytics:echo` server that stands in for the analytics endpoint. See the playground README for the manual-testing walkthrough. ([#290](https://github.com/MetaMask/connect-monorepo/pull/290))
+- Add network checkboxes for HyperEVM Mainnet (`eip155:999`), MegaETH Mainnet (`eip155:4326`), Monad Mainnet (`eip155:143`), Sei Mainnet (`eip155:1329`), and Tempo Mainnet (`eip155:4217`) to the multichain connect form ([#295](https://github.com/MetaMask/connect-monorepo/pull/295))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.3.0
+  - @metamask/connect-multichain@0.14.0
+
+## [0.7.2]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.2.0
+  - @metamask/connect-multichain@0.13.0
+
+## [0.7.1]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.1.0
+  - @metamask/connect-multichain@0.13.0
+
+## [0.7.0]
+
+### Changed
+
+- Update `LegacyEVMSDKProvider` to unwrap `.signature` from the new `connectAndSign` return value, which now returns `{ accounts, chainId, signature }` instead of a bare string ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
+- Update wagmi `metamask-connector` to unwrap `.signature` / `.result` from the new `connectAndSign` / `connectWith` return values ([#266](https://github.com/MetaMask/connect-monorepo/pull/266))
+- Use any Solana provider that announces itself as `MetaMask` instead of preferring `MetaMask Connect` ([#275](https://github.com/MetaMask/connect-monorepo/pull/275))
+- Bump workspace dependencies:
+  - @metamask/connect-evm@1.0.0
+  - @metamask/connect-solana@1.0.0
+
+## [0.6.6]
+
+### Added
+
+- Add `Content-Security-Policy` meta tag to simulate host-page CSP constraints during local testing ([#268](https://github.com/MetaMask/connect-monorepo/pull/268))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.2
+  - @metamask/connect-multichain@0.12.1
+
+## [0.6.5]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.1
+
+## [0.6.4]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.11.0
+
+## [0.6.3]
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@0.10.0
+  - @metamask/connect-multichain@0.12.0
+
+### Fixed
+
+- Fix `@metamask/connect/evm` import path to use `@metamask/connect-evm` directly ([#263](https://github.com/MetaMask/connect-monorepo/pull/263))
+
+## [0.6.2]
+
+### Fixed
+
+- Fix potential stale closure in `handleCheckboxChange` and unconditional `useEffect` on session change ([#257](https://github.com/MetaMask/connect-monorepo/pull/257))
+
+## [0.6.1]
+
+### Added
+
+- Add global `localhost` scopes ([#250](https://github.com/MetaMask/connect-monorepo/pull/250))
+
+### Changed
+
+- Bump workspace dependencies: @metamask/connect-evm@0.9.1, @metamask/connect-multichain@0.11.1
+
+## [0.6.0]
+
+### Changed
+
+- Change LegacyEVM card's `sendTransaction` to have an address field and default it to the connected address ([#247](https://github.com/MetaMask/connect-monorepo/pull/247))
+- Add `localhost` to wagmi's configured chains ([#246](https://github.com/MetaMask/connect-monorepo/pull/246))
 - Bump wagmi from `^2.19.2` to `^3.5.0` and apply v3 migration changes: use `useConnectors()` instead of `useConnect().connectors`, `useChains()` instead of `useSwitchChain().chains`, and rename `useAccount` to `useConnection` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@wagmi/core` from `^2.22.1` to `^3.4.0` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
 - Bump `@tanstack/react-query` from `>=5.45.1` to `^5.90.21` ([#233](https://github.com/MetaMask/connect-monorepo/pull/233))
@@ -119,7 +261,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.8.1...HEAD
+[0.8.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.8.0...@metamask/browser-playground@0.8.1
+[0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.5...@metamask/browser-playground@0.8.0
+[0.7.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.4...@metamask/browser-playground@0.7.5
+[0.7.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.3...@metamask/browser-playground@0.7.4
+[0.7.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.2...@metamask/browser-playground@0.7.3
+[0.7.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.1...@metamask/browser-playground@0.7.2
+[0.7.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.0...@metamask/browser-playground@0.7.1
+[0.7.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.6...@metamask/browser-playground@0.7.0
+[0.6.6]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.5...@metamask/browser-playground@0.6.6
+[0.6.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.4...@metamask/browser-playground@0.6.5
+[0.6.4]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.3...@metamask/browser-playground@0.6.4
+[0.6.3]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.2...@metamask/browser-playground@0.6.3
+[0.6.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.1...@metamask/browser-playground@0.6.2
+[0.6.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.6.0...@metamask/browser-playground@0.6.1
+[0.6.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.1...@metamask/browser-playground@0.6.0
 [0.5.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.5.0...@metamask/browser-playground@0.5.1
 [0.5.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.2...@metamask/browser-playground@0.5.0
 [0.4.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.4.1...@metamask/browser-playground@0.4.2

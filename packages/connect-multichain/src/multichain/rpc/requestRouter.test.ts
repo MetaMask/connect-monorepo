@@ -1,6 +1,9 @@
 /* eslint-disable id-length -- vitest alias */
 /* eslint-disable no-empty-function -- Empty mock functions */
+/* eslint-disable @typescript-eslint/unbound-method -- referencing the mocked `analytics.track` is intentional in spy assertions */
+/* eslint-disable @typescript-eslint/naming-convention -- analytics event properties are snake_case by schema convention */
 import { analytics } from '@metamask/analytics';
+import type { Json } from '@metamask/utils';
 import * as t from 'vitest';
 
 import type { RequestRouter } from './requestRouter';
@@ -31,6 +34,7 @@ t.describe('RequestRouter', () => {
     };
     mockTransport = {
       request: t.vi.fn(),
+      sendEip1193Message: t.vi.fn(),
     };
     mockRpcClient = {
       request: t.vi.fn(),
@@ -67,6 +71,38 @@ t.describe('RequestRouter', () => {
     t.vi.clearAllMocks();
     t.vi.resetAllMocks();
   });
+
+  const expectRpcInvokeMethodErr = async ({
+    actual,
+    reason,
+    rpcCode,
+    rpcMessage,
+    rpcData,
+  }: {
+    actual: Promise<unknown>;
+    reason: string;
+    rpcCode?: number;
+    rpcMessage?: string;
+    rpcData?: Json;
+  }): Promise<void> => {
+    let thrownError: unknown;
+    try {
+      await actual;
+    } catch (error) {
+      thrownError = error;
+    }
+
+    t.expect(thrownError).toBeInstanceOf(RPCInvokeMethodErr);
+    const rpcError = thrownError as RPCInvokeMethodErr;
+    t.expect(rpcError.code).toBe(RPCInvokeMethodErr.code);
+    t.expect(rpcError.message).toBe(
+      `RPCErr53: RPC Client invoke method reason (${reason})`,
+    );
+    t.expect(rpcError.reason).toBe(reason);
+    t.expect(rpcError.rpcCode).toBe(rpcCode);
+    t.expect(rpcError.rpcMessage).toBe(rpcMessage);
+    t.expect(rpcError.rpcData).toStrictEqual(rpcData);
+  };
 
   t.describe('invokeMethod', () => {
     t.describe(
@@ -109,76 +145,218 @@ t.describe('RequestRouter', () => {
         });
 
         t.it(
+          'should skip wallet action analytics when analytics is disabled',
+          async () => {
+            mockConfig.analytics = { ...mockConfig.analytics, enabled: false };
+            mockTransport.request.mockResolvedValue({ result: '0xsignature' });
+
+            await requestRouter.invokeMethod(baseOptions);
+
+            t.expect(analytics.track).not.toHaveBeenCalled();
+            t.expect(mockStorage.getAnonId).not.toHaveBeenCalled();
+          },
+        );
+
+        t.it(
           'should throw RPCInvokeMethodErr when transport request fails',
           async () => {
             mockTransport.request.mockRejectedValue(
               new Error('Transport error'),
             );
 
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toBeInstanceOf(RPCInvokeMethodErr);
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toThrow('Transport error');
-          },
-        );
-
-        t.it(
-          'should throw RPCInvokeMethodErr when response contains an error',
-          async () => {
-            mockTransport.request.mockResolvedValue({
-              error: { code: -32603, message: 'Internal error' },
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'Transport error',
             });
-
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toBeInstanceOf(RPCInvokeMethodErr);
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toThrow(
-                'RPC Request failed with code -32603: Internal error',
-              );
           },
         );
 
         t.it(
-          'should preserve the original RPC error code on RPCInvokeMethodErr when response contains an error',
+          'uses a coded cause message when normalizing a transport wrapper error',
           async () => {
+            const transportError = new Error('Transport failed') as Error & {
+              cause: { code: number; message: string };
+            };
+            transportError.cause = {
+              code: 4001,
+              message: 'User rejected the request',
+            };
+            mockTransport.request.mockRejectedValue(transportError);
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'User rejected the request',
+              rpcCode: 4001,
+              rpcMessage: 'User rejected the request',
+            });
+          },
+        );
+
+        t.it(
+          'falls back to the wrapper message for the reason but leaves rpcMessage unset when a coded cause has no message',
+          async () => {
+            const transportError = new Error('Transport failed') as Error & {
+              cause: { code: number };
+            };
+            transportError.cause = { code: 4001 };
+            mockTransport.request.mockRejectedValue(transportError);
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'Transport failed',
+              rpcCode: 4001,
+            });
+          },
+        );
+
+        t.it(
+          'uses a cause message for the reason but leaves rpcMessage unset when a top-level coded error has no message',
+          async () => {
+            const codedError = new Error() as Error & {
+              code: number;
+              cause: { message: string };
+            };
+            codedError.code = 4001;
+            codedError.cause = { message: 'User rejected the request' };
+            mockTransport.request.mockRejectedValue(codedError);
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'User rejected the request',
+              rpcCode: 4001,
+            });
+          },
+        );
+
+        t.it(
+          'preserves JSON-RPC error data from a wallet response',
+          async () => {
+            const rpcData = {
+              originalError: {
+                code: 3,
+                data: '0x08c379a0',
+                message: 'execution reverted: insufficient funds',
+              },
+            };
             mockTransport.request.mockResolvedValue({
               error: {
-                code: 4001,
-                message:
-                  'MetaMask Tx Signature: User denied transaction signature.',
+                code: -32000,
+                message: 'execution reverted',
+                data: rpcData,
               },
             });
 
-            await t
-              .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toSatisfy((error: RPCInvokeMethodErr) => {
-                return (
-                  error instanceof RPCInvokeMethodErr && error.rpcCode === 4001
-                );
-              });
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'execution reverted',
+              rpcCode: -32000,
+              rpcMessage: 'execution reverted',
+              rpcData,
+            });
           },
         );
 
         t.it(
-          'should preserve the original RPC error code when transport rejects with a coded error',
+          'walks nested causes to normalize wallet errors wrapped by transport layers',
           async () => {
-            const codedError = new Error(
-              'MetaMask Tx Signature: User denied transaction signature.',
-            ) as Error & { code: number };
-            codedError.code = 4001;
-            mockTransport.request.mockRejectedValue(codedError);
+            const rpcData = {
+              originalError: {
+                code: 3,
+                data: '0x08c379a0',
+                message: 'execution reverted: insufficient funds',
+              },
+            };
+            const transportError = new Error('Transport failed') as Error & {
+              cause: {
+                message: string;
+                cause: {
+                  code: number;
+                  message: string;
+                  data: typeof rpcData;
+                };
+              };
+            };
+            transportError.cause = {
+              message: 'Multichain API failed',
+              cause: {
+                code: -32000,
+                message: 'execution reverted',
+                data: rpcData,
+              },
+            };
+            mockTransport.request.mockRejectedValue(transportError);
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'execution reverted',
+              rpcCode: -32000,
+              rpcMessage: 'execution reverted',
+              rpcData,
+            });
+          },
+        );
+
+        t.it(
+          'preserves a primitive string rejection as the reason',
+          async () => {
+            mockTransport.request.mockRejectedValue('Transport string error');
+
+            await expectRpcInvokeMethodErr({
+              actual: requestRouter.invokeMethod(baseOptions),
+              reason: 'Transport string error',
+            });
+          },
+        );
+
+        t.it(
+          'passes through an existing RPCInvokeMethodErr unchanged',
+          async () => {
+            const rpcError = new RPCInvokeMethodErr(
+              'User rejected the request',
+              4001,
+              'User rejected the request',
+            );
+            mockTransport.request.mockRejectedValue(rpcError);
 
             await t
               .expect(requestRouter.invokeMethod(baseOptions))
-              .rejects.toSatisfy((error: RPCInvokeMethodErr) => {
-                return (
-                  error instanceof RPCInvokeMethodErr && error.rpcCode === 4001
-                );
+              .rejects.toBe(rpcError);
+          },
+        );
+
+        t.describe.each([
+          ['user rejection', 4001, 'User rejected the request'],
+          ['wallet internal error', -32603, 'Internal error'],
+        ] as const)(
+          'normalizes %s from transport-specific error shapes',
+          (_label, code, message) => {
+            t.it('normalizes a resolved JSON-RPC error response', async () => {
+              mockTransport.request.mockResolvedValue({
+                error: { code, message },
               });
+
+              await expectRpcInvokeMethodErr({
+                actual: requestRouter.invokeMethod(baseOptions),
+                reason: message,
+                rpcCode: code,
+                rpcMessage: message,
+              });
+            });
+
+            t.it('normalizes a rejected coded transport error', async () => {
+              const codedError = new Error(message) as Error & {
+                code: number;
+              };
+              codedError.code = code;
+              mockTransport.request.mockRejectedValue(codedError);
+
+              await expectRpcInvokeMethodErr({
+                actual: requestRouter.invokeMethod(baseOptions),
+                reason: message,
+                rpcCode: code,
+                rpcMessage: message,
+              });
+            });
           },
         );
       },
@@ -223,6 +401,214 @@ t.describe('RequestRouter', () => {
           method: 'wallet_invokeMethod',
           params: options,
         });
+      },
+    );
+  });
+
+  t.describe(
+    'when the request method is in `EIP1193_PASSTHROUGH_METHODS`',
+    () => {
+      t.it.each([
+        'wallet_addEthereumChain',
+        'wallet_switchEthereumChain',
+        'eth_accounts',
+      ])(
+        'forwards %s through transport.sendEip1193Message and returns the unwrapped `result` (bypasses wallet_invokeMethod)',
+        async (method) => {
+          const options: InvokeMethodOptions = {
+            scope: 'eip155:1' as Scope,
+            request: { method, params: [] as never },
+          };
+          // The transport hands back the full JSON-RPC envelope from the
+          // wallet; the router intentionally returns only the inner `result`
+          // for EIP-1193 passthrough methods (see `handleWithEip1193Passthrough`).
+          mockTransport.sendEip1193Message.mockResolvedValue({
+            id: 1,
+            jsonrpc: '2.0' as const,
+            result: ['0xabc'],
+          });
+
+          const result = await requestRouter.invokeMethod(options);
+
+          t.expect(result).toEqual(['0xabc']);
+          t.expect(mockTransport.sendEip1193Message).toHaveBeenCalledTimes(1);
+          t.expect(mockTransport.sendEip1193Message).toHaveBeenCalledWith({
+            method,
+            params: [],
+          });
+          t.expect(mockTransport.request).not.toHaveBeenCalled();
+        },
+      );
+
+      t.it(
+        'does not emit `mmconnect_wallet_action_*` analytics events for passthrough methods',
+        async () => {
+          const options: InvokeMethodOptions = {
+            scope: 'eip155:1' as Scope,
+            request: {
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x89' }] as never,
+            },
+          };
+          mockTransport.sendEip1193Message.mockResolvedValue({
+            id: 1,
+            jsonrpc: '2.0' as const,
+            result: null,
+          });
+
+          await requestRouter.invokeMethod(options);
+
+          t.expect(analytics.track).not.toHaveBeenCalled();
+        },
+      );
+
+      t.it(
+        'propagates wallet rejections from sendEip1193Message without wrapping them in RPCInvokeMethodErr',
+        async () => {
+          const options: InvokeMethodOptions = {
+            scope: 'eip155:1' as Scope,
+            request: {
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x89' }] as never,
+            },
+          };
+          const walletError = new Error(
+            'Unrecognized chain ID 0x89',
+          ) as Error & { code: number };
+          walletError.code = 4902;
+          mockTransport.sendEip1193Message.mockRejectedValue(walletError);
+
+          await t
+            .expect(requestRouter.invokeMethod(options))
+            .rejects.toMatchObject({
+              message: 'Unrecognized chain ID 0x89',
+              code: 4902,
+            });
+        },
+      );
+    },
+  );
+
+  t.describe('failure_reason classification on wallet actions', () => {
+    t.it(
+      'tracks a wrapper error with a user-rejection cause as rejected',
+      async () => {
+        const transportError = new Error('Transport failed') as Error & {
+          cause: { code: number; message: string };
+        };
+        transportError.cause = {
+          code: 4001,
+          message: 'User rejected the request',
+        };
+        mockTransport.request.mockRejectedValue(transportError);
+
+        await expectRpcInvokeMethodErr({
+          actual: requestRouter.invokeMethod(baseOptions),
+          reason: 'User rejected the request',
+          rpcCode: 4001,
+          rpcMessage: 'User rejected the request',
+        });
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_rejected',
+          t.expect.any(Object),
+        );
+        t.expect(analytics.track).not.toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.any(Object),
+        );
+      },
+    );
+
+    t.it(
+      'tracks a wrapper error with an internal-error cause using wallet diagnostics',
+      async () => {
+        const transportError = new Error('Transport failed') as Error & {
+          cause: { code: number; message: string };
+        };
+        transportError.cause = {
+          code: -32603,
+          message: 'Internal error',
+        };
+        mockTransport.request.mockRejectedValue(transportError);
+
+        await expectRpcInvokeMethodErr({
+          actual: requestRouter.invokeMethod(baseOptions),
+          reason: 'Internal error',
+          rpcCode: -32603,
+          rpcMessage: 'Internal error',
+        });
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.objectContaining({
+            failure_reason: 'wallet_internal_error',
+            error_code: -32603,
+            error_message_sample: 'Internal error',
+          }),
+        );
+      },
+    );
+
+    t.it(
+      'attaches `failure_reason: wallet_internal_error` when the wallet returns code -32603',
+      async () => {
+        const error = new Error('Internal error') as Error & { code: number };
+        error.code = -32603;
+        mockTransport.request.mockRejectedValue(error);
+
+        await t
+          .expect(requestRouter.invokeMethod(baseOptions))
+          .rejects.toBeInstanceOf(RPCInvokeMethodErr);
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.objectContaining({
+            failure_reason: 'wallet_internal_error',
+            error_code: -32603,
+            error_message_sample: 'Internal error',
+            method: 'eth_sendTransaction',
+          }),
+        );
+      },
+    );
+
+    t.it('sanitises addresses out of error_message_sample', async () => {
+      const error = new Error(
+        'Internal error fetching balance for 0x1234567890abcdef1234567890abcdef12345678',
+      ) as Error & { code: number };
+      error.code = -32603;
+      mockTransport.request.mockRejectedValue(error);
+
+      await t
+        .expect(requestRouter.invokeMethod(baseOptions))
+        .rejects.toBeInstanceOf(RPCInvokeMethodErr);
+
+      t.expect(analytics.track).toHaveBeenCalledWith(
+        'mmconnect_wallet_action_failed',
+        t.expect.objectContaining({
+          error_message_sample: 'Internal error fetching balance for <addr>',
+        }),
+      );
+    });
+
+    t.it(
+      'attaches `failure_reason: transport_timeout` when transport throws a timeout',
+      async () => {
+        const timeoutErr = new Error('Transport request timed out');
+        timeoutErr.name = 'TransportTimeoutError';
+        mockTransport.request.mockRejectedValue(timeoutErr);
+
+        await t
+          .expect(requestRouter.invokeMethod(baseOptions))
+          .rejects.toThrow();
+
+        t.expect(analytics.track).toHaveBeenCalledWith(
+          'mmconnect_wallet_action_failed',
+          t.expect.objectContaining({
+            failure_reason: 'transport_timeout',
+          }),
+        );
       },
     );
   });

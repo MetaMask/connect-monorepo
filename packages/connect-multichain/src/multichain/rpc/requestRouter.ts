@@ -11,22 +11,24 @@ import {
   METAMASK_DEEPLINK_BASE,
 } from '../../config';
 import {
+  EIP1193_PASSTHROUGH_METHODS,
   type ExtendedTransport,
   type InvokeMethodOptions,
   isSecure,
   type MultichainOptions,
   RPC_HANDLED_METHODS,
-  RPCInvokeMethodErr,
   SDK_HANDLED_METHODS,
   type TransportType,
 } from '../../domain';
 import { openDeeplink } from '../utils';
 import {
+  extractErrorDiagnostics,
   getWalletActionAnalyticsProperties,
   isRejectionError,
 } from '../utils/analytics';
 import type { RpcClient } from './handlers/rpcClient';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
+import { toRPCInvokeMethodErr } from './invocationError';
 
 let rpcId = 1;
 
@@ -57,6 +59,9 @@ export class RequestRouter {
    */
   async invokeMethod(options: InvokeMethodOptions): Promise<Json> {
     const { method } = options.request;
+    if (EIP1193_PASSTHROUGH_METHODS.has(method)) {
+      return this.handleWithEip1193Passthrough(options);
+    }
     if (RPC_HANDLED_METHODS.has(method)) {
       return this.handleWithRpcNode(options);
     }
@@ -64,6 +69,34 @@ export class RequestRouter {
       return this.handleWithSdkState(options);
     }
     return this.handleWithWallet(options);
+  }
+
+  /**
+   * Forwards EIP-1193 / legacy provider methods (e.g. `wallet_addEthereumChain`,
+   * `wallet_switchEthereumChain`, `eth_accounts`) directly to the underlying
+   * transport's `sendEip1193Message`, bypassing the multichain
+   * `wallet_invokeMethod` envelope. These methods are wallet-side concerns the
+   * Multichain API does not model, so we forward the raw `{ method, params }`
+   * payload and return the wallet's full JSON-RPC response envelope unchanged.
+   *
+   * Analytics tracking is intentionally skipped here: ecosystem clients
+   * (e.g. `connect-evm`) emit their own `wallet_action_*` events around these
+   * passthrough calls, and adding router-level tracking would double-count.
+   *
+   * @param options
+   */
+  private async handleWithEip1193Passthrough(
+    options: InvokeMethodOptions,
+  ): Promise<Json> {
+    const response = await this.transport.sendEip1193Message({
+      method: options.request.method,
+      params: options.request.params,
+    });
+    // Note that this result object will not be in the same shape as the wallet's wallet_invokeMethod response envelope.
+    // This is a purposeful deviation. EIP1193_PASSTHROUGH_METHODS are only meant to be called via the MultichainClient.invokeMethod()
+    // by our connect-evm package. No other external callers should be calling these methods through this entry point. These methods should not be
+    // documented as part of the MultichainClient.invokeMethod().
+    return response.result as Json;
   }
 
   /**
@@ -101,12 +134,7 @@ export class RequestRouter {
 
       const response = await request;
       if (response.error) {
-        const { error } = response;
-        throw new RPCInvokeMethodErr(
-          `RPC Request failed with code ${error.code}: ${error.message}`,
-          error.code,
-          error.message,
-        );
+        throw toRPCInvokeMethodErr(response.error);
       }
 
       return response.result as Json;
@@ -124,6 +152,14 @@ export class RequestRouter {
     options: InvokeMethodOptions,
     execute: () => Promise<Json>,
   ): Promise<Json> {
+    if (this.config.analytics?.enabled === false) {
+      try {
+        return await execute();
+      } catch (error) {
+        throw toRPCInvokeMethodErr(error);
+      }
+    }
+
     await this.#trackWalletActionRequested(options);
 
     try {
@@ -133,21 +169,17 @@ export class RequestRouter {
 
       return result;
     } catch (error) {
-      const isRejection = isRejectionError(error);
+      const normalizedError = toRPCInvokeMethodErr(error);
+      const analyticsError =
+        normalizedError.rpcCode === undefined ? error : normalizedError;
+      const isRejection = isRejectionError(analyticsError);
 
       if (isRejection) {
         await this.#trackWalletActionRejected(options);
       } else {
-        await this.#trackWalletActionFailed(options);
+        await this.#trackWalletActionFailed(options, analyticsError);
       }
-      if (error instanceof RPCInvokeMethodErr) {
-        throw error;
-      }
-      const castError = error as { message?: string; code?: number };
-      throw new RPCInvokeMethodErr(
-        castError.message ?? 'Unknown error',
-        castError.code,
-      );
+      throw normalizedError;
     }
   }
 
@@ -188,14 +220,20 @@ export class RequestRouter {
   /**
    * Tracks wallet action failed event.
    *
-   * @param options
+   * @param options - The invoke method options.
+   * @param error - The error that caused the failure (used to classify the
+   * `failure_reason` property on the event).
    */
-  async #trackWalletActionFailed(options: InvokeMethodOptions): Promise<void> {
+  async #trackWalletActionFailed(
+    options: InvokeMethodOptions,
+    error: unknown,
+  ): Promise<void> {
     const props = await getWalletActionAnalyticsProperties(
       this.config,
       this.config.storage,
       options,
       this.transportType,
+      extractErrorDiagnostics(error),
     );
     analytics.track('mmconnect_wallet_action_failed', props);
   }

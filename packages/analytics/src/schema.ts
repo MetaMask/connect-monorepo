@@ -519,9 +519,7 @@ export type components = {
        */
       platform: 'extension' | 'mobile';
     };
-    EventV2:
-      | components['schemas']['MMConnectPayload']
-      | components['schemas']['MobileSDKConnectV2Payload'];
+    EventV2: components['schemas']['MMConnectPayload'];
     MMConnectPayload: {
       /**
        * @description discriminator enum property added by openapi-typescript
@@ -538,21 +536,6 @@ export type components = {
         | 'mmconnect_wallet_action_failed'
         | 'mmconnect_wallet_action_rejected';
       properties: components['schemas']['MMConnectProperties'];
-    };
-    MobileSDKConnectV2Payload: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       */
-      namespace: 'mobile/sdk-connect-v2';
-      event_name:
-        | 'wallet_connection_request_received'
-        | 'wallet_connection_request_failed'
-        | 'wallet_connection_user_approved'
-        | 'wallet_connection_user_rejected'
-        | 'wallet_action_received'
-        | 'wallet_action_user_approved'
-        | 'wallet_action_user_rejected';
-      properties: components['schemas']['MobileSDKConnectV2Properties'];
     };
     MMConnectProperties: {
       /** @description Package versions keyed by connect package name */
@@ -576,11 +559,36 @@ export type components = {
       dapp_requested_chains?: string[];
       /** @description Array of CAIP-2 chain IDs that the user has permissioned */
       user_permissioned_chains?: string[];
-    };
-    MobileSDKConnectV2Properties: {
-      /** Format: uuid */
-      anon_id: string;
-      platform: 'mobile';
+      /**
+       * @description Short tag describing why a failed event fired (e.g.
+       * `transport_timeout`, `wallet_internal_error`, `wallet_unauthorized`).
+       * Only set on `mmconnect_connection_failed` and
+       * `mmconnect_wallet_action_failed`. Open string for now — once we have
+       * enough data we may convert this to a closed enum. Mirrors the field
+       * in `api.spec.yml` of the analytics-api repo.
+       */
+      failure_reason?: string;
+      /**
+       * @description The raw error code emitted by the underlying source
+       * (typically a wallet-side JSON-RPC / EIP-1193 code such as `4001`, `4100`,
+       * `4902`, `-32603`). Companion to `failure_reason`: the latter buckets
+       * errors into a triageable taxonomy, the former preserves the exact
+       * upstream code so we can drill into the `unknown` bucket without a
+       * schema change every time we discover a new code. Only set on
+       * `mmconnect_connection_failed` and `mmconnect_wallet_action_failed`, and
+       * only when the underlying error carries a numeric code.
+       */
+      error_code?: number;
+      /**
+       * @description A truncated, sanitised sample of the raw error message.
+       * Goal is to surface enough context to triage the `unknown`
+       * `failure_reason` bucket without leaking PII or wallet addresses.
+       * Producers strip wallet addresses (EVM hex, Solana / Bitcoin Base58,
+       * Bech32), long hex blobs, URLs, and large decimal numbers, then
+       * clip to 200 chars. Only set on `mmconnect_connection_failed` and
+       * `mmconnect_wallet_action_failed`.
+       */
+      error_message_sample?: string;
     };
   };
   responses: never;

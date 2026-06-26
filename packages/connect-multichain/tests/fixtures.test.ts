@@ -14,7 +14,6 @@
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors -- Test rejection patterns */
 
 /* eslint-disable no-plusplus -- Test loops */
-/* eslint-disable no-invalid-this -- Test context */
 /* eslint-disable no-useless-catch -- Test error handling */
 
 /** biome-ignore-all lint/suspicious/noAsyncPromiseExecutor: ok for tests */
@@ -318,7 +317,7 @@ export const createTest: CreateTestFN = ({
           await mockDappClient.sendRequest({
             name: MULTICHAIN_PROVIDER_STREAM_NAME,
             data: {
-              id: `${this.__reqId++}`,
+              id: `${requestId++}`,
               jsonrpc: '2.0',
               method: 'wallet_getSession',
               params: [],
@@ -611,6 +610,13 @@ export const createTest: CreateTestFN = ({
     mocks.mockSessionRequest.mockRestore();
     mocks.mockWalletRevokeSession.mockRestore();
     mocks.showInstallModalSpy.mockRestore();
+
+    // Restore any per-test prototype spies (e.g. SessionStore.prototype.list,
+    // MWPTransport.prototype.sendEip1193Message). Without restore, vi.spyOn
+    // wraps persist across tests and bleed configured implementations into
+    // subsequent tests' setup paths (e.g. MWPTransport.connect resumes with a
+    // stale session). Module-level vi.mock(...) mocks are not affected.
+    vi.restoreAllMocks();
 
     // Clear all mocks
     vi.clearAllMocks();

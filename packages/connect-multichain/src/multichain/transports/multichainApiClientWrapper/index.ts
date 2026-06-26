@@ -11,7 +11,12 @@ import type {
 } from '@metamask/multichain-api-client';
 import { providerErrors } from '@metamask/rpc-errors';
 import type { CaipAccountId } from '@metamask/utils';
-import type { InvokeMethodOptions, RPCAPI, Scope } from 'src/domain';
+import type {
+  ExtendedTransport,
+  InvokeMethodOptions,
+  RPCAPI,
+  Scope,
+} from 'src/domain';
 import type { MetaMaskConnectMultichain } from 'src/multichain';
 
 import { getUniqueRequestId } from '../../utils';
@@ -21,18 +26,23 @@ type TransportRequestWithId = TransportRequest & { id: number };
 export class MultichainApiClientWrapperTransport implements Transport {
   readonly #notificationCallbacks = new Set<(data: unknown) => void>();
 
+  readonly #getTransport: () => ExtendedTransport | undefined;
+
   notificationListener: (() => void) | undefined;
 
   constructor(
     private readonly metamaskConnectMultichain: MetaMaskConnectMultichain,
-  ) {}
+    getTransport: () => ExtendedTransport | undefined,
+  ) {
+    this.#getTransport = getTransport;
+  }
 
   isTransportDefined(): boolean {
-    try {
-      return Boolean(this.metamaskConnectMultichain.transport);
-    } catch (_error) {
-      return false;
-    }
+    return this.#getTransport() !== undefined;
+  }
+
+  isTransportConnected(): boolean {
+    return this.#getTransport()?.isConnected() ?? false;
   }
 
   clearNotificationCallbacks(): void {
@@ -51,24 +61,26 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   setupTransportNotificationListener(): void {
-    if (!this.isTransportDefined() || this.notificationListener) {
+    const transport = this.#getTransport();
+    if (!transport || this.notificationListener) {
       return;
     }
-    this.notificationListener =
-      this.metamaskConnectMultichain.transport.onNotification(
-        this.notifyCallbacks.bind(this),
-      );
+    this.notificationListener = transport.onNotification(
+      this.notifyCallbacks.bind(this),
+    );
   }
 
+  // Purposely noop, resolves successfully. Actual connection is handled by the underlying client/transport.
   async connect(): Promise<void> {
-    console.log('📚 connect');
-    await this.metamaskConnectMultichain.emitSessionChanged();
+    return Promise.resolve();
   }
 
+  // Purposely noop, resolves successfully. Actual connection is handled by the underlying client/transport.
   async disconnect(): Promise<void> {
     return Promise.resolve();
   }
 
+  // Purposely hardcoded to true. Actual connection is handled by the underlying client/transport.
   isConnected(): boolean {
     return true;
   }
@@ -99,8 +111,6 @@ export class MultichainApiClientWrapperTransport implements Transport {
       default:
         throw new Error(`Unsupported method: ${requestPayload.method}`);
     }
-
-    throw new Error(`Unknown method: ${requestPayload.method}`);
   }
 
   onNotification(callback: (data: unknown) => void): () => void {
@@ -132,20 +142,23 @@ export class MultichainApiClientWrapperTransport implements Transport {
     });
     const accounts = [...new Set(scopeAccounts)];
 
-    console.log('📚 SDK connect');
     await this.metamaskConnectMultichain.connect(
       scopes,
       accounts,
       createSessionParams.sessionProperties,
     );
-    console.log('📚 SDK connected');
-    return this.metamaskConnectMultichain.transport.request({
+    const transport = this.#getTransport();
+    if (!transport) {
+      throw new Error('Transport not initialized after connect');
+    }
+    return transport.request({
       method: 'wallet_getSession',
     });
   }
 
   async #walletGetSession(request: TransportRequestWithId) {
-    if (!this.isTransportDefined()) {
+    const transport = this.#getTransport();
+    if (!transport?.isConnected()) {
       return {
         jsonrpc: '2.0',
         id: request.id,
@@ -154,16 +167,12 @@ export class MultichainApiClientWrapperTransport implements Transport {
         },
       };
     }
-    return this.metamaskConnectMultichain.transport.request({
+    return transport.request({
       method: 'wallet_getSession',
     });
   }
 
   async #walletRevokeSession(request: TransportRequestWithId) {
-    if (!this.isTransportDefined()) {
-      return { jsonrpc: '2.0', id: request.id, result: true };
-    }
-
     const revokeSessionParams = request.params as
       | RevokeSessionParams<RPCAPI>
       | undefined;
@@ -178,7 +187,7 @@ export class MultichainApiClientWrapperTransport implements Transport {
   }
 
   async #walletInvokeMethod(request: TransportRequestWithId) {
-    if (!this.isTransportDefined()) {
+    if (!this.isTransportConnected()) {
       return { error: providerErrors.unauthorized() };
     }
     const result = this.metamaskConnectMultichain.invokeMethod(

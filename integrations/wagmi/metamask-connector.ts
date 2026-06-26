@@ -76,7 +76,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
   return createConnector<Provider, Properties>((config) => ({
     id: 'metaMaskSDK',
     name: 'MetaMask',
-    rdns: ['io.metamask', 'io.metamask.mobile'],
+    rdns: ['io.metamask', 'io.metamask.mobile', 'io.metamask.flask'],
     type: metaMask.type,
     async connect({ chainId = 1, isReconnecting, withCapabilities } = {}) {
       const instance = await this.getInstance();
@@ -94,16 +94,20 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           const chainIds = config.chains.map((chain) => numberToHex(chain.id));
           if (parameters.connectAndSign || parameters.connectWith) {
             if (parameters.connectAndSign) {
-              signResponse = await instance.connectAndSign({
-                chainIds,
-                message: parameters.connectAndSign,
-              });
+              signResponse = (
+                await instance.connectAndSign({
+                  chainIds,
+                  message: parameters.connectAndSign,
+                })
+              ).signature;
             } else if (parameters.connectWith) {
-              connectWithResponse = await instance.connectWith({
-                chainIds,
-                method: parameters.connectWith.method,
-                params: parameters.connectWith.params,
-              });
+              connectWithResponse = (
+                await instance.connectWith({
+                  chainIds,
+                  method: parameters.connectWith.method,
+                  params: parameters.connectWith.params,
+                })
+              ).result;
             }
 
             accounts = await this.getAccounts();
@@ -128,13 +132,13 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
           provider.emit('connectAndSign', {
             accounts,
             chainId: numberToHex(currentChainId),
-            signResponse,
+            signature: signResponse,
           });
         } else if (connectWithResponse) {
           provider.emit('connectWith', {
             accounts,
             chainId: numberToHex(currentChainId),
-            connectWithResponse,
+            result: connectWithResponse,
           });
         }
 
@@ -304,6 +308,7 @@ export function metaMask(parameters: MetaMaskParameters = {}) {
 
           metamaskPromise = createEVMClient({
             ...parameters,
+            skipAutoAnnounce: parameters.skipAutoAnnounce ?? true,
             api: {
               supportedNetworks: Object.fromEntries(
                 config.chains.map((chain) => [

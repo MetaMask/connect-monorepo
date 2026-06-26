@@ -15,6 +15,9 @@ import { ScopeCard } from './components/ScopeCard';
 import { LegacyEVMCard } from './components/LegacyEVMCard';
 import { WagmiCard } from './components/WagmiCard';
 import { SolanaWalletCard } from './components/SolanaWalletCard';
+import { MwpDeeplinkReproCard } from './components/MwpDeeplinkReproCard';
+import { Eip6963TestBench } from './components/Eip6963TestBench';
+import { AnalyticsTestBench } from './components/AnalyticsTestBench';
 import { useSolanaSDK } from './sdk/SolanaProvider';
 import { Buffer } from 'buffer';
 
@@ -23,7 +26,11 @@ global.Buffer = Buffer;
 const CONNECT_AND_SIGN_MESSAGE = 'Hello from MetaMask Connect Playground!';
 
 function App() {
-  const [customScopes, setCustomScopes] = useState<string[]>(['eip155:1']);
+  const [customScopes, setCustomScopes] = useState<string[]>(
+    window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+      ? ['eip155:1337']
+      : ['eip155:1'],
+  );
   const [caipAccountIds, setCaipAccountIds] = useState<CaipAccountId[]>([]);
 
   const [wagmiError, setWagmiError] = useState<Error | null>(null);
@@ -68,18 +75,18 @@ function App() {
 
   const handleCheckboxChange = useCallback(
     (value: string, isChecked: boolean) => {
-      if (isChecked) {
-        setCustomScopes(Array.from(new Set([...customScopes, value])));
-      } else {
-        setCustomScopes(customScopes.filter((item) => item !== value));
-      }
+      setCustomScopes((prev) =>
+        isChecked
+          ? Array.from(new Set([...prev, value]))
+          : prev.filter((item) => item !== value),
+      );
     },
-    [customScopes],
+    [],
   );
 
   useEffect(() => {
-    if (session) {
-      const scopes = Object.keys(session?.sessionScopes ?? {});
+    if (session && Object.keys(session?.sessionScopes ?? {}).length > 0) {
+      const scopes = Object.keys(session.sessionScopes);
       setCustomScopes(scopes);
 
       // Accumulate all accounts from all scopes
@@ -170,7 +177,7 @@ function App() {
 
     // Find the MetaMask wallet in registered wallets
     const metamaskWallet = wallets.find((w) =>
-      w.adapter.name.toLowerCase().includes('metamask connect'),
+      w.adapter.name.toLowerCase().includes('metamask'),
     );
     if (metamaskWallet) {
       // Just select the wallet - autoConnect in WalletProvider will handle connection
@@ -399,6 +406,19 @@ function App() {
           </section>
         )}
 
+        <div className="mb-6">
+          <Eip6963TestBench
+            legacyProvider={legacyProvider}
+            legacySDK={legacySDK}
+          />
+        </div>
+
+        <AnalyticsTestBench
+          connectedScopes={
+            Object.keys(session?.sessionScopes ?? {}) as Scope[]
+          }
+        />
+
         <section
           data-testid={TEST_IDS.app.sectionConnected}
           className="bg-white rounded-lg p-8 mb-6 shadow-sm"
@@ -460,6 +480,9 @@ function App() {
             </div>
           </section>
         )}
+        <div className="mt-8">
+          <MwpDeeplinkReproCard />
+        </div>
       </div>
     </div>
   );

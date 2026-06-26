@@ -75,6 +75,7 @@ export const LegacyEVMSDKProvider = ({
               'eip155:5': 'https://goerli.infura.io/v3/demo',
               'eip155:11155111': 'https://sepolia.infura.io/v3/demo',
               'eip155:137': 'https://polygon-rpc.com',
+              'eip155:1337': 'http://127.0.0.1:8545',
             };
         const supportedNetworks = convertCaipToHexKeys(caipNetworks);
 
@@ -154,10 +155,12 @@ export const LegacyEVMSDKProvider = ({
       const sdkInstance = await sdkRef.current;
       const chainIdsToUse =
         chainIds && chainIds.length > 0 ? chainIds : ['0x1' as Hex];
-      return sdkInstance.connectAndSign({
-        message,
-        chainIds: chainIdsToUse,
-      });
+      return (
+        await sdkInstance.connectAndSign({
+          message,
+          chainIds: chainIdsToUse,
+        })
+      ).signature;
     },
     [],
   );

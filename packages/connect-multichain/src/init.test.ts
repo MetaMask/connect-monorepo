@@ -20,6 +20,8 @@ import { analytics } from '@metamask/analytics';
 import * as loggerModule from './domain/logger';
 import { mockSessionData, mockSessionRequestData } from '../tests/data';
 import type { TestSuiteOptions, MockedData } from '../tests/types';
+import { MetaMaskConnectMultichain } from './multichain';
+import { getGlobalObject } from './multichain/utils';
 
 /**
  *
@@ -110,6 +112,35 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should disable analytics when analytics.enabled is false`,
+      async () => {
+        const enableSpy = t.vi.spyOn(analytics, 'enable');
+        const disableSpy = t.vi.spyOn(analytics, 'disable');
+        const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
+
+        sdk = await createSDK({
+          ...testOptions,
+          analytics: {
+            ...testOptions.analytics,
+            enabled: false,
+          },
+        });
+
+        t.expect(sdk).toBeDefined();
+        t.expect(enableSpy).not.toHaveBeenCalled();
+        t.expect(disableSpy).toHaveBeenCalled();
+        t.expect(setGlobalSpy).not.toHaveBeenCalledWith(
+          'anon_id',
+          t.expect.any(String),
+        );
+
+        enableSpy.mockRestore();
+        disableSpy.mockRestore();
+        setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
       `${platform} should call init and setupAnalytics with logger configuration`,
       async () => {
         const mockLogger = (loggerModule as any).__mockLogger;
@@ -131,12 +162,6 @@ function testSuite<T extends MultichainOptions>({
       async () => {
         sdk = await createSDK(testOptions);
         t.expect(sdk.status).toBe('loaded');
-        if (platform === 'web') {
-          // Web with extension sets up a DefaultTransport for passive listening
-          t.expect(sdk.transport).toBeDefined();
-        } else {
-          t.expect(() => sdk.transport).toThrow();
-        }
       },
     );
 
@@ -162,47 +187,7 @@ function testSuite<T extends MultichainOptions>({
         sdk = await createSDK(testOptions);
 
         t.expect(sdk.status).toBe('connected');
-
-        t.expect(sdk.transport).toBeDefined();
         t.expect(sdk.storage).toBeDefined();
-      },
-    );
-
-    t.it(
-      `${platform} should emit stateChanged event when existing valid session is found during init`,
-      async () => {
-        // Set the transport type as a string in storage (this is how it's stored)
-        mockedData.nativeStorageStub.setItem(
-          'multichain-transport',
-          transportString,
-        );
-        mockedData.mockSessionRequest.mockImplementation(
-          async () => mockSessionRequestData,
-        );
-        mockedData.mockWalletCreateSession.mockImplementation(
-          async () => mockSessionData,
-        );
-        mockedData.mockWalletGetSession.mockImplementation(
-          async () => mockSessionData,
-        );
-
-        const onNotification = t.vi.fn();
-        const optionsWithEvent = {
-          ...testOptions,
-          transport: {
-            ...(testOptions.transport ?? {}),
-            onNotification,
-          },
-        };
-        sdk = await createSDK(optionsWithEvent);
-
-        t.expect(sdk).toBeDefined();
-
-        t.expect(sdk.status).toBe('connected');
-        t.expect(onNotification).toHaveBeenCalledWith({
-          method: 'stateChanged',
-          params: 'connected',
-        });
       },
     );
 
@@ -227,6 +212,51 @@ function testSuite<T extends MultichainOptions>({
         }
 
         setGlobalSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should warn when existing singleton has a different version than the current module`,
+      async () => {
+        const warnSpy = t.vi.spyOn(console, 'warn').mockImplementation(() => {
+          // noop
+        });
+
+        sdk = await createSDK(testOptions);
+
+        // Simulate a version mismatch: override the singleton's version getter
+        // so it looks like it was created by a different bundle version.
+        t.vi
+          .spyOn(sdk, 'version', 'get')
+          .mockReturnValue('0.0.0-stale-singleton');
+
+        await createSDK(testOptions);
+
+        t.expect(warnSpy).toHaveBeenCalledWith(
+          t.expect.stringContaining('does not support using multiple versions'),
+        );
+
+        warnSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should not warn when existing singleton has the same version as the current module`,
+      async () => {
+        const warnSpy = t.vi.spyOn(console, 'warn').mockImplementation(() => {
+          // noop
+        });
+
+        sdk = await createSDK(testOptions);
+        warnSpy.mockClear();
+
+        await createSDK(testOptions);
+
+        t.expect(warnSpy).not.toHaveBeenCalledWith(
+          t.expect.stringContaining('does not support using multiple versions'),
+        );
+
+        warnSpy.mockRestore();
       },
     );
 
@@ -257,6 +287,58 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should keep analytics disabled when singleton merge omits analytics.enabled`,
+      async () => {
+        const enableSpy = t.vi.spyOn(analytics, 'enable');
+        const disableSpy = t.vi.spyOn(analytics, 'disable');
+
+        await createSDK({
+          ...testOptions,
+          analytics: { ...testOptions.analytics, enabled: false },
+        });
+        enableSpy.mockClear();
+        disableSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          analytics: { integrationType: 'wagmi' },
+        } as any);
+
+        t.expect(enableSpy).not.toHaveBeenCalled();
+        t.expect(disableSpy).toHaveBeenCalled();
+
+        enableSpy.mockRestore();
+        disableSpy.mockRestore();
+      },
+    );
+
+    t.it(
+      `${platform} should keep analytics disabled when singleton merge explicitly enables it`,
+      async () => {
+        const enableSpy = t.vi.spyOn(analytics, 'enable');
+        const disableSpy = t.vi.spyOn(analytics, 'disable');
+
+        await createSDK({
+          ...testOptions,
+          analytics: { ...testOptions.analytics, enabled: false },
+        });
+        enableSpy.mockClear();
+        disableSpy.mockClear();
+
+        await createSDK({
+          ...testOptions,
+          analytics: { ...testOptions.analytics, enabled: true },
+        } as any);
+
+        t.expect(enableSpy).not.toHaveBeenCalled();
+        t.expect(disableSpy).toHaveBeenCalled();
+
+        enableSpy.mockRestore();
+        disableSpy.mockRestore();
+      },
+    );
+
+    t.it(
       `${platform} should normalize empty integrationType to direct for analytics globals`,
       async () => {
         const setGlobalSpy = t.vi.spyOn(analytics, 'setGlobalProperty');
@@ -283,6 +365,82 @@ function testSuite<T extends MultichainOptions>({
     );
 
     t.it(
+      `${platform} should rethrow singleton initialization errors after cleanup and allow retry`,
+      async () => {
+        const testError = new Error('Debug storage unavailable');
+        t.vi.mocked(loggerModule.isEnabled).mockRejectedValueOnce(testError);
+        const consoleErrorSpy = t.vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => undefined);
+        const getDebug = t.vi.fn(async () => null);
+        const storage = {
+          adapter: {
+            platform,
+          },
+          getAnonId: t.vi.fn(async () => 'anon-id'),
+          getExtensionId: t.vi.fn(async () => null),
+          setExtensionId: t.vi.fn(async () => undefined),
+          getTransportType: t.vi.fn(async () => null),
+          setTransportType: t.vi.fn(async () => undefined),
+          removeTransportType: t.vi.fn(async () => undefined),
+          setAnonId: t.vi.fn(async () => undefined),
+          removeExtensionId: t.vi.fn(async () => undefined),
+          removeAnonId: t.vi.fn(async () => undefined),
+          getDebug,
+        };
+        const createOptions = {
+          ...testOptions,
+          storage,
+          ui: {
+            factory: {
+              createConnectionDeeplink: t.vi.fn(),
+              createConnectionUniversalLink: t.vi.fn(),
+            },
+            headless: true,
+            preferExtension: false,
+            showInstallModal: false,
+          },
+        } as any;
+        const callOriginalCatch = async (
+          promise: Promise<unknown>,
+          onRejected?: Parameters<Promise<unknown>['catch']>[0],
+        ): Promise<unknown> => promise.then(undefined, onRejected);
+        let cleanupPromise: Promise<unknown> | undefined;
+        const catchSpy = t.vi
+          .spyOn(Promise.prototype, 'catch')
+          .mockImplementation(async function catchImplementation(
+            this: Promise<unknown>,
+            onRejected?: Parameters<Promise<unknown>['catch']>[0],
+          ) {
+            cleanupPromise = callOriginalCatch(this, onRejected);
+            return cleanupPromise;
+          });
+
+        try {
+          const createPromise = MetaMaskConnectMultichain.create(createOptions);
+          catchSpy.mockRestore();
+
+          await t.expect(createPromise).rejects.toBe(testError);
+          await t.expect(cleanupPromise).rejects.toBe(testError);
+          t.expect(consoleErrorSpy).toHaveBeenCalledWith(
+            'Error initializing MetaMaskConnectMultichain',
+            testError,
+          );
+          t.expect(
+            getGlobalObject().__METAMASK_CONNECT_MULTICHAIN_SINGLETON__,
+          ).toBeUndefined();
+
+          await t
+            .expect(MetaMaskConnectMultichain.create(createOptions))
+            .resolves.toBeDefined();
+        } finally {
+          catchSpy.mockRestore();
+          consoleErrorSpy.mockRestore();
+        }
+      },
+    );
+
+    t.it(
       `${platform} Should gracefully handle init errors by just logging them and return non initialized sdk`,
       async () => {
         const testError = new Error('Test error');
@@ -299,7 +457,7 @@ function testSuite<T extends MultichainOptions>({
 
         if (platform === 'node') {
           // Node: set multichain-transport in storage first, then throw when reading it
-          // getTransport() calls adapter.get('multichain-transport') which calls getItem
+          // getTransportType() calls adapter.get('multichain-transport') which calls getItem
           mockedData.nativeStorageStub.data.set(
             'multichain-transport',
             'browser',
