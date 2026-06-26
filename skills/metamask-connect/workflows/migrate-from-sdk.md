@@ -69,7 +69,7 @@ import { createSolanaClient } from '@metamask/connect-solana';
 // connector), with @metamask/connect-evm installed at wagmi's declared peer
 // range (currently ^2.1.0; confirm with `npm info @wagmi/connectors
 // peerDependencies`). On older wagmi, copy the reference connector from
-// connect-monorepo/integrations/wagmi/metamask-connector.ts.
+// metamask-connect/integrations/wagmi/metamask-connector.ts.
 import { metaMask } from 'wagmi/connectors';
 ```
 

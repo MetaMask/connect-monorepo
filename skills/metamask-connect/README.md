@@ -10,16 +10,16 @@ The skill is distributed straight from this repo with the [`skills` CLI](https:/
 
 ```bash
 # Install just this skill (no prompts), into the agent the CLI detects
-npx skills add MetaMask/connect-monorepo --skill metamask-connect -y
+npx skills add MetaMask/metamask-connect --skill metamask-connect -y
 
 # Or run it interactively to choose agent + scope
-npx skills add MetaMask/connect-monorepo --skill metamask-connect
+npx skills add MetaMask/metamask-connect --skill metamask-connect
 
 # Install globally (available across all your projects)
-npx skills add MetaMask/connect-monorepo --skill metamask-connect -g -y
+npx skills add MetaMask/metamask-connect --skill metamask-connect -g -y
 
 # Preview what's in the repo without installing
-npx skills add MetaMask/connect-monorepo --list
+npx skills add MetaMask/metamask-connect --list
 ```
 
 By default the CLI symlinks the skill into your agent's directory (e.g. `.cursor/skills/`); pass `--copy` to copy the files instead. Search the bare term `metamask` with `npx skills find metamask` to locate it in the directory.
@@ -46,4 +46,4 @@ The agent reads `SKILL.md` first, then loads the relevant reference(s) and workf
 
 ## License
 
-This skill is part of the connect-monorepo and is covered by the repository's [`LICENCE`](../../LICENCE).
+This skill is part of the metamask-connect and is covered by the repository's [`LICENCE`](../../LICENCE).

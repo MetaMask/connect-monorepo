@@ -150,7 +150,7 @@ See [scripts/README.md](./scripts/README.md) for detailed polyfill documentation
 
 ### CI Secrets (GitHub Actions)
 
-The following secrets must be configured in the connect-monorepo repository
+The following secrets must be configured in the metamask-connect repository
 settings for the APK CI build workflow:
 
 | Secret           | Required | Description                                      |
@@ -218,7 +218,7 @@ android/app/build/outputs/apk/release/app-release.apk
 # Fetch the APK for a specific playground version
 TAG="@metamask/react-native-playground@0.1.2"
 curl -fsSL -H "Authorization: token $GITHUB_TOKEN" \
-  "https://api.github.com/repos/MetaMask/connect-monorepo/releases/tags/$TAG" \
+  "https://api.github.com/repos/MetaMask/metamask-connect/releases/tags/$TAG" \
   | jq -r '.assets[] | select(.name | startswith("rn-playground-")) | .browser_download_url' \
   | xargs curl -fsSL -o rn-playground.apk
 ```
@@ -238,9 +238,9 @@ BrowserStack. Three upload approaches were evaluated:
 
 | Approach                      | Description                                                                                     | Recommendation  |
 | ----------------------------- | ----------------------------------------------------------------------------------------------- | --------------- |
-| Upload in connect-monorepo CI | Release pipeline uploads APK to BrowserStack; stores `bs://` URL as a release artifact          | Not recommended |
+| Upload in metamask-connect CI | Release pipeline uploads APK to BrowserStack; stores `bs://` URL as a release artifact          | Not recommended |
 | Upload in metamask-mobile CI  | metamask-mobile downloads APK from GitHub Releases, uploads to BrowserStack before tests        | **Recommended** |
-| Hybrid                        | connect-monorepo publishes to GitHub Releases; metamask-mobile fetches, uploads, caches `bs://` | Acceptable      |
+| Hybrid                        | metamask-connect publishes to GitHub Releases; metamask-mobile fetches, uploads, caches `bs://` | Acceptable      |
 
 ### Recommended approach: Upload in metamask-mobile CI
 
@@ -249,7 +249,7 @@ BrowserStack. Three upload approaches were evaluated:
 1. **Credential scoping** — BrowserStack credentials (`BROWSERSTACK_USERNAME`,
    `BROWSERSTACK_ACCESS_KEY`) remain scoped to the metamask-mobile repo where
    they are already configured and used for all other BrowserStack uploads.
-   Adding them to connect-monorepo would expand the secret surface area.
+   Adding them to metamask-connect would expand the secret surface area.
 
 2. **Consistency** — The existing metamask-mobile pattern (build/download APK →
    upload to BrowserStack → run tests) already works for the MetaMask wallet
@@ -258,7 +258,7 @@ BrowserStack. Three upload approaches were evaluated:
 
 3. **Freshness control** — BrowserStack apps expire after 30 days of inactivity.
    Uploading per-test-run guarantees the APK is always available regardless of
-   connect-monorepo release cadence.
+   metamask-connect release cadence.
 
 4. **Version pinning** — metamask-mobile controls which playground version to
    test via `RN_PLAYGROUND_APK_VERSION` (env var or repo variable), enabling
@@ -269,7 +269,7 @@ BrowserStack. Three upload approaches were evaluated:
 The `run-performance-e2e.yml` workflow in metamask-mobile includes a
 `fetch-rn-playground-apk` job that:
 
-1. Downloads the playground APK from connect-monorepo GitHub Releases using
+1. Downloads the playground APK from metamask-connect GitHub Releases using
    `scripts/fetch-rn-playground-apk.sh`
 2. Uploads it to BrowserStack via the App Automate REST API
 3. Passes the resulting `bs://` URL to mm-connect test jobs via the

@@ -104,7 +104,7 @@ connect-src https://mm-sdk-analytics.api.cx.metamask.io;
 ```
 
 This is unnecessary when consumers set `analytics.enabled: false`. See the
-[monorepo README](https://github.com/MetaMask/connect-monorepo#readme) for the full CSP
+[monorepo README](https://github.com/MetaMask/metamask-connect#readme) for the full CSP
 guidance.
 
 ## TypeScript
@@ -115,7 +115,7 @@ This package is written in TypeScript and includes full type definitions. No add
 ## Contributing
 
 This package is part of a monorepo. Instructions for contributing can be found in the
-[monorepo README](https://github.com/MetaMask/connect-monorepo#readme).
+[monorepo README](https://github.com/MetaMask/metamask-connect#readme).
 
 ## License
 

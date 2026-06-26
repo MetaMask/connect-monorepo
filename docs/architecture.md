@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes how the packages in `connect-monorepo` fit together — how the
+This document describes how the packages in `metamask-connect` fit together — how the
 multichain client, the ecosystem adapters, and the transports compose. For per-package API
 details, see each package's own README.
 

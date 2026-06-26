@@ -91,13 +91,13 @@ Host pages that render these modals may need to relax their
 - `style-src 'unsafe-inline'` — Stencil injects component styles at runtime inside Shadow DOM.
 - `img-src data:` — the MetaMask fox is embedded as a `data:` URI inside the generated QR code.
 
-See the [monorepo README](https://github.com/MetaMask/connect-monorepo#readme) for the full
+See the [monorepo README](https://github.com/MetaMask/metamask-connect#readme) for the full
 CSP guidance.
 
 ## Contributing
 
 This package is part of a monorepo. Instructions for contributing can be found in the
-[monorepo README](https://github.com/MetaMask/connect-monorepo#readme).
+[monorepo README](https://github.com/MetaMask/metamask-connect#readme).
 
 ## License
 

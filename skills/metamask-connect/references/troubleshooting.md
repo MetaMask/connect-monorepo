@@ -351,7 +351,7 @@ const client = await createEVMClient({
 
 **Cause:** Older versions of the QR modal created a `blob:` URL for the embedded MetaMask icon. If the host page's CSP `connect-src` directive did not include `blob:`, the `XMLHttpRequest` used to build the blob was rejected and the QR image failed to render.
 
-**Fix:** Upgrade to `@metamask/connect-multichain ^0.12.1` and `@metamask/multichain-ui ^0.4.1` (shipped in connect-monorepo `v30.0.0`). The icon is now embedded as a `data:` URI and `saveAsBlob: false` is set in the QR image options, so no `connect-src blob:` entry is needed:
+**Fix:** Upgrade to `@metamask/connect-multichain ^0.12.1` and `@metamask/multichain-ui ^0.4.1` (shipped in metamask-connect `v30.0.0`). The icon is now embedded as a `data:` URI and `saveAsBlob: false` is set in the QR image options, so no `connect-src blob:` entry is needed:
 
 ```bash
 npm install @metamask/connect-multichain@^0.12.1 @metamask/multichain-ui@^0.4.1
@@ -365,7 +365,7 @@ npm install @metamask/connect-multichain@^0.12.1 @metamask/multichain-ui@^0.4.1
 
 **Cause:** Before `@metamask/connect-evm` 1.3.1, the SDK's intercepted EIP-1193 account requests returned the same accounts array for both `eth_requestAccounts` and `eth_coinbase`. Per spec, `eth_coinbase` should return a single address (`Address`), not an array.
 
-**Fix:** Upgrade to `@metamask/connect-evm` ^1.3.1 (connect-monorepo `v35.0.0`). After upgrade, `eth_requestAccounts` resolves to `Address[]` and `eth_coinbase` resolves to the currently selected account (`Address`). Update any code that destructured `eth_coinbase` as an array:
+**Fix:** Upgrade to `@metamask/connect-evm` ^1.3.1 (metamask-connect `v35.0.0`). After upgrade, `eth_requestAccounts` resolves to `Address[]` and `eth_coinbase` resolves to the currently selected account (`Address`). Update any code that destructured `eth_coinbase` as an array:
 
 ```typescript
 const accounts = await provider.request({ method: 'eth_requestAccounts' });
@@ -385,7 +385,7 @@ npm install @metamask/connect-evm@^1.3.1
 
 **Cause:** Before `@metamask/connect-evm` 1.2.0, calling `client.switchChain({ chainId })` without a `chainConfiguration` fallback (or invoking `wallet_switchEthereumChain` directly) replaced the wallet's original `Unrecognized chain ID` error with the wrapper message `No chain configuration found.`, hiding the underlying `4902` code from the dapp.
 
-**Fix:** Upgrade to `@metamask/connect-evm` ^1.2.0 (connect-monorepo `v33.0.0`). The original wallet error (EIP-1193 code `4902`) is now forwarded to the dapp. Handle it explicitly — either retry with a `chainConfiguration` fallback or call `wallet_addEthereumChain`:
+**Fix:** Upgrade to `@metamask/connect-evm` ^1.2.0 (metamask-connect `v33.0.0`). The original wallet error (EIP-1193 code `4902`) is now forwarded to the dapp. Handle it explicitly — either retry with a `chainConfiguration` fallback or call `wallet_addEthereumChain`:
 
 ```typescript
 try {
@@ -415,7 +415,7 @@ Do not pattern-match on the legacy `"No chain configuration found"` string — t
 
 **Cause:** Before `@metamask/connect-multichain` 0.14.0, the `isRejectionError` helper that drives the `mmconnect_wallet_action_rejected` analytics event treated EIP-1193 `4100 Unauthorized` (a CAIP-25 permission denial) as a user rejection, matched any error message containing the bare substring `"user"` (catching unrelated phrases like Account Abstraction's `"user operation reverted"`), and masked wallet-side codes behind the router's transport-boundary wrapper (`code: 53`).
 
-**Fix:** Upgrade to `@metamask/connect-multichain` ^0.14.0 (connect-monorepo `v34.0.0`). The classifier now:
+**Fix:** Upgrade to `@metamask/connect-multichain` ^0.14.0 (metamask-connect `v34.0.0`). The classifier now:
 
 - Unwraps `RPCInvokeMethodErr` so wallet-side codes survive the router boundary
 - No longer counts `4100 wallet_unauthorized` as a rejection — it's a permission denial, surfaced under `mmconnect_wallet_action_failed` instead

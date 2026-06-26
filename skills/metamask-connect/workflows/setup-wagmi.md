@@ -29,7 +29,7 @@ The connect-evm-backed `metaMask()` connector requires **wagmi >= 3.6 / `@wagmi/
 import { createConfig, http } from 'wagmi';
 import { mainnet, sepolia, optimism, celo } from 'wagmi/chains';
 // Requires wagmi >= 3.6 / @wagmi/connectors >= 8. On older wagmi, copy the
-// reference connector from connect-monorepo/integrations/wagmi/metamask-connector.ts
+// reference connector from metamask-connect/integrations/wagmi/metamask-connector.ts
 import { metaMask } from 'wagmi/connectors';
 
 export const wagmiConfig = createConfig({

@@ -7,13 +7,13 @@
     "MetaMask",
     "Ethereum"
   ],
-  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/node-playground#readme",
+  "homepage": "https://github.com/MetaMask/metamask-connect/tree/main/playground/node-playground#readme",
   "bugs": {
-    "url": "https://github.com/MetaMask/connect-monorepo/issues"
+    "url": "https://github.com/MetaMask/metamask-connect/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/connect-monorepo.git"
+    "url": "https://github.com/MetaMask/metamask-connect.git"
   },
   "license": "UNLICENSED",
   "sideEffects": false,

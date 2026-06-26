@@ -11,4 +11,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release with shared constants, helpers, types, and configuration for playground applications
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/
+[Unreleased]: https://github.com/MetaMask/metamask-connect/
