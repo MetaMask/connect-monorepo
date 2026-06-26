@@ -35,6 +35,12 @@ Instead of the traditional EIP-1193 model (`eth_requestAccounts` on one chain at
 
 This means a dApp that supports both EVM and Solana doesn't need separate connection flows — one session covers both.
 
+> Looking for the **wallet-side** JSON-RPC contract (the `wallet_createSession` /
+> `wallet_invokeMethod` requests and responses underneath this SDK)? See the
+> [Multichain API reference](https://github.com/MetaMask/core/blob/main/packages/multichain-api-middleware/MULTICHAIN_API.md)
+> in `@metamask/multichain-api-middleware`, including how MetaMask currently
+> diverges from the latest CAIP-25.
+
 ## Integration Options
 
 There are two ways to integrate, depending on how much you want to adopt:
