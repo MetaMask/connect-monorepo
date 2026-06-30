@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `main` entry point now resolves to `./dist/multichain/index.js` instead of `./dist/index.js`, aligning with the `exports` map ([#110](https://github.com/MetaMask/connect-monorepo/pull/110))
+
 ## [0.2.0]
 
 ### Added
