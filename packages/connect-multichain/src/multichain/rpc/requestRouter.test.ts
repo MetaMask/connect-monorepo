@@ -618,7 +618,14 @@ t.describe('RequestRouter', () => {
     const CAPS_MAINNET = { atomic: { status: 'supported' } };
     const CAPS_BASE = { atomic: { status: 'ready' } };
 
-    const buildSessionResponse = (eip155Capabilities: unknown) => ({
+    const buildSessionResponse = (
+      eip155Capabilities: unknown,
+    ): {
+      result: {
+        sessionScopes: Record<string, never>;
+        sessionProperties: { eip155Capabilities: unknown };
+      };
+    } => ({
       result: {
         sessionScopes: {},
         sessionProperties: { eip155Capabilities },
@@ -726,25 +733,28 @@ t.describe('RequestRouter', () => {
       },
     );
 
-    t.it('falls back to the wallet when the address is not cached', async () => {
-      const router = await createMwpRouter();
-      const options = getCapabilitiesOptions([
-        '0x0000000000000000000000000000000000000001',
-      ]);
-      mockTransport.request
-        .mockResolvedValueOnce(
-          buildSessionResponse({ [ADDRESS]: { '0x1': CAPS_MAINNET } }),
-        )
-        .mockResolvedValueOnce({ result: { '0x1': CAPS_MAINNET } });
+    t.it(
+      'falls back to the wallet when the address is not cached',
+      async () => {
+        const router = await createMwpRouter();
+        const options = getCapabilitiesOptions([
+          '0x0000000000000000000000000000000000000001',
+        ]);
+        mockTransport.request
+          .mockResolvedValueOnce(
+            buildSessionResponse({ [ADDRESS]: { '0x1': CAPS_MAINNET } }),
+          )
+          .mockResolvedValueOnce({ result: { '0x1': CAPS_MAINNET } });
 
-      const result = await router.invokeMethod(options);
+        const result = await router.invokeMethod(options);
 
-      t.expect(result).toStrictEqual({ '0x1': CAPS_MAINNET });
-      t.expect(mockTransport.request).toHaveBeenNthCalledWith(2, {
-        method: 'wallet_invokeMethod',
-        params: options,
-      });
-    });
+        t.expect(result).toStrictEqual({ '0x1': CAPS_MAINNET });
+        t.expect(mockTransport.request).toHaveBeenNthCalledWith(2, {
+          method: 'wallet_invokeMethod',
+          params: options,
+        });
+      },
+    );
 
     t.it(
       'falls back to the wallet when the session has no eip155Capabilities (older wallet)',
@@ -770,7 +780,9 @@ t.describe('RequestRouter', () => {
     t.it('does not resolve locally for non-MWP transports', async () => {
       // `requestRouter` (from beforeEach) uses TransportType.Browser.
       const options = getCapabilitiesOptions([ADDRESS]);
-      mockTransport.request.mockResolvedValue({ result: { '0x1': CAPS_MAINNET } });
+      mockTransport.request.mockResolvedValue({
+        result: { '0x1': CAPS_MAINNET },
+      });
 
       const result = await requestRouter.invokeMethod(options);
 

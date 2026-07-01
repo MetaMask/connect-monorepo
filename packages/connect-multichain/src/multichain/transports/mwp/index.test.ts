@@ -802,10 +802,13 @@ t.describe('MWPTransport', () => {
           method: 'wallet_getSession',
         });
 
-        t.expect(mockKvstore.get).toHaveBeenCalledWith('cache_wallet_getSession');
-        t.expect(response.result.sessionProperties.eip155Capabilities).toStrictEqual(
-          eip155Capabilities,
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        t.expect(mockKvstore.get).toHaveBeenCalledWith(
+          'cache_wallet_getSession',
         );
+        t.expect(
+          response.result.sessionProperties.eip155Capabilities,
+        ).toStrictEqual(eip155Capabilities);
         // Served from cache, so nothing is sent to the wallet.
         t.expect(mockDappClient.sendRequest).not.toHaveBeenCalled();
       },

@@ -105,9 +105,7 @@ export class RequestRouter {
   async #tryLocalCapabilities(
     options: InvokeMethodOptions,
   ): Promise<Json | undefined> {
-    const params = options.request.params as
-      | [string, string[]?]
-      | undefined;
+    const params = options.request.params as [string, string[]?] | undefined;
     const address = params?.[0];
     if (!address) {
       return undefined;
