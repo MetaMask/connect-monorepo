@@ -688,13 +688,8 @@ export class MWPTransport implements ExtendedTransport {
    * @returns Nothing
    */
   async disconnect(scopes: Scope[] = []): Promise<void> {
-    const cachedSession = await this.getCachedResponse({
-      jsonrpc: '2.0',
-      id: '0',
-      method: 'wallet_getSession',
-    });
-    const cachedSessionScopes =
-      (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
+    const cachedSession = await this.getCachedSession();
+    const cachedSessionScopes = cachedSession?.sessionScopes ?? {};
 
     const remainingScopes =
       scopes.length === 0
