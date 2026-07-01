@@ -92,11 +92,12 @@ export class RequestRouter {
    * Attempts to resolve `wallet_getCapabilities` from the cached session's
    * `eip155Capabilities` (published by the wallet in `sessionProperties`).
    *
-   * The read goes through `transport.request({ method: 'wallet_getSession' })`,
-   * which the MWP transport serves from its local cache without a deeplink.
-   * Returns `undefined` (so the caller falls back to the wallet) when the data
-   * isn't available for the requested address/chains, e.g. against a wallet
-   * that predates capability publishing.
+   * The read uses the transport's cache-only `getCachedSession` accessor, so
+   * a cache miss falls back to the wallet immediately instead of waiting on a
+   * relay request that a backgrounded wallet may never answer. Returns
+   * `undefined` (so the caller falls back to the wallet) when the data isn't
+   * available for the requested address/chains, e.g. against a wallet that
+   * predates capability publishing.
    *
    * @param options - The invoke method options for `wallet_getCapabilities`.
    * The `request.params` are `[address]` or `[address, chainIds]`.
@@ -105,22 +106,33 @@ export class RequestRouter {
   async #tryLocalCapabilities(
     options: InvokeMethodOptions,
   ): Promise<Json | undefined> {
-    const params = options.request.params as [string, string[]?] | undefined;
-    const address = params?.[0];
-    if (!address) {
+    const { params } = options.request;
+    if (!Array.isArray(params)) {
       return undefined;
     }
-    const requestedChainIds = params?.[1];
+    const [address, rawChainIds] = params as [unknown, unknown?];
+    if (typeof address !== 'string' || address.length === 0) {
+      return undefined;
+    }
+    // Malformed chain ids (non-array, or non-string entries): fall back so
+    // the wallet answers with a proper invalid-params error instead of the
+    // cache guessing (a non-array second param must NOT resolve to the full
+    // cached capability map).
+    if (
+      rawChainIds !== undefined &&
+      (!Array.isArray(rawChainIds) ||
+        rawChainIds.some((chainId) => typeof chainId !== 'string'))
+    ) {
+      return undefined;
+    }
+    const requestedChainIds = rawChainIds as string[] | undefined;
 
+    if (!this.transport.getCachedSession) {
+      return undefined;
+    }
     let sessionResult: SessionData | undefined;
     try {
-      const sessionResponse = await this.transport.request({
-        method: 'wallet_getSession',
-      });
-      if (sessionResponse.error) {
-        return undefined;
-      }
-      sessionResult = sessionResponse.result as SessionData | undefined;
+      sessionResult = await this.transport.getCachedSession();
     } catch {
       return undefined;
     }
