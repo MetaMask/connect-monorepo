@@ -681,21 +681,26 @@ t.describe('RequestRouter', () => {
       t.expect(result).toStrictEqual({ '0x1': CAPS_MAINNET });
     });
 
-    t.it('filters to the requested chain ids (case-insensitive)', async () => {
-      const router = await createMwpRouter();
-      mockTransport.request.mockResolvedValue(
-        buildSessionResponse({
-          [ADDRESS]: { '0x1': CAPS_MAINNET, '0x2105': CAPS_BASE },
-        }),
-      );
+    t.it(
+      'filters to the requested chain ids (case-insensitive) and returns the cached (normalized) chain key',
+      async () => {
+        const router = await createMwpRouter();
+        mockTransport.request.mockResolvedValue(
+          buildSessionResponse({
+            [ADDRESS]: { '0x1': CAPS_MAINNET, '0x2105': CAPS_BASE },
+          }),
+        );
 
-      const result = await router.invokeMethod(
-        getCapabilitiesOptions([ADDRESS, ['0x2105']]),
-      );
+        // Caller passes an upper-cased chain id; the result must be keyed with
+        // the wallet's cached lowercase key, matching the wallet-fallback path.
+        const result = await router.invokeMethod(
+          getCapabilitiesOptions([ADDRESS, ['0x2105'.toUpperCase()]]),
+        );
 
-      t.expect(result).toStrictEqual({ '0x2105': CAPS_BASE });
-      t.expect(mockTransport.request).toHaveBeenCalledTimes(1);
-    });
+        t.expect(result).toStrictEqual({ '0x2105': CAPS_BASE });
+        t.expect(mockTransport.request).toHaveBeenCalledTimes(1);
+      },
+    );
 
     t.it(
       'falls back to the wallet when a requested chain is not cached',

@@ -150,7 +150,10 @@ export class RequestRouter {
     }
 
     // If any requested chain isn't cached, fall back to the wallet rather than
-    // returning a partial result.
+    // returning a partial result. Key the result with the wallet's cached chain
+    // ID casing (lowercase hex, as `wallet_getCapabilities` normalizes) rather
+    // than the caller-supplied casing, so a local hit and the wallet-fallback
+    // path return the same key shape.
     const filtered: Record<string, Eip155ChainCapabilities> = {};
     for (const chainId of requestedChainIds) {
       const chainEntry = Object.entries(addressCapabilities).find(
@@ -160,7 +163,7 @@ export class RequestRouter {
       if (!chainEntry) {
         return undefined;
       }
-      filtered[chainId] = chainEntry[1];
+      filtered[chainEntry[0]] = chainEntry[1];
     }
     return filtered as Json;
   }
