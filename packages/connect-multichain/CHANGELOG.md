@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Resolve `wallet_getCapabilities` locally from the cached session on the MWP (mobile deeplink) transport, avoiding a deeplink round-trip. When the wallet publishes EIP-5792 capabilities in `sessionProperties.eip155Capabilities`, `RequestRouter` answers `wallet_getCapabilities` from the transport's cached session (read cache-only via the new `getCachedSession` accessor, so a cache miss falls back to the deeplink immediately; case-insensitive address/chain lookup) and falls back to the wallet on any miss, partial chain coverage, malformed params, or an older wallet that doesn't publish capabilities. ([#339](https://github.com/MetaMask/connect-monorepo/pull/339))
+- Add optional `getCachedSession` to the exported `ExtendedTransport` type: a cache-only read of the stored `wallet_getSession` result that resolves `undefined` on a miss instead of issuing a live request (and never replays transport notifications). Implemented by the MWP transport; transports without a session cache simply omit it. ([#339](https://github.com/MetaMask/connect-monorepo/pull/339))
+
 ### Fixed
 
 - Recognize MetaMask Flask (`io.metamask.flask`) as a native MetaMask extension in EIP-6963 detection. `hasExtension()` now returns `true` when only Flask is installed, so `connect()` uses the browser extension transport instead of falling back to the MWP/QR flow. ([#336](https://github.com/MetaMask/connect-monorepo/pull/336))

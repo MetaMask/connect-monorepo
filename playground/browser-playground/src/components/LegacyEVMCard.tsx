@@ -72,6 +72,26 @@ export function LegacyEVMCard({
     }
   };
 
+  const wallet_getCapabilities = async () => {
+    if (!provider || !accounts[0]) {
+      setResponse('Provider or accounts not available');
+      return;
+    }
+    try {
+      const params = chainId
+        ? [accounts[0], [chainId]]
+        : [accounts[0]];
+      const result = await provider.request({
+        method: 'wallet_getCapabilities',
+        params,
+      });
+      setResponse(`Capabilities: ${JSON.stringify(result, null, 2)}`);
+    } catch (e) {
+      console.error('Error getting capabilities', e);
+      setResponse(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    }
+  };
+
   const eth_gasPrice = async () => {
     if (!provider) {
       setResponse('Provider not available');
@@ -334,6 +354,14 @@ export function LegacyEVMCard({
               className="w-full bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 transition-colors"
             >
               eth_gasPrice
+            </button>
+            <button
+              type="button"
+              data-testid="legacy-evm-get-capabilities-button"
+              onClick={wallet_getCapabilities}
+              className="w-full bg-emerald-600 text-white px-4 py-2 rounded text-sm hover:bg-emerald-700 transition-colors"
+            >
+              wallet_getCapabilities
             </button>
           </div>
         </div>

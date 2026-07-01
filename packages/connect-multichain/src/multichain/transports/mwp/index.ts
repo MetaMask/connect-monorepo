@@ -688,13 +688,8 @@ export class MWPTransport implements ExtendedTransport {
    * @returns Nothing
    */
   async disconnect(scopes: Scope[] = []): Promise<void> {
-    const cachedSession = await this.getCachedResponse({
-      jsonrpc: '2.0',
-      id: '0',
-      method: 'wallet_getSession',
-    });
-    const cachedSessionScopes =
-      (cachedSession?.result as SessionData | undefined)?.sessionScopes ?? {};
+    const cachedSession = await this.getCachedSession();
+    const cachedSessionScopes = cachedSession?.sessionScopes ?? {};
 
     const remainingScopes =
       scopes.length === 0
@@ -860,6 +855,24 @@ export class MWPTransport implements ExtendedTransport {
       await this.kvstore.delete(ACCOUNTS_STORE_KEY);
       await this.kvstore.delete(CHAIN_STORE_KEY);
     }
+  }
+
+  /**
+   * Reads the cached `wallet_getSession` result from the kvstore without
+   * issuing a live request to the wallet and without replaying transport
+   * notifications. Lets callers (e.g. local `wallet_getCapabilities`
+   * resolution) treat a cache miss as an immediate fallback instead of
+   * waiting on a relay request that a backgrounded wallet may never answer.
+   *
+   * @returns The cached session data, or `undefined` when nothing is cached.
+   */
+  async getCachedSession(): Promise<SessionData | undefined> {
+    const cached = await this.getCachedResponse({
+      jsonrpc: '2.0',
+      id: '0',
+      method: 'wallet_getSession',
+    });
+    return cached?.result as SessionData | undefined;
   }
 
   async request<

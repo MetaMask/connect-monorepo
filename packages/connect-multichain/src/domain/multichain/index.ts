@@ -146,5 +146,5 @@ export function getTransportType(type: string): TransportType {
 
 export * from './api/constants';
 export * from './api/infura';
-export type * from './api/types';
+export * from './api/types';
 export type * from './types';
