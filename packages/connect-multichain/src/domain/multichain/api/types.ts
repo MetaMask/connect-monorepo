@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { CaipChainId } from '@metamask/utils';
+import type { CaipChainId, Json } from '@metamask/utils';
 
 import type EIP155 from './eip155';
 
@@ -100,3 +100,26 @@ export type RPCResponse = {
   jsonrpc: string;
   result: unknown;
 };
+
+/**
+ * The `sessionProperties` key under which the wallet publishes EIP-5792
+ * capabilities for permitted EVM accounts (see MetaMask/core#9294).
+ */
+export const EIP155_CAPABILITIES_SESSION_PROPERTY = 'eip155Capabilities';
+
+/**
+ * EIP-5792 capabilities for a single account on a single chain, e.g.
+ * `{ atomic: { status: 'supported' } }`.
+ */
+export type Eip155ChainCapabilities = Record<string, Json>;
+
+/**
+ * EIP-5792 capabilities published in a session's `sessionProperties` under
+ * {@link EIP155_CAPABILITIES_SESSION_PROPERTY}. Keyed by EVM address (in the
+ * casing the wallet returned, typically checksummed), then by chain ID (hex),
+ * mirroring what `wallet_getCapabilities` resolves to per chain.
+ */
+export type Eip155Capabilities = Record<
+  string,
+  Record<string, Eip155ChainCapabilities>
+>;

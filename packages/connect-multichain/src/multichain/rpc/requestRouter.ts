@@ -4,6 +4,7 @@
 /* eslint-disable jsdoc/require-returns -- Auto-generated JSDoc */
 /* eslint-disable @typescript-eslint/no-misused-promises -- setTimeout callback is async intentionally */
 import { analytics } from '@metamask/analytics';
+import type { SessionData } from '@metamask/multichain-api-client';
 import type { Json } from '@metamask/utils';
 
 import {
@@ -11,6 +12,9 @@ import {
   METAMASK_DEEPLINK_BASE,
 } from '../../config';
 import {
+  EIP155_CAPABILITIES_SESSION_PROPERTY,
+  type Eip155Capabilities,
+  type Eip155ChainCapabilities,
   EIP1193_PASSTHROUGH_METHODS,
   type ExtendedTransport,
   type InvokeMethodOptions,
@@ -18,7 +22,7 @@ import {
   type MultichainOptions,
   RPC_HANDLED_METHODS,
   SDK_HANDLED_METHODS,
-  type TransportType,
+  TransportType,
 } from '../../domain';
 import { openDeeplink } from '../utils';
 import {
@@ -59,6 +63,19 @@ export class RequestRouter {
    */
   async invokeMethod(options: InvokeMethodOptions): Promise<Json> {
     const { method } = options.request;
+    // On the MWP (mobile deeplink) transport, try to resolve
+    // `wallet_getCapabilities` from the cached session's `eip155Capabilities`
+    // so we avoid an extra deeplink round-trip to the wallet. Falls back to the
+    // wallet on any miss (older wallet, unknown address/chain, cache error).
+    if (
+      method === 'wallet_getCapabilities' &&
+      this.transportType === TransportType.MWP
+    ) {
+      const localCapabilities = await this.#tryLocalCapabilities(options);
+      if (localCapabilities !== undefined) {
+        return localCapabilities;
+      }
+    }
     if (EIP1193_PASSTHROUGH_METHODS.has(method)) {
       return this.handleWithEip1193Passthrough(options);
     }
@@ -69,6 +86,83 @@ export class RequestRouter {
       return this.handleWithSdkState(options);
     }
     return this.handleWithWallet(options);
+  }
+
+  /**
+   * Attempts to resolve `wallet_getCapabilities` from the cached session's
+   * `eip155Capabilities` (published by the wallet in `sessionProperties`).
+   *
+   * The read goes through `transport.request({ method: 'wallet_getSession' })`,
+   * which the MWP transport serves from its local cache without a deeplink.
+   * Returns `undefined` (so the caller falls back to the wallet) when the data
+   * isn't available for the requested address/chains, e.g. against a wallet
+   * that predates capability publishing.
+   *
+   * @param options - The invoke method options for `wallet_getCapabilities`.
+   * The `request.params` are `[address]` or `[address, chainIds]`.
+   * @returns The resolved capabilities, or `undefined` on a cache miss.
+   */
+  async #tryLocalCapabilities(
+    options: InvokeMethodOptions,
+  ): Promise<Json | undefined> {
+    const params = options.request.params as
+      | [string, string[]?]
+      | undefined;
+    const address = params?.[0];
+    if (!address) {
+      return undefined;
+    }
+    const requestedChainIds = params?.[1];
+
+    let sessionResult: SessionData | undefined;
+    try {
+      const sessionResponse = await this.transport.request({
+        method: 'wallet_getSession',
+      });
+      if (sessionResponse.error) {
+        return undefined;
+      }
+      sessionResult = sessionResponse.result as SessionData | undefined;
+    } catch {
+      return undefined;
+    }
+
+    const capabilitiesByAddress = sessionResult?.sessionProperties?.[
+      EIP155_CAPABILITIES_SESSION_PROPERTY
+    ] as Eip155Capabilities | undefined;
+    if (!capabilitiesByAddress) {
+      return undefined;
+    }
+
+    // The wallet keys `eip155Capabilities` by the caveat's address casing
+    // (typically checksummed) while callers may pass any casing, so match
+    // case-insensitively.
+    const addressCapabilities = Object.entries(capabilitiesByAddress).find(
+      ([cachedAddress]) =>
+        cachedAddress.toLowerCase() === address.toLowerCase(),
+    )?.[1];
+    if (!addressCapabilities) {
+      return undefined;
+    }
+
+    if (!requestedChainIds || requestedChainIds.length === 0) {
+      return addressCapabilities as Json;
+    }
+
+    // If any requested chain isn't cached, fall back to the wallet rather than
+    // returning a partial result.
+    const filtered: Record<string, Eip155ChainCapabilities> = {};
+    for (const chainId of requestedChainIds) {
+      const chainEntry = Object.entries(addressCapabilities).find(
+        ([cachedChainId]) =>
+          cachedChainId.toLowerCase() === chainId.toLowerCase(),
+      );
+      if (!chainEntry) {
+        return undefined;
+      }
+      filtered[chainId] = chainEntry[1];
+    }
+    return filtered as Json;
   }
 
   /**

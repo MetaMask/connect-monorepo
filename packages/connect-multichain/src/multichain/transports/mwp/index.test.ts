@@ -780,4 +780,35 @@ t.describe('MWPTransport', () => {
       },
     );
   });
+
+  t.describe('getCachedResponse for wallet_getSession', () => {
+    t.it(
+      'serves the cached session (including sessionProperties.eip155Capabilities) without hitting the wallet',
+      async () => {
+        const eip155Capabilities = {
+          '0x742C3cF9Af45f91B109a81EfEaf11535ECDe9571': {
+            '0x1': { atomic: { status: 'supported' } },
+          },
+        };
+        const cached = {
+          result: {
+            sessionScopes: {},
+            sessionProperties: { eip155Capabilities },
+          },
+        };
+        (mockKvstore.get as any).mockResolvedValue(JSON.stringify(cached));
+
+        const response: any = await transport.request({
+          method: 'wallet_getSession',
+        });
+
+        t.expect(mockKvstore.get).toHaveBeenCalledWith('cache_wallet_getSession');
+        t.expect(response.result.sessionProperties.eip155Capabilities).toStrictEqual(
+          eip155Capabilities,
+        );
+        // Served from cache, so nothing is sent to the wallet.
+        t.expect(mockDappClient.sendRequest).not.toHaveBeenCalled();
+      },
+    );
+  });
 });
