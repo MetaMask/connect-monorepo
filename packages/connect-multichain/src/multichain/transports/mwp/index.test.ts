@@ -813,5 +813,40 @@ t.describe('MWPTransport', () => {
         t.expect(mockDappClient.sendRequest).not.toHaveBeenCalled();
       },
     );
+
+    t.it(
+      'getCachedSession returns the cached session without hitting the wallet or replaying notifications',
+      async () => {
+        const eip155Capabilities = {
+          '0x742C3cF9Af45f91B109a81EfEaf11535ECDe9571': {
+            '0x1': { atomic: { status: 'supported' } },
+          },
+        };
+        const cached = {
+          result: {
+            sessionScopes: {},
+            sessionProperties: { eip155Capabilities },
+          },
+        };
+        (mockKvstore.get as any).mockResolvedValue(JSON.stringify(cached));
+
+        const session = await transport.getCachedSession();
+
+        t.expect(session?.sessionProperties?.eip155Capabilities).toStrictEqual(
+          eip155Capabilities,
+        );
+        t.expect(mockDappClient.sendRequest).not.toHaveBeenCalled();
+      },
+    );
+
+    t.it(
+      'getCachedSession resolves undefined when nothing is cached',
+      async () => {
+        (mockKvstore.get as any).mockResolvedValue(null);
+
+        await t.expect(transport.getCachedSession()).resolves.toBeUndefined();
+        t.expect(mockDappClient.sendRequest).not.toHaveBeenCalled();
+      },
+    );
   });
 });

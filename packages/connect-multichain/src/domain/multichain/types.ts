@@ -3,6 +3,7 @@ import type {
   SessionRequest,
 } from '@metamask/mobile-wallet-protocol-core';
 import type {
+  SessionData,
   SessionProperties,
   Transport,
   TransportRequest,
@@ -16,7 +17,7 @@ import type { PlatformType } from '../platform';
 import type { StoreClient } from '../store';
 import type { RpcUrlsMap, Scope } from './api/types';
 
-export type { SessionData } from '@metamask/multichain-api-client';
+export type { SessionData };
 
 /**
  * Configuration settings for the dapp using the SDK.
@@ -169,6 +170,13 @@ export type ExtendedTransport = Omit<Transport, 'connect'> & {
   getActiveSession: () => Promise<Session | undefined>;
 
   getStoredPendingSessionRequest: () => Promise<SessionRequest | null>;
+
+  /**
+   * Reads the cached `wallet_getSession` result without issuing a live
+   * request to the wallet. Resolves `undefined` when nothing is cached.
+   * Optional: only transports that maintain a session cache implement it.
+   */
+  getCachedSession?: () => Promise<SessionData | undefined>;
 
   disconnect: (scopes: Scope[]) => Promise<void>;
 };

@@ -862,6 +862,24 @@ export class MWPTransport implements ExtendedTransport {
     }
   }
 
+  /**
+   * Reads the cached `wallet_getSession` result from the kvstore without
+   * issuing a live request to the wallet and without replaying transport
+   * notifications. Lets callers (e.g. local `wallet_getCapabilities`
+   * resolution) treat a cache miss as an immediate fallback instead of
+   * waiting on a relay request that a backgrounded wallet may never answer.
+   *
+   * @returns The cached session data, or `undefined` when nothing is cached.
+   */
+  async getCachedSession(): Promise<SessionData | undefined> {
+    const cached = await this.getCachedResponse({
+      jsonrpc: '2.0',
+      id: '0',
+      method: 'wallet_getSession',
+    });
+    return cached?.result as SessionData | undefined;
+  }
+
   async request<
     TRequest extends TransportRequest,
     TResponse extends TransportResponse,
