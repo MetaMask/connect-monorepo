@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Resolve `wallet_getCapabilities` locally from the cached session on the MWP (mobile deeplink) transport, avoiding a deeplink round-trip. When the wallet publishes EIP-5792 capabilities in `sessionProperties.eip155Capabilities`, `RequestRouter` answers `wallet_getCapabilities` from the cached `wallet_getSession` response (case-insensitive address/chain lookup) and falls back to the wallet on any miss, partial chain coverage, or an older wallet that doesn't publish capabilities. ([#XXX](https://github.com/MetaMask/connect-monorepo/pull/XXX))
+- Resolve `wallet_getCapabilities` locally from the cached session on the MWP (mobile deeplink) transport, avoiding a deeplink round-trip. When the wallet publishes EIP-5792 capabilities in `sessionProperties.eip155Capabilities`, `RequestRouter` answers `wallet_getCapabilities` from the cached `wallet_getSession` response (case-insensitive address/chain lookup) and falls back to the wallet on any miss, partial chain coverage, or an older wallet that doesn't publish capabilities. ([#339](https://github.com/MetaMask/connect-monorepo/pull/339))
 
 ### Fixed
 
