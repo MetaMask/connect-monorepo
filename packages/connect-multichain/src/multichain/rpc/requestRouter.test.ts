@@ -703,25 +703,18 @@ t.describe('RequestRouter', () => {
     );
 
     t.it(
-      'falls back to the wallet when a requested chain is not cached',
+      'does not fall back to the wallet when a requested chain is not cached and returns an empty object',
       async () => {
         const router = await createMwpRouter();
         const options = getCapabilitiesOptions([ADDRESS, ['0xa']]);
         mockTransport.getCachedSession.mockResolvedValue(
           buildSession({ [ADDRESS]: { '0x1': CAPS_MAINNET } }),
         );
-        mockTransport.request.mockResolvedValueOnce({
-          result: { '0xa': CAPS_BASE },
-        });
 
         const result = await router.invokeMethod(options);
 
-        t.expect(result).toStrictEqual({ '0xa': CAPS_BASE });
-        t.expect(mockTransport.request).toHaveBeenCalledTimes(1);
-        t.expect(mockTransport.request).toHaveBeenCalledWith({
-          method: 'wallet_invokeMethod',
-          params: options,
-        });
+        t.expect(result).toStrictEqual({});
+        t.expect(mockTransport.request).not.toHaveBeenCalled();
       },
     );
 
