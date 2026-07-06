@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { CaipChainId, Json } from '@metamask/utils';
+import type { CaipChainId, Hex, Json } from '@metamask/utils';
 
 import type EIP155 from './eip155';
 
@@ -111,7 +111,7 @@ export const EIP155_CAPABILITIES_SESSION_PROPERTY = 'eip155Capabilities';
  * EIP-5792 capabilities for a single account on a single chain, e.g.
  * `{ atomic: { status: 'supported' } }`.
  */
-export type Eip155ChainCapabilities = Record<string, Json>;
+export type Eip155ChainCapabilities = Record<Hex, Json>;
 
 /**
  * EIP-5792 capabilities published in a session's `sessionProperties` under
@@ -120,6 +120,6 @@ export type Eip155ChainCapabilities = Record<string, Json>;
  * mirroring what `wallet_getCapabilities` resolves to per chain.
  */
 export type Eip155Capabilities = Record<
-  string,
-  Record<string, Eip155ChainCapabilities>
+  Hex,
+  Record<Hex, Eip155ChainCapabilities>
 >;
