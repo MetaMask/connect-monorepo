@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import type { EIP1193Provider } from '@metamask/connect-evm';
 import { TEST_IDS } from '@metamask/playground-ui';
-import { send_eth_signTypedData_v4, send_personal_sign } from '../helpers/SignHelpers';
+import {
+  send_eth_signTypedData_v4,
+  send_personal_sign,
+} from '../helpers/SignHelpers';
 
 interface LegacyEVMCardProps {
   provider: EIP1193Provider;
@@ -78,9 +81,7 @@ export function LegacyEVMCard({
       return;
     }
     try {
-      const params = chainId
-        ? [accounts[0], [chainId]]
-        : [accounts[0]];
+      const params = chainId ? [accounts[0], [chainId]] : [accounts[0]];
       const result = await provider.request({
         method: 'wallet_getCapabilities',
         params,
@@ -191,9 +192,15 @@ export function LegacyEVMCard({
   };
 
   return (
-    <div data-testid={TEST_IDS.legacyEvm.card} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div
+      data-testid={TEST_IDS.legacyEvm.card}
+      className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200"
+    >
       <div className="flex items-center justify-between mb-4">
-        <h3 data-testid={TEST_IDS.legacyEvm.title} className="text-lg font-semibold text-gray-800 truncate">
+        <h3
+          data-testid={TEST_IDS.legacyEvm.title}
+          className="text-lg font-semibold text-gray-800 truncate"
+        >
           Legacy EVM Connection
         </h3>
         <button
@@ -208,24 +215,43 @@ export function LegacyEVMCard({
 
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <span data-testid={TEST_IDS.legacyEvm.chainIdLabel} className="text-sm font-medium text-gray-600">
+          <span
+            data-testid={TEST_IDS.legacyEvm.chainIdLabel}
+            className="text-sm font-medium text-gray-600"
+          >
             Connected Chain:
           </span>
-          <span data-testid={TEST_IDS.legacyEvm.chainIdValue} className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+          <span
+            data-testid={TEST_IDS.legacyEvm.chainIdValue}
+            className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
+          >
             {chainId || 'Not available'}
           </span>
         </div>
 
         <div className="flex items-center gap-2 mb-2">
-          <span data-testid={TEST_IDS.legacyEvm.accountsLabel} className="text-sm font-medium text-gray-600">Accounts:</span>
-          <span data-testid={TEST_IDS.legacyEvm.accountsValue} className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+          <span
+            data-testid={TEST_IDS.legacyEvm.accountsLabel}
+            className="text-sm font-medium text-gray-600"
+          >
+            Accounts:
+          </span>
+          <span
+            data-testid={TEST_IDS.legacyEvm.accountsValue}
+            className="text-sm text-gray-500 bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
+          >
             {accounts.length} available
           </span>
         </div>
 
         {accounts.length > 0 && (
-          <div data-testid={TEST_IDS.legacyEvm.activeAccount} className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-sm text-green-800 font-medium">Active Account:</p>
+          <div
+            data-testid={TEST_IDS.legacyEvm.activeAccount}
+            className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md"
+          >
+            <p className="text-sm text-green-800 font-medium">
+              Active Account:
+            </p>
             <p className="text-sm text-green-700 font-mono break-all">
               {accounts[0]}
             </p>
@@ -234,11 +260,20 @@ export function LegacyEVMCard({
       </div>
 
       {response && (
-        <div data-testid={TEST_IDS.legacyEvm.responseContainer} className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
-          <p data-testid={TEST_IDS.legacyEvm.responseLabel} className="text-sm font-medium text-gray-600 mb-1">
+        <div
+          data-testid={TEST_IDS.legacyEvm.responseContainer}
+          className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md"
+        >
+          <p
+            data-testid={TEST_IDS.legacyEvm.responseLabel}
+            className="text-sm font-medium text-gray-600 mb-1"
+          >
             Last Response:
           </p>
-          <p data-testid={TEST_IDS.legacyEvm.responseText} className="text-sm text-gray-700 font-mono break-all">
+          <p
+            data-testid={TEST_IDS.legacyEvm.responseText}
+            className="text-sm text-gray-700 font-mono break-all"
+          >
             {String(response)}
           </p>
         </div>
@@ -326,7 +361,10 @@ export function LegacyEVMCard({
           Add Polygon Chain
         </button>
 
-        <div data-testid={TEST_IDS.legacyEvm.readOnlySection} className="mt-4 pt-4 border-t border-gray-200">
+        <div
+          data-testid={TEST_IDS.legacyEvm.readOnlySection}
+          className="mt-4 pt-4 border-t border-gray-200"
+        >
           <h4 className="text-sm font-medium text-gray-700 mb-2">
             Read-Only RPC Calls
           </h4>

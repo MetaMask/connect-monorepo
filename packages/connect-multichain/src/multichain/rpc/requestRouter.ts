@@ -170,9 +170,10 @@ export class RequestRouter {
         ([cachedChainId]) =>
           cachedChainId.toLowerCase() === chainId.toLowerCase(),
       );
-      if (chainEntry) {
-        filtered[chainEntry[0]] = chainEntry[1];
+      if (!chainEntry) {
+        return undefined;
       }
+      filtered[chainEntry[0]] = chainEntry[1];
     }
     return filtered as Json;
   }
