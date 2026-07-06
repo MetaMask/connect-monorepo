@@ -723,10 +723,14 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     if (remainingScopes.length > 0) {
+      // Preserve `sessionProperties` (e.g. the wallet-published EIP-5792
+      // `eip155Capabilities`) across a partial disconnect; rebuilding the
+      // cached session from only `sessionScopes` would otherwise drop them.
       this.kvstore.set(
         SESSION_STORE_KEY,
         JSON.stringify({
           result: {
+            ...cachedSession,
             sessionScopes: newSessionScopes,
           },
         }),
