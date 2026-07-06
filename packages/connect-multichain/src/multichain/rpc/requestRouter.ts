@@ -63,19 +63,6 @@ export class RequestRouter {
    */
   async invokeMethod(options: InvokeMethodOptions): Promise<Json> {
     const { method } = options.request;
-    // On the MWP (mobile deeplink) transport, try to resolve
-    // `wallet_getCapabilities` from the cached session's `eip155Capabilities`
-    // so we avoid an extra deeplink round-trip to the wallet. Falls back to the
-    // wallet on any miss (older wallet, unknown address/chain, cache error).
-    if (
-      method === 'wallet_getCapabilities' &&
-      this.transportType === TransportType.MWP
-    ) {
-      const localCapabilities = await this.#tryLocalCapabilities(options);
-      if (localCapabilities !== undefined) {
-        return localCapabilities;
-      }
-    }
     if (EIP1193_PASSTHROUGH_METHODS.has(method)) {
       return this.handleWithEip1193Passthrough(options);
     }
@@ -385,6 +372,21 @@ export class RequestRouter {
   private async handleWithSdkState(
     options: InvokeMethodOptions,
   ): Promise<Json> {
+    // On the MWP (mobile deeplink) transport, try to resolve
+    // `wallet_getCapabilities` from the cached session's `eip155Capabilities`
+    // so we avoid an extra deeplink round-trip to the wallet. Falls back to the
+    // wallet on any miss (older wallet, unknown address/chain, cache error).
+    if (options.request.method === 'wallet_getCapabilities') {
+      if (this.transportType === TransportType.MWP) {
+        const localCapabilities = await this.#tryLocalCapabilities(options);
+        if (localCapabilities !== undefined) {
+          return localCapabilities;
+        }
+      }
+      // Fallback to wallet
+      return this.handleWithWallet(options);
+    }
+
     // TODO: to be implemented
     console.warn(
       `Method "${options.request.method}" is configured for SDK state handling, but this is not yet implemented. Falling back to wallet passthrough.`,
