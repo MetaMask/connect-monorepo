@@ -167,7 +167,11 @@ export const RPC_HANDLED_METHODS = new Set([
 ]);
 
 // Methods that are handled by the SDK directly
-export const SDK_HANDLED_METHODS = new Set(['eth_accounts', 'eth_chainId']);
+export const SDK_HANDLED_METHODS = new Set([
+  'eth_accounts',
+  'eth_chainId',
+  'wallet_getCapabilities',
+]);
 
 // EIP-1193 / legacy provider methods that bypass the multichain `wallet_invokeMethod`
 // envelope and are forwarded directly to the underlying transport's

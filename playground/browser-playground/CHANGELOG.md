@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add a `wallet_getCapabilities` button to the Legacy EVM card's read-only RPC calls, requesting EIP-5792 capabilities for the active account (scoped to the connected chain when available). ([#339](https://github.com/MetaMask/connect-monorepo/pull/339))
+
 ## [0.8.1]
 
 ### Changed
