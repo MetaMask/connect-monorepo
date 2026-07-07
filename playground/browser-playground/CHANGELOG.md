@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2]
+
 ### Added
 
 - Add a `wallet_getCapabilities` button to the Legacy EVM card's read-only RPC calls, requesting EIP-5792 capabilities for the active account (scoped to the connected chain when available). ([#339](https://github.com/MetaMask/connect-monorepo/pull/339))
+
+### Changed
+
+- Bump workspace dependencies:
+  - @metamask/connect-evm@2.1.1
+  - @metamask/connect-multichain@1.2.0
 
 ## [0.8.1]
 
@@ -265,7 +273,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.8.1...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.8.2...HEAD
+[0.8.2]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.8.1...@metamask/browser-playground@0.8.2
 [0.8.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.8.0...@metamask/browser-playground@0.8.1
 [0.8.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.5...@metamask/browser-playground@0.8.0
 [0.7.5]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/browser-playground@0.7.4...@metamask/browser-playground@0.7.5
