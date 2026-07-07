@@ -11,8 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Bump workspace dependencies:
-  - @metamask/connect-multichain@1.2.0
+- Bump `@metamask/connect-multichain` to `^1.2.0` ([#340](https://github.com/MetaMask/connect-monorepo/pull/340))
 
 ## [2.1.0]
 

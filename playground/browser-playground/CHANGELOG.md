@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump workspace dependencies:
   - @metamask/connect-evm@2.1.1
   - @metamask/connect-multichain@1.2.0
+  - @metamask/connect-solana@2.1.1
 
 ## [0.8.1]
 
