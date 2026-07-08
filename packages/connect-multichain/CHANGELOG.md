@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0]
+
 ### Added
 
 - Resolve `wallet_getCapabilities` locally from the cached session on the MWP (mobile deeplink) transport, avoiding a deeplink round-trip. When the wallet publishes EIP-5792 capabilities in `sessionProperties.eip155Capabilities`, `RequestRouter` answers `wallet_getCapabilities` from the transport's cached session (read cache-only via the new `getCachedSession` accessor, so a cache miss falls back to the deeplink immediately; case-insensitive address/chain lookup) and falls back to the wallet on any miss, partial chain coverage, malformed params, or an older wallet that doesn't publish capabilities. ([#339](https://github.com/MetaMask/connect-monorepo/pull/339))
@@ -326,7 +328,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.2.0...HEAD
+[1.2.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.1.0...@metamask/connect-multichain@1.2.0
 [1.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@1.0.0...@metamask/connect-multichain@1.1.0
 [1.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.15.0...@metamask/connect-multichain@1.0.0
 [0.15.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-multichain@0.14.0...@metamask/connect-multichain@0.15.0

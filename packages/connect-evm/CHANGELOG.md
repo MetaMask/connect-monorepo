@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1]
+
+### Added
+
+- Resolve `wallet_getCapabilities` locally from the cached session when possible, avoiding a deeplink round-trip ([#339](https://github.com/MetaMask/connect-monorepo/pull/339))
+
 ### Fixed
 
 - Recognize MetaMask Flask (`io.metamask.flask`) as a native MetaMask EIP-6963 provider. The MMConnect-managed provider announcement is now suppressed when Flask has announced, avoiding a duplicate MetaMask entry in wallet pickers. ([#336](https://github.com/MetaMask/connect-monorepo/pull/336))
@@ -276,7 +282,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release ([#58](https://github.com/MetaMask/connect-monorepo/pull/58))
 
-[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@2.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@2.1.1...HEAD
+[2.1.1]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@2.1.0...@metamask/connect-evm@2.1.1
 [2.1.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@2.0.0...@metamask/connect-evm@2.1.0
 [2.0.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.4.0...@metamask/connect-evm@2.0.0
 [1.4.0]: https://github.com/MetaMask/connect-monorepo/compare/@metamask/connect-evm@1.3.1...@metamask/connect-evm@1.4.0
