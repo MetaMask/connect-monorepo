@@ -1,0 +1,108 @@
+diff --git a/app/core/SDKConnectV2/services/connection.ts b/app/core/SDKConnectV2/services/connection.ts
+index 2e0a0a1de9..a6b9904f1f 100644
+--- a/app/core/SDKConnectV2/services/connection.ts
++++ b/app/core/SDKConnectV2/services/connection.ts
+@@ -16,6 +16,7 @@ import { IHostApplicationAdapter } from '../types/host-application-adapter';
+ import { errorCodes, providerErrors } from '@metamask/rpc-errors';
+ import Engine from '../../Engine';
+ import NavigationService from '../../NavigationService';
++import { mwpPerf } from './mwp-perf';
+ 
+ /**
+  * Known user-rejection error codes across ecosystems.
+@@ -250,6 +251,7 @@ export class Connection {
+     relayURL: string,
+     hostApp: IHostApplicationAdapter,
+   ): Promise<Connection> {
++    const perfStart = Date.now();
+     const transport = await WebSocketTransport.create({
+       url: relayURL,
+       kvstore: new KVStore(`mwp/transport/${connInfo.id}`),
+@@ -259,6 +261,7 @@ export class Connection {
+       new KVStore(`mwp/session-store/${connInfo.id}`),
+     );
+     const client = new WalletClient({ transport, sessionstore, keymanager });
++    mwpPerf('create', connInfo.id, { durMs: Date.now() - perfStart });
+ 
+     return new Connection(connInfo, client, hostApp);
+   }
+@@ -268,14 +271,46 @@ export class Connection {
+    * @param sessionRequest - The session request.
+    */
+   public async connect(sessionRequest: SessionRequest): Promise<void> {
+-    await this.client.connect({ sessionRequest });
++    // KEY METRIC: duration of the MWP relay handshake for a NEW connect.
++    const perfStart = Date.now();
++    mwpPerf('connect_start', this.id);
++    try {
++      await this.client.connect({ sessionRequest });
++      mwpPerf('connect_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: true,
++      });
++    } catch (error) {
++      mwpPerf('connect_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: false,
++      });
++      throw error;
++    }
+   }
+ 
+   /**
+    * Resumes a previously established session.
+    */
+   public async resume(): Promise<void> {
+-    await this.client.resume(this.id);
++    // Resume of a persisted session (cold-start loop). Interleaving of these
++    // lines vs connect_start/connect_end shows whether resume work contends
++    // with (main) or defers to (PR branch) an in-flight new connect.
++    const perfStart = Date.now();
++    mwpPerf('resume_start', this.id);
++    try {
++      await this.client.resume(this.id);
++      mwpPerf('resume_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: true,
++      });
++    } catch (error) {
++      mwpPerf('resume_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: false,
++      });
++      throw error;
++    }
+   }
+ 
+   /**
+diff --git a/app/core/SDKConnectV2/services/mwp-perf.ts b/app/core/SDKConnectV2/services/mwp-perf.ts
+new file mode 100644
+index 0000000000..c2ffd076e5
+--- /dev/null
++++ b/app/core/SDKConnectV2/services/mwp-perf.ts
+@@ -0,0 +1,25 @@
++/**
++ * TEMPORARY perf instrumentation for MWP connection benchmarking.
++ * NOT FOR MERGE — applied locally via mwp-perf-instrumentation.patch to
++ * compare connect-handshake latency across branches (WAPI-1566 / PR #32475).
++ *
++ * Emits single-line JSON via console.warn so it is visible in Metro, Xcode
++ * console, and `adb logcat` regardless of debug-log gating:
++ *
++ *   [MWPPerf] {"event":"connect_end","id":"…","t":1234,"durMs":842,"ok":true}
++ *
++ * `t` is ms since JS module load (aligns events within one app session).
++ * Collect with e.g.:  adb logcat | grep MWPPerf
++ */
++const t0 = Date.now();
++
++export const mwpPerf = (
++  event: string,
++  id: string,
++  extra?: Record<string, unknown>,
++): void => {
++  // eslint-disable-next-line no-console
++  console.warn(
++    `[MWPPerf] ${JSON.stringify({ event, id, t: Date.now() - t0, ...extra })}`,
++  );
++};
