@@ -19,13 +19,40 @@ import { PrivateKey } from 'eciesjs';
  * (app/core/SDKConnectV2/types/connection-request.ts).
  *
  * @param {string} label - Human-readable dapp name for the session.
+ * @param {{ withRequest?: boolean }} [options] - When `withRequest` is true,
+ * embeds an inline `wallet_createSession` request (`initialMessage`) like the
+ * SDK's direct deeplink flow. This makes the wallet surface a connection
+ * APPROVAL (reject it manually between trials) and emits the
+ * `create_session_received` marker needed to measure the approval path
+ * (e.g. metamask-mobile#32470). Without it (QR-style), the session persists
+ * silently with no approval UI.
  * @returns {{ id: string, url: string }} Session id and deeplink URL.
  */
-export const buildConnectUrl = (label) => {
+export const buildConnectUrl = (label, { withRequest = false } = {}) => {
   const id = randomUUID();
   const publicKeyB64 = Buffer.from(
     new PrivateKey().publicKey.toBytes(true), // 33-byte compressed point
   ).toString('base64');
+
+  // Shape mirrors the SDK's initialPayload: multiplexed stream name + JSON-RPC.
+  const initialMessage = withRequest
+    ? {
+        type: 'message',
+        payload: {
+          name: 'metamask-multichain-provider',
+          data: {
+            id: 1,
+            jsonrpc: '2.0',
+            method: 'wallet_createSession',
+            params: {
+              optionalScopes: {
+                'eip155:1': { methods: ['eth_chainId'], notifications: [] },
+              },
+            },
+          },
+        },
+      }
+    : undefined;
 
   const connectionRequest = {
     sessionRequest: {
@@ -34,6 +61,7 @@ export const buildConnectUrl = (label) => {
       channel: `handshake:${id}`,
       publicKeyB64,
       expiresAt: Date.now() + 10 * 60 * 1000,
+      ...(initialMessage ? { initialMessage } : {}),
     },
     metadata: {
       dapp: {

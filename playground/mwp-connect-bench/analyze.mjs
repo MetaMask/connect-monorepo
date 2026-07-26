@@ -53,6 +53,21 @@ for (const file of files) {
 
   const durations = connectEnds.map((e) => e.durMs).sort((a, b) => a - b);
 
+  // Approval gate: how long after connect_start the wallet_createSession
+  // request became available to the approval flow. ≈ handshake duration when
+  // the approval is gated behind the relay (main); ≈ 0 with eager approval
+  // (metamask-mobile#32470). Requires trials run with --with-request.
+  const approvalGates = [];
+  for (const received of events.filter(
+    (e) => e.event === 'create_session_received',
+  )) {
+    const start = events.find(
+      (e) => e.event === 'connect_start' && e.id === received.id,
+    );
+    if (start) approvalGates.push(received.t - start.t);
+  }
+  approvalGates.sort((a, b) => a - b);
+
   console.log(`\n=== ${file} ===`);
   console.log(`connects: ${connectEnds.length} ok, ${connectFails.length} failed`);
   if (durations.length > 0) {
@@ -60,6 +75,14 @@ for (const file of files) {
       `connect handshake durMs — median: ${percentile(durations, 50)}  ` +
         `p75: ${percentile(durations, 75)}  min: ${durations[0]}  ` +
         `max: ${durations[durations.length - 1]}  (n=${durations.length})`,
+    );
+  }
+  if (approvalGates.length > 0) {
+    console.log(
+      `approval gate ms (create_session_received − connect_start) — ` +
+        `median: ${percentile(approvalGates, 50)}  ` +
+        `max: ${approvalGates[approvalGates.length - 1]}  ` +
+        `(n=${approvalGates.length}; ≈handshake when gated, ≈0 when eager)`,
     );
   }
   console.log(

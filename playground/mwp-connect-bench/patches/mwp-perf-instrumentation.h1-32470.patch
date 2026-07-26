@@ -1,5 +1,5 @@
 diff --git a/app/core/SDKConnectV2/services/connection.ts b/app/core/SDKConnectV2/services/connection.ts
-index 2e0a0a1de9..9b4301a7f6 100644
+index 97167540c2..c616804a14 100644
 --- a/app/core/SDKConnectV2/services/connection.ts
 +++ b/app/core/SDKConnectV2/services/connection.ts
 @@ -16,6 +16,7 @@ import { IHostApplicationAdapter } from '../types/host-application-adapter';
@@ -10,22 +10,22 @@ index 2e0a0a1de9..9b4301a7f6 100644
  
  /**
   * Known user-rejection error codes across ecosystems.
-@@ -105,6 +106,14 @@ export class Connection {
-         id: data?.id,
-       });
+@@ -227,6 +228,14 @@ export class Connection {
+       id: data?.id,
+     });
  
-+      // KEY METRIC (approval path): when the wallet_createSession request
-+      // reaches the wallet — i.e. when the connection approval can begin.
-+      // Compare against connect_start to see how long the approval was
-+      // gated behind the relay handshake.
-+      if (data?.method === 'wallet_createSession') {
-+        mwpPerf('create_session_received', this.id);
-+      }
++    // KEY METRIC (approval path): when the wallet_createSession request
++    // reaches the wallet — i.e. when the connection approval can begin.
++    // On this branch (eager approval) it fires ~immediately at connect_start
++    // instead of after the relay handshake.
++    if (data?.method === 'wallet_createSession') {
++      mwpPerf('create_session_received', this.id);
++    }
 +
-       const isWalletCreateSessionRequest =
-         payload &&
-         typeof payload === 'object' &&
-@@ -250,6 +259,7 @@ export class Connection {
+     const isWalletCreateSessionRequest =
+       payload &&
+       typeof payload === 'object' &&
+@@ -293,6 +302,7 @@ export class Connection {
      relayURL: string,
      hostApp: IHostApplicationAdapter,
    ): Promise<Connection> {
@@ -33,7 +33,7 @@ index 2e0a0a1de9..9b4301a7f6 100644
      const transport = await WebSocketTransport.create({
        url: relayURL,
        kvstore: new KVStore(`mwp/transport/${connInfo.id}`),
-@@ -259,6 +269,7 @@ export class Connection {
+@@ -302,6 +312,7 @@ export class Connection {
        new KVStore(`mwp/session-store/${connInfo.id}`),
      );
      const client = new WalletClient({ transport, sessionstore, keymanager });
@@ -41,41 +41,43 @@ index 2e0a0a1de9..9b4301a7f6 100644
  
      return new Connection(connInfo, client, hostApp);
    }
-@@ -268,14 +279,46 @@ export class Connection {
-    * @param sessionRequest - The session request.
+@@ -327,6 +338,9 @@ export class Connection {
     */
    public async connect(sessionRequest: SessionRequest): Promise<void> {
--    await this.client.connect({ sessionRequest });
+     const { initialMessage } = sessionRequest;
 +    // KEY METRIC: duration of the MWP relay handshake for a NEW connect.
 +    const perfStart = Date.now();
 +    mwpPerf('connect_start', this.id);
-+    try {
-+      await this.client.connect({ sessionRequest });
+ 
+     if (initialMessage) {
+       // Fire-and-forget: drives the approval modal from the inline payload
+@@ -341,7 +355,15 @@ export class Connection {
+           : sessionRequest,
+       });
+       await this.clientReady;
 +      mwpPerf('connect_end', this.id, {
 +        durMs: Date.now() - perfStart,
 +        ok: true,
 +      });
-+    } catch (error) {
+     } catch (error) {
 +      mwpPerf('connect_end', this.id, {
 +        durMs: Date.now() - perfStart,
 +        ok: false,
 +      });
-+      throw error;
-+    }
-   }
- 
-   /**
+       // The handshake failed after we eagerly surfaced the approval. Reject the
+       // pending approval so the user isn't left looking at a connection request
+       // whose response can never be delivered.
+@@ -356,8 +378,22 @@ export class Connection {
     * Resumes a previously established session.
     */
    public async resume(): Promise<void> {
--    await this.client.resume(this.id);
-+    // Resume of a persisted session (cold-start loop). Interleaving of these
-+    // lines vs connect_start/connect_end shows whether resume work contends
-+    // with (main) or defers to (PR branch) an in-flight new connect.
+-    this.clientReady = this.client.resume(this.id);
+-    await this.clientReady;
 +    const perfStart = Date.now();
 +    mwpPerf('resume_start', this.id);
 +    try {
-+      await this.client.resume(this.id);
++      this.clientReady = this.client.resume(this.id);
++      await this.clientReady;
 +      mwpPerf('resume_end', this.id, {
 +        durMs: Date.now() - perfStart,
 +        ok: true,

@@ -9,17 +9,23 @@
  * `yarn watch | tee <arm>.log` so analyze.mjs can consume it).
  *
  * Usage:
- *   node run-trial.mjs             # one trial
- *   node run-trial.mjs 5           # five trials, 20s apart
- *   node run-trial.mjs 5 30000     # five trials, 30s apart
+ *   node run-trial.mjs                  # one trial
+ *   node run-trial.mjs 5                # five trials, 20s apart
+ *   node run-trial.mjs 5 30000          # five trials, 30s apart
+ *   node run-trial.mjs 5 30000 --with-request
+ *     # embeds an inline wallet_createSession (direct-deeplink flow): the
+ *     # wallet shows a connection APPROVAL each trial (reject it manually)
+ *     # and logs create_session_received — required to measure the approval
+ *     # path (e.g. metamask-mobile#32470 eager approval).
  */
 import { buildConnectUrl, openDeeplink, sleep } from './lib.mjs';
 
 const count = Number(process.argv[2] ?? 1);
 const delayMs = Number(process.argv[3] ?? 20000);
+const withRequest = process.argv.includes('--with-request');
 
 for (let n = 1; n <= count; n++) {
-  const { id, url } = buildConnectUrl(`Trial ${Date.now()}`);
+  const { id, url } = buildConnectUrl(`Trial ${Date.now()}`, { withRequest });
   console.log(`[trial ${n}/${count}] session id=${id}`);
   // -t: terminate the app first so every trial is a true cold start.
   openDeeplink(url, { terminateFirst: true });
