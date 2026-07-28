@@ -77,23 +77,45 @@ export const buildConnectUrl = (label, { withRequest = false } = {}) => {
 };
 
 /**
- * Opens a URL in the simulator MetaMask via the `mmdl` CLI
- * (https://github.com/MetaMask — internal tool; any equivalent of
- * `xcrun simctl openurl booted <url>` with optional pre-terminate works).
- *
- * @param {string} url - The deeplink to open.
- * @param {{ terminateFirst?: boolean }} [options] - Terminate the app first
- * so the launch is a true cold start.
- */
-export const openDeeplink = (url, { terminateFirst = false } = {}) => {
-  const args = terminateFirst ? ['-t', url] : [url];
-  execFileSync('mmdl', args, { stdio: 'inherit' });
-};
-
-/**
  * Waits for the given number of milliseconds.
  *
  * @param {number} ms - Milliseconds to sleep.
  * @returns {Promise<void>} Resolves after the delay.
  */
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Simulator target and app under test. Overridable so the harness works with
+ * any simulator (UDID or "booted") and any MetaMask build flavor (e.g. the
+ * QA bundle id `io.metamask.MetaMask-QA`).
+ */
+// eslint-disable-next-line n/no-process-env -- deliberate env-var override for a local benchmark script
+const SIM_DEVICE = process.env.BENCH_SIM_DEVICE ?? 'booted';
+// eslint-disable-next-line n/no-process-env -- deliberate env-var override for a local benchmark script
+const BUNDLE_ID = process.env.BENCH_BUNDLE_ID ?? 'io.metamask.MetaMask';
+
+/**
+ * Opens a deeplink in the simulator MetaMask via `xcrun simctl` (ships with
+ * Xcode — no extra tooling required).
+ *
+ * @param {string} url - The deeplink to open.
+ * @param {{ terminateFirst?: boolean }} [options] - Terminate the app first
+ * so the launch is a true cold start.
+ * @returns {Promise<void>} Resolves once the deeplink has been dispatched.
+ */
+export const openDeeplink = async (url, { terminateFirst = false } = {}) => {
+  if (terminateFirst) {
+    try {
+      execFileSync('xcrun', ['simctl', 'terminate', SIM_DEVICE, BUNDLE_ID], {
+        stdio: 'ignore',
+      });
+    } catch {
+      // App wasn't running — fine, we only need it not-running.
+    }
+    // Let the OS finish tearing the process down before relaunching.
+    await sleep(750);
+  }
+  execFileSync('xcrun', ['simctl', 'openurl', SIM_DEVICE, url], {
+    stdio: 'inherit',
+  });
+};

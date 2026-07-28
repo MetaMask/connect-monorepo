@@ -15,6 +15,9 @@ Mac's CPU is faster than device-class hardware, which _underestimates_
 contention effects — if a measured delta is small, confirm on a physical
 device before concluding a change isn't worth it.
 
+> **Agents / operators**: see [AGENTS.md](./AGENTS.md) for the step-by-step
+> run playbooks (dev vs Release builds) and the list of known pitfalls.
+
 ## Contents
 
 | File                                              | Purpose                                                                                                                                                                                         |
@@ -24,7 +27,7 @@ device before concluding a change isn't worth it.
 | `seed-sessions.mjs`                               | Persists N synthetic MWP sessions (the cold-start resume load).                                                                                                                                 |
 | `run-trial.mjs`                                   | One measurement trial: force-kill app → cold-start via a fresh connect deeplink.                                                                                                                |
 | `analyze.mjs`                                     | Parses `[MWPPerf]` lines from tee'd Metro logs **or** raw JSON lines from the on-device `mwp-perf.log` (Release builds); prints medians + safety/contention indicators.                         |
-| `lib.mjs`                                         | Builds valid trusted-mode connect deeplinks (real secp256k1 keys via `eciesjs`), opens them via `mmdl`.                                                                                         |
+| `lib.mjs`                                         | Builds valid trusted-mode connect deeplinks (real secp256k1 keys via `eciesjs`), opens them via `xcrun simctl`.                                                                                 |
 
 ## How the synthetic connects work
 
@@ -39,9 +42,11 @@ peer-key check.
 ## Prerequisites
 
 - A `metamask-mobile` checkout (any path — you apply the patch inside it).
-- `mmdl` CLI on PATH — opens deeplinks in the simulator MetaMask
-  (env overrides: `MMDL_BUNDLE_ID`, `MMDL_DEVICE`). Any equivalent of
-  `xcrun simctl openurl booted <url>` with optional pre-terminate also works.
+- macOS with Xcode installed — deeplinks are delivered with `xcrun simctl`
+  (terminate + openurl), no other tooling required. Env overrides:
+  - `BENCH_SIM_DEVICE` — simulator UDID (default `booted`);
+  - `BENCH_BUNDLE_ID` — app bundle id (default `io.metamask.MetaMask`; use
+    `io.metamask.MetaMask-QA` for QA builds).
 - Booted iOS simulator with a dev build of MetaMask, onboarded (wallet created).
 - `yarn install` at the monorepo root (installs this package's `eciesjs`).
 

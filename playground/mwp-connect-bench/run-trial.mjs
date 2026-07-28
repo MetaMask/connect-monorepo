@@ -27,8 +27,8 @@ const withRequest = process.argv.includes('--with-request');
 for (let trialIndex = 1; trialIndex <= count; trialIndex++) {
   const { id, url } = buildConnectUrl(`Trial ${Date.now()}`, { withRequest });
   console.log(`[trial ${trialIndex}/${count}] session id=${id}`);
-  // -t: terminate the app first so every trial is a true cold start.
-  openDeeplink(url, { terminateFirst: true });
+  // Terminate the app first so every trial is a true cold start.
+  await openDeeplink(url, { terminateFirst: true });
   if (trialIndex < count) {
     console.log(`  waiting ${delayMs}ms for resume/handshake to settle…`);
     await sleep(delayMs);

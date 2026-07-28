@@ -1,6 +1,7 @@
 /**
  * Seeds persisted MetaMask Connect (SDKConnectV2 / MWP) sessions in the iOS
- * simulator by firing synthetic trusted-mode connect deeplinks via `mmdl`.
+ * simulator by firing synthetic trusted-mode connect deeplinks via
+ * `xcrun simctl`.
  * Each seed performs a real relay handshake and persists a session that the
  * app resumes on every cold start — the background load PR #32475 defers.
  *
@@ -30,7 +31,7 @@ for (let seedIndex = 1; seedIndex <= count; seedIndex++) {
   }
   console.log(`[${seedIndex}/${count}] ${label} (id=${id})`);
   // Open in-place (no terminate) so earlier handshakes finish undisturbed.
-  openDeeplink(url);
+  await openDeeplink(url);
   if (seedIndex < count) {
     await sleep(delayMs);
   }
