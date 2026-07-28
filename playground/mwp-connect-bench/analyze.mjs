@@ -22,10 +22,16 @@ const percentile = (sorted, p) =>
 for (const file of files) {
   const events = [];
   for (const line of readFileSync(file, 'utf8').split('\n')) {
+    // Two supported formats:
+    //  - Metro/console capture: "... [MWPPerf] {json}" (dev builds)
+    //  - Raw file capture: "{json}" per line from the app's Documents/
+    //    mwp-perf.log (release builds)
     const idx = line.indexOf('[MWPPerf] ');
-    if (idx === -1) continue;
+    const jsonText =
+      idx !== -1 ? line.slice(idx + '[MWPPerf] '.length) : line.trim();
+    if (!jsonText.startsWith('{')) continue;
     try {
-      events.push(JSON.parse(line.slice(idx + '[MWPPerf] '.length)));
+      events.push(JSON.parse(jsonText));
     } catch {
       // tolerate wrapped/truncated lines
     }
