@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Runs one cold-start connect trial: force-terminates the simulator MetaMask,
  * then fires a fresh synthetic connect deeplink so the app cold-launches
@@ -18,18 +17,19 @@
  *     # and logs create_session_received — required to measure the approval
  *     # path (e.g. metamask-mobile#32470 eager approval).
  */
+// eslint-disable-next-line import-x/extensions -- plain Node ESM script; the runtime import requires the file extension
 import { buildConnectUrl, openDeeplink, sleep } from './lib.mjs';
 
 const count = Number(process.argv[2] ?? 1);
 const delayMs = Number(process.argv[3] ?? 20000);
 const withRequest = process.argv.includes('--with-request');
 
-for (let n = 1; n <= count; n++) {
+for (let trialIndex = 1; trialIndex <= count; trialIndex++) {
   const { id, url } = buildConnectUrl(`Trial ${Date.now()}`, { withRequest });
-  console.log(`[trial ${n}/${count}] session id=${id}`);
+  console.log(`[trial ${trialIndex}/${count}] session id=${id}`);
   // -t: terminate the app first so every trial is a true cold start.
   openDeeplink(url, { terminateFirst: true });
-  if (n < count) {
+  if (trialIndex < count) {
     console.log(`  waiting ${delayMs}ms for resume/handshake to settle…`);
     await sleep(delayMs);
   }

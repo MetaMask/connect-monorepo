@@ -1,9 +1,9 @@
 /**
  * Shared helpers for the MWP connect benchmark harness.
  */
+import { PrivateKey } from 'eciesjs';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { PrivateKey } from 'eciesjs';
 
 /**
  * Builds a synthetic, valid trusted-mode MWP connect deeplink.
@@ -72,8 +72,8 @@ export const buildConnectUrl = (label, { withRequest = false } = {}) => {
     },
   };
 
-  const p = encodeURIComponent(JSON.stringify(connectionRequest));
-  return { id, url: `metamask://connect/mwp?p=${p}` };
+  const payload = encodeURIComponent(JSON.stringify(connectionRequest));
+  return { id, url: `metamask://connect/mwp?p=${payload}` };
 };
 
 /**
@@ -91,6 +91,8 @@ export const openDeeplink = (url, { terminateFirst = false } = {}) => {
 };
 
 /**
+ * Waits for the given number of milliseconds.
+ *
  * @param {number} ms - Milliseconds to sleep.
  * @returns {Promise<void>} Resolves after the delay.
  */

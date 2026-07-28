@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Seeds persisted MetaMask Connect (SDKConnectV2 / MWP) sessions in the iOS
  * simulator by firing synthetic trusted-mode connect deeplinks via `mmdl`.
@@ -11,6 +10,7 @@
  *   node seed-sessions.mjs 10 6000         # 6s between connects
  *   node seed-sessions.mjs 3 0 --dry-run   # print URLs, don't open
  */
+// eslint-disable-next-line import-x/extensions -- plain Node ESM script; the runtime import requires the file extension
 import { buildConnectUrl, openDeeplink, sleep } from './lib.mjs';
 
 const count = Number(process.argv[2] ?? 18);
@@ -21,17 +21,19 @@ console.log(
   `Seeding ${count} MWP session(s), ${delayMs}ms apart${dryRun ? ' [dry-run]' : ''}`,
 );
 
-for (let n = 1; n <= count; n++) {
-  const label = `Seed Dapp ${String(n).padStart(2, '0')}`;
+for (let seedIndex = 1; seedIndex <= count; seedIndex++) {
+  const label = `Seed Dapp ${String(seedIndex).padStart(2, '0')}`;
   const { id, url } = buildConnectUrl(label);
   if (dryRun) {
-    console.log(`[${n}/${count}] id=${id} ${url.slice(0, 100)}…`);
+    console.log(`[${seedIndex}/${count}] id=${id} ${url.slice(0, 100)}…`);
     continue;
   }
-  console.log(`[${n}/${count}] ${label} (id=${id})`);
+  console.log(`[${seedIndex}/${count}] ${label} (id=${id})`);
   // Open in-place (no terminate) so earlier handshakes finish undisturbed.
   openDeeplink(url);
-  if (n < count) await sleep(delayMs);
+  if (seedIndex < count) {
+    await sleep(delayMs);
+  }
 }
 
 console.log(
