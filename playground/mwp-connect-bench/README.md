@@ -11,20 +11,20 @@ any MWP connect-latency experiment (see WAPI-1564 for the broader latency
 investigation).
 
 The rig uses real Safari/WebKit and real relay traffic. Simulator caveat: your
-Mac's CPU is faster than device-class hardware, which *underestimates*
+Mac's CPU is faster than device-class hardware, which _underestimates_
 contention effects — if a measured delta is small, confirm on a physical
 device before concluding a change isn't worth it.
 
 ## Contents
 
-| File | Purpose |
-| --- | --- |
-| `patches/mwp-perf-instrumentation.patch` | Adds `[MWPPerf]` timing logs to metamask-mobile's `connection.ts` (+ helper module). Applies to `main`, #32475, and #32473 branches. **Not for merge** — apply locally to the build under test. |
-| `patches/mwp-perf-instrumentation.h1-32470.patch` | Same instrumentation adapted to #32470's refactored `connection.ts` (eager-approval branch). |
-| `seed-sessions.mjs` | Persists N synthetic MWP sessions (the cold-start resume load). |
-| `run-trial.mjs` | One measurement trial: force-kill app → cold-start via a fresh connect deeplink. |
-| `analyze.mjs` | Parses `[MWPPerf]` lines from tee'd Metro logs **or** raw JSON lines from the on-device `mwp-perf.log` (Release builds); prints medians + safety/contention indicators. |
-| `lib.mjs` | Builds valid trusted-mode connect deeplinks (real secp256k1 keys via `eciesjs`), opens them via `mmdl`. |
+| File                                              | Purpose                                                                                                                                                                                         |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patches/mwp-perf-instrumentation.patch`          | Adds `[MWPPerf]` timing logs to metamask-mobile's `connection.ts` (+ helper module). Applies to `main`, #32475, and #32473 branches. **Not for merge** — apply locally to the build under test. |
+| `patches/mwp-perf-instrumentation.h1-32470.patch` | Same instrumentation adapted to #32470's refactored `connection.ts` (eager-approval branch).                                                                                                    |
+| `seed-sessions.mjs`                               | Persists N synthetic MWP sessions (the cold-start resume load).                                                                                                                                 |
+| `run-trial.mjs`                                   | One measurement trial: force-kill app → cold-start via a fresh connect deeplink.                                                                                                                |
+| `analyze.mjs`                                     | Parses `[MWPPerf]` lines from tee'd Metro logs **or** raw JSON lines from the on-device `mwp-perf.log` (Release builds); prints medians + safety/contention indicators.                         |
+| `lib.mjs`                                         | Builds valid trusted-mode connect deeplinks (real secp256k1 keys via `eciesjs`), opens them via `mmdl`.                                                                                         |
 
 ## How the synthetic connects work
 
@@ -107,11 +107,11 @@ cp "$DATA/Documents/mwp-perf.log" arm-pr.log        # then delete it before the 
 
 ## Measuring each latency PR
 
-| PR | What it changes | Patch to apply | Trial mode | Metric to compare (analyze.mjs) | Expected result |
-| --- | --- | --- | --- | --- | --- |
-| [#32475](https://github.com/MetaMask/metamask-mobile/pull/32475) defer resume/reconnect | New connect no longer contends with cold-start resume | `mwp-perf-instrumentation.patch` | default (no request) | `connect handshake durMs` median/p75, with ~18 seeded sessions | Lower on PR arm; `resume_start inside a connect window` drops to 0 |
-| [#32470](https://github.com/MetaMask/metamask-mobile/pull/32470) eager approval (draft) | Approval surfaces before the handshake instead of after | `mwp-perf-instrumentation.h1-32470.patch` on the PR arm; base patch on control | `--with-request` | `approval gate ms` (create_session_received − connect_start) | ≈ handshake duration on control; ≈ 0 ms on PR arm. `connect handshake durMs` itself is unchanged — that's expected |
-| [#32473](https://github.com/MetaMask/metamask-mobile/pull/32473) loading sheet | Perceived latency only (feedback while waiting) | `mwp-perf-instrumentation.patch` (applies cleanly) | either | None — no timing change expected; use the rig as a regression check (identical `connect`/`approval gate` numbers, sheet appears/dismisses correctly, none stranded after trials) | No numeric delta |
+| PR                                                                                      | What it changes                                         | Patch to apply                                                                 | Trial mode           | Metric to compare (analyze.mjs)                                                                                                                                                  | Expected result                                                                                                    |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [#32475](https://github.com/MetaMask/metamask-mobile/pull/32475) defer resume/reconnect | New connect no longer contends with cold-start resume   | `mwp-perf-instrumentation.patch`                                               | default (no request) | `connect handshake durMs` median/p75, with ~18 seeded sessions                                                                                                                   | Lower on PR arm; `resume_start inside a connect window` drops to 0                                                 |
+| [#32470](https://github.com/MetaMask/metamask-mobile/pull/32470) eager approval (draft) | Approval surfaces before the handshake instead of after | `mwp-perf-instrumentation.h1-32470.patch` on the PR arm; base patch on control | `--with-request`     | `approval gate ms` (create_session_received − connect_start)                                                                                                                     | ≈ handshake duration on control; ≈ 0 ms on PR arm. `connect handshake durMs` itself is unchanged — that's expected |
+| [#32473](https://github.com/MetaMask/metamask-mobile/pull/32473) loading sheet          | Perceived latency only (feedback while waiting)         | `mwp-perf-instrumentation.patch` (applies cleanly)                             | either               | None — no timing change expected; use the rig as a regression check (identical `connect`/`approval gate` numbers, sheet appears/dismisses correctly, none stranded after trials) | No numeric delta                                                                                                   |
 
 Arm-switching notes per PR:
 
