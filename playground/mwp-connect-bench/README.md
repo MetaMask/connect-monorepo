@@ -23,7 +23,7 @@ device before concluding a change isn't worth it.
 | `patches/mwp-perf-instrumentation.h1-32470.patch` | Same instrumentation adapted to #32470's refactored `connection.ts` (eager-approval branch). |
 | `seed-sessions.mjs` | Persists N synthetic MWP sessions (the cold-start resume load). |
 | `run-trial.mjs` | One measurement trial: force-kill app → cold-start via a fresh connect deeplink. |
-| `analyze.mjs` | Parses `[MWPPerf]` lines from tee'd Metro logs; prints medians + safety/contention indicators. |
+| `analyze.mjs` | Parses `[MWPPerf]` lines from tee'd Metro logs **or** raw JSON lines from the on-device `mwp-perf.log` (Release builds); prints medians + safety/contention indicators. |
 | `lib.mjs` | Builds valid trusted-mode connect deeplinks (real secp256k1 keys via `eciesjs`), opens them via `mmdl`. |
 
 ## How the synthetic connects work
@@ -71,6 +71,39 @@ yarn trial 5             # 5 cold-start trials, 20s apart
 # 6. Compare
 yarn analyze arm-control.log arm-pr.log
 ```
+
+## Cold-start fidelity: use a Release build
+
+An Expo **dev-client** build boots into the dev launcher on cold start, which
+intercepts the connect deeplink — so `run-trial.mjs` (terminate → deeplink)
+never exercises the real cold-start path. For faithful cold-start trials,
+build a **Release** simulator app (embedded bundle, no Metro):
+
+```bash
+cd ~/path/to/metamask-mobile/ios
+xcodebuild -workspace MetaMask.xcworkspace -scheme MetaMask \
+  -configuration Release -sdk iphonesimulator -derivedDataPath build \
+  -destination 'platform=iOS Simulator,id=<UDID>' build
+xcrun simctl install <UDID> build/Build/Products/Release-iphonesimulator/MetaMask.app
+```
+
+The instrumentation is built for this: Release builds run Babel's
+`transform-remove-console`, so `mwp-perf.ts` calls `console.warn` through a
+bound alias (survives the plugin) **and** appends every event as a JSON line
+to `<Documents>/mwp-perf.log` inside the app container. Collect per arm with:
+
+```bash
+DATA=$(xcrun simctl get_app_container <UDID> io.metamask.MetaMask data)
+cp "$DATA/Documents/mwp-perf.log" arm-pr.log        # then delete it before the next arm
+```
+
+`analyze.mjs` accepts these raw-JSON logs directly. Two Release-build caveats:
+
+- No Metro, so the JS-only arm swap below still needs an (incremental)
+  `xcodebuild` re-run to re-embed the bundle after swapping the file.
+- The build is resource-hungry (tens of GB of intermediates in `ios/build`,
+  heavily parallel compile). Ensure ample free disk before starting, and
+  don't run trials while a build is in flight.
 
 ## Measuring each latency PR
 

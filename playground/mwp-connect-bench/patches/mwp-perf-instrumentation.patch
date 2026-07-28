@@ -92,32 +92,51 @@ index 2e0a0a1de9..9b4301a7f6 100644
    /**
 diff --git a/app/core/SDKConnectV2/services/mwp-perf.ts b/app/core/SDKConnectV2/services/mwp-perf.ts
 new file mode 100644
-index 0000000000..c2ffd076e5
+index 0000000000..452253a953
 --- /dev/null
 +++ b/app/core/SDKConnectV2/services/mwp-perf.ts
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,44 @@
 +/**
 + * TEMPORARY perf instrumentation for MWP connection benchmarking.
-+ * NOT FOR MERGE — applied locally via mwp-perf-instrumentation.patch to
-+ * compare connect-handshake latency across branches (WAPI-1566 / PR #32475).
++ * NOT FOR MERGE — applied locally via patches/*.patch to compare
++ * connect-handshake latency across branches (WAPI-1566 / PR #32475).
 + *
-+ * Emits single-line JSON via console.warn so it is visible in Metro, Xcode
-+ * console, and `adb logcat` regardless of debug-log gating:
++ * Capture works in BOTH build types:
++ *   - Dev build (Metro attached): the aliased console.warn prints
++ *     `[MWPPerf] {…}` to the Metro terminal. The alias (a bound reference,
++ *     not a direct `console.warn(...)` call) is intentional: it survives the
++ *     `transform-remove-console` babel plugin that runs in the production
++ *     env, which would otherwise delete the log at compile time.
++ *   - Release/standalone build (no Metro): each event is appended as a JSON
++ *     line to `<Documents>/mwp-perf.log`, readable from the simulator data
++ *     container via:
++ *       xcrun simctl get_app_container booted io.metamask.MetaMask data
 + *
-+ *   [MWPPerf] {"event":"connect_end","id":"…","t":1234,"durMs":842,"ok":true}
-+ *
-+ * `t` is ms since JS module load (aligns events within one app session).
-+ * Collect with e.g.:  adb logcat | grep MWPPerf
++ * `t` is ms since JS module load (orders events within one app session).
 + */
++import RNFS from 'react-native-fs';
++
 +const t0 = Date.now();
++const LOG_PATH = `${RNFS.DocumentDirectoryPath}/mwp-perf.log`;
++
++// Bound reference — NOT a direct `console.warn(...)` member call, so the
++// production-env `transform-remove-console` plugin cannot strip it.
++const warn: ((msg: string) => void) | undefined =
++  typeof console !== 'undefined' && console.warn
++    ? console.warn.bind(console)
++    : undefined;
++
++// Serialize appends so rapid events can't interleave / corrupt a line.
++let writeChain: Promise<void> = Promise.resolve();
 +
 +export const mwpPerf = (
 +  event: string,
 +  id: string,
 +  extra?: Record<string, unknown>,
 +): void => {
-+  // eslint-disable-next-line no-console
-+  console.warn(
-+    `[MWPPerf] ${JSON.stringify({ event, id, t: Date.now() - t0, ...extra })}`,
-+  );
++  const line = JSON.stringify({ event, id, t: Date.now() - t0, ...extra });
++  warn?.(`[MWPPerf] ${line}`);
++  writeChain = writeChain
++    .then(() => RNFS.appendFile(LOG_PATH, `${line}\n`, 'utf8'))
++    .catch(() => undefined);
 +};
