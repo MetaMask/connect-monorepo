@@ -53,7 +53,10 @@ module.exports = defineConfig({
 
     for (const workspace of Yarn.workspaces()) {
       // We skip playground and integration checks, as these are not user facing packages
-      if (workspace.cwd.includes('playground') || workspace.cwd.includes('integrations')) {
+      if (
+        workspace.cwd.includes('playground') ||
+        workspace.cwd.includes('integrations')
+      ) {
         continue;
       }
       const workspaceBasename = getWorkspaceBasename(workspace);
@@ -101,7 +104,7 @@ module.exports = defineConfig({
         expectWorkspaceField(
           workspace,
           'repository.url',
-          `${repositoryUri}.git`,
+          `git+${repositoryUri}.git`,
         );
 
         // All non-root packages must have a license, defaulting to MIT.
@@ -125,6 +128,22 @@ module.exports = defineConfig({
 
         // All non-root packages must have a valid "build" script.
         expectWorkspaceField(workspace, 'scripts.build');
+
+        if (!isPrivate) {
+          // All non-private packages must have publint and attw scripts.
+          expectWorkspaceField(workspace, 'scripts.publint', 'publint');
+
+          // multichain-ui needs an extra ignore rule for Stencil's output format
+          const attwIgnoreRules =
+            workspace.ident === '@metamask/multichain-ui'
+              ? 'false-cjs no-resolution unexpected-module-syntax'
+              : 'false-cjs no-resolution';
+          expectWorkspaceField(
+            workspace,
+            'scripts.attw',
+            `attw --pack . --ignore-rules ${attwIgnoreRules}`,
+          );
+        }
 
         if (isPrivate) {
           // All private, non-root packages must not have a "publish:preview"
