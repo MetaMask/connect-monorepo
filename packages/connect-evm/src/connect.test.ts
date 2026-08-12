@@ -1262,7 +1262,7 @@ describe('MetamaskConnectEVM', () => {
   });
 
   describe('disconnect', () => {
-    it('calls core.disconnect with all eip155 scopes from the current session', async () => {
+    it('calls core.disconnect with no scopes to revoke the entire session', async () => {
       const mockCore = createMockCore();
       mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0x1'));
       const client = await MetamaskConnectEVM.create({ core: mockCore });
@@ -1279,6 +1279,11 @@ describe('MetamaskConnectEVM', () => {
             notifications: [],
             accounts: ['eip155:137:0x1234567890123456789012345678901234567890'],
           },
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': {
+            methods: [],
+            notifications: [],
+            accounts: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:1234567890'],
+          },
         },
       };
       mockCore.emit('wallet_sessionChanged', session);
@@ -1288,12 +1293,11 @@ describe('MetamaskConnectEVM', () => {
 
       await client.disconnect();
 
+      // Called with no scopes so the wallet revokes the whole session,
+      // including scopes granted beyond the eip155 scopes this client
+      // requested (e.g. networks pre-selected by the wallet).
       expect(mockCore.disconnect).toHaveBeenCalledTimes(1);
-      const [scopes] = mockCore.disconnect.mock.calls[0];
-      expect(scopes).toEqual(
-        expect.arrayContaining(['eip155:1', 'eip155:137']),
-      );
-      expect(scopes).toHaveLength(2);
+      expect(mockCore.disconnect).toHaveBeenCalledWith();
     });
   });
 

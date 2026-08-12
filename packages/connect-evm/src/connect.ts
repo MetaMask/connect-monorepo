@@ -30,11 +30,7 @@ import type {
   ProviderRequest,
   ProviderRequestInterceptor,
 } from './types';
-import {
-  getEthAccounts,
-  getPermittedEthChainIds,
-  parseScopeString,
-} from './utils/caip';
+import { getEthAccounts, getPermittedEthChainIds } from './utils/caip';
 import {
   isAccountsRequest,
   isAddChainRequest,
@@ -601,18 +597,21 @@ export class MetamaskConnectEVM {
   /**
    * Disconnects from the wallet by revoking the session and cleaning up event listeners.
    *
+   * The entire session is revoked rather than just its `eip155:*` scopes. The
+   * wallet may grant additional scopes beyond those requested (e.g. it
+   * pre-selects all of the user's enabled networks for EIP-1193 compatible
+   * connections), and no other client on the page is responsible for cleaning
+   * those up. Revoking only the `eip155:*` scopes would strand the extra
+   * scopes in a session that the wallet still reports as connected. This also
+   * matches the legacy EIP-1193 behavior, where `wallet_revokePermissions`
+   * revokes the origin's entire CAIP-25 permission.
+   *
    * @returns A promise that resolves when disconnection is complete
    */
   async disconnect(): Promise<void> {
     logger('request: disconnect');
 
-    const sessionScopes = this.#sessionScopes;
-    const eip155Scopes = Object.keys(sessionScopes).filter((scope) => {
-      const { namespace } = parseScopeString(scope as Scope);
-      return namespace === 'eip155';
-    });
-
-    await this.#core.disconnect(eip155Scopes as Scope[]);
+    await this.#core.disconnect();
     this.#onDisconnect();
     this.#clearConnectionState();
 
