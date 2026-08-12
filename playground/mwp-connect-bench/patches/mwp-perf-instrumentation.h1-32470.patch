@@ -1,0 +1,144 @@
+diff --git a/app/core/SDKConnectV2/services/connection.ts b/app/core/SDKConnectV2/services/connection.ts
+index 97167540c2..c616804a14 100644
+--- a/app/core/SDKConnectV2/services/connection.ts
++++ b/app/core/SDKConnectV2/services/connection.ts
+@@ -16,6 +16,7 @@ import { IHostApplicationAdapter } from '../types/host-application-adapter';
+ import { errorCodes, providerErrors } from '@metamask/rpc-errors';
+ import Engine from '../../Engine';
+ import NavigationService from '../../NavigationService';
++import { mwpPerf } from './mwp-perf';
+ 
+ /**
+  * Known user-rejection error codes across ecosystems.
+@@ -227,6 +228,14 @@ export class Connection {
+       id: data?.id,
+     });
+ 
++    // KEY METRIC (approval path): when the wallet_createSession request
++    // reaches the wallet — i.e. when the connection approval can begin.
++    // On this branch (eager approval) it fires ~immediately at connect_start
++    // instead of after the relay handshake.
++    if (data?.method === 'wallet_createSession') {
++      mwpPerf('create_session_received', this.id);
++    }
++
+     const isWalletCreateSessionRequest =
+       payload &&
+       typeof payload === 'object' &&
+@@ -293,6 +302,7 @@ export class Connection {
+     relayURL: string,
+     hostApp: IHostApplicationAdapter,
+   ): Promise<Connection> {
++    const perfStart = Date.now();
+     const transport = await WebSocketTransport.create({
+       url: relayURL,
+       kvstore: new KVStore(`mwp/transport/${connInfo.id}`),
+@@ -302,6 +312,7 @@ export class Connection {
+       new KVStore(`mwp/session-store/${connInfo.id}`),
+     );
+     const client = new WalletClient({ transport, sessionstore, keymanager });
++    mwpPerf('create', connInfo.id, { durMs: Date.now() - perfStart });
+ 
+     return new Connection(connInfo, client, hostApp);
+   }
+@@ -327,6 +338,9 @@ export class Connection {
+    */
+   public async connect(sessionRequest: SessionRequest): Promise<void> {
+     const { initialMessage } = sessionRequest;
++    // KEY METRIC: duration of the MWP relay handshake for a NEW connect.
++    const perfStart = Date.now();
++    mwpPerf('connect_start', this.id);
+ 
+     if (initialMessage) {
+       // Fire-and-forget: drives the approval modal from the inline payload
+@@ -341,7 +355,15 @@ export class Connection {
+           : sessionRequest,
+       });
+       await this.clientReady;
++      mwpPerf('connect_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: true,
++      });
+     } catch (error) {
++      mwpPerf('connect_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: false,
++      });
+       // The handshake failed after we eagerly surfaced the approval. Reject the
+       // pending approval so the user isn't left looking at a connection request
+       // whose response can never be delivered.
+@@ -356,8 +378,22 @@ export class Connection {
+    * Resumes a previously established session.
+    */
+   public async resume(): Promise<void> {
+-    this.clientReady = this.client.resume(this.id);
+-    await this.clientReady;
++    const perfStart = Date.now();
++    mwpPerf('resume_start', this.id);
++    try {
++      this.clientReady = this.client.resume(this.id);
++      await this.clientReady;
++      mwpPerf('resume_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: true,
++      });
++    } catch (error) {
++      mwpPerf('resume_end', this.id, {
++        durMs: Date.now() - perfStart,
++        ok: false,
++      });
++      throw error;
++    }
+   }
+ 
+   /**
+diff --git a/app/core/SDKConnectV2/services/mwp-perf.ts b/app/core/SDKConnectV2/services/mwp-perf.ts
+new file mode 100644
+index 0000000000..452253a953
+--- /dev/null
++++ b/app/core/SDKConnectV2/services/mwp-perf.ts
+@@ -0,0 +1,44 @@
++/**
++ * TEMPORARY perf instrumentation for MWP connection benchmarking.
++ * NOT FOR MERGE — applied locally via patches/*.patch to compare
++ * connect-handshake latency across branches (WAPI-1566 / PR #32475).
++ *
++ * Capture works in BOTH build types:
++ *   - Dev build (Metro attached): the aliased console.warn prints
++ *     `[MWPPerf] {…}` to the Metro terminal. The alias (a bound reference,
++ *     not a direct `console.warn(...)` call) is intentional: it survives the
++ *     `transform-remove-console` babel plugin that runs in the production
++ *     env, which would otherwise delete the log at compile time.
++ *   - Release/standalone build (no Metro): each event is appended as a JSON
++ *     line to `<Documents>/mwp-perf.log`, readable from the simulator data
++ *     container via:
++ *       xcrun simctl get_app_container booted io.metamask.MetaMask data
++ *
++ * `t` is ms since JS module load (orders events within one app session).
++ */
++import RNFS from 'react-native-fs';
++
++const t0 = Date.now();
++const LOG_PATH = `${RNFS.DocumentDirectoryPath}/mwp-perf.log`;
++
++// Bound reference — NOT a direct `console.warn(...)` member call, so the
++// production-env `transform-remove-console` plugin cannot strip it.
++const warn: ((msg: string) => void) | undefined =
++  typeof console !== 'undefined' && console.warn
++    ? console.warn.bind(console)
++    : undefined;
++
++// Serialize appends so rapid events can't interleave / corrupt a line.
++let writeChain: Promise<void> = Promise.resolve();
++
++export const mwpPerf = (
++  event: string,
++  id: string,
++  extra?: Record<string, unknown>,
++): void => {
++  const line = JSON.stringify({ event, id, t: Date.now() - t0, ...extra });
++  warn?.(`[MWPPerf] ${line}`);
++  writeChain = writeChain
++    .then(() => RNFS.appendFile(LOG_PATH, `${line}\n`, 'utf8'))
++    .catch(() => undefined);
++};
