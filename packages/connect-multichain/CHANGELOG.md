@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `PrivateKey is not a constructor` when connecting over the MWP transport from a bundled browser app. `eciesjs` publishes CommonJS only — no `module` field, and no `import` condition in its `exports` map — so bundlers shape `await import('eciesjs')` as `{ default: <module.exports> }` rather than a namespace carrying the named exports, leaving `decrypt`, `encrypt`, `PrivateKey` and `PublicKey` `undefined`. `createKeyManager` now unwraps `default` when it is present. Node and dev servers that synthesize the named exports were unaffected. ([#343](https://github.com/MetaMask/connect-monorepo/pull/343))
+
 ## [1.2.0]
 
 ### Added
