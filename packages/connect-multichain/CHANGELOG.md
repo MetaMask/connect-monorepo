@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Reopen IndexedDB when the browser or WKWebView force-closes the connection. `StoreAdapterWeb` now invalidates the cached `IDBDatabase` on `close` / `versionchange` and retries `get` / `set` / `delete` once after `InvalidStateError` or `UnknownError`, so storage keeps working without a page reload.
+
 ## [1.2.0]
 
 ### Added
