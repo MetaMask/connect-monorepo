@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Reopen IndexedDB when the browser or WKWebView force-closes the connection. `StoreAdapterWeb` now invalidates the cached `IDBDatabase` on `close` / `versionchange` and retries `get` / `set` / `delete` once after `InvalidStateError` or `UnknownError`, so storage keeps working without a page reload.
+- Reopen IndexedDB when the browser or WKWebView force-closes the connection. `StoreAdapterWeb` now invalidates the cached `IDBDatabase` on `close` / `versionchange` and retries `get` / `set` / `delete` once after `InvalidStateError` or `UnknownError`, so storage keeps working without a page reload ([#346](https://github.com/MetaMask/connect-monorepo/pull/346))
 
 ## [1.2.0]
 
