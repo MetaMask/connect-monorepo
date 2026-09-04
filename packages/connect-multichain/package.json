@@ -71,7 +71,7 @@
     "@metamask/analytics": "workspace:^",
     "@metamask/mobile-wallet-protocol-core": "^0.4.0",
     "@metamask/mobile-wallet-protocol-dapp-client": "^0.3.0",
-    "@metamask/multichain-api-client": "^0.10.1",
+    "@metamask/multichain-api-client": "^0.12.0",
     "@metamask/multichain-ui": "workspace:^",
     "@metamask/onboarding": "^1.0.1",
     "@metamask/rpc-errors": "^7.0.3",

@@ -40,6 +40,19 @@ jest.mock('./sdk/SolanaProvider', () => ({
   }),
 }));
 
+jest.mock('./sdk/BitcoinProvider', () => ({
+  getWallets: () => ({
+    get: () => [],
+  }),
+  useBitcoin: () => ({
+    connected: false,
+    selectedAccount: null,
+    disconnect: jest.fn(),
+    connectWithStandardWallet: jest.fn(),
+    connectWithSatsConnectWallet: jest.fn(),
+  }),
+}));
+
 jest.mock('@solana/wallet-adapter-react', () => ({
   useWallet: () => ({
     connected: false,

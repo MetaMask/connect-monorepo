@@ -20,6 +20,7 @@ export const FEATURED_NETWORKS = {
   'Sei Mainnet': 'eip155:1329',
   'Tempo Mainnet': 'eip155:4217',
   'Solana Mainnet': 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+  'Bitcoin Mainnet': 'bip122:000000000019d6689c085ae165831e93',
   'Localhost 8545': 'eip155:1337',
 } as const;
 
