@@ -324,6 +324,146 @@ t.describe('StoreAdapterWeb DB naming', () => {
   });
 });
 
+t.describe('StoreAdapterWeb IndexedDB recovery', () => {
+  t.afterEach(() => {
+    t.vi.unstubAllGlobals();
+    t.vi.restoreAllMocks();
+  });
+
+  /**
+   * @returns A stubbed IDBFactory plus an open spy and a live adapter.
+   */
+  function createWebAdapter() {
+    const idbFactory = new IDBFactory();
+    const openSpy = t.vi.spyOn(idbFactory, 'open');
+    t.vi.stubGlobal('window', { indexedDB: idbFactory });
+    const adapter = new StoreAdapterWeb();
+    return { adapter, openSpy };
+  }
+
+  t.it(
+    'reopens IndexedDB after onclose and reads the persisted value',
+    async () => {
+      const { adapter, openSpy } = createWebAdapter();
+      await adapter.set('anonId', 'before-close');
+      const db = await adapter.dbPromise;
+      t.expect(openSpy).toHaveBeenCalledOnce();
+
+      db.onclose?.(new Event('close'));
+
+      const result = await adapter.get('anonId');
+
+      t.expect(result).toBe('before-close');
+      t.expect(openSpy).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  t.it('retries set once after InvalidStateError on transaction', async () => {
+    const { adapter, openSpy } = createWebAdapter();
+    const db = await adapter.dbPromise;
+    const originalTransaction = db.transaction.bind(db);
+    let remainingFailures = 1;
+    db.transaction = ((storeNames, mode) => {
+      if (remainingFailures > 0) {
+        remainingFailures -= 1;
+        throw new DOMException(
+          "Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing",
+          'InvalidStateError',
+        );
+      }
+      return originalTransaction(storeNames, mode);
+    }) as typeof db.transaction;
+
+    await adapter.set('anonId', 'retried');
+
+    t.expect(await adapter.get('anonId')).toBe('retried');
+    t.expect(openSpy).toHaveBeenCalledTimes(2);
+  });
+
+  t.it('retries get once after UnknownError on transaction', async () => {
+    const { adapter, openSpy } = createWebAdapter();
+    await adapter.set('anonId', 'persisted');
+    const db = await adapter.dbPromise;
+    const originalTransaction = db.transaction.bind(db);
+    let remainingFailures = 1;
+    db.transaction = ((storeNames, mode) => {
+      if (remainingFailures > 0) {
+        remainingFailures -= 1;
+        throw new DOMException(
+          'Connection to Indexed Database server lost',
+          'UnknownError',
+        );
+      }
+      return originalTransaction(storeNames, mode);
+    }) as typeof db.transaction;
+
+    const result = await adapter.get('anonId');
+
+    t.expect(result).toBe('persisted');
+    t.expect(openSpy).toHaveBeenCalledTimes(2);
+  });
+
+  t.it(
+    'retries delete once after InvalidStateError on transaction',
+    async () => {
+      const { adapter, openSpy } = createWebAdapter();
+      await adapter.set('anonId', 'to-delete');
+      const db = await adapter.dbPromise;
+      const originalTransaction = db.transaction.bind(db);
+      let remainingFailures = 1;
+      db.transaction = ((storeNames, mode) => {
+        if (remainingFailures > 0) {
+          remainingFailures -= 1;
+          throw new DOMException(
+            'The database connection is closing',
+            'InvalidStateError',
+          );
+        }
+        return originalTransaction(storeNames, mode);
+      }) as typeof db.transaction;
+
+      await adapter.delete('anonId');
+
+      t.expect(await adapter.get('anonId')).toBeNull();
+      t.expect(openSpy).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  t.it('does not reopen IndexedDB after ConstraintError', async () => {
+    const { adapter, openSpy } = createWebAdapter();
+    const db = await adapter.dbPromise;
+    db.transaction = (() => {
+      throw new DOMException(
+        'Key already exists in the object store',
+        'ConstraintError',
+      );
+    }) as typeof db.transaction;
+
+    await t
+      .expect(adapter.set('anonId', 'blocked'))
+      .rejects.toSatisfy(
+        (error: unknown) =>
+          error instanceof DOMException && error.name === 'ConstraintError',
+      );
+
+    t.expect(openSpy).toHaveBeenCalledOnce();
+  });
+
+  t.it('does not reopen IndexedDB after a generic Error', async () => {
+    const { adapter, openSpy } = createWebAdapter();
+    const db = await adapter.dbPromise;
+    db.transaction = (() => {
+      throw new Error('unexpected adapter failure');
+    }) as typeof db.transaction;
+
+    await t
+      .expect(adapter.get('anonId'))
+      .rejects.toThrow('unexpected adapter failure');
+
+    t.expect(openSpy).toHaveBeenCalledOnce();
+  });
+});
+
 t.describe(`Store with RNAdapter`, () => {
   // Test RN storage with mocked AsyncStorage
   createStoreTests(
