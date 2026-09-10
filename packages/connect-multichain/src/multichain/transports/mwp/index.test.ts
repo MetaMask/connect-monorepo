@@ -1,5 +1,9 @@
 /* eslint-disable id-length -- vitest alias */
 /* eslint-disable no-empty-function -- Empty mock functions */
+import {
+  SessionStore,
+  type Session,
+} from '@metamask/mobile-wallet-protocol-core';
 import * as t from 'vitest';
 import { vi } from 'vitest';
 
@@ -7,6 +11,21 @@ import { MWPTransport } from '.';
 import type { StoreAdapter } from '../../../domain';
 import { getPlatformType, PlatformType } from '../../../domain/platform';
 import { MULTICHAIN_PROVIDER_STREAM_NAME } from '../constants';
+
+/**
+ * Builds a minimal mock `Session` (as persisted by `SessionStore`) for tests
+ * that don't care about the actual key material.
+ *
+ * @param id - The session id.
+ * @returns A mock `Session`.
+ */
+const buildMockSession = (id: string): Session => ({
+  id,
+  channel: `channel-${id}`,
+  keyPair: { publicKey: new Uint8Array(), privateKey: new Uint8Array() },
+  theirPublicKey: new Uint8Array(),
+  expiresAt: Date.now() + 60_000,
+});
 
 vi.mock('../../../domain/platform', async () => {
   const actual = await vi.importActual('../../../domain/platform');
@@ -25,12 +44,15 @@ t.describe('MWPTransport', () => {
     mockDappClient = {
       on: t.vi.fn(),
       off: t.vi.fn(),
+      once: t.vi.fn(),
       reconnect: t.vi.fn(),
       send: t.vi.fn(),
       sendRequest: t.vi.fn().mockResolvedValue(undefined),
       connect: t.vi.fn().mockResolvedValue(undefined),
       disconnect: t.vi.fn().mockResolvedValue(undefined),
+      resume: t.vi.fn().mockResolvedValue(undefined),
       isConnected: t.vi.fn().mockReturnValue(false),
+      state: 'DISCONNECTED',
     };
 
     mockKvstore = {
@@ -777,6 +799,130 @@ t.describe('MWPTransport', () => {
             });
           },
         );
+      },
+    );
+  });
+
+  t.describe('disconnect() — MCWP-822 MWP pairing cleanup', () => {
+    // In-memory stand-in for the SessionStore-backed pairing storage.
+    // `list` reflects whatever hasn't been `delete`d, so these tests exercise
+    // the real invariant: after a full disconnect, getActiveSession() must
+    // resolve `undefined`.
+    let storedSessions: Session[];
+    let listSpy: ReturnType<typeof t.vi.spyOn>;
+    let deleteSpy: ReturnType<typeof t.vi.spyOn>;
+
+    t.beforeEach(() => {
+      storedSessions = [buildMockSession('pairing-1')];
+      listSpy = t.vi
+        .spyOn(SessionStore.prototype, 'list')
+        .mockImplementation(async () => storedSessions);
+      deleteSpy = t.vi
+        .spyOn(SessionStore.prototype, 'delete')
+        .mockImplementation(async (id: string) => {
+          storedSessions = storedSessions.filter(
+            (session) => session.id !== id,
+          );
+        });
+    });
+
+    t.afterEach(() => {
+      listSpy.mockRestore();
+      deleteSpy.mockRestore();
+    });
+
+    t.it(
+      'wipes the persisted MWP pairing and pending session request on a full disconnect, independent of dappClient.session',
+      async () => {
+        // dappClient.disconnect() being a no-op (as it is when the in-memory
+        // `session` is already null, e.g. after a failed resume) must not
+        // prevent the pairing from being wiped from SessionStore.
+        (
+          mockDappClient.disconnect as ReturnType<typeof t.vi.fn>
+        ).mockResolvedValue(undefined);
+
+        await transport.disconnect();
+
+        t.expect(deleteSpy).toHaveBeenCalledWith('pairing-1');
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        t.expect(mockKvstore.delete).toHaveBeenCalledWith(
+          'cache_wallet_getSession',
+        );
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        t.expect(mockKvstore.delete).toHaveBeenCalledWith(
+          'pending_session_request',
+        );
+        t.expect(mockDappClient.disconnect).toHaveBeenCalledTimes(1);
+
+        // The real invariant: the next connect() must not find a stale pairing.
+        await t.expect(transport.getActiveSession()).resolves.toBeUndefined();
+      },
+    );
+
+    t.it(
+      'does not touch the SessionStore pairing on a partial disconnect (scopes remain)',
+      async () => {
+        (mockKvstore.get as ReturnType<typeof t.vi.fn>).mockResolvedValue(
+          JSON.stringify({
+            result: {
+              sessionScopes: {
+                'eip155:1': { accounts: [], methods: [], notifications: [] },
+                'eip155:137': { accounts: [], methods: [], notifications: [] },
+              },
+            },
+          }),
+        );
+
+        await transport.disconnect(['eip155:1']);
+
+        t.expect(deleteSpy).not.toHaveBeenCalled();
+        t.expect(mockDappClient.disconnect).not.toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        t.expect(mockKvstore.delete).not.toHaveBeenCalledWith(
+          'cache_wallet_getSession',
+        );
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        t.expect(mockKvstore.delete).not.toHaveBeenCalledWith(
+          'pending_session_request',
+        );
+      },
+    );
+
+    t.it(
+      'connect() takes #startSession (not resume) after a full disconnect cleared the pairing',
+      async () => {
+        const mockGetPlatformType = t.vi.mocked(getPlatformType);
+        mockGetPlatformType.mockReturnValue(PlatformType.DesktopWeb);
+        t.vi
+          .spyOn(transport, 'getStoredPendingSessionRequest')
+          .mockResolvedValue(null);
+
+        await transport.disconnect();
+        t.expect(storedSessions).toHaveLength(0);
+
+        const connectPromise = transport
+          .connect({ scopes: [], caipAccountIds: [] })
+          .catch(() => undefined);
+
+        await t.vi.waitFor(() => {
+          t.expect(mockDappClient.connect).toHaveBeenCalledTimes(1);
+        });
+
+        t.expect(mockDappClient.resume).not.toHaveBeenCalled();
+
+        // Cleanup: drive connect() to rejection so the timeout/handler unwind.
+        const messageHandlers = mockDappClient.on.mock.calls
+          .filter((call: unknown[]) => call[0] === 'message')
+          .map((call: unknown[]) => call[1]);
+        const initialHandler = messageHandlers[messageHandlers.length - 1];
+        const sendRequestArgs = mockDappClient.sendRequest.mock.calls[0]?.[0];
+        await initialHandler?.({
+          data: {
+            id: sendRequestArgs?.data.id,
+            error: { code: 4001, message: 'User rejected' },
+          },
+        });
+        await connectPromise;
       },
     );
   });
