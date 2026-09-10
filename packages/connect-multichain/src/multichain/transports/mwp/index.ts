@@ -457,13 +457,22 @@ export class MWPTransport implements ExtendedTransport {
 
     const cleanup = () => this.dappClient.off('connected', runOnResumeHandler);
 
-    return Promise.race([
-      resumeDeferred.promise,
-      timeoutDeferred.promise,
-    ]).finally(() => {
-      clearTimeout(timeout);
-      cleanup();
-    });
+    return Promise.race([resumeDeferred.promise, timeoutDeferred.promise])
+      .catch(async (error) => {
+        // Defense in depth (complements the SessionStore wipe in
+        // `disconnect()`): the wallet may have already revoked this pairing
+        // out-of-band, so resuming it fails/times out here instead. Delete
+        // it from SessionStore so a subsequent connect() doesn't keep
+        // retrying the same dead pairing.
+        if (session.id) {
+          await this.#deleteMwpSession(session.id);
+        }
+        throw error;
+      })
+      .finally(() => {
+        clearTimeout(timeout);
+        cleanup();
+      });
   }
 
   /**
@@ -748,7 +757,18 @@ export class MWPTransport implements ExtendedTransport {
         this.windowFocusHandler = undefined;
       }
 
-      await this.dappClient.disconnect();
+      // Ensure a later connect() can't pick up a dead handshake URI from a
+      // pending connection attempt that never completed.
+      await this.removeStoredPendingSessionRequest();
+
+      // Wipe the MWP pairing (relay channel + ECIES keys) from SessionStore
+      // regardless of in-memory `dappClient.session` state. `dappClient.disconnect()`
+      // alone is a no-op when the in-memory session is already null (e.g. after a
+      // failed resume), which leaves the SessionStore entry behind. The next
+      // connect() reads that leftover entry via getActiveSession() and tries to
+      // resume a pairing the wallet has already revoked, which times out.
+      // See: https://consensyssoftware.atlassian.net/browse/MCWP-822
+      await this.#clearMwpPairing();
     }
 
     this.notifyCallbacks({
@@ -757,6 +777,65 @@ export class MWPTransport implements ExtendedTransport {
         sessionScopes: newSessionScopes,
       },
     });
+  }
+
+  /**
+   * Wipes any persisted MWP pairing(s) (relay channel + ECIES keys) from the
+   * `SessionStore`, independent of `dappClient`'s in-memory session state.
+   *
+   * `dappClient.disconnect()` only deletes the SessionStore entry when its
+   * in-memory `session` is set — if it's already `null` (e.g. a prior
+   * `resume()` failure nulled it out without clearing storage), that call is
+   * a no-op and the pairing survives. This guarantees `getActiveSession()`
+   * returns `undefined` afterwards so the next `connect()` takes
+   * `#startSession` instead of resuming a pairing the wallet already revoked.
+   *
+   * The SessionStore wipe happens first and unconditionally so the invariant
+   * holds even if the subsequent `dappClient.disconnect()` call fails.
+   * `dappClient.disconnect()` is still called (so transport/channel cleanup
+   * runs when a session is set) and its rejection is intentionally
+   * propagated, preserving the existing contract that a failed disconnect
+   * surfaces to callers of `MWPTransport.disconnect()`.
+   *
+   * @returns Nothing
+   */
+  async #clearMwpPairing(): Promise<void> {
+    const { SessionStore } = await import(
+      '@metamask/mobile-wallet-protocol-core'
+    );
+    const sessionStore = await SessionStore.create(this.kvstore);
+
+    try {
+      const sessions = await sessionStore.list();
+      await Promise.all(
+        sessions.map(async (session) => sessionStore.delete(session.id)),
+      );
+    } catch (error) {
+      logger('error clearing MWP pairing from SessionStore', error);
+    }
+
+    await this.dappClient.disconnect();
+  }
+
+  /**
+   * Deletes a single pairing entry from `SessionStore` by id. Used as
+   * defense-in-depth when resuming a specific session fails, so a
+   * subsequent `connect()` doesn't try to resume the same dead pairing
+   * again (see `#clearMwpPairing` for the full wipe done on disconnect).
+   *
+   * @param sessionId - The id of the `SessionStore` entry to delete.
+   * @returns Nothing
+   */
+  async #deleteMwpSession(sessionId: string): Promise<void> {
+    try {
+      const { SessionStore } = await import(
+        '@metamask/mobile-wallet-protocol-core'
+      );
+      const sessionStore = await SessionStore.create(this.kvstore);
+      await sessionStore.delete(sessionId);
+    } catch (error) {
+      logger('error deleting MWP session from SessionStore', error);
+    }
   }
 
   /**
