@@ -8,6 +8,7 @@
 import 'fake-indexeddb/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IDBFactory } from 'fake-indexeddb';
+import forceCloseDatabase from 'fake-indexeddb/lib/forceCloseDatabase';
 import * as t from 'vitest';
 
 import { Store } from '.';
@@ -321,6 +322,132 @@ t.describe('StoreAdapterWeb DB naming', () => {
     t.expect(openSpy).toHaveBeenCalledOnce();
     const calledWith = openSpy.mock.calls[0]?.[0];
     t.expect(calledWith).toBe('mmconnect-my-suffix');
+  });
+});
+
+t.describe('StoreAdapterWeb IndexedDB recovery', () => {
+  let idbFactory: IDBFactory;
+
+  /**
+   * Simulates the browser unexpectedly closing an adapter's active connection.
+   *
+   * @param adapter
+   */
+  async function forceCloseAdapterDatabase(
+    adapter: StoreAdapterWeb,
+  ): Promise<void> {
+    const db = await adapter.dbPromise;
+    const closed = new Promise<void>((resolve) => {
+      db.addEventListener('close', () => resolve());
+    });
+    forceCloseDatabase(db);
+    await closed;
+  }
+
+  t.beforeEach(() => {
+    idbFactory = new IDBFactory();
+    t.vi.stubGlobal('window', {
+      indexedDB: idbFactory,
+    });
+  });
+
+  t.it('reopens for get after a forced close', async () => {
+    const adapter = new StoreAdapterWeb();
+    await adapter.set('session', 'active');
+    await forceCloseAdapterDatabase(adapter);
+
+    t.expect(await adapter.get('session')).toBe('active');
+  });
+
+  t.it('reopens for set after a forced close', async () => {
+    const adapter = new StoreAdapterWeb();
+    await adapter.set('session', 'active');
+    await forceCloseAdapterDatabase(adapter);
+
+    await adapter.set('session', 'resumed');
+    t.expect(await adapter.get('session')).toBe('resumed');
+  });
+
+  t.it('reopens for delete after a forced close', async () => {
+    const adapter = new StoreAdapterWeb();
+    await adapter.set('session', 'active');
+    await forceCloseAdapterDatabase(adapter);
+
+    await adapter.delete('session');
+    t.expect(await adapter.get('session')).toBeNull();
+  });
+
+  t.it(
+    'retries once after InvalidStateError on transaction by reopening',
+    async () => {
+      const adapter = new StoreAdapterWeb();
+      await adapter.set('session', 'active');
+
+      const deadDb = await adapter.dbPromise;
+      t.vi.spyOn(deadDb, 'transaction').mockImplementation(() => {
+        throw new DOMException(
+          "Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing.",
+          'InvalidStateError',
+        );
+      });
+
+      const openSpy = t.vi.spyOn(idbFactory, 'open');
+
+      t.expect(await adapter.get('session')).toBe('active');
+      const reopenedDb = await adapter.dbPromise;
+
+      const oldDbClosed = new Promise<void>((resolve) => {
+        deadDb.addEventListener('close', () => resolve());
+      });
+      forceCloseDatabase(deadDb);
+      await oldDbClosed;
+
+      t.expect(await adapter.dbPromise).toBe(reopenedDb);
+      t.expect(openSpy).toHaveBeenCalledOnce();
+    },
+  );
+
+  t.it(
+    'retries once after UnknownError (connection lost) by reopening',
+    async () => {
+      const adapter = new StoreAdapterWeb();
+      await adapter.set('session', 'active');
+
+      const deadDb = await adapter.dbPromise;
+      t.vi.spyOn(deadDb, 'transaction').mockImplementationOnce(() => {
+        throw new DOMException(
+          'Connection to Indexed Database server lost',
+          'UnknownError',
+        );
+      });
+
+      t.expect(await adapter.get('session')).toBe('active');
+    },
+  );
+
+  t.it('does not reopen on ConstraintError', async () => {
+    const adapter = new StoreAdapterWeb();
+    await adapter.set('session', 'active');
+
+    const db = await adapter.dbPromise;
+    t.vi.spyOn(db, 'transaction').mockImplementation(() => {
+      throw new DOMException(
+        'A mutation operation in the transaction failed because a constraint was not satisfied.',
+        'ConstraintError',
+      );
+    });
+
+    const openSpy = t.vi.spyOn(idbFactory, 'open');
+    const openCountBefore = openSpy.mock.calls.length;
+
+    await t
+      .expect(adapter.get('session'))
+      .rejects.toSatisfy((error: unknown) => {
+        return (
+          error instanceof DOMException && error.name === 'ConstraintError'
+        );
+      });
+    t.expect(openSpy.mock.calls.length).toBe(openCountBefore);
   });
 });
 
