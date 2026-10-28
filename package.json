@@ -46,7 +46,14 @@
   },
   "resolutions": {
     "@solana/wallet-adapter-react@npm:^0.15.39": "patch:@solana/wallet-adapter-react@npm%3A0.15.39#~/.yarn/patches/@solana-wallet-adapter-react-npm-0.15.39-86277fdcc0.patch",
-    "bs58": "4.0.1"
+    "bs58": "4.0.1",
+    "yargs@npm:17.7.2": "17.7.3",
+    "yargs@npm:^17.0.1": "17.7.3",
+    "yargs@npm:^17.3.1": "17.7.3",
+    "yargs@npm:^17.5.1": "17.7.3",
+    "yargs@npm:^17.6.2": "17.7.3",
+    "yargs@npm:^17.7.1": "17.7.3",
+    "yargs@npm:^17.7.2": "17.7.3"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
@@ -95,7 +102,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.10.0",
     "vitest": "^3.1.2",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.3"
   },
   "packageManager": "yarn@4.16.0",
   "engines": {

@@ -7,6 +7,7 @@ import { analytics } from '@metamask/analytics';
 import type { SessionData } from '@metamask/multichain-api-client';
 import type { Json } from '@metamask/utils';
 
+import { toRPCInvokeMethodErr } from './invocationError';
 import {
   METAMASK_CONNECT_BASE_URL,
   METAMASK_DEEPLINK_BASE,
@@ -32,7 +33,6 @@ import {
 } from '../utils/analytics';
 import type { RpcClient } from './handlers/rpcClient';
 import { MissingRpcEndpointErr } from './handlers/rpcClient';
-import { toRPCInvokeMethodErr } from './invocationError';
 
 let rpcId = 1;
 
