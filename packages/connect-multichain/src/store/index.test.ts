@@ -449,6 +449,88 @@ t.describe('StoreAdapterWeb IndexedDB recovery', () => {
       });
     t.expect(openSpy.mock.calls.length).toBe(openCountBefore);
   });
+
+  /**
+   * IndexedDB request that fails as soon as the adapter assigns `onerror`.
+   *
+   * @param error - Error exposed as `request.error`.
+   * @returns A minimal request the adapter can attach handlers to.
+   */
+  function requestThatFails(error: DOMException): IDBRequest {
+    const request = {
+      error,
+      onsuccess: null,
+    } as IDBRequest;
+    let onerror: ((this: IDBRequest, ev: Event) => void) | null = null;
+
+    Object.defineProperty(request, 'onerror', {
+      configurable: true,
+      get() {
+        return onerror;
+      },
+      set(handler: ((this: IDBRequest, ev: Event) => void) | null) {
+        onerror = handler;
+        queueMicrotask(() => {
+          handler?.call(request, new Event('error'));
+        });
+      },
+    });
+
+    return request;
+  }
+
+  t.it(
+    'wraps a non-recoverable request error and does not reopen',
+    async () => {
+      const adapter = new StoreAdapterWeb();
+      await adapter.set('session', 'active');
+      const db = await adapter.dbPromise;
+      const openSpy = t.vi.spyOn(idbFactory, 'open');
+
+      t.vi.spyOn(db, 'transaction').mockImplementationOnce(() => {
+        return {
+          objectStore: () => ({
+            get: () =>
+              requestThatFails(
+                new DOMException(
+                  'A mutation operation in the transaction failed because a constraint was not satisfied.',
+                  'ConstraintError',
+                ),
+              ),
+          }),
+        } as unknown as IDBTransaction;
+      });
+
+      await t
+        .expect(adapter.get('session'))
+        .rejects.toThrow('Failed to get value from IndexedDB.');
+      t.expect(openSpy).not.toHaveBeenCalled();
+    },
+  );
+
+  t.it('retries once when a request fails with InvalidStateError', async () => {
+    const adapter = new StoreAdapterWeb();
+    await adapter.set('session', 'active');
+    const db = await adapter.dbPromise;
+    const openSpy = t.vi.spyOn(idbFactory, 'open');
+
+    t.vi.spyOn(db, 'transaction').mockImplementationOnce(() => {
+      return {
+        objectStore: () => ({
+          get: () =>
+            requestThatFails(
+              new DOMException(
+                'The database connection is closing',
+                'InvalidStateError',
+              ),
+            ),
+        }),
+      } as unknown as IDBTransaction;
+    });
+
+    t.expect(await adapter.get('session')).toBe('active');
+    t.expect(openSpy).toHaveBeenCalledOnce();
+  });
 });
 
 t.describe(`Store with RNAdapter`, () => {

@@ -152,6 +152,27 @@ export class StoreAdapterWeb extends StoreAdapter {
     }
   }
 
+  /**
+   * Surface connection-loss errors so `withDatabase` can retry once.
+   * Every other request failure keeps the historical generic `Error`.
+   *
+   * @param request - Failed IndexedDB request.
+   * @param fallbackMessage - Message used when the failure is not recoverable.
+   * @param reject - Promise reject callback for this operation.
+   */
+  private rejectStoreError(
+    request: IDBRequest,
+    fallbackMessage: string,
+    reject: (reason?: unknown) => void,
+  ): void {
+    const { error } = request;
+    if (error && isRecoverableIndexedDbError(error)) {
+      reject(error);
+      return;
+    }
+    reject(new Error(fallbackMessage));
+  }
+
   private getFromDatabase(
     db: IDBDatabase,
     key: string,
@@ -163,8 +184,10 @@ export class StoreAdapterWeb extends StoreAdapter {
         const store = tx.objectStore(storeName);
         const request = store.get(key);
         request.onerror = () =>
-          reject(
-            request.error ?? new Error('Failed to get value from IndexedDB.'),
+          this.rejectStoreError(
+            request,
+            'Failed to get value from IndexedDB.',
+            reject,
           );
         request.onsuccess = () => resolve((request.result as string) ?? null);
       } catch (error) {
@@ -185,8 +208,10 @@ export class StoreAdapterWeb extends StoreAdapter {
         const store = tx.objectStore(storeName);
         const request = store.put(value, key);
         request.onerror = () =>
-          reject(
-            request.error ?? new Error('Failed to set value in IndexedDB.'),
+          this.rejectStoreError(
+            request,
+            'Failed to set value in IndexedDB.',
+            reject,
           );
         request.onsuccess = () => resolve();
       } catch (error) {
@@ -203,9 +228,10 @@ export class StoreAdapterWeb extends StoreAdapter {
         const store = tx.objectStore(storeName);
         const request = store.delete(key);
         request.onerror = () =>
-          reject(
-            request.error ??
-              new Error('Failed to delete value from IndexedDB.'),
+          this.rejectStoreError(
+            request,
+            'Failed to delete value from IndexedDB.',
+            reject,
           );
         request.onsuccess = () => resolve();
       } catch (error) {
