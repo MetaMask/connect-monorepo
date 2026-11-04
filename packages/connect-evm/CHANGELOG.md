@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Forward browser wallet chain-switch requests even when the requested chain matches the SDK's local selection, allowing dapps to recover when that selection differs from the wallet after reconnecting ([#349](https://github.com/MetaMask/connect-monorepo/issues/349)).
+- Forward browser wallet chain-switch requests even when the requested chain matches the SDK's local selection, allowing dapps to recover when that selection differs from the wallet after reconnecting ([#353](https://github.com/MetaMask/connect-monorepo/pull/353)).
 
 ## [2.1.1]
 
