@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING:** `disconnect()` now revokes the entire session instead of only its `eip155:*` scopes ([#344](https://github.com/MetaMask/connect-monorepo/pull/344)). The wallet may grant scopes beyond those requested (e.g. networks pre-selected on the connect prompt), and revoking only the `eip155:*` scopes stranded those extras in a session the wallet still reported as connected. This matches the legacy EIP-1193 behavior where `wallet_revokePermissions` revokes the origin's entire permission.
 
+### Fixed
+
+- Forward browser wallet chain-switch requests even when the requested chain matches the SDK's local selection, allowing dapps to recover when that selection differs from the wallet after reconnecting ([#349](https://github.com/MetaMask/connect-monorepo/issues/349)).
+
 ## [2.1.1]
 
 ### Added

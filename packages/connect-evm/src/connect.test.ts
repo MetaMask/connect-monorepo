@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow -- Vitest globals */
 import type { SessionData, MultichainCore } from '@metamask/connect-multichain';
+import { TransportType } from '@metamask/connect-multichain';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 
 import type { ConnectEvmStatus } from './connect';
@@ -790,6 +791,121 @@ describe('MetamaskConnectEVM', () => {
       // each test can assert against a clean call log.
       mockCore.invokeMethod.mockClear();
     });
+
+    it('forwards a switch to the selected chain to the browser wallet', async () => {
+      Object.defineProperty(mockCore, 'transportType', {
+        value: TransportType.Browser,
+      });
+      mockCore.invokeMethod.mockResolvedValue(null);
+
+      await client.switchChain({ chainId: '0x1' });
+
+      expect(mockCore.invokeMethod).toHaveBeenCalledExactlyOnceWith({
+        scope: 'eip155:1',
+        request: {
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x1' }],
+        },
+      });
+    });
+
+    it('forwards a switch to the configured first chain after reconnecting', async () => {
+      Object.defineProperty(mockCore, 'transportType', {
+        value: TransportType.Browser,
+      });
+      const session: SessionData = {
+        sessionScopes: {
+          'eip155:1': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+          },
+          'eip155:10': {
+            methods: [],
+            notifications: [],
+            accounts: ['eip155:10:0x1234567890123456789012345678901234567890'],
+          },
+        },
+      };
+      mockCore.connect.mockImplementation(async (): Promise<void> => {
+        mockCore.emit('wallet_sessionChanged', session);
+      });
+      mockCore.disconnect.mockImplementation(async (): Promise<void> => {
+        mockCore.emit('wallet_sessionChanged', { sessionScopes: {} });
+      });
+      await client.connect({ chainIds: ['0x1', '0xa'] });
+      mockCore.emit('metamask_chainChanged', { chainId: '0xa' });
+      expect(client.selectedChainId).toBe('0xa');
+      await client.disconnect();
+      mockCore.storage.adapter.get.mockResolvedValue(JSON.stringify('0xa'));
+      await client.connect({ chainIds: ['0x1', '0xa'] });
+      expect(client.selectedChainId).toBe('0x1');
+      mockCore.invokeMethod.mockClear();
+      mockCore.invokeMethod.mockResolvedValue(null);
+
+      await expect(
+        client.getProvider().request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x1' }],
+        }),
+      ).resolves.toBeNull();
+
+      expect(mockCore.invokeMethod).toHaveBeenCalledExactlyOnceWith({
+        scope: 'eip155:1',
+        request: {
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x1' }],
+        },
+      });
+    });
+
+    it('propagates wallet rejection when switching to the selected browser chain', async () => {
+      Object.defineProperty(mockCore, 'transportType', {
+        value: TransportType.Browser,
+      });
+      mockCore.invokeMethod.mockRejectedValue(
+        new Error('User rejected the request'),
+      );
+
+      await expect(client.switchChain({ chainId: '0x1' })).rejects.toThrow(
+        'User rejected the request',
+      );
+    });
+
+    it.each(['0x1', '0x89'] as const)(
+      'keeps the MWP chain switch to permitted chain %s local',
+      async (chainId) => {
+        Object.defineProperty(mockCore, 'transportType', {
+          value: TransportType.MWP,
+        });
+        const session: SessionData = {
+          sessionScopes: {
+            'eip155:1': {
+              methods: [],
+              notifications: [],
+              accounts: ['eip155:1:0x1234567890123456789012345678901234567890'],
+            },
+            'eip155:137': {
+              methods: [],
+              notifications: [],
+              accounts: [
+                'eip155:137:0x1234567890123456789012345678901234567890',
+              ],
+            },
+          },
+        };
+        mockCore.connect.mockImplementation(async (): Promise<void> => {
+          mockCore.emit('wallet_sessionChanged', session);
+        });
+        await client.connect({ chainIds: ['0x1', '0x89'] });
+        mockCore.invokeMethod.mockClear();
+
+        await client.switchChain({ chainId });
+
+        expect(mockCore.invokeMethod).not.toHaveBeenCalled();
+        expect(client.selectedChainId).toBe(chainId);
+      },
+    );
 
     it('falls back to wallet_addEthereumChain when wallet_switchEthereumChain fails with "Unrecognized chain ID" and chainConfiguration is provided', async () => {
       mockCore.invokeMethod.mockImplementation(
