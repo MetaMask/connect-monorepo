@@ -439,7 +439,12 @@ export class MWPTransport implements ExtendedTransport {
       this.dappClient.once('connected', runOnResumeHandler);
       this.dappClient
         .resume(session.id ?? '')
-        .catch((err) => resumeDeferred.reject(err));
+        .catch(async (err) => {
+          if (session.id) {
+            await this.#deleteMwpSession(session.id);
+          }
+          resumeDeferred.reject(err);
+        });
     }
 
     // The resume path can fall through to `wallet_createSession` (forceRequest,
@@ -458,17 +463,6 @@ export class MWPTransport implements ExtendedTransport {
     const cleanup = () => this.dappClient.off('connected', runOnResumeHandler);
 
     return Promise.race([resumeDeferred.promise, timeoutDeferred.promise])
-      .catch(async (error) => {
-        // Defense in depth (complements the SessionStore wipe in
-        // `disconnect()`): the wallet may have already revoked this pairing
-        // out-of-band, so resuming it fails/times out here instead. Delete
-        // it from SessionStore so a subsequent connect() doesn't keep
-        // retrying the same dead pairing.
-        if (session.id) {
-          await this.#deleteMwpSession(session.id);
-        }
-        throw error;
-      })
       .finally(() => {
         clearTimeout(timeout);
         cleanup();
