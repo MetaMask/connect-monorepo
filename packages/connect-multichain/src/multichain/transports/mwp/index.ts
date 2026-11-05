@@ -439,11 +439,19 @@ export class MWPTransport implements ExtendedTransport {
       this.dappClient.once('connected', runOnResumeHandler);
       this.dappClient
         .resume(session.id ?? '')
-        .catch(async (err) => {
-          if (session.id) {
-            await this.#deleteMwpSession(session.id);
-          }
-          resumeDeferred.reject(err);
+        .catch((err) => {
+          // A rejected resume means the wallet no longer accepts this pairing.
+          // Clear every SessionStore entry so a later connect() can't resume it.
+          void this.#clearMwpPairing()
+            .catch((cleanupError) => {
+              logger(
+                'error clearing MWP pairing after resume failure',
+                cleanupError,
+              );
+            })
+            .finally(() => {
+              resumeDeferred.reject(err);
+            });
         });
     }
 
@@ -809,27 +817,6 @@ export class MWPTransport implements ExtendedTransport {
     }
 
     await this.dappClient.disconnect();
-  }
-
-  /**
-   * Deletes a single pairing entry from `SessionStore` by id. Used as
-   * defense-in-depth when resuming a specific session fails, so a
-   * subsequent `connect()` doesn't try to resume the same dead pairing
-   * again (see `#clearMwpPairing` for the full wipe done on disconnect).
-   *
-   * @param sessionId - The id of the `SessionStore` entry to delete.
-   * @returns Nothing
-   */
-  async #deleteMwpSession(sessionId: string): Promise<void> {
-    try {
-      const { SessionStore } = await import(
-        '@metamask/mobile-wallet-protocol-core'
-      );
-      const sessionStore = await SessionStore.create(this.kvstore);
-      await sessionStore.delete(sessionId);
-    } catch (error) {
-      logger('error deleting MWP session from SessionStore', error);
-    }
   }
 
   /**
