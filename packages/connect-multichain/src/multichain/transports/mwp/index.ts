@@ -437,22 +437,20 @@ export class MWPTransport implements ExtendedTransport {
       runOnResumeHandler();
     } else {
       this.dappClient.once('connected', runOnResumeHandler);
-      this.dappClient
-        .resume(session.id ?? '')
-        .catch((err) => {
-          // A rejected resume means the wallet no longer accepts this pairing.
-          // Clear every SessionStore entry so a later connect() can't resume it.
-          void this.#clearMwpPairing()
-            .catch((cleanupError) => {
-              logger(
-                'error clearing MWP pairing after resume failure',
-                cleanupError,
-              );
-            })
-            .finally(() => {
-              resumeDeferred.reject(err);
-            });
-        });
+      this.dappClient.resume(session.id ?? '').catch(async (err) => {
+        // A rejected resume means the wallet no longer accepts this pairing.
+        // Clear every SessionStore entry so a later connect() can't resume it.
+        try {
+          await this.#clearMwpPairing();
+        } catch (cleanupError) {
+          logger(
+            'error clearing MWP pairing after resume failure',
+            cleanupError,
+          );
+        } finally {
+          resumeDeferred.reject(err);
+        }
+      });
     }
 
     // The resume path can fall through to `wallet_createSession` (forceRequest,
@@ -470,11 +468,13 @@ export class MWPTransport implements ExtendedTransport {
 
     const cleanup = () => this.dappClient.off('connected', runOnResumeHandler);
 
-    return Promise.race([resumeDeferred.promise, timeoutDeferred.promise])
-      .finally(() => {
-        clearTimeout(timeout);
-        cleanup();
-      });
+    return Promise.race([
+      resumeDeferred.promise,
+      timeoutDeferred.promise,
+    ]).finally(() => {
+      clearTimeout(timeout);
+      cleanup();
+    });
   }
 
   /**
@@ -769,7 +769,6 @@ export class MWPTransport implements ExtendedTransport {
       // failed resume), which leaves the SessionStore entry behind. The next
       // connect() reads that leftover entry via getActiveSession() and tries to
       // resume a pairing the wallet has already revoked, which times out.
-      // See: https://consensyssoftware.atlassian.net/browse/MCWP-822
       await this.#clearMwpPairing();
     }
 
@@ -783,7 +782,8 @@ export class MWPTransport implements ExtendedTransport {
 
   /**
    * Wipes any persisted MWP pairing(s) (relay channel + ECIES keys) from the
-   * `SessionStore`, independent of `dappClient`'s in-memory session state.
+   * `SessionStore`, independent of `dappClient`'s in-memory session state,
+   * then calls `dappClient.disconnect()` for transport/channel cleanup.
    *
    * `dappClient.disconnect()` only deletes the SessionStore entry when its
    * in-memory `session` is set — if it's already `null` (e.g. a prior
@@ -792,12 +792,16 @@ export class MWPTransport implements ExtendedTransport {
    * returns `undefined` afterwards so the next `connect()` takes
    * `#startSession` instead of resuming a pairing the wallet already revoked.
    *
-   * The SessionStore wipe happens first and unconditionally so the invariant
-   * holds even if the subsequent `dappClient.disconnect()` call fails.
-   * `dappClient.disconnect()` is still called (so transport/channel cleanup
-   * runs when a session is set) and its rejection is intentionally
-   * propagated, preserving the existing contract that a failed disconnect
-   * surfaces to callers of `MWPTransport.disconnect()`.
+   * The SessionStore wipe happens first so the invariant holds even if the
+   * subsequent `dappClient.disconnect()` call fails. List/delete failures
+   * are propagated: returning success while the pairing remains would leave
+   * the dapp stuck on the next `connect()`. `dappClient.disconnect()`
+   * rejection is also propagated, preserving the existing contract that a
+   * failed disconnect surfaces to callers of `MWPTransport.disconnect()`.
+   *
+   * Multiple dapp-side pairings are unsupported; every SessionStore entry is
+   * deleted so a stale leftover cannot outrank a cleared id via
+   * `getActiveSession()`'s `list()[0]` selection.
    *
    * @returns Nothing
    */
@@ -807,14 +811,10 @@ export class MWPTransport implements ExtendedTransport {
     );
     const sessionStore = await SessionStore.create(this.kvstore);
 
-    try {
-      const sessions = await sessionStore.list();
-      await Promise.all(
-        sessions.map(async (session) => sessionStore.delete(session.id)),
-      );
-    } catch (error) {
-      logger('error clearing MWP pairing from SessionStore', error);
-    }
+    const sessions = await sessionStore.list();
+    await Promise.all(
+      sessions.map(async (session) => sessionStore.delete(session.id)),
+    );
 
     await this.dappClient.disconnect();
   }

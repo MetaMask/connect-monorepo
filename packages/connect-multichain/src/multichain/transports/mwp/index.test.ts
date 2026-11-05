@@ -925,6 +925,84 @@ t.describe('MWPTransport', () => {
         await connectPromise;
       },
     );
+
+    t.it(
+      'propagates SessionStore delete failures on a full disconnect',
+      async () => {
+        const storeError = new Error('SessionStore delete failed');
+        deleteSpy.mockRejectedValue(storeError);
+
+        await t.expect(transport.disconnect()).rejects.toThrow(storeError);
+        t.expect(mockDappClient.disconnect).not.toHaveBeenCalled();
+      },
+    );
+
+    t.it(
+      'clears every SessionStore pairing when dappClient.resume() rejects',
+      async () => {
+        storedSessions = [
+          buildMockSession('pairing-1'),
+          buildMockSession('pairing-2'),
+        ];
+        const resumeError = new Error('SESSION_NOT_FOUND');
+        (mockDappClient.resume as ReturnType<typeof t.vi.fn>).mockRejectedValue(
+          resumeError,
+        );
+        t.vi
+          .spyOn(transport, 'getStoredPendingSessionRequest')
+          .mockResolvedValue(null);
+
+        await t
+          .expect(transport.connect({ scopes: [], caipAccountIds: [] }))
+          .rejects.toThrow(resumeError);
+
+        t.expect(deleteSpy).toHaveBeenCalledWith('pairing-1');
+        t.expect(deleteSpy).toHaveBeenCalledWith('pairing-2');
+        t.expect(storedSessions).toHaveLength(0);
+        await t.expect(transport.getActiveSession()).resolves.toBeUndefined();
+      },
+    );
+
+    t.it(
+      'does not clear SessionStore when resume times out before dappClient.resume() settles',
+      async () => {
+        t.vi.useFakeTimers();
+        try {
+          transport = new MWPTransport(mockDappClient, mockKvstore, {
+            requestTimeout: 1_000,
+            connectionTimeout: 50,
+            resumeTimeout: 50,
+          });
+          (
+            mockDappClient.resume as ReturnType<typeof t.vi.fn>
+          ).mockImplementation(async () => new Promise(() => undefined));
+          t.vi
+            .spyOn(transport, 'getStoredPendingSessionRequest')
+            .mockResolvedValue(null);
+
+          const connectPromise = transport.connect({
+            scopes: [],
+            caipAccountIds: [],
+          });
+
+          await t.vi.waitFor(() => {
+            t.expect(mockDappClient.resume).toHaveBeenCalledTimes(1);
+          });
+
+          const expectedSessionCount = storedSessions.length;
+          const rejection = t
+            .expect(connectPromise)
+            .rejects.toThrow(/timed out/iu);
+          await t.vi.advanceTimersByTimeAsync(50);
+          await rejection;
+
+          t.expect(deleteSpy).not.toHaveBeenCalled();
+          t.expect(storedSessions).toHaveLength(expectedSessionCount);
+        } finally {
+          t.vi.useRealTimers();
+        }
+      },
+    );
   });
 
   t.describe('getCachedResponse for wallet_getSession', () => {
