@@ -437,9 +437,20 @@ export class MWPTransport implements ExtendedTransport {
       runOnResumeHandler();
     } else {
       this.dappClient.once('connected', runOnResumeHandler);
-      this.dappClient
-        .resume(session.id ?? '')
-        .catch((err) => resumeDeferred.reject(err));
+      this.dappClient.resume(session.id ?? '').catch(async (err) => {
+        // A rejected resume means the wallet no longer accepts this pairing.
+        // Clear every SessionStore entry so a later connect() can't resume it.
+        try {
+          await this.#clearMwpPairing();
+        } catch (cleanupError) {
+          logger(
+            'error clearing MWP pairing after resume failure',
+            cleanupError,
+          );
+        } finally {
+          resumeDeferred.reject(err);
+        }
+      });
     }
 
     // The resume path can fall through to `wallet_createSession` (forceRequest,
@@ -748,7 +759,17 @@ export class MWPTransport implements ExtendedTransport {
         this.windowFocusHandler = undefined;
       }
 
-      await this.dappClient.disconnect();
+      // Ensure a later connect() can't pick up a dead handshake URI from a
+      // pending connection attempt that never completed.
+      await this.removeStoredPendingSessionRequest();
+
+      // Wipe the MWP pairing (relay channel + ECIES keys) from SessionStore
+      // regardless of in-memory `dappClient.session` state. `dappClient.disconnect()`
+      // alone is a no-op when the in-memory session is already null (e.g. after a
+      // failed resume), which leaves the SessionStore entry behind. The next
+      // connect() reads that leftover entry via getActiveSession() and tries to
+      // resume a pairing the wallet has already revoked, which times out.
+      await this.#clearMwpPairing();
     }
 
     this.notifyCallbacks({
@@ -757,6 +778,45 @@ export class MWPTransport implements ExtendedTransport {
         sessionScopes: newSessionScopes,
       },
     });
+  }
+
+  /**
+   * Wipes any persisted MWP pairing(s) (relay channel + ECIES keys) from the
+   * `SessionStore`, independent of `dappClient`'s in-memory session state,
+   * then calls `dappClient.disconnect()` for transport/channel cleanup.
+   *
+   * `dappClient.disconnect()` only deletes the SessionStore entry when its
+   * in-memory `session` is set — if it's already `null` (e.g. a prior
+   * `resume()` failure nulled it out without clearing storage), that call is
+   * a no-op and the pairing survives. This guarantees `getActiveSession()`
+   * returns `undefined` afterwards so the next `connect()` takes
+   * `#startSession` instead of resuming a pairing the wallet already revoked.
+   *
+   * The SessionStore wipe happens first so the invariant holds even if the
+   * subsequent `dappClient.disconnect()` call fails. List/delete failures
+   * are propagated: returning success while the pairing remains would leave
+   * the dapp stuck on the next `connect()`. `dappClient.disconnect()`
+   * rejection is also propagated, preserving the existing contract that a
+   * failed disconnect surfaces to callers of `MWPTransport.disconnect()`.
+   *
+   * Multiple dapp-side pairings are unsupported; every SessionStore entry is
+   * deleted so a stale leftover cannot outrank a cleared id via
+   * `getActiveSession()`'s `list()[0]` selection.
+   *
+   * @returns Nothing
+   */
+  async #clearMwpPairing(): Promise<void> {
+    const { SessionStore } = await import(
+      '@metamask/mobile-wallet-protocol-core'
+    );
+    const sessionStore = await SessionStore.create(this.kvstore);
+
+    const sessions = await sessionStore.list();
+    await Promise.all(
+      sessions.map(async (session) => sessionStore.delete(session.id)),
+    );
+
+    await this.dappClient.disconnect();
   }
 
   /**
