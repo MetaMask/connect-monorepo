@@ -483,7 +483,7 @@ async function expectWorkspaceLicense(workspace) {
  */
 function expectWorkspaceKeywords(workspace) {
   const keywords = get(workspace.manifest, 'keywords');
-  const supportedNetworks = ['Ethereum', 'Solana'];
+  const supportedNetworks = ['Bitcoin', 'Ethereum', 'Solana'];
 
   if (!keywords || !Array.isArray(keywords)) {
     workspace.error('Keywords must be an array.');
