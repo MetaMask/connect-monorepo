@@ -16,7 +16,10 @@ import type {
  * @returns A ready-to-use key manager instance.
  */
 export async function createKeyManager(): Promise<IKeyManager> {
-  const { decrypt, encrypt, PrivateKey, PublicKey } = await import('eciesjs');
+  // `eciesjs` is CommonJS-only, so bundlers shape this import as
+  // `{ default: <module.exports> }` rather than a namespace of named exports.
+  const ecies = await import('eciesjs');
+  const { decrypt, encrypt, PrivateKey, PublicKey } = ecies.default ?? ecies;
 
   return {
     generateKeyPair(): KeyPair {
