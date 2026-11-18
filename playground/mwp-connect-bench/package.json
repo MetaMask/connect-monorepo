@@ -1,0 +1,30 @@
+{
+  "name": "@metamask/mwp-connect-bench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Benchmark harness for MetaMask Connect (MWP) deeplink connection latency against MetaMask Mobile",
+  "keywords": [
+    "MetaMask",
+    "Ethereum"
+  ],
+  "homepage": "https://github.com/MetaMask/connect-monorepo/tree/main/playground/mwp-connect-bench#readme",
+  "bugs": {
+    "url": "https://github.com/MetaMask/connect-monorepo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/connect-monorepo.git"
+  },
+  "license": "UNLICENSED",
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "analyze": "node analyze.mjs",
+    "seed": "node seed-sessions.mjs",
+    "test": "echo \"No test specified\"",
+    "trial": "node run-trial.mjs"
+  },
+  "dependencies": {
+    "eciesjs": "0.4.17"
+  }
+}
