@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Full disconnect (`disconnect()` with no remaining scopes) on the MWP transport now always wipes the persisted MWP pairing from `SessionStore` and the pending session request, so a later `connect()` no longer tries to resume a revoked pairing and hangs until storage is cleared. A rejected session resume now also clears the stored pairing. ([#348](https://github.com/MetaMask/connect-monorepo/pull/348))
+
 ## [1.2.0]
 
 ### Added
