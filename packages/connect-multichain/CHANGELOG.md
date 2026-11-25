@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Full disconnect (`disconnect()` with no remaining scopes) on the MWP (mobile deeplink) transport now always wipes the persisted MWP pairing (relay channel + ECIES keys) from `SessionStore`, independent of `dappClient`'s in-memory session state. Previously, `dappClient.disconnect()` was a no-op when its in-memory session was already `null` (e.g. after a prior failed `resume()`), leaving the pairing in storage. The next `connect()` would then try to resume that already-revoked pairing via `getActiveSession()`, time out, and leave the dapp stuck — surviving even a page refresh until storage was wiped manually. Full disconnect also now clears the stored `pending_session_request` so a later `connect()` can't pick up a dead handshake URI. As defense in depth, a failed session resume now clears every pairing from `SessionStore` before rethrowing.
+- Full disconnect (`disconnect()` with no remaining scopes) on the MWP transport now always wipes the persisted MWP pairing from `SessionStore` and the pending session request, so a later `connect()` no longer tries to resume a revoked pairing and hangs until storage is cleared. A rejected session resume now also clears the stored pairing. ([#348](https://github.com/MetaMask/connect-monorepo/pull/348))
 
 ## [1.2.0]
 

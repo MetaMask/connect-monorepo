@@ -938,6 +938,37 @@ t.describe('MWPTransport', () => {
     );
 
     t.it(
+      'wipes the SessionStore pairing and still rejects when dappClient.disconnect() fails',
+      async () => {
+        const disconnectError = new Error('dappClient disconnect failed');
+        (
+          mockDappClient.disconnect as ReturnType<typeof t.vi.fn>
+        ).mockRejectedValue(disconnectError);
+
+        await t.expect(transport.disconnect()).rejects.toThrow(disconnectError);
+
+        t.expect(deleteSpy).toHaveBeenCalledWith('pairing-1');
+        await t.expect(transport.getActiveSession()).resolves.toBeUndefined();
+      },
+    );
+
+    t.it(
+      'still notifies listeners of the empty session when full disconnect cleanup rejects',
+      async () => {
+        const storeError = new Error('SessionStore delete failed');
+        deleteSpy.mockRejectedValue(storeError);
+        const notifications: unknown[] = [];
+        transport.onNotification((data) => notifications.push(data));
+
+        await t.expect(transport.disconnect()).rejects.toThrow(storeError);
+
+        t.expect(notifications).toStrictEqual([
+          { method: 'wallet_sessionChanged', params: { sessionScopes: {} } },
+        ]);
+      },
+    );
+
+    t.it(
       'clears every SessionStore pairing when dappClient.resume() rejects',
       async () => {
         storedSessions = [

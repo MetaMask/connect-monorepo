@@ -440,6 +440,10 @@ export class MWPTransport implements ExtendedTransport {
       this.dappClient.resume(session.id ?? '').catch(async (err) => {
         // A rejected resume means the wallet no longer accepts this pairing.
         // Clear every SessionStore entry so a later connect() can't resume it.
+        // NOTE: this also calls `dappClient.disconnect()`, and connect()'s
+        // `.catch` calls it again once this rejection propagates. That is
+        // harmless: a rejected `resume()` already nulled the client's session,
+        // so `disconnect()` returns early. Revisit if that ever changes.
         try {
           await this.#clearMwpPairing();
         } catch (cleanupError) {
@@ -733,6 +737,14 @@ export class MWPTransport implements ExtendedTransport {
       this.kvstore.delete(CHAIN_STORE_KEY);
     }
 
+    const notifySessionChanged = (): void =>
+      this.notifyCallbacks({
+        method: 'wallet_sessionChanged',
+        params: {
+          sessionScopes: newSessionScopes,
+        },
+      });
+
     if (remainingScopes.length > 0) {
       // Preserve `sessionProperties` (e.g. the wallet-published EIP-5792
       // `eip155Capabilities`) across a partial disconnect; rebuilding the
@@ -759,25 +771,27 @@ export class MWPTransport implements ExtendedTransport {
         this.windowFocusHandler = undefined;
       }
 
-      // Ensure a later connect() can't pick up a dead handshake URI from a
-      // pending connection attempt that never completed.
-      await this.removeStoredPendingSessionRequest();
+      try {
+        // Ensure a later connect() can't pick up a dead handshake URI from a
+        // pending connection attempt that never completed.
+        await this.removeStoredPendingSessionRequest();
 
-      // Wipe the MWP pairing (relay channel + ECIES keys) from SessionStore
-      // regardless of in-memory `dappClient.session` state. `dappClient.disconnect()`
-      // alone is a no-op when the in-memory session is already null (e.g. after a
-      // failed resume), which leaves the SessionStore entry behind. The next
-      // connect() reads that leftover entry via getActiveSession() and tries to
-      // resume a pairing the wallet has already revoked, which times out.
-      await this.#clearMwpPairing();
+        // Wipe the MWP pairing (relay channel + ECIES keys) from SessionStore
+        // regardless of in-memory `dappClient.session` state. `dappClient.disconnect()`
+        // alone is a no-op when the in-memory session is already null (e.g. after a
+        // failed resume), which leaves the SessionStore entry behind. The next
+        // connect() reads that leftover entry via getActiveSession() and tries to
+        // resume a pairing the wallet has already revoked, which times out.
+        await this.#clearMwpPairing();
+      } catch (error) {
+        // The cached session is already deleted above, so listeners must still
+        // learn it is gone even though cleanup failed. The error still surfaces.
+        notifySessionChanged();
+        throw error;
+      }
     }
 
-    this.notifyCallbacks({
-      method: 'wallet_sessionChanged',
-      params: {
-        sessionScopes: newSessionScopes,
-      },
-    });
+    notifySessionChanged();
   }
 
   /**
